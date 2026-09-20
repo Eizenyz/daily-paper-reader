@@ -1,0 +1,217 @@
+{
+  "date": "20260822-20260920",
+  "date_label": "2026-08-22 ~ 2026-09-20",
+  "generated_at": "2026-09-20 16:17:16 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.25822v1",
+      "route": "20260822-20260920/2608.25822v1-fast-forwarding-quantum-algorithms-for-weakly-nonlinear-dissipative-differential-equations-and-beyond",
+      "title": "Fast-forwarding quantum algorithms for weakly nonlinear dissipative differential equations and beyond",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "结合 Carleman 嵌入与线性组合哈密顿量模拟求解耗散常微分方程",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2608.27712v1",
+      "route": "20260822-20260920/2608.27712v1-efficient-quantum-simulation-of-variable-coefficient-transport-with-continuous-source-injection",
+      "title": "Efficient Quantum Simulation of Variable-Coefficient Transport with Continuous Source Injection",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "变系数输运偏微分方程的量子时间推进算法",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2608.29756v1",
+      "route": "20260822-20260920/2608.29756v1-pathwise-random-hamiltonian-simulation",
+      "title": "Pathwise Random Hamiltonian Simulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "随机哈密顿量模拟，改善对1/ε的查询复杂度",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2608.30629v1",
+      "route": "20260822-20260920/2608.30629v1-gate-efficient-implementation-of-the-query-optimal-time-dependent-hamiltonian-simulation",
+      "title": "Gate-Efficient Implementation of the Query-Optimal Time-Dependent Hamiltonian Simulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "门高效的时变哈密顿量模拟实现",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2609.03440v1",
+      "route": "20260822-20260920/2609.03440v1-convolution-absorbing-boundaries-for-explicit-circuit-quantum-simulation-of-the-wave-equation",
+      "title": "Convolution absorbing boundaries for explicit-circuit quantum simulation of the wave equation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "利用Schrodingerisation将非幺正的吸收边界波动方程动力学变为可量子实现，并给出显式门级电路",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2609.14077v1",
+      "route": "20260822-20260920/2609.14077v1-iqfem-a-quantum-finite-element-method-for-heterogeneous-problems-with-immersed-boundaries",
+      "title": "IQFEM: A quantum finite element method for heterogeneous problems with immersed boundaries",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "用量子有限元、块编码和LCU求解Poisson偏微分方程",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2609.18757v1",
+      "route": "20260822-20260920/2609.18757v1-query-optimal-and-gate-efficient-lindbladian-simulation",
+      "title": "Query-Optimal and Gate-Efficient Lindbladian Simulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "块编码下查询最优、门高效的Lindblad模拟及下界",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2608.26268v1",
+      "route": "20260822-20260920/2608.26268v1-bosonic-encodings-for-hermite-galerkin-discretizations-of-high-dimensional-pdes-and-bayesian-inverse-problems",
+      "title": "Bosonic Encodings for Hermite-Galerkin Discretizations of High-Dimensional PDEs and Bayesian Inverse Problems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于Hermite-Galerkin玻色子编码的线性PDE量子算法及收敛性证明",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2608.30860v1",
+      "route": "20260822-20260920/2608.30860v1-well-conditioned-iterative-methods-for-large-open-quantum-systems",
+      "title": "Well-conditioned iterative methods for large open quantum systems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "Lindblad耗散开放量子系统的迭代方法",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2608.30937v1",
+      "route": "20260822-20260920/2608.30937v1-constrained-minimax-approximation-for-quantum-signal-processing",
+      "title": "Constrained minimax approximation for quantum signal processing",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "量子信号处理的多项式逼近设计",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2609.07384v1",
+      "route": "20260822-20260920/2609.07384v1-wavelength-uniform-quantum-algorithms-for-quantum-dynamics",
+      "title": "Wavelength-Uniform Quantum Algorithms for Quantum Dynamics",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "波长一致量子算法，具离散化与查询复杂度界",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2609.10250v1",
+      "route": "20260822-20260920/2609.10250v1-an-analysis-of-iterative-refinement-for-quantum-linear-system-solvers",
+      "title": "An analysis of iterative refinement for quantum linear system solvers",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "迭代精化改进量子线性系统求解器的精度依赖",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    },
+    {
+      "paper_id": "2609.17796v1",
+      "route": "20260822-20260920/2609.17796v1-quantum-block-encodings-for-periodic-two-phase-finite-element-operators-2d-poisson-and-2d-elasticity",
+      "title": "Quantum Block Encodings for Periodic Two-Phase Finite Element Operators: 2D Poisson and 2D Elasticity",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "有限元偏微分方程算子的精确块编码",
+      "first_seen_at": "2026-09-20 16:17:16 UTC",
+      "updated_at": "2026-09-20 16:17:16 UTC"
+    }
+  ]
+}

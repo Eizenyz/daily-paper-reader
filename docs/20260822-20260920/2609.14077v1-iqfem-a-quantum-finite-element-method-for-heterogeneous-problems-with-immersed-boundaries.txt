@@ -1,0 +1,2217 @@
+Title: IQFEM: A quantum finite element method for heterogeneous problems with immersed boundaries
+
+URL Source: https://arxiv.org/pdf/2609.14077v1
+
+Published Time: Tue, 15 Sep 2026 00:53:52 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# IQFEM: A quantum finite element method for heterogeneous problems with immersed boundaries 
+
+Shehara Perera, Yiren Wang, Fehmi Cirak ∗
+
+> Department of Engineering, University of Cambridge, Cambridge, CB2 1PZ, UK
+
+Abstract 
+
+Quantum computing o ff ers the potential to solve computational mechanics problems with a more favourable com-plexity scaling than classically possible. To realise this potential, a quantum-compatible formulation of the finite element method is essential. We present such a formulation for Poisson problems with spatially varying coe ffi cients on general domains discretised by an immersed uniform Cartesian grid. The resulting banded sparse system matrices are encoded as the sum of diagonal matrices with polynomial entries and their products with shift matrices. The sum of the matrices is formed using the linear combination of unitaries (LCU) technique. The resulting block-encoded system matrix can be implemented using a polylogarithmic number of elementary gates. For immersed boundaries, the block-encoded system matrix is further processed using a diagonal indicator matrix with zeros and ones. The indicator matrix is defined in terms of an integer-valued level-set function composed of simple geometric primitives via Boolean set operations. The required integer operations are computed on the fly using quantum arithmetic. The resulting block-encoded linear system of equations is solved using quantum singular value transformation (QSVT). The overall gate count, including the QSVT, is O(N2/d 
+
+> tot
+
+polylog( Ntot )), where d is the problem dimension and Ntot 
+
+the number of grid points. In numerical examples that confirm the theoretical complexity estimates, the solutions converge approximately linearly for immersed problems and quadratically for simply connected domains. 
+
+Keywords: Quantum computing, finite element analysis, heterogeneous, immersed boundaries, quantum arithmetic, QSVT 
+
+1. Introduction 
+
+Quantum algorithms for solving linear systems of finite element equations scale, according to theoretical esti-mates, polylogarithmically in the system dimension and polynomially in the condition number [1–3]. The prospect of achieving an exponential speedup over classical algorithms with polynomial complexity represents a paradigm shift. However, the complexity of quantum linear systems (QLS) algorithms depends on crucial details of data encoding and solution readout [4–6]. In this work, we focus on e ffi cient block encoding of finite element matrices, a key bottleneck to achieving the potential speedup. Theoretical complexity estimates for QLS algorithms are typically given in terms of the number of oracle queries, namely, a black-box unitary that provides access to the system matrix. The complex-ity estimates, therefore, tacitly assume that the oracle itself can be implemented with only polylogarithmically many elementary gates in the system size. This is usually di ffi cult to achieve for a system matrix resulting from a fully unstructured finite element discretisation. We therefore consider finite element discretisations on structured Cartesian grids and exploit their regularity in constructing the required circuits. Specifically, we consider domains of arbitrary shape using the immersed finite element approach, also known as an embedded or cut finite element approach [7–12]. We refer to the resulting immersed quantum finite element method as IQFEM (Figure 1). The e ffi cient encoding of finite element system matrices has motivated a range of approaches. Quantum spectral methods reformulate the problem in a basis in which the system matrix has a simple diagonal or block-diagonal struc-ture [13–18]. Such a reformulation is generally not possible for problems with heterogeneous coe ffi cients and domains              
+
+> ∗Corresponding author
+> Email address: f.cirak@eng.cam.ac.uk (Fehmi Cirak) arXiv:2609.14077v1 [math.NA] 12 Sep 2026 Figure 1: IQFEM analysis of a multiply connected domain with an internal hole. The geometry of the hole, with half-width b, is described by a level-set function ϕcomposed of two simpler level-set functions ϕ0and ϕ1via constructive solid geometry. In IQFEM , the integer-valued level-set functions are evaluated on the fly using quantum arithmetic. The linear system of finite element equations is solved with quantum singular value transformation, yielding the discrete solution uh.
+
+of arbitrary shape. Therefore, in IQFEM we directly block-encode the system matrices arising from immersed finite element discretisations on structured Cartesian grids. Finite element matrices are usually non-unitary and must there-fore be block-encoded as a sub-block of a larger, suitably chosen unitary matrix. Such block encodings are commonly constructed as a sequence of unitary transformations that combine two-dimensional rotations on selected subspaces of the quantum Hilbert space. The rotation angles depend on the entries of the system matrix. E ffi ciency requires that the number of gates to select the subspaces, i.e., CNOT gates, and to apply the rotations, i.e. RY gates, depends polyloga-rithmically on the matrix dimension. Approaches that make no assumptions about the sparsity pattern or the entries of the matrix usually lead to quadratic gate complexity in system size Ntot for a matrix of dimension Ntot × Ntot [19–21]. For sparse matrices, this cost can be reduced via circuit synthesis techniques that combine RY gates and neglect those with small angles [22, 23]. This reduction alone does not, in general, achieve polylogarithmic scaling. The finite element system matrices for problems discretised using structured grids have a particularly simple banded sparsity structure that can be exploited for their quantum encoding. Furthermore, the matrices have repeated entries when the elements are of the same size, and the problem has constant coe ffi cients. For instance, a periodic one-dimensional Poisson problem discretised with linear basis functions has a tridiagonal circulant system matrix with entries proportional to −1, 2, and −1. The circulant system matrix can be represented as a weighted linear combination of an easily block-encoded diagonal matrix and two periodic shift matrices [24]. The shift matrices represent the o ff -diagonal terms and are unitary permutations. The weighted sum of the block-encoded diagonal matrix and the unitary shift matrices can be obtained using the linear combination of unitaries (LCU) technique [25, 26]. The unitary for the entire quantum circuit serves as a block-encoding of the system matrix. Extensions and variations of the sketched approach are considered in [27, 28]. In this paper, we develop quantum algorithms with polylogarithmic gate complexity for the block encoding of system matrices arising from problems with heterogeneous coe ffi cients and domains of general shape. The specific problems considered are the one- and two-dimensional heterogeneous Poisson problems discretised on immersed Cartesian grids using linear basis functions. The formulation can be readily extended to three- and higher-dimensional problems. The spatial distribution of the di ff usivity coe ffi cient is assumed to be polynomial and is approximated as constant within each element. Consequently, the entries of the system matrix become polynomials of the row indices, which correspond to the coordinates of the grid points. The resulting polynomial dependence of the matrix entries on the grid indices enables the extension of the approach of Camps et al. [24] from constant-coe ffi cient to heterogeneous problems. Specifically, in one dimension, the tridiagonal sti ff ness matrix is the sum of a diagonal and two o ff -diagonal matrices with polynomial entries. The two o ff -diagonal matrices are products of diagonal matrices with two shift operators. We encode the polynomial entries of the three diagonal matrices using an approach with polylogarithmic complexity [29, 30]. The sum of the block-encoded diagonal and o ff -diagonal matrices is determined using the LCU 2technique. For instance, in two dimensions, we decompose the system matrix into one diagonal matrix and four off -diagonal matrices with bivariate polynomial entries. The o ff -diagonal matrices are products of diagonal and shift matrices. We incorporate non-periodic boundary conditions by altering the shift operators. We block-encode the system matrices of domains embedded in Cartesian grids by extending our approach for heterogeneous problems. Without loss of generality, we focus on multiconnected domains with an internal hole subject to either homogeneous Dirichlet or Neumann boundary conditions. To describe the problem domain, we derive a block-encoded diagonal masking matrix with entries equal to zero outside the domain and one within it. The system matrix for homogeneous Dirichlet boundary conditions on the hole is obtained by multiplying the block-encoded system matrix of the heterogeneous problem from the left and right by the block-encoded diagonal masking matrix. The resulting approach has linear convergence in the L2-norm [8, 31]. The system matrix is further modified to impose homogeneous Neumann boundary conditions. Specifically, the diagonal entries of the system matrix corresponding to the boundary grid points are scaled according to the number of adjacent cells outside the domain. This approach can be motivated by a finite volume treatment of the Neumann boundaries [32]. Although the obtained system matrices for multiconnected domains have zero rows and columns, this does not a ff ect the final solution, as the corresponding singular values are suppressed during the quantum solution stage. The entries of the masking matrix required to block-encode the system matrices of multiconnected domains are given by an indicator function defined in terms of a level-set function (Figure 1). E ffi cient encoding of the level-set function with a polylogarithmic number of gates is key to the proposed approach’s e ffi ciency. A polynomial ap-proximation of the level-set function generally requires a high polynomial degree and, consequently, a large number of gates. Instead, we compute the level-set function on the fly using a constructive solid geometry approach [33], in which the domain is recursively composed of simple geometric primitives, such as half-spaces. The level-set and indi-cator functions are represented using binary encoding and computed using quantum arithmetic. In binary encoding, an integer or floating-point number is represented using computational basis states; for example, the integers 0 , . . . , 15 are represented by four qubits, i.e., 0000 , . . . , 1111, analogous to a four-bit representation in classical computing. We use quantum Fourier transform (QFT)-based quantum arithmetic [34–36] to compute the level-set and indicator functions with a polylogarithmic number of gates. In our present implementation, the embedded domain boundary is approximated by element edges, yielding a staircase approximation of the boundary, and no cut elements are consid-ered. This approximation can potentially be improved by choosing a finer subgrid for capturing the contributions of cut elements [7]. We solve the block-encoded linear system of equations using the quantum singular value transformation (QSVT) approach. QSVT is a quantum approach that represents matrix polynomials as products of block-encoded matrices interleaved with parametrised signal-processing operators [3, 37]. Each signal-processing operator depends on a sin-gle parameter, i.e., a phase factor, and the set of phase factors depends on the coe ffi cients of the polynomial under consideration. The phase factors are not unique, but e ffi cient algorithms exist for determining them [38]. In approx-imating the matrix inverse using QSVT, we first approximate the function x−1 by a polynomial while suppressing the singularity near the origin and then compute the corresponding phase factors. The same phase factors are used to approximate the inverse of the block-encoded system matrix. The query complexity, or the number of times the block-encoded matrix is evaluated in QSVT when approximating the matrix inverse, is given as O(κ log( κ/ϵ )), where 
+
+κ is the condition number and ϵ the approximation error [3]. Assuming that κ ∼ h−2 ∼ N2/d 
+
+> tot
+
+, where h is the element size, Ntot the total number of grid points and d the space dimension, the query complexity is O(N2/d 
+
+> tot
+
+log( N2/d 
+
+> tot
+
+/ϵ )). This scaling motivates the preconditioning of the system matrix, especially for d < 3, which is not considered in the present paper. The remainder of the paper is organised as follows. In Section 2, we introduce the finite element system ma-trices for one- and two-dimensional Poisson problems discretised on structured Cartesian meshes using linear basis functions. In Section 3, we discuss the quantum encoding of the system matrices of problems with a heterogeneous di ff usion coe ffi cient. Section 4 extends the formulation to multiconnected domains with an internal hole embedded in Cartesian meshes, with particular attention to the computation of level-set and indicator functions and to the treatment of Dirichlet and Neumann boundary conditions. In Section 5, we describe the solution of the resulting linear systems using QSVT. Numerical examples assessing accuracy and scaling are presented in Section 6. The paper concludes with a discussion of implications, limitations, and directions for future work in IQFEM . Three appendices provide additional details. 32. Model problem: heterogeneous di ff usion 
+
+In this section, we recall the finite element discretisation of the Poisson equation with a non-homogeneous di ff u-sion coe ffi cient and give the explicit expressions for the system matrices in one and two dimensions. The domain is partitioned using a structured mesh with simplicial elements, and the weak form of the Poisson equation is discretised with standard linear basis functions. 
+
+2.1. Governing equation and discretisation 
+
+On the domain Ω ⊆ (0 , L)d, with d ∈ { 1, 2}, which may contain holes, we consider the governing equation 
+
+−∇ · (μ∇u) = f in Ω , (1a) 
+
+u = 0 on ΓD , (1b) 
+
+μ∇u · n = t on ΓN , (1c) where u is the unknown solution field, μ ∈ L∞(Ω) is the di ff usion coe ffi cient and f ∈ L2(Ω) is the source term. The spaces L∞(Ω) and L2(Ω) denote the standard spaces of essentially bounded functions and square-integrable functions, respectively. The prescribed flux on the Neumann boundary ΓN is t, and the prescribed solution on the Dirichlet boundary ΓD is zero. Without loss of generality, the external boundary is assumed to be entirely Dirichlet, and any hole boundaries are either Dirichlet or Neumann. The weak form of the governing equation (1) is stated as: find u ∈ H10 (Ω) such that 
+
+Z
+
+> Ω
+
+μ∇u · ∇ v dΩ = 
+
+Z
+
+> Ω
+
+f v dΩ + 
+
+Z
+
+> ΓN
+
+tv dΓ , ∀v ∈ H10 (Ω) , (2) where H10 (Ω) = {v ∈ H1(Ω)|v = 0 on ΓD}, and H1(Ω) is the Sobolev space of square-integrable functions whose first derivative is also square-integrable. We discretise the weak form (2) with a standard finite element approach. The finite element grid is obtained by subdividing the domain (0 , L)d into N + 1 equal intervals along each coordinate direction, as shown in Figure 2. We assume that N is a power of 2. The solution u and the test function v are discretised using linear basis functions, and the di ff usion coe ffi cient μ within each element is assumed to be constant. The resulting finite element discretisation yields the linear system of equations 
+
+A |u⟩ = | f ⟩ , (3) where A ∈ RNd ×Nd
+
+is a sparse system matrix, |u⟩ ∈ RNd
+
+is the solution array and | f ⟩ ∈ RNd
+
+is the force array. Although A can be singular for a multiconnected domain because of the grid points within the hole, the corresponding singular values are suppressed during the solution stage using the quantum linear systems solver. 
+
+2.2. Heterogeneous system matrices 
+
+We focus on the simply connected domain Ω = (0 , L)d to expose the structure of the system matrix A of the finite element discretised problem. The boundary condition is a zero Dirichlet condition. Each row of A corresponds to a specific node in the grid, and the entries of the row depend on the di ff usion coe ffi cient in the elements sharing the node. The row entries can be conveniently represented as stencils, as shown in Figure 3. 
+
+2.2.1. One dimension 
+
+The three weights of the one-dimensional stencil given in Figure 3a for a row corresponding to the node with the index k0 are 
+
+ξk0 = N + 1
+
+L ( μk0−1 + μk0 ) , αk0 = − N + 1
+
+L μk0−1 , βk0 = − N + 1
+
+L μk0 . (4) 4. . . k0
+
+−1 0 1 2 N − 3 N − 2 N − 1 N(a) One dimension k0
+
+k1
+
+. . . . . . . . . . . . . . . . . . . . . . . . ... ... ... ... ... ...... ...
+
+−1 0 1 2 N − 3 N − 2 N − 1 N
+
+−1012
+
+N − 3
+
+N − 2
+
+N − 1
+
+N (b) Two dimensions Figure 2: Discretisation of the domain Ω ⊆ (0 , L)d , with d ∈ { 1, 2} and the indexing of the grid points. The grid is obtained by subdividing (0 , L)d
+
+into N + 1 intervals along each coordinate direction. In two dimensions, only the elements in the shaded region belong to Ω. The grid points are indexed by k = k0 and k = (k0, k1) in one and two dimensions, respectively. The external boundary is subject to homogeneous Dirichlet conditions. The corresponding grid points are therefore omitted from the finite element equations. The boundary of the internal hole is subject to either homogeneous Dirichlet or Neumann conditions. αk0 ξk0 βk0
+
+(a) One-dimensional case γk0 ,k1
+
+αk0 ,k1 βk0 ,k1
+
+δk0 ,k1
+
+ξk0 ,k1 (b) Two-dimensional case Figure 3: Local sti ff ness matrix stencils for a central node k0 in one dimension and ( k0, k1) in two dimensions, respectively. The stencil weights are the entries of the system matrices corresponding to nodes k0 and ( k0, k1). 
+
+The assembled stencils yield the sparse one-dimensional system matrix 
+
+A =
+
+
+
+ξ0 β0
+
+α1 ξ1 β1
+
+α2
+
+. . . . . .. . . . . . βN−2
+
+αN−1 ξN−1
+
+
+
+. (5) 5All the omitted entries are zero. Furthermore, the system matrix of problem (1) is usually symmetric; however, for quantum encoding, it is helpful to distinguish between the two o ff -diagonal bands. 
+
+2.2.2. Two dimensions 
+
+To obtain the two-dimensional stencils given in Figure 3b, we subdivide each cell into two triangular finite el-ements. The stencil weights for the row corresponding to the node ( k0, k1), assembled from eight adjacent finite elements, are given by 
+
+ξk0,k1 = μk0−1,k1−1 + μk0,k1−1 + μk0−1,k1 + μk0,k1 ,αk0,k1 = − 12 ( μk0−1,k1−1 + μk0−1,k1 ) , βk0,k1 = − 12 ( μk0,k1−1 + μk0,k1 ) ,γk0,k1 = − 12 ( μk0−1,k1 + μk0,k1 ) , δk0,k1 = − 12 ( μk0−1,k1−1 + μk0,k1−1) .
+
+(6) The sparse two-dimensional system matrix assembled from the stencils has the block structure 
+
+A =
+
+
+
+C0,: D0,:
+
+G1,: C1,: D1,:
+
+G2,:
+
+. . . . . .. . . . . . DN−2,:
+
+GN−1,: CN−1,:
+
+
+
+. (7) The three matrix blocks have the entries 
+
+Ck0,: =
+
+
+
+ξk0,0 γk0,0
+
+δk0,1 ξk0,1 γk0,1
+
+δk0,2
+
+. . . . . .. . . . . . γk0,N−2
+
+δk0,N−1 ξk0,N−1
+
+
+
+, Dk0,: =
+
+
+
+βk0,0
+
+βk0,1
+
+. . .. . .βk0,N−1
+
+
+
+,
+
+Gk0,: =
+
+
+
+αk0,0
+
+αk0,1
+
+. . .. . .αk0,N−1
+
+
+
+.
+
+(8) 
+
+2.3. Immersed boundary system matrices 
+
+We now consider a multiconnected domain Ω ⊂ (0 , L)d obtained by introducing an internal hole in the cuboidal domain (0 , L)d. The corresponding system matrix is obtained by modifying the system matrix of the previously intro-duced heterogeneous problem. As before, we assume that the external domain boundary is homogeneous Dirichlet, and the internal hole boundary is either homogeneous Dirichlet or Neumann. The geometry of the hole is described by an integer-valued level-set function ϕ(k), where k = k0 in one dimension and k = (k0, k1) in two dimensions. The restriction to integer-valued functions enables an e ffi cient quantum imple-mentation and can be relaxed, if necessary, as discussed later. The hole boundary is approximated along the lines of the Cartesian grid avoiding cut elements. The level-set function defines the three disjoint index sets 
+
+I = {k ∈ N | ϕ(k) > 0} , B = {k ∈ N | ϕ(k) = 0} , H = {k ∈ N | ϕ(k) < 0} , (9) where k ∈ { 0, . . . , N − 1}d. Here, I denotes the set of all interior grid points, B the set of all grid points on the hole boundary, and H the set of all grid points inside the hole. 6We enforce homogeneous Dirichlet boundary conditions by setting the rows and columns of the heterogeneous sti ff ness matrix A associated with the grid points k ∈ H to zero. To achieve this, A is pre- and postmultiplied by a diagonal matrix Dχ. The entries of Dχ are determined with the help of the indicator function 
+
+χ(k) =
+
+
+
+1 , if k ∈ I ∪ B ,
+
+0 , if k ∈ H . (10) Accordingly, the immersed system matrix AD of the Dirichlet problem is defined as 
+
+AD = Dχ AD χ . (11) For illustration, consider the one-dimensional domain with a single hole with half-width L/(N + 1) centred at the grid point with index c such that H = {c} and B = {c − 1, c + 1}. The respective system matrix AD is determined as 
+
+
+
+. . . . . . . . .αc−1 ξc−1 00 0 00 ξc+1 βc+1
+
+. . . . . . . . .
+
+
+
+=
+
+
+
+. . .
+
+101
+
+. . .
+
+
+
+. . . . . . . . .αc−1 ξc−1 βc−1
+
+αc ξc βc
+
+αc+1 ξc+1 βc+1
+
+. . . . . . . . .
+
+
+
+. . .
+
+101
+
+. . .
+
+
+
+. (12) Hence, the entries of Dχ are χ(k). We adopt a similar approach to impose homogeneous Neumann boundary conditions on the boundary of the internal hole. The corresponding system matrix AN is given by 
+
+AN = Dχ AD χ − DN
+
+ I ◦ A
+
+2d
+
+
+
+. (13) Here, the Hadamard product I ◦ A yields the diagonal entries of the system matrix A, and 2 d is the number of nearest neighbours of each grid point in a d-dimensional Cartesian grid. The diagonal matrix DN has non-zero entries only on rows corresponding to the boundary grid points k ∈ B . The value of each entry is equal to the number of nearest neighbours of k that are in the set H. In one dimension, the number of such grid points can be only 1, and in two dimensions, it can be 1, 2, or 3 depending on the boundary geometry. 
+
+3. Encoding of heterogeneous system matrices 
+
+Next, we consider the block-encoding of the one- and two-dimensional system matrices posed on simply con-nected domains with zero Dirichlet boundary conditions. The non-unitary system matrix is, after suitable rescaling, represented as the upper-left sub-block of a larger matrix. The rescaling is necessary to ensure that all matrix en-tries have magnitude less than or equal to one. For reference, the block-encoding of the circulant system matrices of one-dimensional periodic problems with constant di ff usion coe ffi cients is described in Appendix A. 
+
+3.1. One dimension 
+
+The action of the scaled tridiagonal matrix A/∥A∥max ∈ RN×N on a vector |v⟩ ∈ RN can be expressed as 
+
+A
+
+∥A∥max 
+
+|v⟩ =
+
+
+
+˜ξ0
+
+˜ξ1
+
+. . .. . .
+
+˜ξN−1
+
+
+
+v0
+
+v1
+
+...
+
+vN−2
+
+vN−1
+
+
+
++
+
+
+
+˜α0
+
+˜α1
+
+. . .. . .
+
+˜αN−1
+
+
+
+0
+
+v0
+
+...
+
+vN−3
+
+vN−2
+
+
+
++
+
+
+
+˜β0
+
+˜β1
+
+. . .. . .
+
+˜βN−1
+
+
+
+v1
+
+v2
+
+...
+
+vN−1
+
+0
+
+
+
+,
+
+(14) 7UAn
+
+|s0⟩ = |0⟩
+
+Uprep U†
+
+> prep
+
+|s1⟩ = |0⟩|s2⟩ = |0⟩|p⟩ = |0⟩
+
+Upoly ( ˜ ξ) Upoly ( ˜ α) Upoly ( ˜ β)
+
+|m⟩ = |0⟩
+
+Uadd (+1) Uadd (−1) 
+
+|k0⟩Figure 4: Block encoding UA of the scaled system matrix A/∥A∥max of the one-dimensional problem. The discretisation consists of N = 2n internal grid points. The three Upoly gates encode the main, sub- and superdiagonal of A/∥A∥max . The two Uadd gates implement the up and down shifts of the components of the input |k0⟩. The sum of the main, sub- and superdiagonal entries is computed using the LCU construction with the aid of Uprep and its inverse U†  
+
+> prep . In the output, the relevant components correspond to basis states |0⟩⊗3|0⟩ | 0⟩ | k0⟩.
+
+with the maximum norm ∥A∥max and the rescaled entries ˜ξk0 = ξk0
+
+∥A∥max 
+
+, ˜αk0 = αk0
+
+∥A∥max 
+
+, ˜βk0 = βk0
+
+∥A∥max 
+
+. (15) Hence, ( A/∥A∥max ) |v⟩ is the sum of three diagonal matrices applied to the shifted versions of |v⟩ (with zero padding). We define the two shift operators 
+
+S +
+
+
+
+v0
+
+v1
+
+...
+
+vN−2
+
+vN−1
+
+
+
+=
+
+
+
+0
+
+v0
+
+...
+
+vN−3
+
+vN−2
+
+
+
+, S −
+
+
+
+v0
+
+v1
+
+...
+
+vN−2
+
+vN−1
+
+
+
+=
+
+
+
+v1
+
+v2
+
+...
+
+vN−1
+
+0
+
+
+
+. (16) The circuit implementation of the decomposition (14) is depicted in Figure 4. The circuit encodes the scaled matrix A/∥A∥max , with entries bounded in magnitude by 1. As defined in (15) and (4), the diagonal entries ˜ ξk0 , ˜ αk0 ,and ˜ βk0 depend on the di ff usion coe ffi cient μ evaluated over the elements sharing the node k0. If μ is a polynomial, then the corresponding functions ˜ ξ(k0), ˜ α(k0), and ˜ β(k0) are polynomials of the same degree; otherwise, they are approximated classically by polynomials. These polynomials are then quantum encoded using standard techniques. For instance, the encoding of ˜ ξ(k0) using the unitary Upoly ( ˜ ξ) yields 
+
+Upoly ( ˜ ξ) : |0⟩ | k0⟩ 7 → ˜ξ(k0) |0⟩ | k0⟩ +
+
+r
+
+1 −  ˜ξ(k0)2
+
+|1⟩ | k0⟩ . (17) The input consists of the single ancilla qubit in state |0⟩ and the n-qubit register |k0⟩, where n = log 2 N. The reg-ister |k0⟩ provides a labelling of the components of the vector to which the scaled matrix A/∥A∥max is applied. The unitaries Uadd (+1) and Uadd (−1) implement the non-unitary shift operators S + and S −, respectively. For instance, the unitary Uadd (+1) is defined as 
+
+Uadd (+1) : |0⟩ | k0⟩ 7 → | j(k0 + 1) /Nk⟩ | (k0 + 1) mod N⟩ , (18) where the first qubit serves as a carry bit, with the floor operator representing overflow. Uadd is realised as modular (cyclic) addition, and the first qubit is used to pad the shifted vector with zero. This is achieved by mapping the zero-amplitude input component |1⟩ | N − 1⟩ to |0⟩ | 0⟩⊗n. The unitary Uadd (−1) is defined analogously. See Figure 5 8n                   
+
+> |p⟩=|0⟩
+> Upoly ( ˜ ξ)˜ξ(k0)|0⟩+
+> √
+> 1−(˜ξ(k0))2
+> |1⟩|k0⟩|k0⟩(a) n
+> |m⟩=|0⟩
+> Uadd (+1)
+> |⌊(k0+1) /2n⌋⟩|k0⟩|(k0+1) mod 2 n⟩(b) Figure 5: Polynomial encoding and modular addition gates used in block encoding. In (a) the amplitude of the output basis state |0⟩ | k0⟩is the sought function value ˜ ξ(k0). In (b), the top qubit acts as a carry (overflow) bit in modular arithmetic. It ensures that the output amplitudes are padded with zeros.
+
+for the circuit representations of (17) and (18). Further details on the implementation of Upoly and Uadd can be found in [14] and Appendix B.1.1, respectively. The sum of the three components in decomposition (14) is computed using the LCU construction. To this end, the unitary Uprep generates the unary, or the W, state 
+
+Uprep : |0⟩ | 0⟩ | 0⟩ 7 → 1
+
+√3 (|0⟩ | 0⟩ | 1⟩ + |0⟩ | 1⟩ | 0⟩ + |1⟩ | 0⟩ | 0⟩) , (19) where exactly one of the qubits is in state |1⟩. The controlled Upoly and Uadd gates in the circuit constitute the selection layer Uselect in the LCU construction. The resulting circuit, referred to as the UA gate, is a block encoding of the scaled sti ff ness matrix A/∥A∥max and implements the mapping 
+
+UA :
+
+> N−1
+
+X
+
+> k0=0
+
+vk0 |0⟩⊗3 |0⟩ | 0⟩ | k0⟩ 7 → 
+
+> N−1
+
+X
+
+> k0=0
+
+13∥A∥max 
+
+(Av )k0 |0⟩⊗3 |0⟩ | 0⟩ | k0⟩ + . . . , (20) which can be interpreted as 
+
+
+
+A
+
+σ ∗∗ ∗
+
+ |v⟩
+
+0
+
+!
+
+=
+
+
+
+|Av ⟩
+
+σ
+
+∗
+
+ , (21) where σ = 3∥A∥max is the subnormalisation factor of the introduced block-encoding. The stars indicate submatrices and vectors that are introduced by the LCU construction and ensure unitarity. The dimension of the entire vector space in (21) is 2 5 N. The relevant components correspond to the first N basis states. We note that other block encodings of the system matrix are feasible. In general, block encodings with a small subnormalisation factor σ are preferred, as the postselection probability of the first N states, i.e. where the ancillas are in state |0⟩⊗3 |0⟩ | 0⟩, is proportional to ∥A |v⟩ ∥ 2/σ 2. Furthermore, the choice of the W state in the proposed LCU construction ensures that each Uselect unitary requires only a single control. In contrast, using a uniform superposition state prepared with Hadamard gates requires multi-controlled unitaries in Uselect . Consequently, the choice of the W
+
+state leads to a significant reduction in the number of CNOT gates. 
+
+3.2. Two dimensions 
+
+We consider the action of the scaled block tridiagonal matrix A/∥A∥max ∈ RN2×N2
+
+on a vector |v⟩ ∈ RN2
+
+. The components of |v⟩ are indexed by the multi-index ( k0, k1), with k0 ∈ { 0, 1, . . . , N − 1} and k1 ∈ { 0, 1, . . . , N − 1}. The 9UAnn
+
+|s0⟩ = |0⟩
+
+Uprep U†
+
+> prep
+
+|s1⟩ = |0⟩|s2⟩ = |0⟩|s3⟩ = |0⟩|s4⟩ = |0⟩|p⟩ = |0⟩
+
+Upoly ( ˜ ξ) Upoly ( ˜ α) Upoly ( ˜ β) Upoly (˜ γ) Upoly (˜ δ)
+
+|m⟩ = |0⟩
+
+Uadd (+1) Uadd (−1) 
+
+Uadd (−1) Uadd (+1) 
+
+|k0⟩|k1⟩Figure 6: Block encoding UA of the system matrix A/∥A∥max of the two-dimensional problem. The discretisation consists of ( N + 1) 2 cells and 
+
+N2 = 22n internal grid points. The five Upoly gates encode the bivariate polynomials ˜ ξ(k0, k1), ˜ α(k0, k1), ˜ β(k0, k1), ˜ γ(k0, k1) and ˜ δ(k0, k1). The four Uadd gates implement the up and down shifts of the indices in the multi-index ( k0, k1). The sum of these contributions is computed using the LCU construction with the aid of Uprep and its inverse U†
+
+> prep
+
+. In the output, the relevant components correspond to basis states |0⟩⊗5 |0⟩ | 0⟩ | k0⟩ | k1⟩.
+
+matrix-vector product can be written as 
+
+A
+
+∥A∥max 
+
+|v⟩ =
+
+
+
+˜C0,:
+
+˜C1,:
+
+. . .. . .
+
+˜CN−1,:
+
+
+
+v0,:
+
+v1,:
+
+...
+
+vN−2,:
+
+vN−1,:
+
+
+
++
+
+
+
+˜D0,:
+
+˜D1,:
+
+. . .. . .
+
+˜DN−1,:
+
+
+
+v1,:
+
+v2,:
+
+...
+
+vN−1,:
+
+0
+
+
+
++
+
+
+
+˜G0,:
+
+˜G1,:
+
+. . .. . .
+
+˜GN−1,:
+
+
+
+0
+
+v0,:
+
+...
+
+vN−3,:
+
+vN−2,:
+
+
+
+,
+
+(22) with the rescaled block matrices ˜C = C
+
+∥A∥max 
+
+, ˜D = D
+
+∥A∥max 
+
+, ˜G = G
+
+∥A∥max 
+
+. (23) The colon in indices in (22) indicates all entries along the corresponding dimension. The action of each block Ck0,: is implemented analogously to the one-dimensional case using the two-dimensional shift operators I ⊗ S + and I ⊗ S −,where I ∈ RN×N denotes the identity matrix, and S + and S − are defined in (16). The shift operators for the second and third terms in (22) are S − ⊗ I and S + ⊗ I, respectively, and act on the first index of the multi-index. The circuit implementation of the decomposition (22) is shown in Figure 6. There are in total five components in the decomposition (22), and their sum is evaluated using LCU. Specifically, the gate Uprep creates the five-qubit W
+
+state 
+
+Uprep : |0⟩⊗5 7 → 1
+
+√5 (|00001 ⟩ + |00010 ⟩ + |00100 ⟩ + |01000 ⟩ + |10000 ⟩) . (24) 10 The select layer contains the five controlled Upoly gates encoding the bivariate functions ˜ ξ(k0, k1), ˜ α(k0, k1), ˜ β(k0, k1), ˜γ(k0, k1) and ˜ δ(k0, k1), which are scaled versions of the corresponding functions defined in (6). Each function depends on the di ff usion coe ffi cient μ evaluated on the elements sharing the node ( k0, k1). If the di ff usion coe ffi cient μ is a polynomial, each of the bivariate functions is a polynomial; otherwise, they are first approximated classically by bivariate polynomials and then quantum encoded. For instance, the encoding of ˜ ξ(k0, k1) using the unitary Upoly ( ˜ ξ)reads 
+
+Upoly ( ˜ ξ) : |0⟩ | k0⟩ | k1⟩ 7 → ˜ξ(k0, k1) |0⟩ | k0⟩ | k1⟩ +
+
+r
+
+1 −  ˜ξ(k0, k1)2
+
+|1⟩ | k0⟩ | k1⟩ . (25) The implementation of the four controlled shift operators I ⊗ S +, I ⊗ S −, S + ⊗ I, S − ⊗ I follows the one-dimensional implementation. The entire circuit implements the mapping 
+
+> N−1
+
+X 
+
+> k0,k1=0
+
+vk0k1 |0⟩⊗5 |0⟩ | 0⟩ | k0⟩ | k1⟩ 7 → 
+
+> N−1
+
+X 
+
+> k0,k1=0
+
+15∥A∥max 
+
+(Av )k0k1 |0⟩⊗5 |0⟩ | 0⟩ | k0⟩ | k1⟩ + . . . , (26) and has the subnormalisation factor σ = 5∥A∥max , cf. (21). 
+
+4. Encoding of immersed system matrices 
+
+In this section, we consider the block-encoding of system matrices for problems posed in multiconnected domains with an internal hole. As before, the external domain boundary is homogeneous Dirichlet, and the internal hole boundary is either homogeneous Dirichlet or Neumann. The hole geometry is defined by a level-set function which is in turn used to define a binary indicator function. The block-encoded matrix is obtained by modifying the block-encoded system matrix of the heterogeneous problem using the indicator function. 
+
+4.1. Quantum level-set and indicator functions 
+
+Any level-set or indicator function can, in principle, be first classically approximated using a polynomial and then quantum encoded. However, this would require extremely high polynomial degrees and is prone to oscillatory Gibbs phenomena. Therefore, we represent both functions using basis encoding and compute them directly using quantum arithmetic. In basis encoding, integers are represented in binary using computational basis states. Briefly, e.g., the integer 
+
+k0 = 6 (in binary 110) is represented by the basis vector |110 ⟩. This makes it possible to compute, e.g., the sum k0 + 3using quantum arithmetic: 
+
+Uadd : m
+
+|0⟩ | 110 ⟩
+
+|{z} 
+
+> k0=6
+
+|011 ⟩
+
+|{z} 
+
+> =3
+
+7→ m
+
+|1⟩ | 001 ⟩
+
+| {z }
+
+> k0+3=9
+
+|011 ⟩
+
+|{z} 
+
+> =3
+
+. (27) Here, the most significant qubit |m⟩ of the output register serves as a carry (overflow) bit for addition, and a borrow (underflow) bit for subtraction. The least significant three qubits |011 ⟩ are maintained to ensure reversibility, as all quantum operations must be unitary. A possible implementation of Uadd using a QFT-based modular arithmetic ap-proach is given in Appendix B.1.2. In this paper, we consider only integer-valued level-set functions. This restriction can be relaxed by allowing fixed-point numbers rather than integers in quantum arithmetic as discussed in Appendix B.3. We next introduce our basic approach to computing the level-set functions, using illustrative examples in one and two dimensions. 11 x0                  
+
+> 0L(a) Domain with a hole and grid points k0
+> χ(k0)
+> ϕ(k0)01234567
+> −10123(b) Level-set and indicator functions Figure 7: One-dimensional domain with an internal hole discretised with N+1=9 elements. The hole geometry is described by a level-set function ϕ(k0), which is used to compute the indicator function χ(k0). The grid points corresponding to the external Dirichlet boundaries are omitted from the finite element equations and the level-set and indicator function computations.
+
+Uϕ
+
+> n
+
+|m1⟩ = |0⟩|m0⟩ = |0⟩
+
+Uabs (−c) Uadd (−b)
+
+|k0⟩ 
+
+> (a) Level-set unitary Uϕ
+
+Uχ
+
+> n
+
+χ = |0⟩|m1⟩ = |0⟩
+
+Uϕ U†
+
+> ϕ
+
+|0⟩|m0⟩ = |0⟩ |0⟩|k0⟩ (b) Indicator unitary Uχ                     
+
+> Figure 8: Computing the level-set and indicator functions ϕ(k0) and χ(k0) for a one-dimensional domain. (a) The level-set unitary Uϕencodes a hole with half-width band centre c. (b) The indicator unitary Uχsets the state of the qubit |χ⟩to |1⟩when |m0⟩is in state |1⟩for ϕ(k0)<0 for all
+> k0∈ H .
+
+4.1.1. One dimension 
+
+As an example, we consider the one-dimensional domain discretised with N = 8 internal grid points as shown in Figure 7. The grid points at the outer domain boundaries x0 = 0 and x0 = L are omitted because of the homogeneous Dirichlet boundary conditions at the outer boundaries. The geometry of the hole, centred at the grid point c = 4 and with half-width b = 1, is composed of the level-set functions of two half-lines 
+
+ϕ(k0) = max {− k0 + c, k0 − c} − b . (28) Expressing the maximum in terms of the absolute value yields 
+
+ϕ(k0) = |k0 − c| − b . (29) The index sets for the interior, hole boundary and hole grid points are I = {0, 1, 2, 6, 7}, B = {3, 5} and H = {4},respectively. The quantum arithmetic circuit for evaluating the level-set function ϕ(k0) is depicted in Figure 8a. The level-set function is calculated by first applying the unitary Uabs to a given grid index k0 to obtain the absolute value |k0 − c|,where the qubit |m0⟩ is an ancilla that serves as a borrow bit. Before applying Uadd , it is swapped with the initialised ancilla |m1⟩. The unitary Uadd subtracts the half-width b from the absolute value |k0 − c|. The ancilla |m0⟩ is the borrow bit and is in state |1⟩ when ϕ(k0) < 0 and in state |0⟩ when ϕ(k0) ≥ 0. As shown in the circuit in Figure 8b, the state of the ancilla |m0⟩ is used to set the state of the indicator qubit |χ⟩.The indicator qubit χ is in state |1⟩ when k0 ∈ H and in state |0⟩ otherwise. Hence, the indicator qubit |χ⟩ encodes the 12 Uϕ
+
+> nn
+
+|m2⟩ = |0⟩
+
+Uadd (−b)
+
+|m1⟩ = |0⟩
+
+Uqadd (k0, k1)
+
+|m00⟩ = |0⟩
+
+Uabs (−c)
+
+|m10⟩ = |0⟩
+
+Uabs (−c)
+
+|k0⟩|k1⟩(a) Level-set circuit Uϕk0
+
+k1 (b) Indicator function χ(k0, k1)Figure 9: Computing the level-set function ϕ(k0, k1) of a two-dimensional problem with a diamond-shaped hole with a half-width b centred at grid point ( c, c). (a) Quantum circuit for evaluating ϕ(k0, k1) by computing the signed Manhattan distance to the hole centre. (b) The corresponding indicator function χ(k0, k1) evaluated at the grid points. At full dots, the indicator function has the value 1, and at the empty dots, the value 0. The full dots indicate the grid points in the index set I ∪ B and the empty dots the grid points in the index set H.
+
+function χ(k0) = 1 − χ(k0). After |χ⟩ is set, the two ancillary qubits |m0⟩ and |m1⟩ are reset to their original states |0⟩ by uncomputing, i.e. by applying U†
+
+> ϕ
+
+. This is essential because the level-set and indicator functions must be recomputed every time the block-encoded system matrix is invoked, e.g., when solving the linear systems of equations. The constructions of the quantum arithmetic unitaries Uadd and Uabs are discussed in Appendix B.1.1 and Ap-pendix B.2, respectively. Both can be implemented using QFT-based arithmetic operations, although other imple-mentations are available in quantum programming libraries, such as Qiskit [39] and PennyLane [40]. Furthermore, it bears emphasis that these quantum circuits can simultaneously compute the level-set and indicator functions for all grid points when a uniform superposition state is provided to the register |k0⟩.
+
+4.1.2. Two dimensions 
+
+As a two-dimensional example, we consider the domain with the diamond-shaped hole shown in Figure 9b. Its level-set function can be composed from the level-set functions of four half-planes using their maximum, 
+
+ϕ(k) = max {(k0 − c) + (k1 − c), (k0 − c) − (k1 − c), −(k0 − c) + (k1 − c), −(k0 − c) − (k1 − c)} − b . (30) Expressing the maximum in terms of absolute values yields 
+
+ϕ(k) = |k0 − c| + |k1 − c| − b . (31) The hole is centred at the grid point with the index ( c, c) and has the half-width b. The level-set function represents the signed Manhattan distance of the grid point k = (k0, k1) to the grid points in the boundary index set B.The quantum arithmetic circuit for computing the level-set function is presented in Figure 9a. Similar to the one-dimensional case, the level-set function ϕ(k) is computed by first applying the unitary Uabs to each index of the grid point k. The two ancillas |m00⟩ and |m10⟩ are the borrow bits for the two Uabs unitaries. Subsequently, the absolute values |k0 − c| and |k1 − c| are added by applying the quantum addition unitary Uqadd , which has the carry bit |m1⟩. The last unitary Uadd subtracts the half-width b. Finally, the borrow bit |m2⟩ can be used to set the indicator bit χ analogous to the one-dimensional circuit in Figure 8b. The constructions of the unitaries Uadd , Uabs and Uqadd are discussed in Appendix B.1.1, Appendix B.2 and Ap-pendix B.1.2, respectively. 13 UAD                       
+
+> 5
+> dn
+> |s⟩=|0⟩⊗5
+> UA
+> |p⟩=|0⟩|χ0⟩=|0⟩
+> Uχ
+> |χ1⟩=|0⟩
+> Uχ
+> |m⟩=|0⟩|k⟩Figure 10: Block encoding UADof the scaled immersed system matrix AD/∥AD∥max of a problem with homogeneous Dirichlet conditions at the hole boundary, where AD=DχAD χ. The two Uχunitaries block-encode the indicator matrix Dχ. The UAunitary block-encodes the system matrix of the simply connected problem.
+
+4.2. Dirichlet problems 
+
+As discussed in Section 2.3, we consider homogeneous Dirichlet conditions at the hole boundary by pre- and post-multiplying the system matrix A of the simply connected domain by the diagonal indicator matrix Dχ. As given in (11), the system matrix of the Dirichlet problem is AD = Dχ AD χ. The entries of Dχ corresponding to the grid points in the hole, i.e. for k ∈ H , are 0, and 1 otherwise. In the quantum setting, the introduced unitary Uχ for the indicator function provides a block-encoding of the matrix Dχ. The unitaries UA introduced in Section 3 provide block-encodings of one- and two-dimensional system matrices A for simply connected domains. The block-encoding of the system matrix AD can be constructed from the block-encodings Uχ and UA. Products of block-encoded matrices are straightforward to compute when separate ancilla registers are used for their block-encodings [3]; see also Appendix C. The quantum circuit for the unitary UAD ,which provides a block-encoding for AD, is depicted in Figure 10. At the circuit output, the relevant components correspond to basis states for which all registers other than the |k⟩ register are in the state |0⟩.
+
+4.3. Neumann problems 
+
+We obtain the immersed system matrix AN for the problem with homogeneous Neumann boundary conditions on the hole boundary by modifying the Dirichlet system matrix AD. Specifically, the diagonal entry associated with each boundary grid point is reduced in proportion to the number of its nearest-neighbour grid points inside the hole. According to (13), the system matrix of the Neumann problem is AN = AD − DN (I ◦ A)/(2 d). The diagonal matrix DN
+
+has non-zero entries only at grid points k on the hole boundary, i.e. k ∈ B . For each such grid point, the corresponding entry is equal to the number of its nearest neighbours belonging to H.The entries of the diagonal matrix DN are therefore determined by counting for each boundary grid point its nearest neighbours inside the hole. This can be accomplished by inspecting the two nearest neighbours along each coordinate direction and incrementing a counter whenever a neighbour belongs to H. As an example, Figure 11 depicts the circuit Uk0+1inc , which determines whether the nearest neighbour ( k0 + 1, k1) of the grid point ( k0, k1) lies inside the hole. The circuit consists of three substeps, with the first and third substeps marked by shaded regions. In the first substep, the grid-point index is first incremented by applying the unitary Uadd . Subsequently, the indicator unitary Uχ introduced in Section 4.1 is applied to determine whether the neighbouring grid point lies inside the hole. In the second substep, the counter register |c1c0⟩ is incremented conditional on |χ⟩ = |1⟩. Finally, in the third substep, the indicator and ancilla registers are uncomputed by applying U†
+
+> χ
+
+, and the original grid point index is restored by applying Uadd (−1). The diagonal correction matrix DN (I ◦ A/∥A∥max )/(2 d) is block-encoded using the circuit shown in Figure 12, which consists of the five substeps denoted by S0, S1, S2, S3 and S4. In S0, the indicator unitary Uχ is applied to examine the location of grid point ( k0, k1) in relation to the hole. The state of qubit |χ⟩ is set to |1⟩ when ( k0, k1) ∈ H ,14 Uk0 +1inc 4
+
+> nn
+
+|c1⟩
+
+Uadd (+1) 
+
+|c0⟩|χ⟩ = |0⟩
+
+Uχ U†
+
+> χ
+
+|0⟩|m2m1m0⟩ = |0⟩⊗4 |0⟩⊗4
+
+|k0⟩ Uadd (+1) Uadd (−1) 
+
+|k1⟩Figure 11: Quantum circuit for determining whether the right neighbour ( k0 + 1, k1) of the grid point ( k0, k1) lies inside the hole. When (k0 + 1, k1) ∈ H , the indicator unitary Uχ sets |χ⟩ to |1⟩, and the counter register |c1c0⟩ is incremented by one. 42n
+
+|χb⟩ = |1⟩ Ry(γ1) Ry(γ2) Ry(γ3)
+
+|c1⟩ = |0⟩
+
+Uk0 +1inc Uk0 −1inc Uk1 +1inc Uk1 −1inc Uk1 −1inc  
+
+> †
+
+Uk1 +1inc  
+
+> †
+
+Uk0 −1inc  
+
+> †
+
+Uk0 +1inc 
+
+> †
+
+|0⟩|c0⟩ = |0⟩ |0⟩|χ⟩ = |0⟩
+
+Uχ U†
+
+> χ
+
+|0⟩|m2m1m0⟩ = |0⟩⊗4 |0⟩⊗4
+
+|p⟩ = |0⟩
+
+Upoly ( ˜ ξ)
+
+|k0k1⟩
+
+S0 S1 S2 S3 S4 
+
+Figure 12: Block encoding of the diagonal matrix DN (I ◦ A/∥A∥max )/4. The entries of DN are determined by counting the nearest neighbours of the grid point ( k0, k1) that belong to H. The entries ˜ ξ of I ◦ A/∥A∥max are scaled by applying the RY gates with rotation angles that depend on the number of nearest neighbours in H.
+
+otherwise it remains |0⟩. In S1, the number of the neighbouring grid points belonging to H is counted by applying the unitaries Uk0+1inc , Uk0−1inc , Uk1+1inc and Uk1−1inc and incrementing the counter register |c1⟩ | c0⟩. Subsequently, in S2 the diagonal entry I ◦ A is evaluated by applying the unitary Upoly ( ˜ ξ) defined in (25). In addition, for grid points ( k0, k1) <
+
+H the entries are scaled by a factor −c/4, where c is the number of neighbouring grid points in H and c = 2c1 + c0,where c0, c1 ∈ { 0, 1}. This is accomplished by the three controlled RY rotation gates with angles γ1 = −2 sin −1(1 /4), 
+
+γ2 = −2 sin −1(1 /2) and γ3 = −2 sin −1(3 /4). In the remaining substeps S 3 and S 4 all the ancilla qubits are uncomputed. The block encoding of the immersed Neumann system matrix AN is obtained by subtracting the block-encoded diagonal correction matrix DN (I ◦ A)/(2 d) from the block-encoded immersed system matrix AD using the standard LCU construction. 15 5. Solution of linear systems of equations 
+
+We next discuss the solution of the discrete system using the quantum singular value transformation (QSVT) framework for computing functions of block-encoded matrices. Here, the function of interest is the inverse of the system matrix. QSVT extends quantum signal processing (QSP), originally developed for univariate polynomial representations, to block-encoded matrices. 
+
+5.1. Quantum signal processing (QSP) 
+
+In QSP, a univariate polynomial p(x), where x ∈ [−1, 1], is represented as the product of a sequence of unitary 2 × 2 matrices. The QSP sequence consists of unitary matrices of two types, referred to as the signal operator 
+
+and signal-processing operator . The signal operator encodes the function argument x and is defined as 
+
+W(x) =
+
+ x − √1 − x2
+
+√1 − x2 x
+
+ . (32) This matrix is equivalent to the Pauli Y rotation matrix 
+
+RY (θ) = e−iθY/2 =
+
+cos θ 
+
+> 2
+
+− sin θ
+
+> 2
+
+sin θ 
+
+> 2
+
+cos θ
+
+> 2
+
+ , (33) with θ = 2 cos −1 x. The first key observation is that the ρ-th power of W(x) yields the Chebyshev basis functions of degree ρ. For instance, 
+
+Wρ=3(x) =
+
+ −3x + 4x3 (1 − 4x2) √1 − x2
+
+(−1 + 4x2) √1 − x2 −3x + 4x3
+
+ =
+
+ CT,3(x) −CU,2(x) √1 − x2
+
+CU,2(x) √1 − x2 CT,3(x)
+
+ . (34) Here, CT,3(x) is the Chebyshev function of the first kind of degree ρ = 3 and CU,2(x) is the Chebyshev function of the second kind of degree ρ − 1 = 2. In the QSP construction, polynomials are represented by interleaving the signal operator W(x) with the signal-processing matrix, which is the Pauli Z rotation matrix 
+
+eiϕ jZ = eiϕ j 00 e−iϕ j
+
+!
+
+, (35) where ϕ j ∈ { ϕ0, ϕ 1, . . . , ϕ ρ} is a phase factor. According to Gily´ en et al. [3, Theorem 4] and Lin [41, Theorem 7.20], the QSP construction reads 
+
+Uϕ(x) = eiϕ0Z
+
+> ρ
+
+Y
+
+> j=1
+
+W(x)eiϕ jZ  =
+
+ p(x) −q(x) √1 − x2
+
+q∗(x) √1 − x2 p∗(x)
+
+ , (36) where the star denotes complex conjugation. The two polynomials p(x) and q(x) satisfy – deg p(x) ≤ ρ and deg q(x) ≤ ρ − 1, – p(x) is symmetric and q(x) is antisymmetric when ρ ∈ { 2, 4, 6, . . . },– p(x) is antisymmetric and q(x) is symmetric when ρ ∈ { 1, 3, 5, . . . },– and |p(x)|2 + (1 − x2)|q(x)|2 = 1, ∀x ∈ [−1, 1]. See Figure 13 for the circuit implementation of Uϕ(x). The QSP construction makes it possible to approximately quantum encode any function by approximating it with a polynomial and determining the phase factors {ϕ j}ρ 
+
+> j=0
+
+on a classical computer. In solving the linear system of equations, the QSP approximation of the inverse function g(x) = 1/x is required. Due to the singularity of g(x)at x = 0, only the interval Sλ = [−1, −λmin ] ∪ [λmin , 1] is considered. The reason for referring to the interval boundary 16 . . . |0⟩ eiϕρ Z W(x) eiϕρ−1 Z W(x) W(x) eiϕ1 Z W(x) eiϕ0 ZFigure 13: QSP circuit for a univariate polynomial p(x) of degree ρ. The signal operator W(x) is fixed and the signal processing operator eiϕ jZ                             
+
+> depends on the phase factors ϕj∈ { ϕ0, ϕ 1, . . . , ϕ ρ}.−1.0−0.50.00.51.0
+> x
+> −1.0
+> −0.50.00.51.0
+> g(x)
+> λmin −λmin
+> Analytic
+> ρ= 25, QSP
+> ρ= 45, QSP
+> Figure 14: Inverse function 1 /xand its scaled Chebyshev polynomial approximations ˜ g(x) of degrees ρ=25 and ρ=45 for λmin =0.1. The polynomials are obtained by fitting to the regularised inverse function g(x)=λmin /(2 x) on Sλ=[−1,−λmin ]∪[λmin ,1].
+
+as λmin will become clear below. Because of the requirement |g(x)| < 1, we consider on Sλ the rescaled inverse function 
+
+g(x) = λmin 
+
+2x . (37) We determine the phase factors {ϕ j}ρ 
+
+> j=0
+
+using the QSPPACK library [38]. In QSPPACK, g(x) is first approximated by a Chebyshev polynomial ˜ g(x) of a given degree ρ using standard approximation techniques. The Chebyshev approximation error ϵ is defined as 
+
+ϵ = max 
+
+> Sλ
+
+|g(x) − ˜g(x)| . (38) According to the QSP construction, ρ must be odd because g(x) and its approximation ˜ g(x) are antisymmetric. The obtained Chebyshev polynomial ˜ g(x) is exactly representable by QSP. The corresponding phase factors {ϕ j}ρ 
+
+> j=0
+
+are determined by minimising the error in a chosen norm, i.e., 
+
+{ϕ∗ 
+
+> j
+
+} = arg min  
+
+> {ϕj}
+
+Re ⟨0| Uϕ(x) |0⟩ − ˜g(x) , (39) where Re denotes the real part of a complex number. In Figure 14, the QSP approximation of g(x) with polynomials of degree ρ = 25 and ρ = 45 is depicted. As expected, an increase in the polynomial degree ρ leads to a reduction in the approximation error. 
+
+5.2. Quantum singular value transformation (QSVT) 
+
+We consider the eigendecomposition of the finite element system matrix and its action on specific eigenvectors to illustrate the QSVT construction. All the system matrices introduced in this paper are real-valued and symmetric. Those associated with simply connected domains are positive definite, whereas those associated with immersed do-mains are only positive semidefinite because of the presence of inactive grid points outside the domain, leading to zero eigenvalues. 17 The system matrices admit the eigendecomposition 
+
+A/σ =
+
+X
+
+> j
+
+λ j |w j⟩ ⟨ w j| , (40) where λ j and w j are corresponding eigenvalues and eigenvectors, and σ is the subnormalisation factor of the block-encoding. The minimum non-zero and maximum eigenvalues are denoted by λmin and λmax , respectively, and the maximum eigenvalue satisfies λmax ≤ 1. The scaled inverse is approximated using the Chebyshev polynomial ˜ g(λ)approximating the rescaled inverse function g(λ) defined in (37), so that 
+
+λmin σ
+
+2 A−1 =
+
+X
+
+> j
+
+λmin 
+
+2λ j
+
+|w j⟩ ⟨ w j| ≈ 
+
+X
+
+> j
+
+˜g(λ j) |w j⟩ ⟨ w j| . (41) Here, A−1 denotes the inverse restricted to active grid points inside the domain, and both sums are only over the non-zero eigenvalues. The minimum non-zero eigenvalue of A/σ required to determine ˜ g(λ) can be classically estimated using standard techniques. Each system matrix introduced in this paper has a corresponding block-encoding UA given by the associated quantum circuit. We write for UA and its adjoint U† 
+
+> A
+
+in block-matrix form 
+
+UA = A/σ ∗∗ ∗
+
+!
+
+, U† 
+
+> A
+
+= A/σ ∗†
+
+∗† ∗†
+
+!
+
+. (42) The overall dimension of UA and U† 
+
+> A
+
+depends on the additional qubits beyond the ones in the registers |k0⟩ in 1D and |k0⟩ | k1⟩ in 2D used for labelling the grid points. The matrix-vector products UA |0⟩ | w j⟩ and U† 
+
+> A
+
+|0⟩ | w j⟩ expressed as block matrix operations read 
+
+UA
+
+|w j⟩
+
+0
+
+!
+
+=
+
+
+
+λ j |w j⟩q
+
+1 − λ2 
+
+> j
+
+|w⊥, j⟩
+
+ , U†
+
+> A
+
+|w j⟩
+
+0
+
+!
+
+=
+
+
+
+λ j |w j⟩q
+
+1 − λ2 
+
+> j
+
+|w′⊥, j⟩
+
+ , (43) where |w⊥, j⟩ and |w′⊥, j⟩ are two unit vectors. The application of U† 
+
+> A
+
+on the first equation and UA on the second equation, noting that UAU† 
+
+> A
+
+= I, yields 
+
+U†
+
+> A
+
+0
+
+|w⊥, j⟩
+
+!
+
+=
+
+q
+
+1 − λ2 
+
+> j
+
+|w j⟩−λ j |w′⊥, j⟩
+
+ , UA
+
+0
+
+|w′⊥, j⟩
+
+!
+
+=
+
+q
+
+1 − λ2 
+
+> j
+
+|w j⟩−λ j |w⊥, j⟩
+
+ . (44) Hence, UA and U† 
+
+> A
+
+act in the two-dimensional subspaces defined by {| w j⟩ , |w⊥, j⟩} and {| w j⟩ , |w′⊥, j⟩} , and have the following entries 
+
+UA
+
+|w j⟩|w′⊥, j⟩
+
+!
+
+=
+
+
+
+λ j
+
+q
+
+1 − λ2
+
+> j
+
+q
+
+1 − λ2 
+
+> j
+
+−λ j
+
+
+
+|w j⟩|w⊥, j⟩
+
+!
+
+, U†
+
+> A
+
+|w j⟩|w⊥, j⟩
+
+!
+
+=
+
+
+
+λ j
+
+q
+
+1 − λ2
+
+> j
+
+q
+
+1 − λ2 
+
+> j
+
+−λ j
+
+
+
+|w j⟩|w′⊥, j⟩
+
+!
+
+. (45) Next, to make use of the QSP construction, a composite unitary is defined, which acts in the subspace {| w j⟩ , |w′⊥, j⟩} ,and yields a 2 × 2 QSP signal operator. By making use of (45) we can write 
+
+U†
+
+> A
+
+ZΠUAZΠ
+
+|w j⟩|w′⊥, j⟩
+
+!
+
+=
+
+
+
+λ j −
+
+q
+
+1 − λ2
+
+> j
+
+q
+
+1 − λ2 
+
+> j
+
+λ j
+
+
+
+> 2
+
+|w j⟩|w′⊥, j⟩
+
+!
+
+, (46) where ZΠ is the reflection matrix 
+
+ZΠ = I 00 −I
+
+!
+
+. (47) 18 l                    
+
+> 2n
+> . . . . . . . . .
+> |0⟩e−iϕρZe−iϕρ−1Ze−iϕ1Ze−iϕ0Z
+> |0⟩
+> UAU†
+> AUA
+> |k0k1⟩Figure 15: QSVT circuit of the matrix polynomial p(A) of degree ρof the block-encoded matrix A.The block-encoding unitary UAand its conjugate transpose U†
+> Aare applied alternately. Between the block-encoding unitaries, a projector-controlled Pauli Z rotation gate is applied to the ancilla qubits |0⟩ | 0⟩⊗l.
+
+According to the QSP construction, in the considered subspace, a Chebyshev function of even degree ρ ≥ 2 can be obtained as follows (U†
+
+> A
+
+ZΠUAZΠ)ρ/ 2 =
+
+
+
+λ j −
+
+q
+
+1 − λ2
+
+> j
+
+q
+
+1 − λ2 
+
+> j
+
+λ j
+
+
+
+> ρ
+
+=
+
+
+
+CT,ρ (λ j) −CU,ρ −1(λ j)
+
+q
+
+1 − λ2
+
+> j
+
+CU,ρ −1(λ j)
+
+q
+
+1 − λ2 
+
+> j
+
+CT,ρ (λ j)
+
+ . (48) Chebyshev functions of odd degree require a slightly di ff erent composite unitary [3, 41]. The sketched construction allows for computing the action of the Chebyshev matrix function CT,ρ (A/σ ) on any vector | f ⟩, i.e. CT,ρ (A/σ ) | f ⟩ by evaluating ( U†
+
+> A
+
+ZΠUAZΠ)ρ/ 2 |0⟩ | f ⟩.As in QSP, arbitrary polynomials are obtained by interleaving the signal matrix with the signal-processing matrix. Focusing on antisymmetric polynomials, a polynomial of odd degree ρ with phase factors ϕ = {ϕ0, ϕ 1, . . . , ϕ ρ}, the QSVT construction reads 
+
+Uϕ(A/σ ) = (−i)ρeiϕ0ZΠ UAeiϕ1ZΠ
+
+> (ρ−1) /2
+
+Y
+
+> j=1
+
+U†
+
+> A
+
+eiϕ2 jZΠ UAeiϕ2 j+1ZΠ
+
+ = p(A/σ ) ∗∗ ∗
+
+!
+
+. (49) See Figure 15 for the circuit implementation of Uϕ(A/σ ). 
+
+6. Examples 
+
+We present a series of numerical experiments to assess the computational complexity and verify the accuracy of the proposed IQFEM framework. All the introduced circuits are implemented in Qiskit and executed using a noiseless statevector simulator [39]. To assess computational complexity, we let Qiskit decompose the circuits into two-qubit CNOT and single-qubit rotation U3 gates. The gate set {CNOT , U3} is universal, meaning that any unitary operation can be implemented using only those two types of gates. We first study two one-dimensional examples with known analytical solutions: a heterogeneous problem and an immersed problem with Dirichlet boundary conditions. Subsequently, we consider three two-dimensional examples: a heterogeneous problem and an immersed problem with Dirichlet and Neumann boundary conditions. In all the examples, the system equations are solved using the QSVT-based quantum linear system solver, and the required phase factors are determined using the QSPPACK library [38]. 
+
+6.1. One-dimensional problems 6.1.1. Heterogeneous di ff usion 
+
+We consider on the domain Ω = (0 , 1) the heterogeneous Poisson problem subject to the Dirichlet boundary conditions u(0) = u(1) = 0. The spatially varying di ff usion coe ffi cient is given by 
+
+μ(x) = 1 + x
+
+10 . (50) 19 0.0 0.2 0.4 0.6 0.8 1.0
+
+> x
+> 0.00.10.20.30.40.50.6
+> f (x)
+
+(a) Source f (x)0.0 0.2 0.4 0.6 0.8 1.0 
+
+> x
+> 0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35
+> u(x)
+> Analytic
+> IQFEM
+
+(b) Solution u(x)0 50 100 150 200 250         
+
+> Ntot
+> 0510 15 20 Number of gates
+> ×10 4
+> Arcsin, U3
+> Arcsin, CNOT
+> FABLE, U3
+> FABLE, CNOT IQFEM ,U3
+> IQFEM ,CNOT
+
+(c) Number of U3 and CNOT gates 4 8 16 32      
+
+> N
+> 10 −3
+> 10 −2
+> 10 −1
+> ‖u − uh‖0/‖u‖0
+> Classical
+> IQFEM = 10 −3
+> IQFEM = 10 −4
+
+(d) Relative L2-norm error in uh(x)Figure 16: One-dimensional heterogeneous Poisson problem. (a) Source term. (b) Analytical and IQFEM solutions for N = 23 grid points. (c) Number of required U3 and CNOT gates to block-encode the system matrix using the IQFEM , FABLE and Arcsin approaches. (d) Convergence of the relative L2-norm error of the IQFEM solution for QSVT approximation errors ϵ ∈ { 10 −3, 10 −4}.
+
+The source term f (x) is chosen as 
+
+f (x) = 0.1 erf 20 x − 56
+
+!
+
++ 2(1 + x)3 √π exp 
+
+− 20 x − 56
+
+!2 . (51) The corresponding analytical solution is given by 
+
+u(x) = c0 + c1 ln 1 + x
+
+10 
+
+!
+
+− (x − 0.25) erf 20 x − 56
+
+!
+
+− 310 √π exp 
+
+− 20 x − 56
+
+!2 , (52) where the integration constants c0 and c1 are chosen to satisfy the Dirichlet boundary conditions. The source term and the analytical and IQFEM solutions for N = 23 internal grid points are plotted in Figures 16a and 16b, respectively. The U3 and CNOT gate counts required to block-encode the system matrix as a function of the number of grid points N are plotted in Figure 16c. In IQFEM , the number of gates scales polylogarithmically with the number of grid points. Figure 16c also includes the gate counts for the Arcsin and FABLE block encoding methods [23, 42], which exhibit a polynomial scaling. It is worth noting that both methods require a significant number of gates even for relatively modest grid sizes, far exceeding the capabilities anticipated for near-term quantum computing platforms. The system is solved using the introduced QSVT-based quantum linear system solver. The tolerance controlling the degree of the Chebyshev approximation to the regularised inverse function g(x) = λmin /(2 x) is chosen as either 20 ϵ = 10 −3 or ϵ = 10 −4. The convergence of the relative L2-norm error of the quantum solution for the two di ff erent values of ϵ is compared with that of the classical finite element solution in Figure 16d. Choosing a su ffi ciently small value of ϵ for a given grid resolution recovers the optimal convergence rate. Furthermore, IQFEM has a subnormalisation factor σ = 3∥A∥max , see (21), in contrast to the subnormalisation factor σ = N∥A∥max of the FABLE and Arcsin encodings. A larger subnormalisation factor reduces the smallest non-zero eigenvalue λmin , which leads to an increase in the polynomial degree and the number of gates in the QSVT matrix inversion. 
+
+6.1.2. Immersed Dirichlet boundary 
+
+We now consider a Poisson problem defined on the disconnected domain Ω = (0 , 1) \ [1 /3, 2/3]. The boundary conditions at the external and the immersed boundaries are u(0) = u(1) = 0 and u(1 /3) = u(2 /3) = 0, respectively. The di ff usion coe ffi cient is constant μ(x) = 0.1, and the forcing is linear f (x) = x. The corresponding analytical solution is given by 
+
+u(x) =
+
+
+
+10 x − 90 x3
+
+54 , x ∈ (0 , 1/3) ,
+
+−100 + 190 x − 90 x3
+
+54 , x ∈ (2 /3, 1) .
+
+(53) The source term and the analytical and IQFEM solutions for N = 27 internal grid points are plotted in Figures 17a and 17b, respectively. In IQFEM , the disconnected domain is represented as a domain with an internal hole. The geometry of the hole is defined by a level-set function introduced in Section 4.1.1. The domain (0 , 1) is discretised into N + 1 equal intervals. The Dirichlet boundary conditions u(0) = u(1) = 0 are enforced exactly, while Dirichlet boundary conditions on the immersed boundary u(1 /3) = u(2 /3) = 0 are enforced by eliminating the system matrix entries corresponding to the grid points in the hole. This is accomplished using the indicator function, which is evaluated using quantum arithmetic. The IQFEM grids are not nested because increasing the number of qubits n to represent the grid points by one doubles the number of grid points. However, a uniform refinement of the grid with N interior points yields a grid with 2 N + 1 interior points. Consequently, the immersed boundary location is not fixed between successive IQFEM 
+
+grids, which leads to approximation errors because boundary conditions are enforced only at grid points. The U3 and CNOT gate counts required to block-encode the immersed system matrix are plotted in Figure 17c. As in the previous example, they are relatively small and exhibit a polylogarithmic scaling. These counts include all gates required to evaluate the level-set and the indicator functions. The convergence of the L2-norm error in IQFEM 
+
+solutions obtained with classical and QSVT-based linear equation solvers and tolerances ϵ = 10 −2 and ϵ = 10 −3 is plotted in Figure 17d. The L2-norm exhibits approximately linear convergence, which is suboptimal due to changes in the approximated boundary location under grid refinement. The degree ρ of the Chebyshev polynomial approximating the rescaled inverse function in the QSVT solver is shown in Figure 18. For a given discretisation with N grid points, we choose ρ such that the maximum approxi-mation error is either ϵ = 10 −2 or ϵ = 10 −3. The minimum non-zero eigenvalue of the scaled system matrix scales as N−2; therefore, grid refinement leads to an approximately quadratic increase in the required polynomial degree. The Chebyshev approximation error and the finite element discretisation error must be balanced to retain the optimal convergence of the finite element solution. Furthermore, the polynomial degree ρ is about equal to the number of queries to the block-encoded matrix. Hence, the QSVT gate counts are proportional to ρ times the gate counts for encoding a single system matrix. 
+
+6.2. Two-dimensional problems 6.2.1. Heterogeneous di ff usion 
+
+We proceed to two-dimensional problems and consider the Poisson equation on the unit square (0 , 1) 2 with homo-geneous Dirichlet boundary conditions. The spatially varying di ff usion coe ffi cient is chosen as 
+
+μ(x0, x1) = cos 1 + x0 + x1
+
+2
+
+!
+
+, (54) 21 0.0 0.2 0.4 0.6 0.8 1.0
+
+x
+
+0.00.20.40.60.81.0
+
+> f (x)
+
+(a) Source f (x)0.0 0.2 0.4 0.6 0.8 1.0
+
+x
+
+0.00 0.02 0.04 0.06 0.08 0.10 0.12  
+
+> uh(x)
+> Analytic
+> IQFEM
+
+(b) Solution u(x)0 200 400 600 800 1000 
+
+Ntot 
+
+0200 400 600 800 1000 1200 1400 1600 1800 Number of gates 
+
+> U3
+> CNOT
+
+(c) Number of U3 and CNOT gates 16 32 64 128 
+
+N
+
+10 −2
+
+10 −1
+
+10 0     
+
+> || u − uh|| 0/|| u|| 0
+> Classical
+> IQFEM = 10 −2
+> IQFEM = 10 −3
+
+(d) Relative L2-norm error in uh(x)Figure 17: One-dimensional Poisson problem with an immersed hole. (a) Source term. (b) Analytical and IQFEM solutions for N = 27 grid points. (c) Number of required U3 and CNOT gates to block-encode the system matrix. (d) Convergence of the relative L2-norm error of the IQFEM 
+
+solution for QSVT approximation errors ϵ ∈ { 10 −2, 10 −3}.20 40 60 80 100 120 140 
+
+Ntot 
+
+01000 2000 3000 4000 5000 6000 7000 8000     
+
+> ρ
+> IQFEM = 10 −2
+> IQFEM = 10 −3
+
+Figure 18: One-dimensional Poisson problem with immersed Dirichlet boundary. Polynomial degree ρ versus number of grid points for di ff erent QSVT approximation errors ϵ ∈ { 10 −2, 10 −3}.
+
+22 0.0 0.2 0.4 0.6 0.8 1.0
+
+x0
+
+0.00.20.40.60.81.0
+
+> x1
+
+0.7 4.7 8.8 
+
+×10 −1(a) Di ff usion coe ffi cient μ(x0, x1)0.0 0.2 0.4 0.6 0.8 1.0
+
+x0
+
+0.00.20.40.60.81.0
+
+> x1
+
+−9.9 0.0 9.9 
+
+×10 −1 (b) IQFEM solution uh(x0, x1)0 2500 5000 7500 10000 12500 15000 
+
+> Ntot
+> 100 200 300 400 500 600 700 800 900 1000 Number of gates
+> U3
+> CNOT
+
+(c) Number of U3 and CNOT gates 2 4 8 16 32      
+
+> N
+> 10 −2
+> 10 −1
+> 10 0
+> || u − uh|| 0/|| u|| 0
+> Classical
+> IQFEM = 10 −3
+> IQFEM = 10 −4
+
+(d) Relative L2-norm error in uh(x0, x1)Figure 19: Two-dimensional heterogeneous Poisson problem. (a) Spatially varying di ff usion coe ffi cient μ(x0, x1). (b) IQFEM solution uh(x0, x1)for 2 5 × 25 grid points. (c) Number of required U3 and CNOT gates to block-encode the system matrix. (d) Convergence of the relative L2-norm error of the IQFEM solution for QSVT approximation errors ϵ ∈ { 10 −3, 10 −4}.
+
+and the source term as 
+
+f (x0, x1) = π sin 1 + x0 + x1
+
+2
+
+!
+
+sin (2 π(x0 + x1)) + 8π2 cos 1 + x0 + x1
+
+2
+
+!
+
+sin(2 πx0) sin(2 πx1) . (55) The analytical solution to this problem is given by 
+
+u(x0, x1) = sin(2 πx0) sin(2 πx1) . (56) The isocontours of the spatially varying di ff usion coe ffi cient and the IQFEM solutions on a grid with 2 5 × 25 grid points are shown in Figures 19a and 19b, respectively. The U3 and CNOT gate counts required to block-encode the Ntot = N × N system matrix are shown in Figure 19c. The total number of required gates depends on the degree of the polynomial used to approximate the di ff usion co-effi cient. The given harmonic di ff usion coe ffi cient μ(x0, x1) can be directly encoded using a sequence of RY gates, see e.g. [14]. The gate-count scaling in IQFEM is always polylogarithmic, independent of the polynomial degree for approximation. The convergence of the L2-norm errors in IQFEM solutions obtained with classical and QSVT-based linear equation solvers and tolerances ϵ = 10 −3 and ϵ = 10 −4 is shown in Figure 19d. The QSVT-based solution recovers the optimal quadratic convergence rate when the tolerance is su ffi ciently small. 23 6.2.2. Immersed Dirichlet boundary 
+
+We next consider a multiply connected domain with an immersed diamond-shaped hole. The hole is centred at 
+
+x0 = 1/2 and x1 = 1/2 and has half-width 1 /4. Its geometry within the domain (0 , 1) × (0 , 1) is described by a level-set function. The di ff usion coe ffi cient μ(x0, x1) = 1 and the source f (x0, x1) = 1 are constant. Zero Dirichlet boundary conditions are imposed on both the external boundary and the hole boundary. The IQFEM solution on a grid with 2 6 × 26 grid points is shown in Figure 20a. For comparison, we compute a reference boundary-fitted classical finite element solution using an unstructured triangular mesh with a characteristic element size of 5 × 10 −4. The contours of the pointwise absolute error between IQFEM and the classical finite element solution are shown in Figure 20b. The errors are localised near the hole boundary and the four sharp corners of the diamond. These errors arise from the staircase approximation of the hole boundary on the structured Cartesian grid and its inability to represent sharp corners. The numbers of U3 and CNOT gates required to block-encode the immersed system matrix are plotted in Fig-ure 20c. Both gate counts exhibit a polylogarithmic scaling. Their total numbers are slightly higher than those for the preceding simply connected heterogeneous Poisson problem, which can be attributed to the encoding of the level-set and indicator functions. The convergence of the L2-norm errors in the IQFEM solution obtained with classical and QSVT-based linear equation solvers and tolerances ϵ = 10 −2 and ϵ = 10 −3 is shown in Figure 20d. The IQFEM solu-tion exhibits first-order convergence owing to the staircase approximation of the boundary and corner singularities. Figure 21 shows the Chebyshev polynomial degree ρ required by the QSVT solver for Ntot = N × N grid points. The minimum non-zero eigenvalue of the scaled system matrix A/∥A∥max scales as N−2; therefore, grid refinement leads to an approximately linear increase in the required polynomial degree. 
+
+6.2.3. Immersed Neumann boundary 
+
+Our final example is a multiply connected domain with an immersed six-sided hole. Its geometry within the domain (0 , 1) × (0 , 1) is described by the level-set function 
+
+ϕ(x0, x1) = max {| x0 − 1/2| − 1/4, |x1 − 1/2| − 1/4, |x0 + x1 − 1| − 3/8} , (57) which is constructed from three wedges, each of which is constructed from two half-planes. The di ff usion coe ffi -cient μ(x0, x1) = 1 and the source f (x0, x1) = 1 are constant. The external boundary is subject to homogeneous Dirichlet boundary conditions, and the hole boundary to homogeneous Neumann boundary conditions. The IQFEM solution on a grid with 2 7 × 27 grid points is shown in Figure 22a. As in the preceding example, we compute a classical reference solution using the boundary-fitted finite element method. The contours of the pointwise absolute error between the IQFEM and classical finite element solutions are shown in Figure 22b. The errors near the hole boundary, arising from the staircase approximation, are evident. The U3 and CNOT gate counts required to block-encode the system matrix are shown in Figure 22c. Both gate counts exhibit polylogarithmic scaling. The total number of gates is significantly higher than in the previous exam-ples, primarily due to the use of LCU in computing the immersed Neumann matrix AN = AD − DN (I ◦ A)/2d, cf. Section 4.3. The block-encodings of the two summands are combined using LCU, which requires controlled ver-sions of both unitaries. Introducing such controls generally leads to a significant increase in the gate counts, although many of them can often be optimised away. Figure 22d depicts the convergence of the relative L2-norm error, which decreases monotonically at a rate slightly below first order. 
+
+7. Conclusions 
+
+We have introduced IQFEM for solving heterogeneous Poisson problems on general domains. The central contri-bution of IQFEM is the e ffi cient block encoding of system matrices with a gate count that scales polylogarithmically with the number of grid points. Problems are discretised using structured Cartesian grids, leading to highly structured system matrices whose entries are polynomials in the row indices and, hence, the corresponding grid-point coordi-nates. We express such system matrices as linear combinations of block-encoded diagonal matrices with polynomial entries and their products with block-encoded shift operators. Their sum is obtained using an LCU construction. The resulting block encoding of the system matrix has a modest number of ancillas for summation and polynomial en-coding. Immersed boundaries are described by integer-valued level-set functions constructed using a solid-geometry 24 0.0 0.2 0.4 0.6 0.8 1.0
+
+x0
+
+0.00.20.40.60.81.0
+
+> x1
+
+0.0 0.9 1.8 
+
+×10 −2(a) IQFEM solution uh(x0, x1)0.0 0.2 0.4 0.6 0.8 1.0
+
+x0
+
+0.00.20.40.60.81.0
+
+> x1
+
+0.0 2.7 5.3 
+
+×10 −4 (b) Absolute error |u(x0, x1) − uh(x0, x1)|0 1000 2000 3000 4000 
+
+Ntot 
+
+0500 1000 1500 2000 2500 3000 Number of gates 
+
+> U3
+> CNOT
+
+(c) Number of U3 and CNOT gates 4 8 16 32 64 
+
+N
+
+10 −1
+
+10 0     
+
+> || u − uh|| 0/|| u|| 0
+> Classical
+> IQFEM = 10 −2
+> IQFEM = 10 −3
+
+(d) Relative L2-norm error in uh(x0, x1)Figure 20: Two-dimensional Poisson problem with immersed Dirichlet boundary. (a) IQFEM solution uh(x0, x1) for 2 6 × 26 grid points. (b) Absolute error |u(x0, x1) − uh(x0, x1)| of the IQFEM solution compared to a reference fine grid solution. (c) Number of required U3 and CNOT 
+
+gates to block-encode the system matrix. (d) Convergence of the relative L2-norm error of the IQFEM solution for QSVT approximation errors 
+
+ϵ ∈ { 10 −2, 10 −3}.0 1000 2000 3000 4000 
+
+Ntot 
+
+01000 2000 3000 4000 5000 6000 7000     
+
+> ρ
+> IQFEM = 10 −2
+> IQFEM = 10 −3
+
+Figure 21: Two-dimensional Poisson problem with immersed Dirichlet boundary. Polynomial degree ρ versus number of grid points for di ff erent QSVT approximation errors ϵ ∈ { 10 −2, 10 −3}.
+
+25 0.0 0.2 0.4 0.6 0.8 1.0
+
+x0
+
+0.00.20.40.60.81.0
+
+> x1
+
+0.0 2.2 4.4 
+
+×10 −2(a) IQFEM solution uh(x0, x1)0.0 0.2 0.4 0.6 0.8 1.0
+
+x0
+
+0.00.20.40.60.81.0
+
+> x1
+
+0.0 1.0 2.0 
+
+×10 −4 (b) Absolute error |u(x0, x1) − uh(x0, x1)|0 1000 2000 3000 4000                                      
+
+> Ntot
+> 0123456Number of gates
+> ×10 4
+> U3
+> CNOT
+> (c) Number of U3and CNOT gates 4816 32 64 128
+> N
+> 10 −1
+> 10 0
+> || u − uh|| 0/|| u|| 0(d) Relative L2-norm error in solution uh(x0,x1)Figure 22: Two-dimensional Poisson problem with immersed Neumann boundary. (a) IQFEM solution uh(x0,x1) for Ntot =27×27grid points. (b) Absolute error |u(x0,x1)−uh(x0,x1)|of the IQFEM solution compared to a reference fine grid FE solution. (c) Number of required U3and CNOT
+> gates to block-encode the system matrix. (d) Convergence of the relative L2-norm error of the IQFEM solution.
+
+approach and evaluated on the fly using quantum arithmetic. The block-encoded immersed system matrix is obtained by pre- and post-multiplying the standard block-encoded system matrix with a level-set-defined diagonal indicator matrix and applying certain corrections. We solve the block-encoded linear system of equations using QSVT. The matrix inverse is determined by first approximating 1 /x, after regularisation, by a polynomial and then applying this polynomial via QSVT to the singular values of the system matrix. The required degree of the polynomial increases as the smallest non-zero singular value decreases. In our numerical experiments, approximations using high-degree polynomials, reaching several thousands, did not lead to stability problems owing to the unitarity of the QSVT construction. The number of invocations of the block-encoded system matrix in QSVT, and hence the total number of elementary gates, is proportional to the polynomial degree. Assuming that the condition number scales as κ ∼ N2/d 
+
+> tot
+
+, the overall gate count scales as 
+
+O N2/d 
+
+> tot
+
+polylog( Ntot ) in terms of the total number of grid points Ntot = Nd. Consequently, without preconditioning, the total number of elementary gates in IQFEM scales quadratically in 1D, linearly in 2D and sublinearly in 3D. The numerical experiments for one- and two-dimensional Poisson problems with spatially varying coe ffi cients and domains with an internal hole confirm both the accuracy and the predicted gate count scaling. Solutions of problems on simply connected domains exhibit the optimal quadratic convergence rate, whereas solutions of immersed 26 boundary problems exhibit suboptimal linear convergence rates. The latter is a consequence of the staircase-like approximation of the immersed boundaries using the integer-valued level-set function. The geometric approximation may be improved by representing the level-set function on a finer subgrid and accounting for the contributions of cut elements. Such an extension would require fixed- or floating-point quantum arithmetic and would increase the qubit and gate counts associated with processing the level-set function and computing the subgrid contributions to the system matrix. A notable limitation and open challenge for IQFEM is the need for preconditioning of the system matrix, which is key to achieving better-than-linear gate count scaling for the entire solution procedure. Resource-e ffi cient quantum preconditioning approaches are an active area of research, with some limited work so far [43–47]. Some of these approaches, like the BPX preconditioner in [46] or the circulant preconditioner in [43], appear particularly compatible with IQFEM because of its use of structured grids. Their e ff ectiveness, especially in the presence of immersed bound-aries, requires investigation. Finally, to achieve an end-to-end quantum advantage in realistic engineering problems, the readout of the quantum solution must be taken into consideration. Depending on the required output, techniques such as amplitude amplification [48] and classical shadows [49] may be used to reduce the associated sampling cost. 27 UAn
+
+|s0⟩ = |0⟩
+
+Uprep 
+
+ZU†
+
+> prep
+
+|s1⟩ = |0⟩ Z
+
+|k0⟩ Uadd (+1) Uadd (−1) Figure A.23: Block encoding UA of the circulant tridiagonal system matrix A = 2I − ˜S + − ˜S − of a one-dimensional homogeneous periodic problem. The discretisation consists of N cells and grid points, i.e. N = 2n. The two Uadd gates implement the up and down shifts of the basis components. In the output, the relevant components correspond to basis states of the form |00 ⟩ | k0⟩.
+
+Appendix A. Encoding of circulant system matrices 
+
+We consider the quantum encoding of the system matrix A of a one-dimensional homogeneous periodic Pois-son problem discretised with a uniform grid of elements of unit length. The associated circulant tridiagonal ma-trix A ∈ RN×N decomposes into 
+
+A =
+
+
+
+2 −1 −1
+
+−1 2 −1
+
+−1 . . . . . .. . . . . . −1
+
+−1 −1 2
+
+
+
+= 2I − ˜S + − ˜S − , (A.1) where I is the identity matrix and ˜ S + and ˜ S − are two cyclic shift operators defined as ˜S +
+
+
+
+v0
+
+v1
+
+...
+
+vN−2
+
+vN−1
+
+
+
+=
+
+
+
+vN−1
+
+v0
+
+...
+
+vN−3
+
+vN−2
+
+
+
+, ˜S −
+
+
+
+v0
+
+v1
+
+...
+
+vN−2
+
+vN−1
+
+
+
+=
+
+
+
+v1
+
+v2
+
+...
+
+vN−1
+
+v0
+
+
+
+. (A.2) The block-encoding of A using the LCU technique is depicted in Figure A.23. The resulting unitary acts on an enlarged space with n + 2 qubits, although only the subspace in which the ancillas |s0 s1⟩ are in state |00 ⟩ is relevant. The state preparation unitary Uprep depends on the prefactors (2 , −1, −1) in the decomposition (A.1). Specifically, it prepares the state (1 / √2, 1/2, 1/2), which is equal to the square roots of the absolute coe ffi cients normalised by their 
+
+L1 norm, i.e. 2 + 1 + 1 = 4. The first shaded gate in Figure A.23 implements the unitary 
+
+Uprep ⊗ I =
+
+ 
+
+> 1√2
+
+I ∗ ∗ ∗ 
+
+> 12
+
+I ∗ ∗ ∗ 
+
+> 12
+
+I ∗ ∗ ∗
+
+0 ∗ ∗ ∗
+
+
+
+. (A.3) Notice that the coe ffi cients in the first column are equal to the scaled positive prefactors and the remaining coe ffi cients are chosen arbitrarily to satisfy unitarity. The subsequent gates in the dashed box in Figure A.23 implement the select unitary 
+
+Uselect =
+
+
+
+I
+
+−Uadd (+1) 
+
+−Uadd (−1) 
+
+I
+
+
+
+. (A.4) 28 Here, the unitaries Uadd (+1) and Uadd (−1) implement the cyclic shift operators ˜ S + and ˜ S −, respectively. The negative signs are introduced by the two Pauli Z gates. The entire circuit provides the following block encoding for the scaled system matrix A/4, 
+
+ 
+
+> 1√2
+
+I 12 I 12 I 0
+
+∗ ∗ ∗ ∗∗ ∗ ∗ ∗∗ ∗ ∗ ∗
+
+
+
+I
+
+−Uadd (+1) 
+
+−Uadd (−1) 
+
+I
+
+ 
+
+> 1√2
+
+I ∗ ∗ ∗ 
+
+> 12
+
+I ∗ ∗ ∗ 
+
+> 12
+
+I ∗ ∗ ∗
+
+0 ∗ ∗ ∗
+
+
+
+= 14
+
+
+
+2I − Uadd (+1) − Uadd (−1) ∗ ∗ ∗∗ ∗ ∗ ∗∗ ∗ ∗ ∗∗ ∗ ∗ ∗
+
+
+
+. (A.5) Hence, for the input state |00 ⟩ | v⟩, the component of the output in the subspace with the top two qubits in state |00 ⟩
+
+is ( A/4) |v⟩. The desired output A |v⟩ is obtained, up to normalisation, by postselecting this subspace. The correspond-ing success probability is ∥(A/4) |v⟩ ∥ 2. See [24, 27] for further details. 
+
+Appendix B. QFT-based quantum arithmetic 
+
+There are several approaches for implementing integer and fixed-point arithmetic for binary-encoded numbers on a quantum computer. Such an encoding of numbers is also referred to as basis encoding. Numbers are quantum encoded by setting each qubit’s state to either 0 or 1 according to their binary representation. We review the QFT-based approach to quantum arithmetic for integers and briefly comment on its application to fixed-point numbers [34–36]. 
+
+Appendix B.1. Addition 
+
+Two di ff erent addition operations are used throughout the paper, depending on whether both summands are quan-tum or only one is quantum. We refer to the former as quantum-quantum addition and the latter as quantum-classical addition. 
+
+Appendix B.1.1. Quantum-classical addition 
+
+Let c, k ∈ { 0, 1, . . . , 2n − 1}, where c is a given classical integer and k is the quantum basis-encoded integer 
+
+k =
+
+> n−1
+
+X
+
+> j=0
+
+k j2 n−1− j . (B.1) We consider the construction of Uadd (c) implementing the modular addition 
+
+Uadd (c) : |k⟩ 7 → | (k + c) mod 2 n⟩ . (B.2) It is expedient to work in the Fourier basis to implement this unitary. The Fourier transformed state QFT |k⟩ corre-sponds to the k-th column of the unitary Fourier matrix. Adding c amounts to shifting from the k-th to the ( k + c)-th column, and the columns of the Fourier matrix di ff er only by phase factors. The key observation is that the column indexed by k admits the tensor-product representation 
+
+QFT |k⟩ = 1
+
+√2nn−1O
+
+> j=0
+
+1
+
+e2πik /2 j+1
+
+!
+
+, (B.3) where the two-dimensional vector represents the state of qubit j. Replacing the integer k by k + c yields the column 
+
+QFT |k + c⟩ = 1
+
+√2nn−1O
+
+> j=0
+
+1
+
+e2πi(k+c)/2 j+1
+
+!
+
+. (B.4) Noting that e2πi(k+c)/2 j+1
+
+= e2πik /2 j+1
+
+e2πic /2 j+1
+
+, the mapping of the state of the qubit j can be realised via the single-qubit phase gate 
+
+P j(c) = 1 00 e2πic /2 j+1
+
+!
+
+. (B.5) 29 Uadd (c)            
+
+> ......
+> s
+> |k00⟩
+> QFT P0(c)
+> QFT †
+> |k01⟩P1(c)
+> |k02⟩P2(c)
+> ...
+> |k0
+> n−1⟩Pn−1(c)Figure B.24: Unitary Uadd (c) for adding the classical integer cand the quantum basis-encoded integer k.
+
+The unitary for modular addition can thus be decomposed into a layer of phase rotations sandwiched between the 
+
+QFT and its inverse, 
+
+Uadd (c) = QFT †
+
+
+
+> n−1
+
+O
+
+> j=0
+
+P j(c)
+
+ QFT . (B.6) See Figure B.24 for the quantum implementation of this unitary. 
+
+Appendix B.1.2. Quantum-quantum addition 
+
+Let k0, k1 ∈ { 0, 1, . . . , 2n − 1} be two quantum basis-encoded integers 
+
+k0 =
+
+> n−1
+
+X
+
+> j=0
+
+k0 
+
+> j
+
+2 n−1− j , k1 =
+
+> n−1
+
+X
+
+> j=0
+
+k1 
+
+> j
+
+2 n−1− j . (B.7) We consider the construction of Uqadd for the addition of these two integers. To implement non-modular addition, the first register is augmented by one qubit and the composite quantum state is initialised as |0⟩ | k0⟩ | k1⟩. The additional qubit stores the carry, defined as carry( k0, k1) =
+
+$ k0 + k1
+
+2n
+
+%
+
+. (B.8) The unitary Uqadd implements the in-place addition 
+
+Uqadd : |0⟩ | k0⟩ | k1⟩ 7 → | carry( k0, k1)⟩ | (k0 + k1) mod 2 n⟩ | k1⟩ . (B.9) Again, it is convenient to work in the Fourier basis. Applying QFT to the register |0⟩ | k0⟩ maps k0 to the corre-sponding column of the QFT matrix. Adding k1 amounts to a column shift, which factorises into phase rotations on each qubit. Each bit k1 
+
+> j
+
+in the binary representation of k1 induces a controlled phase rotation on qubit r with angle 
+
+θr j = 2π 2 n−1− j
+
+2r+1 . (B.10) After applying the controlled rotations and QFT †, the register |0⟩ | k0⟩ contains the full ( n + 1)-bit sum, while the register |k1⟩ remains unchanged. See Figure B.25 for the quantum implementation of this approach. 
+
+Appendix B.2. Absolute value 
+
+We consider the construction of the unitary Uabs implementing the mapping k 7 → | k − c|, where k is a quantum basis-encoded integer and c is a given classical integer. The n-qubit register encoding |k⟩ is augmented by one qubit as |0⟩ | k⟩. The additional qubit stores the borrow bit. 30 Uqadd 
+
+. . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . .... . . . . . . . . 
+
+|m⟩ = |0⟩
+
+QFT P0(1) P0(2 n−1)
+
+QFT †
+
+|k00 ⟩ P1(1) P1(2 n−1)
+
+...
+
+|k0
+
+> n−1
+
+⟩ Pn(1) Pn(2 n−1)
+
+|k10 ⟩
+
+...
+
+|k1
+
+> n−1
+
+⟩Figure B.25: Unitary Uqadd for in-place addition of two quantum basis-encoded integers k0 and k1.
+
+Subtraction is implemented via the introduced quantum-classical addition operator 
+
+Uadd (−c) : |0⟩ | k⟩ 7 → | m⟩ | d⟩ , (B.11) where d = k − c (mod 2 n), and m = 1 if k < c and m = 0 otherwise. Hence, 
+
+k − c = d − m2n . (B.12) Therefore, the absolute value is given by 
+
+|k − c| =
+
+
+
+d , m = 0 ,
+
+2n − d , m = 1 . (B.13) The mapping d 7 → 2n − d is applied conditionally on m = 1 using a bitwise inversion followed by the incrementation 
+
+Uadd (+1). The overall unitary Uabs (−c) thus implements 
+
+Uabs (−c) : |0⟩ | k⟩ 7 → | m⟩ | | k − c| ⟩ ; (B.14) see Figure B.26 for the corresponding quantum circuit. Uabs (−c)
+
+. . . . . . . . . . . . .... . . 
+
+|m⟩ = |0⟩
+
+Uadd (−c)
+
+|k0⟩
+
+Uadd (+1) 
+
+|k1⟩
+
+...
+
+|kn−1⟩
+
+Figure B.26: Unitary Uabs (−c) for computing the absolute value |k − c| between the quantum basis-encoded integer k and the classical integer c.
+
+31 n
+
+|0⟩
+
+UC
+
+|0⟩
+
+UB
+
+|v⟩   
+
+> Figure C.27: Product of two block-encoded matrices Band C.
+
+Appendix B.3. Fixed-point numbers 
+
+The unitaries for arithmetic primitives introduced so far directly apply to non-integer fixed-point numbers with prescribed integer and fractional bits. The distinction between integer and fixed-point numbers is purely interpreta-tional and does not a ff ect unitary operations. Consider the n-qubit registers |k⟩ = |k0k1 . . . kn−1⟩ and |l⟩ = |l0l1 . . . ln−1⟩. While previously interpreted as an integer, the register may instead be interpreted as a fixed-point number. For a chosen number of fractional bits f , their values in decimal are given by 
+
+x = 2− fn−1X
+
+> j=0
+
+k j2n−1− j , y = 2− fn−1X
+
+> j=0
+
+l j2n−1− j . (B.15) Under this interpretation, the QFT-based arithmetic circuits act on fixed-point numbers without modification. Since 
+
+x + y = 2− f (k + l), modular addition on the underlying integer encodings preserves the numerical relation, provided the binary points are aligned. As an illustration, consider adding k = |01 .101 ⟩ (in decimal, 1 .625) and l = |00 .011 ⟩ (in decimal, 0 .375). The quantum-quantum adder yields the state |10 .000 ⟩, which corresponds to 2 .0. This demonstrates that the adder correctly propagates carries independently of whether the bit string is interpreted as an integer or a scaled fractional quantity. 
+
+Appendix C. Products of block-encoded matrices 
+
+The product of two block-encoded matrices B, C ∈ RN×N can be computed straightforwardly when separate ancilla registers are used to encode B and C. For simplicity, we assume that the block encodings have unit normalisation factors and that each matrix is block-encoded using a single ancilla qubit, so that UB, UC ∈ R2N×2N . Specifically, 
+
+UB |0⟩ | v⟩ = B ∗∗ ∗
+
+! |v⟩
+
+0
+
+!
+
+= B |v⟩∗
+
+!
+
+, UC |0⟩ | v⟩ = C ∗∗ ∗
+
+! |v⟩
+
+0
+
+!
+
+= C |v⟩∗
+
+!
+
+. (C.1) For each block encoding, the ancilla is initially in the state |0⟩, and only the output component with the ancilla in the state |0⟩ is relevant. To compute CB |v⟩, we consider the circuit in Figure C.27. The first and second qubits from the top are the ancillas used to encode C and B, respectively. The block encodings UB and UC are applied successively to the |v⟩ register using their respective ancillas. The action of the circuit on the state |0⟩ | 0⟩ | v⟩ is 
+
+
+
+C 0 ∗ 00 C 0 ∗∗ 0 ∗ 00 ∗ 0 ∗
+
+
+
+B ∗ 0 0
+
+∗ ∗ 0 00 0 B ∗
+
+0 0 ∗ ∗
+
+
+
+|v⟩
+
+000
+
+
+
+=
+
+
+
+CB |v⟩∗∗∗
+
+
+
+. (C.2) The output component with both ancillas in the state |0⟩ | 0⟩ yields the desired matrix–vector product CB |v⟩. Thus, the circuit provides a block encoding of the product CB .32 References 
+
+[1] A. W. Harrow, A. Hassidim, S. Lloyd, Quantum algorithm for linear systems of equations, Physical Review Letters 103 (2009) 150502. [2] A. M. Childs, R. Kothari, R. D. Somma, Quantum algorithms for systems of linear equations with exponentially improved dependence on precision, SIAM Journal on Computing 46 (2017) 1920–1950. [3] A. Gily´ en, Y. Su, G. H. Low, N. Wiebe, Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics, in: Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing, 193–204, 2019. [4] S. Aaronson, Read the fine print, Nature Physics 11 (2015) 291–293. [5] A. Montanaro, S. Pallister, Quantum algorithms and the finite element method, Physical Review A 93 (2016) 032324. [6] M. E. S. Morales, L. Pira, P. Schleich, K. Koor, P. Costa, D. An, A. Aspuru-Guzik, L. Lin, P. Rebentrost, D. W. Berry, Quantum linear system solvers: A survey of algorithms and applications, Review of Modern Physics 98 (2026) 025005. [7] E. Febrianto, J. ˇ S´ ıstek, P. K˚ us, M. Kecman, F. Cirak, A three-grid high-order immersed finite element method for the analysis of CAD models, Computer-Aided Design 173 (2024) 103730. [8] A. Main, G. Scovazzi, The shifted boundary method for embedded domain computations. Part I: Poisson and Stokes problems, Journal of Computational Physics 372 (2018) 972–995. [9] E. Burman, S. Claus, P. Hansbo, M. G. Larson, A. Massing, CutFEM: Discretizing geometry and partial di ff erential equations, International Journal for Numerical Methods in Engineering 104 (2015) 472–501. [10] R. A. K. Sanches, P. B. Bornemann, F. Cirak, Immersed b-spline (i-spline) finite element method for geometrically complex domains, Computer Methods in Applied Mechanics and Engineering 200 (2011) 1432–1445. [11] T. R¨ uberg, F. Cirak, An immersed finite element method with integral equation correction, International Journal for Numerical Methods in Engineering 86 (2011) 93–114. [12] J. Parvizian, A. D¨ uster, E. Rank, Finite cell method, Computational Mechanics 41 (2007) 121–133. [13] A. M. Childs, J.-P. Liu, Quantum spectral methods for di ff erential equations, Communications in Mathematical Physics 375 (2020) 1427– 1457. [14] B. Liu, M. Ortiz, F. Cirak, Towards quantum computational mechanics, Computer Methods in Applied Mechanics and Engineering 432 (2024) 117403. [15] M. Lubasch, Y. Kikuchi, L. Wright, C. Mc Keever, Quantum circuits for partial di ff erential equations in Fourier space, Physical Review Research 7 (2025) 043326. [16] E. Febrianto, Y. Wang, B. Liu, M. Ortiz, F. Cirak, A quantum spectral method for non-periodic boundary value problems, Computer Methods in Applied Mechanics and Engineering 457 (2026) 118934. [17] Y. Wang, M. Ortiz, F. Cirak, QAFE 2: Quantum accelerated multiscale finite element analysis, Computer Methods in Applied Mechanics and Engineering 461 (2026) 119204. [18] J. M. Gimenez, F. Cirak, M. Ortiz, A Quantum spectral solver for periodic incompressible Stokes flow, arXiv preprint arXiv:2606.30447 . [19] V. Bergholm, J. J. Vartiainen, M. M¨ ott¨ onen, M. M. Salomaa, Quantum circuits with uniformly controlled one-qubit gates, Physical Review A 71 (2005) 052330. [20] V. V. Shende, S. S. Bullock, I. L. Markov, Synthesis of quantum logic circuits, in: Proceedings of the 2005 Asia and South Pacific Design Automation Conference, 2005. [21] A. Arora, B. M. Ward, C. Oskay, An implementation of the finite element method in hybrid classical /quantum computers, Finite Elements in Analysis and Design 248 (2025) 104354. [22] M. M¨ ott¨ onen, J. J. Vartiainen, V. Bergholm, M. M. Salomaa, Quantum circuits for general multiqubit gates, Physical Review Letters 93 (2004) 130502. [23] D. Camps, R. Van Beeumen, FABLE: Fast approximate quantum circuits for block-encodings, in: 2022 IEEE International Conference on Quantum Computing and Engineering, 104–113, 2022. [24] D. Camps, L. Lin, R. Van Beeumen, C. Yang, Explicit quantum circuits for block encodings of certain sparse matrices, SIAM Journal on Matrix Analysis and Applications 45 (2024) 801–827. [25] A. M. Childs, N. Wiebe, Hamiltonian simulation using linear combinations of unitary operations, Quantum Information & Computation 12 (2012) 901–924. [26] S. Herbert, Quantum Computing: Foundations and Practice, Oxford University Press, 2026. [27] C. S¨ underhauf, E. Campbell, J. Camps, Block-encoding structured matrices for data input in quantum computing, Quantum 8 (2024) 1226. [28] T. Kharazi, A. M. Alkadri, J.-P. Liu, K. K. Mandadapu, K. B. Whaley, Explicit block encodings of boundary value problems for many-body elliptic operators, Quantum 9 (2025) 1764. [29] S. Woerner, D. J. Egger, Quantum risk analysis, npj Quantum Information 5 (2019) 15. [30] M. Rosenkranz, E. Brunner, G. Marin-Sanchez, N. Fitzpatrick, S. Dilkes, Y. Tang, Y. Kikuchi, M. Benedetti, Quantum state preparation for multivariate functions, Quantum 9 (2025) 1703. [31] I. Rami` ere, Convergence analysis of the Q1-finite element method for elliptic problems with non-boundary-fitted meshes, International Journal for Numerical Methods in Engineering 75 (2008) 1007–1052. [32] R. Eymard, T. Gallou¨ et, R. Herbin, Finite Volume Methods, vol. 7 of Handbook of Numerical Analysis , Elsevier, 2000. [33] A. Ricci, A constructive geometry for computer graphics, The Computer Journal 16 (1973) 157–160. [34] T. G. Draper, Addition on a quantum computer, arXiv preprint quant-ph /0008033 (2000). [35] L. Ruiz-Perez, J. C. Garcia-Escartin, Quantum arithmetic with the quantum Fourier transform, Quantum Information Processing 152 (2017) 1–14. [36] S. Wang, X. Li, W. J. B. Lee, S. Deb, E. Lim, A. Chattopadhyay, A comprehensive study of quantum arithmetic circuits, Philosophical Transactions A 383 (2288) (2025) 20230392. [37] J. M. Martyn, Z. M. Rossi, A. K. Tan, I. L. Chuang, Grand unification of quantum algorithms, PRX Quantum 2 (2021) 040203. 
+
+33 [38] Y. Dong, X. Meng, K. B. Whaley, L. Lin, E ffi cient phase-factor evaluation in quantum signal processing, Physical Review A 103 (2021) 042419. [39] A. Javadi-Abhari, M. Treinish, K. Krsulich, C. J. Wood, J. Lishman, J. Gacon, S. Martiel, P. D. Nation, L. S. Bishop, A. W. Cross, B. R. Johnson, J. M. Gambetta, Quantum computing with Qiskit, arXiv preprint arXiv:2405.08810 (2024). [40] V. Bergholm, J. Izaac, M. Schuld, C. Gogolin, S. Ahmed, V. Ajith, M. S. Alam, G. Alonso-Linaje, B. AkashNarayanan, A. Asadi, et al., PennyLane: Automatic di ff erentiation of hybrid quantum-classical computations, arXiv preprint arXiv:1811.04968 . [41] L. Lin, Lecture notes on quantum algorithms for scientific computation, arXiv preprint arXiv:2201.08309 . [42] L. Lapworth, Evaluation of block encoding for sparse matrix inversion using QSVT, arXiv preprint arXiv:2402.17529 . [43] C. Shao, H. Xiang, Quantum circulant preconditioner for a linear system of equations, Physical Review A 98 (2018) 062321. [44] Y. Tong, D. An, N. Wiebe, L. Lin, Fast inversion, preconditioned quantum linear system solvers, fast Green’s-function computation, and fast evaluation of matrix functions, Physical Review A 104 (2021) 032422. [45] J. Golden, D. O’Malley, H. Viswanathan, Quantum computing and preconditioners for hydrological linear systems, Scientific Reports 12 (2022) 22285. [46] M. Deiml, D. Peterseim, Quantum realization of the finite element method, arXiv preprint arXiv:2403.19512 (2024). [47] L. Lapworth, C. S¨ underhauf, Preconditioned block encodings for quantum linear systems, Quantum Science and Technology 10 (2025) 045064. [48] G. Brassard, P. Høyer, M. Mosca, A. Tapp, Quantum amplitude amplification and estimation, in: Quantum Computation and Information, vol. 305 of Contemporary Mathematics , American Mathematical Society, 53–74, 2002. [49] H.-Y. Huang, R. Kueng, J. Preskill, Predicting many properties of a quantum system from very few measurements, Nature Physics 16 (2020) 1050–1057. 
+
+34

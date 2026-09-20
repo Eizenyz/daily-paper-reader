@@ -1,0 +1,2971 @@
+Title: Bosonic Encodings for Hermite-Galerkin Discretizations of High-Dimensional PDEs and Bayesian Inverse Problems
+
+URL Source: https://arxiv.org/pdf/2608.26268v1
+
+Published Time: Fri, 28 Aug 2026 00:06:25 GMT
+
+Number of Pages: 33
+
+Markdown Content:
+# Bosonic Encodings for Hermite-Galerkin Discretizations of High-Dimensional PDEs and Bayesian Inverse Problems 
+
+Alice Barthe 
+
+> PsiQuantum, 700 Hansen Way, Palo Alto, CA 94304, USA August 2026
+
+The Koopman-von Neumann framework has been proposed to design quantum algo-rithms for non-linear dynamics. It maps a non-linear ordinary differential equation to a linear partial differential equation (PDE) governing a probability amplitude. Pre-vious works represents this amplitude in the Hermite-function basis, equivalently as a bosonic state, and truncates the to-tal Hermite degree to obtain a represen-tation over Θ( m log N ) qubits, where N is the number of variables and m the trunca-tion order. We extend this approach to a broader class of linear PDEs whose differ-ential operators have a structured polyno-mial form. We prove convergence of the truncation for both time-dependent dy-namics and gapped ground-state problems under explicit regularity and stability as-sumptions. We then introduce a qubit en-coding that supports efficient block encod-ings of the truncated operators. Finally, we apply the framework to Bayesian in-verse problems with Gaussian priors and observation noise, reducing posterior-state preparation to the preparation of a struc-tured Hamiltonian’s ground state. 
+
+# 1 Introduction 
+
+Quantum algorithms offer a promising route to-ward accelerating the numerical solution of dif-ferential equations, with theoretical speed-ups es-tablished for certain classes of linear ordinary differential equations (ODEs) and partial dif-ferential equations (PDEs) under suitable spar-sity, conditioning, and state-preparation assump-tions [Ber+17]. In this work, we consider linear PDEs in a large number of variables. Although physical space is typically low-dimensional, aPDE may instead describe a function of the full state of a system. For example, the Li-ouville equation describes the evolution of aprobability density under deterministic dynam-ics, while the Fokker–Planck equation addition-ally accounts for stochastic noise. For a system with many degrees of freedom, these probabil-ity densities depend on a correspondingly large number of variables. Our first contribution, presented in Section 2, is to extend an existing framework developed for specific PDEs such as the Liouville equa-tion [ESP21; TF23] and the backward Kol-mogorov equation [Bra+25] to a broader fam-ily of linear PDEs. Hermite functions are the eigenfunctions of the quantum harmonic oscilla-tor, and they can equivalently be interpreted as bosonic occupation states [Kow97]. We expand solutions to the PDE in this infinite basis, and truncate by retaining only terms whose total Her-mite degree is at most m, an approach known as global truncation as proposed in [ESP21]. This truncation strategy, further explained in Section 2.2, is key to enabling quantum advan-tage, with a state that can be represented us-ing O(m log N ) qubits. Under explicit regular-ity and stability assumptions, we prove conver-gence of this truncation for both time-dependent evolution and steady-state solutions, which in our framework correspond to static ground-state problems. Our second contribution, presented in Sec-tion 3, is a qubit encoding of the globally trun-cated space. This space can be viewed either as bosonic states containing at most m bosons distributed among N modes, or as functions of 
+
+N variables expanded in the Hermite basis with total Hermite degree at most m. We encode it using m registers, each storing either a mode la-bel j ∈ { 1, . . . , N } or an empty symbol indicat-
+
+1arXiv:2608.26268v1 [quant-ph] 26 Aug 2026 ing that fewer than m bosons are present. Be-cause bosons are indistinguishable, the ordering of the registers cannot carry physical informa-tion, so the encoded state is invariant under per-mutations of the registers. Each register requires 
+
+⌈log 2(N + 1) ⌉ qubits. Using this representation, we construct modular block encodings of bosonic creation and annihilation operators and combine them to encode structured polynomial differen-tial operators with gate complexity polynomial in m and log N .Our final contribution, presented in Section 4, is to combine the standard transformation of a reversible Fokker–Planck operator into a Her-mitian ground-state problem [Ris96, Sec. 6.3] with the Hermite truncation and qubit encod-ing developed in this work. For Bayesian in-verse problems with Gaussian priors and Gaus-sian observation noise, whitening the parameters yields a ∥x∥22 term in the posterior potential. The corresponding Hamiltonian can then be writ-ten as the bosonic number operator plus a data-dependent perturbation. We give sufficient con-ditions on the forward model under which this perturbation has a structured polynomial form and can be block encoded efficiently. We then de-rive the resulting ground-state-preparation com-plexity in terms of the truncation error, block-encoding normalization, spectral gap, and initial-state overlap, and discuss when these require-ments lead to a tractable quantum algorithm. 
+
+# 2 Global Hermite Truncation: Setup and Convergence 
+
+In this section, we recall how Hermite expan-sions have been used to obtain finite-dimensional approximations of the linear PDEs arising from non-linear dynamical systems. We extend this approach to a broader class of high-dimensional linear PDEs. Our contribution in this section is to prove convergence of the global Hermite trun-cation for both time-dependent evolution and ground-state problems under explicit regularity and stability assumptions, and to quantify the dependence of the error on the truncation order. 
+
+2.1 Relation to prior work 
+
+The approach considered here originates from methods that replace non-linear ordinary differ-ential equations by linear equations on a larger function space. Consider the non-linear system 
+
+˙x = f (x), x ∈ RN . (2.1) 
+
+A family of such linearisation methods was in-troduced in [Kow97]. This family includes the Koopman–von Neumann framework, on which the present work builds. Rather than following a single trajectory x(t),the Koopman–von Neumann framework consid-ers a probability distribution over possible states. If every point evolves according to the original ODE, its probability density ρ(t, x ) evolves ac-cording to the linear Liouville equation. Equiva-lently, the probability amplitude 
+
+ψ(t, x ) := 
+
+> √
+
+ρ(t, x ) (2.2) 
+
+satisfies a linear evolution equation generated by the Koopman–von Neumann Hamiltonian. Al-though the original system has only N vari-ables, this linear equation acts on an infinite-dimensional space of functions of those variables. A quantum algorithm therefore requires afinite-dimensional approximation. One possibil-ity is to discretize each variable on a grid and represent the solution by its values on that grid, as proposed in [Jos20]. This approach comes with convergence guarantees and block encodings, but its qubit requirement is linear in N and therefore does not provide an asymptotic space advantage over classical representations. An alternative proposed in [ESP21] is to ex-pand the solution in Hermite functions and re-tain only basis functions whose total Hermite de-gree is at most m. We call this approach global truncation and define it precisely in Section 2.2. The resulting space can be represented using 
+
+O(m log N ) qubits. The analysis of [ESP21] shows improved convergence as the strength of the non-linearity decreases, but does not give a general error bound for the stronger non-linearities considered here. Later work [TF23] refines the quantum-algorithm complexity, but does not fully establish a global-truncation error bound in the regimes studied in this work. Bravyi et al. [Bra+25] and subsequent work [Bra+26] extend this line of research to noisy non-linear ODEs. For a restricted fam-ily of equations, they prove both convergence and efficient block encoding. Their convergence 
+
+2mechanism relies on noise and a confining lin-ear term that suppress components of high Her-mite degree. Among the preceding works, the present paper is most directly inspired by Bravyi et al., whose use of global Hermite truncation and noise-induced suppression of high Hermite degrees provides the closest conceptual starting point for our analysis. We examine the precise re-lationship between their setting and ours in Sec-tion 4.1. Finally, recent work [WL26] introduces a map-ping from non-linear stochastic differential equa-tions to Lindbladian dynamics. For each Brow-nian realization, they represent the correspond-ing conditional density by an L2-normalized half-density whose stochastic unitary evolution, af-ter averaging the associated projectors, yields a Lindblad equation. The diagonal of the resulting density operator reproduces the Fokker–Planck density. 
+
+2.2 Background: Hermite–Galerkin expansion 
+
+In this subsection, we recall the existing concepts we need to deploy our framework. Let L be a linear differential operator on RN . We consider the linear PDE 
+
+∂tu(t, x ) = Lu(t, x ), x ∈ RN . (2.3) 
+
+We expand the solution u on the Hermite func-tion basis hα, which is also called a Galerkin ex-pansion, as follows 
+
+u(t, x ) = ∑
+
+> α
+
+cα(t)hα(x).
+
+Let {He k}k≥0 be the one-dimensional Hermite polynomials in the physicists’ convention. The normalized one-dimensional Hermite functions are 
+
+hk(x) = 1
+
+> √
+
+2kk!√π
+
+He k(x)e−x2/2.
+
+For a multi-index α = ( α1, . . . , α N ) ∈ NN , the 
+
+N -dimensional Hermite function is the product: 
+
+hα(x) = 
+
+> N∏
+> j=1
+
+hαj (xj ). (2.4) 
+
+The family (hα)α∈NN is an orthonormal basis of square integrable functions on unbounded do-main L2(RN , dx ). We project the dynamics onto the basis which transforms the linear PDE into an infinite-dimensional linear ODE 
+
+˙cα(t) = ∑
+
+> β
+
+Lαβ cβ (t), Lαβ := ⟨hα, Lh β ⟩L2(RN ).
+
+(2.5) 
+
+Hermite functions are the eigenfunctions of the quantum harmonic oscillator. In one dimension, 
+
+hk is the eigenfunction with excitation number 
+
+k. In N dimensions, the product function hα de-scribes N independent oscillators with excitation numbers α1, . . . , α N . This basis can equivalently be written as the occupation-number basis, also called the Fock basis 
+
+|α⟩ = |α1, . . . , α N ⟩ , α ∈ NN (2.6) 
+
+where αj is the number of excitations in mode 
+
+j [Kow97]. In this representation, multiplication by the coordinate xj and differentiation with respect to 
+
+xj correspond to the position and momentum op-erators of mode j:
+
+ˆqj = xj , ˆpj = −i∂ xj . (2.7) 
+
+More details can be found in the continuous-variable quantum-computing literature [LB99; BCS21]. The corresponding annihilation and cre-ation operators are 
+
+ˆaj := 1
+
+√2 (ˆ qj + iˆpj ), ˆa† 
+
+> j
+
+:= 1
+
+√2 (ˆ qj − iˆpj ).
+
+(2.8) 
+
+They respectively decrease and increase the ex-citation number of mode j:
+
+ˆaj hα = √αj hα−ej , ˆa† 
+
+> j
+
+hα =
+
+> √
+
+αj + 1 hα+ej ,
+
+(2.9) 
+
+where ej has value one in position j and zero elsewhere. The total Hermite degree 
+
+|α| := 
+
+> N∑
+> j=1
+
+αj (2.10) 
+
+is therefore the total number of excitations. It is measured by the number operators 
+
+ˆnj := ˆ a† 
+
+> j
+
+ˆaj , ˆn := 
+
+> N∑
+> j=1
+
+ˆnj . (2.11) 
+
+With the conventions above, 
+
+2ˆ n = −∆ + ∥ˆq∥2 − N. (2.12) 
+
+3Consequently, a polynomial differential opera-tor can be written using position and momentum operators: 
+
+L =P (x1, · · · , x N , ∂ x1 , · · · , ∂ xN ) (2.13) 
+
+↔P (ˆ q1, · · · , ˆqN , i ˆp1, · · · , i ˆpN ) (2.14) 
+
+The system in Equation (2.5) is infinite-dimensional. In order to obtain a finite-dimensional problem, we must choose a finite set of states onto which to project. The ap-proach chosen by [Jos20] is to define a grid over the N -dimensional hypercube with m points per axis. The dimension of the system is then mN ,which does not allow an amplitude encoding on poly log( N ) qubits. We choose an alternative truncation approach as first proposed in [ESP21], and consider the dynamics projected onto a space with a maximum number of bosons m
+
+H≤m = span {hα : |α| ≤ m}. (2.15) 
+
+The projected operator is 
+
+Lm = Π mLΠm. Πm : L2(RN ) → H ≤m. (2.16) 
+
+The Galerkin dynamics are then the finite-dimensional system 
+
+∂tum(t) = Lmum(t), um(0) = Π mu0. (2.17) 
+
+Thus, the dimension of H≤m is the number of ways to distribute at most m excitations among 
+
+N modes. By the stars-and-bars combinatorial formula, 
+
+DN,m = dim H≤m =
+
+> (
+
+N + mm
+
+> )
+
+∼ N m
+
+m! . (2.18) 
+
+Amplitude encoding a state of that dimension-ality is possible with Θ( m log( N )) qubits, and allows for space-efficiency for N = 2 n and m =poly( n). We call this the global truncation strat-egy. Up to this point we have been using existing concepts to generalise the bosonic encoding to any linear high-dimensional PDE. We now inves-tigate whether the global cut-off preserves accu-racy, for a restricted class of linear PDEs with strong regularity and stability assumptions. 
+
+2.3 Convergence 
+
+The projection of the infinite-dimensional system onto a finite one is an approximation. In order to control the accuracy, we must find conditions under which the solution remains concentrated in subspaces with low bosonic numbers. This can be quantified using a number operator cen-tric regularity. For s ≥ 0, we define the oscillator 
+
+s-regularity as 
+
+∥u∥s, osc := ∥(I + ˆ n)s/ 2u∥L2(RN ). (2.19) 
+
+If we know a bound on this norm, and if the truncated dynamics are stable, we can control the fidelity of the truncated dynamics to the infinite-dimensional dynamics, as we prove in Section A.4. 
+
+Theorem 1 (Dynamics convergence) . Let m be the truncation order, and L = P (ˆ q, ˆp) be a poly-nomial of total degree d in the position ˆq and mo-mentum ˆp operators of N modes. Then there ex-ists a constant CP ∈ R+ such that 
+
+∥Lv ∥ ≤ CP ∥v∥d, osc .
+
+Let u(t) solve ∂tu = Lu on [0 , T ], and let um(t)
+
+solve Equation (2.17) . Assume that there exists 
+
+s > 0 such that the exact solution has bounded oscillator (s + d)-regularity as defined in Equa-tion (2.19) on [0 , T ], that is there exists a con-stant Cs+d ∈ R+ such that 
+
+sup  
+
+> 0≤τ≤T
+
+∥u(τ )∥s+d, osc ≤ Cs+d < +∞ .
+
+In addition assume that the projected dynamics are uniformly stable on [0 , T ], that is there exists a constant CT ∈ R+ such that 
+
+∥etL m ∥ ≤ CT , 0 ≤ t ≤ T. 
+
+Then there exists a constant independent of m
+
+such that for all 0 ≤ t ≤ T the approximation accuracy is polynomial in m
+
+∥u(t) − um(t)∥ ≤ (m + 1) −s/ 2 (1 + CT CP t) Cs+d.
+
+(2.20) 
+
+As we argue in Section A.4, the stability as-sumption is not automatic for L = P (ˆ q, ˆp), as some polynomial generators can exhibit finite-time singularities in their associated Heisenberg dynamics. However, stability is automatic in common unitary or contractive cases, for exam-ple L = −iH with H self-adjoint or L = −H
+
+with H ⪰ 0.We also prove a convergence result for ground state problems. Ground-state problems in that 
+
+4context encapsulate steady state solutions of lin-ear PDEs, as shown in Section 4. We consider the special case where the operator L is Hermi-tian and positive, with its ground energy equal to 0, for which we give examples in Section 4. We prove the following theorem in Section A.5. 
+
+Theorem 2 (Statics convergence) . Let H be a nonnegative self-adjoint operator on L2(RN ) with normalized ground state ϕ satisfying Hϕ = 0 . As-sume that H has spectral gap γ > 0, namely 
+
+σ(H) ⊂ { 0} ∪ [γ, ∞).
+
+Let 
+
+Hm := Π mHΠm
+
+on H≤m, and let λ0,m and λ1,m be its two lowest eigenvalues and ϕm a normalized ground state. Let γm := λ1,m − λ0,m .
+
+Assume that, for some d ≥ 0, there exists a constant CH ∈ R+ such that 
+
+∥Hv ∥ ≤ CH ∥v∥d, osc . (2.21) 
+
+Assume also that for some s > 0, there exists a constant Cs+d ∈ R+ such that 
+
+∥ϕ∥s+d, osc ≤ Cs+d < +∞ .
+
+Then, for all sufficiently large m, defining 
+
+Em := 2 CH Cs+d(m + 1) −s/ 2, (2.22) 
+
+one has 
+
+0 ≤ λ0,m ≤ Em. (2.23) 
+
+∥ϕm − ϕ∥ ≤  
+
+> (
+
+2Em
+
+γ
+
+> )1/2
+
+. (2.24) 
+
+γm ≥ γ − 3Em. (2.25) 
+
+In particular, if Em ≤ γ/ 6, then γm ≥ γ/ 2.
+
+Having established convergence of the global truncation, we now ask whether the truncated operator Lm can be block encoded efficiently on qubits. This is the subject of the next section. 
+
+# 3 Qubit encoding of the global Her-mite truncation 
+
+In this section, we introduce a qubit encoding of the globally truncated space H≤m. The encod-ing uses m registers and represents bosonic states by states that are invariant under permutations of these registers. We first define the encoding, then construct block encodings of the annihila-tion, creation, position, momentum, and num-ber operators. Finally, we combine these build-ing blocks to block encode structured polynomial differential operators. 
+
+3.1 Bosonic indistinguishability and the sym-metric subspace 
+
+We encode states containing at most m bosons using m registers, one for each possible boson. Each register stores one of N labels, indicating the mode occupied by that boson, or an empty label ∅ when fewer than m bosons are present. The state space of one register is therefore 
+
+KN = span {|∅⟩ , |1⟩ , . . . , |N ⟩} ≃ CN +1 , (3.1) 
+
+and the full register space is K⊗mN .Bosons are indistinguishable, so exchanging two registers must not change the encoded state. We therefore restrict to states that are invariant under any permutation of the m registers. These states form the symmetric subspace 
+
+Sym m(KN ) ⊂ K ⊗mN , (3.2) 
+
+where Sym m(KN ) denotes the set of states un-changed by permutations of the registers. We write |α⟩F for a state in the occupation-number representation, where α = ( α1, . . . , α N )
+
+and αj is the number of bosons in mode j. We write |b⟩Q = |b1, . . . , b m⟩Q for a state in the regis-ter representation, where each br is either a mode label or the empty label ∅.For example, consider at most three bosons distributed among four modes, so that N = 4 
+
+and m = 3 . The state with two bosons in mode 
+
+1 and one boson in mode 4 is encoded as 
+
+|2, 0, 0, 1⟩F 7 → |1, 1, 4⟩Q + |1, 4, 1⟩Q + |4, 1, 1⟩Q
+
+√3 .
+
+There is no empty slot because the total occu-pation is already m = 3 . By contrast, the state with one boson in mode 1 and one boson in mode 
+
+4 contains only two bosons. It is encoded as 
+
+|1, 0, 0, 1⟩F 7 → 1
+
+√6
+
+> (
+
+|1, 4, ∅⟩ Q + |1, ∅, 4⟩Q +
+
+|4, 1, ∅⟩ Q + |4, ∅, 1⟩Q + |∅ , 1, 4⟩Q + |∅ , 4, 1⟩Q
+
+> )
+
+More generally, for α satisfying |α| ≤ m, we form a list containing αj copies of each label j and 
+
+5m − | α| copies of ∅. The encoded state is the nor-malized uniform superposition over all distinct permutations of this list. This defines the map 
+
+Vm. Its explicit expression and proof are given in Section B.1. 
+
+Vm : H≤m −→ Sym m(KN ), (3.3) 
+
+Proposition 1 (Symmetric encoding) . The map 
+
+Vm in Equation (3.3) is an isometry from the globally truncated Hermite space H≤m onto 
+
+Sym m(KN ).
+
+From now on, when the cut-off m is fixed, we write |α⟩ for the encoded state Vm|α⟩F . The next step is to represent the operators acting on this space, while preserving the permutation symme-try on the m registers. 
+
+3.2 Encoding of primitive bosonic operators 
+
+In this subsection, we construct qubit operators representing the truncated annihilation, creation, position, momentum, and number operators in-troduced in Section 2.2. Since encoded states are invariant under permutations of the registers, these operators must act identically on all m reg-isters. The detailed constructions are given in Section B.2 and yield the following proposition. 
+
+Proposition 2 (Encoded bosonic primitives) .
+
+Under the symmetric encoding Vm, the globally truncated annihilation, creation, position, mo-mentum, and number operators are represented by operators ˆAj , ˆA† 
+
+> j
+
+, ˆQj , ˆPj , and ˆN . These oper-ators admit block encodings with gate complexity polynomial in m and log N . Their normaliza-tions scale as O(√m) for ˆAj , ˆA† 
+
+> j
+
+, ˆQj , and ˆPj ,and as O(m) for ˆN .
+
+The construction can be understood most eas-ily for the annihilation operator ˆaj , which re-moves one excitation from mode j. In the register encoding, this corresponds to replacing one label 
+
+j by the empty label ∅. Because the label j may occur in any register, we sum this transition over all registers: 
+
+Bj := 
+
+> m∑
+> r=1
+
+(|∅⟩⟨ j|)r . (3.4) 
+
+The action of Bj contains an additional factor depending on the number of empty registers. We count these registers using 
+
+ˆN∅ := 
+
+> m∑
+> r=1
+
+(|∅⟩⟨∅| )r (3.5) 
+
+and remove the additional factor by a diagonal normalization, as detailed in Section B.2. This gives the encoded annihilation operator ˆAj ; the creation operator ˆA† 
+
+> j
+
+is obtained similarly. The remaining operators follow from 
+
+ˆQj =ˆAj + ˆA†
+
+> j
+
+√2 , ˆPj =ˆAj − ˆA†
+
+> j
+
+i√2 , ˆN = mI − ˆN∅.
+
+(3.6) 
+
+The encoding of bosonic operators over expo-nentially many modes is inspired by [Bar+25]. Whereas that work is tailored to Gaussian bosonic dynamics, the present construction uses 
+
+m permutation-symmetric registers to represent states with up to m excitations, thereby support-ing non-Gaussian states and operators. Bravyi et al. [Bra+25] instead store the occupied mode la-bels in a sorted, padded list. Both approaches ex-ploit low bosonic occupation, although Bravyi et al. use a weighted cutoff. Their sorted represen-tation is tailored to the cubic operators arising in their dynamics. In the present encoding, each el-ementary bosonic operation is expressed as a sum of single-register transitions, which allows more general polynomial operators to be constructed modularly. 
+
+3.3 Block encoding of structured polynomials in position and momentum operators 
+
+The previous subsection gives block encodings for the elementary bosonic operators. We now com-pose these primitives to block encode the trun-cated differential operator. An arbitrary polyno-mial may contain exponentially many coefficients in N . We therefore restrict to operators given as a polynomial-size sum of products of structured linear combinations l of position and momentum operators. If v, w ∈ CN , define 
+
+l(v, w ) = 
+
+> N∑
+> j=1
+
+vj ˆQj +
+
+> N∑
+> j=1
+
+wj ˆPj . (3.7) 
+
+When the normalized states proportional to v
+
+and w are efficiently preparable, l(v, w ) admits an efficient block encoding with normalization 
+
+O(√m(∥v∥ + ∥w∥)) . This is the primitive used below for polynomial differential operators. 
+
+6Definition 1 (Structured operator polynomial) .
+
+Let N = 2 n. A structured operator polynomial over N modes is a polynomial of constant degree 
+
+d ∈ O(1) of the form 
+
+P (ˆ q, ˆp) = 
+
+> R∑
+> r=1
+
+crkr∏
+
+> ℓ=1
+
+(ar,ℓ I + vr,ℓ · ˆq + wr,ℓ · ˆp) ,
+
+(3.8) 
+
+where kr ≤ d, cr, a r,ℓ ∈ C and vr,ℓ , w r,ℓ ∈ CN .We assume in addition that: 1. The integer R; the magnitude of the scalars 
+
+cr and ar,ℓ ; the vector norms ∥vr,ℓ ∥ and 
+
+∥wr,ℓ ∥ are all bounded by poly( n);2. for every (r, ℓ ), the normalized amplitude-encoded states of the non-zero vectors vr,ℓ 
+
+and wr,ℓ can be prepared by circuits of size 
+
+poly( n).
+
+We show in Section B.3 that when the oper-ator of interest is a structured polynomial, the operator admits an efficient block encoding. 
+
+Theorem 3 (Structured polynomial block en-coding) . Let N = 2 n and m ≥ 0, and let 
+
+Lm = Π mP (ˆ q, ˆp)Π m
+
+where P is a structured polynomial of degree d
+
+over N variables as in Definition 1. The encoded operator VmLmV † 
+
+> m
+
+admits a block encoding with normalization α ∈ O(CP (m + d)d/ 2) with CP ∈
+
+O(poly (n)) and gate complexity O(poly( m, n )) .
+
+At this stage we have shown that any struc-tured constant-degree polynomial of position and momentum operators over exponentially many modes admits an efficient block encoding. Equiv-alently, a structured constant-degree polynomial in multiplication by xj and differentiation with respect to xj over exponentially many variables admits an efficient block encoding for its Hermite representation. In the next subsection, we show how relevant information may be extracted from such encoded states. 
+
+3.4 Readout: observables and marginals 
+
+In this subsection, we ask what useful quanti-ties can be extracted efficiently given an encoded state 
+
+|ψm⟩ = ∑
+
+> |α|≤ m
+
+cα |α⟩ .
+
+When N is exponentially large, even writing down one value for every coordinate requires ex-ponential resources. We can nevertheless esti-mate low-order moments of a fixed number of co-ordinates and, when |ψm⟩ represents a probabil-ity amplitude, reconstruct constant-dimensional marginal distributions. We show that the follow-ing outputs can be obtained efficiently, and we provide details in Section B.4. 
+
+Proposition 3 (Accessible readout) . Assume that |ψm⟩ can be prepared efficiently. Then the following quantities are efficiently accessible. 1. expectation values ⟨Q(ˆ q, ˆp)⟩ of structured polynomial observables Q as in Definition 1; 2. expectations of the number operator ⟨ ˆN ⟩;3. marginal distributions of any fixed number of coordinates when |ψm(x)|2 is a probability density. 
+
+The expectation of the number operator is es-pecially useful as a truncation diagnostic. The expectation ⟨ ˆN ⟩ measures the average total Her-mite degree. A value close to m indicates that the cut-off may be too small. 
+
+# 4 Fokker–Planck equation and Bayesian inverse problems 
+
+In this section, we apply the Hermite truncation and qubit encoding developed above to Bayesian inverse problems. We first recall the standard transformation that maps a reversible Fokker– Planck operator to a non-negative Hermitian op-erator whose ground state is the square root of its stationary density. We then show that, after whitening a Gaussian prior, a Bayesian posterior can be expressed in this form. We then identify conditions under which the resulting Hamilto-nian is a structured polynomial operator that can be block encoded efficiently, and analyse the cost of preparing a quantum state whose position-space amplitude is the square root of the pos-terior density. 
+
+4.1 Fokker–Planck equations and Gibbs-preserving drifts 
+
+The material in this subsection is standard, found for example in [Ris96], we restate it using conven-tions of this work. We consider Fokker–Planck 
+
+7equations of the form 
+
+∂tρ = ∇ · (ρF ) + ∆ ρ, (4.1) 
+
+where F : RN → RN . With this convention, the drift of the corresponding stochastic differential equation is −F . Following the decomposition de-scribed in [Ris96, Sec. 6.3], suppose that 
+
+F = ∇V + G, ∇ · (e−V G) = 0 , (4.2) 
+
+where the potential V satisfies 
+
+Z := 
+
+> ∫
+> RN
+
+e−V (x) dx < +∞. (4.3) 
+
+Then 
+
+ρ∞(x) := Z−1e−V (x) (4.4) 
+
+is a stationary density of Equation (4.1). Indeed, 
+
+∇ · (ρ∞F ) + ∆ ρ∞ = Z−1∇ · (e−V G) = 0 . (4.5) 
+
+The decomposition in Equation (4.2) separates the gradient drift ∇V from a transport field G
+
+that preserves the same stationary density. The field G can modify the transient evolution and the rate of convergence to equilibrium, but it does not change ρ∞. In the next subsection, we recall the classical transformation under which the gra-dient contribution becomes imaginary-time evo-lution generated by a non-negative Hermitian op-erator, while the contribution from G becomes anti-Hermitian. After translating sign conventions, the setting of Bravyi et al. [Bra+25] corresponds to a diag-onal quadratic potential of the following form, with q > 0 and λi > 0,
+
+VBravyi (x) = q−1 ∑
+
+> i
+
+λix2 
+
+> i
+
+. (4.6) 
+
+They consider a quadratic transport field G sat-isfying a divergence-free condition correspond-ing to the Gibbs-preserving condition used here. Their invariant density is therefore the explicitly known Gaussian 
+
+ρ∞(x) ∝ exp 
+
+> (
+
+−q−1 ∑
+
+> i
+
+λix2
+
+> i
+> )
+
+, (4.7) 
+
+and their analysis focuses on the transient dy-namics. They apply the corresponding transfor-mation to the backward Kolmogorov equation for observables, whereas we use the forward Fokker– Planck equation for densities. Their trunca-tion similarly retains a low-occupation sector of the bosonic space. Our framework allows the stationary potential to extend beyond diag-onal quadratic forms, subject to the structured-polynomial assumptions introduced above, and uses a symmetric-register encoding that supports modular block encodings of general fixed-degree polynomial operators. 
+
+4.2 Ground-state transform 
+
+We now recall the standard change of variables that maps the stationary density to the ground state of a Hermitian operator [Ris96, Sec. 6.3]. Let 
+
+ϕ(x) := 
+
+> √
+
+ρ∞(x) = Z−1/2e−V (x)/2, (4.8) 
+
+and define 
+
+ψ(t, x ) := ρ(t, x )
+
+ϕ(x) . (4.9) 
+
+Under this change of variables, the Fokker– Planck equation becomes 
+
+∂tψ = −HV ψ + iH Gψ, (4.10) 
+
+where HV is the Hermitian operator associated with the gradient drift ∇V , while iH G is the anti-Hermitian operator associated with the transport field G:
+
+HV = −∆ + 14 |∇ V |2 − 12 ∆V, (4.11) 
+
+iH G = G · ∇ + 12 (∇ · G). (4.12) 
+
+The derivation is given in Section C.2. This change of variables differs from that of [WL26], where the central object is a mixed state over Brownian realisations of √ρ(x, t ).Moreover, HV is non-negative because it fac-torizes as 
+
+HV =
+
+> N∑
+> j=1
+> (
+
+−∂xj + 12 ∂xj V
+
+> ) (
+
+∂xj + 12 ∂xj V
+
+> )
+
+.
+
+(4.13) 
+
+Together with HV ϕ = 0 , this shows that ϕ is a ground state of HV .
+
+4.3 Potentials with a ∥x∥2 term 
+
+When V (x) = ∥x∥2, the potential combines with the diffusion term to yield the number operator: 
+
+HV = −∆ + ∥x∥2 − N = 2ˆ n. (4.14) 
+
+8Therefore, the Hermite basis diagonalizes HV .More generally, suppose that 
+
+V (x) = ∥x∥2 + F0(x), F0(x) ≥ 0. (4.15) 
+
+The non-negativity of F0 ensures that e−V (x) de-cays at least as fast as a Gaussian, and hence that the normalization constant Z is finite. In this case, 
+
+HV = 2ˆ n + WF0 (ˆ q), (4.16) 
+
+where 
+
+WF0 (x) = x · ∇ F0(x) + 14 |∇ F0(x)|2 − 12 ∆F0(x).
+
+(4.17) 
+
+The appearance of the number operator in HV
+
+motivates the use of the Hermite basis and gives intuition for why the global Hermite truncation can converge. In the dynamics picture, the term 
+
+2ˆ n penalizes components with larger boson num-ber, causing them to decay more rapidly under imaginary-time evolution. In the static picture, it assigns a larger energy to states with high bo-son number. 
+
+4.4 Bayesian inverse problems as ground-state problems 
+
+We now connect the Fokker–Planck equation to Bayesian inverse problems [Stu10]. Let u ∈ RN
+
+be an unknown parameter and y ∈ RM the ob-served variables. We are given a forward map 
+
+g : RN → RM that predicts the observations from the unknown parameter. We assume u has a Gaussian prior and the observations are affected by Gaussian noise. 
+
+y = g(u) + η , η ∼ N (0 , Γ) , u ∼ N (μ, Σ) . (4.18) 
+
+We introduce rescaled whitened coordinates x so that the prior density is proportional to e−∥ x∥2
+
+:
+
+u = μ + √2 Σ 1/2x . (4.19) 
+
+Bayes’ formula gives the posterior density 
+
+π(x|y) = Z−1 
+
+> y
+
+e−Vy (x), Vy(x) = ∥x∥2 + Fy(x),
+
+(4.20) 
+
+where 
+
+Fy(x) = 12
+
+> ∥∥∥
+
+Γ−1/2(y − g(μ + √2 Σ 1/2x)) 
+
+> ∥∥∥2
+
+.
+
+(4.21) 
+
+Thus the Gaussian prior yields the ∥x∥22 term of the potential, and the observation fit yields the perturbation. From here the derivation follows as in the pre-vious subsection with Fy(x) in the place of F0(x).Defining 
+
+ϕy(x) := 
+
+> √
+
+π(x|y), (4.22) 
+
+for any observable f , posterior expectations can be written as 
+
+E[f (x)] = 
+
+> ∫
+
+f (x)π(x|y) dx = ⟨ϕy, f (ˆ q)ϕy⟩.
+
+(4.23) 
+
+Thus posterior computation can be reduced to preparing or approximating ϕy and estimating observables in this state. The global Hermite truncation gives the finite-dimensional approxi-mation, while the block-encoding results of Sec-tion 3.3 apply whenever Wy has a structured polynomial representation. 
+
+4.5 Asymptotic complexity 
+
+We now combine the truncation result of Sec-tion 2.3, the block encoding of Section 3.3, and a standard ground-state-preparation algorithm to estimate the overall complexity. Let 
+
+Hy := 2ˆ n + Wy(ˆ q) . (4.24) 
+
+Assume that Wy(ˆ q) has a structured operator-polynomial representation of degree dW ∈ O(1) 
+
+in the sense of Definition 1. A sufficient condition on the forward map g is given in Section C.5. Since Hy is a polynomial of degree 
+
+d := max {dW , 2}, (4.25) 
+
+there exists a constant CH such that 
+
+∥Hyv∥ ≤ CH ∥v∥d, osc . (4.26) 
+
+For polynomial Fy, the ground state has finite os-cillator regularity of every finite order. For some 
+
+s > 0, define 
+
+∥ϕy∥s+d, osc := Cs+d < +∞. (4.27) 
+
+Although this quantity is finite its dependence on the problem size is instance-dependent. An efficient algorithm additionally requires CH and 
+
+Cs+d to grow at most polynomially in log N .Let ϵ > 0 be the target state-preparation error. We also assume that a lower bound γ > 0 on the spectral gap of Hy is known, and that an efficiently preparable initial state ψinit satisfies 
+
+|⟨ ψinit , ϕ y⟩| ≥ ξ. (4.28) 
+
+9We must choose a truncation order m such that 
+
+∥ϕy − ϕy,m ∥ ≤ ϵ, γm ≥ γ/ 2,
+
+|⟨ ψinit , ϕ y,m ⟩| ≥ ξ/ 2.
+
+Using Theorem 2, this is ensured by requiring 
+
+Em ≤ γ
+
+8 min {1, ϵ 2, ξ 2},
+
+where 
+
+Em = 2 CH Cs+d(m + 1) −s/ 2.
+
+We choose the truncation level accordingly 
+
+mϵ :=  
+
+> ⌈(
+
+16 CH Cs+d
+
+γ min {1, ϵ 2, ξ 2}
+
+> )2/s ⌉
+
+. (4.29) 
+
+Using Theorem 3 for our choice of mϵ we have a block encoding of gate complexity G(mϵ) ∈
+
+poly (mϵ) and normalization 
+
+αmϵ ∈ Θ
+
+> (
+
+CP (mϵ + d)d/ 2)
+
+. (4.30) 
+
+Then using optimal scaling of ground state preparation from [LT20], ϕy can be prepared to accuracy ϵ with gate complexity 
+
+> ˜
+
+O
+
+> (
+
+G(mϵ)CP
+
+(mϵ + d)d/ 2
+
+γ ξ log 1
+
+ϵ
+
+> )
+
+. (4.31) 
+
+The space complexity, i.e. the required number of qubits is 
+
+˜Θ( mϵ log N ). (4.32) 
+
+In addition, information about this ground state can be extracted efficiently according to Propo-sition 3. Although the algorithm scales poly-logarithmically with N when Cs+d and CH are polynomial in log N , its overall complexity fol-lows a power law in 1/ϵ .
+
+4.6 Spectral gap and hardness 
+
+Theorem 3 gives conditions under which the pos-terior Hamiltonian can be block encoded effi-ciently. This is not sufficient for an efficient inverse-problem algorithm: ground-state prepa-ration also depends on the spectral gap and on the overlap with an efficiently preparable initial state [LT20]. When the forward map g is linear, the spec-tral gap is bounded below, but the inverse prob-lem is also classically tractable, as shown in Sec-tion C.6. When g is quadratic, the data-misfit term Fy is quartic and the posterior may have several local minima. For the class of quadratic-square potentials considered in Section C.7, we prove that the corresponding Hamiltonian has a strictly positive spectral gap for every fixed in-stance. However, this is only an existence result and does not provide a lower bound that remains polynomially large as the problem size increases. When the minima are separated by large barri-ers, the gap may be exponentially small in the barrier height [HN05; BGK05]. This limitation is unavoidable in general. In Section C.8, we show that quartic potentials can concentrate the posterior near the vertices of a hypercube and reproduce the probability distribution of a discrete spin system. In that regime, the posterior normalization constant ap-proximates an Ising partition function, while some posterior expectations approximate Ising Gibbs observables. Exact evaluation of Ising par-tition functions is #P-hard in broad parameter regimes, and approximation with external fields can also be hard [JVW90; GJ06]. One should therefore not expect a polynomial-time algorithm for arbitrary quartic inverse problems. Efficient block encoding is a property of the Hamiltonian representation; efficient state preparation addi-tionally requires a sufficiently large spectral gap and a suitable preparation strategy. We now give an additional assumption under which both difficulties can be addressed. Suppose that there exists β < 2 such that, for all x ∈ RN ,
+
+∇2Fy(x) ⪰ − βI. (4.33) 
+
+Define the interpolating potential 
+
+Vτ (x) := ∥x∥2 + τ F y(x), 0 ≤ τ ≤ 1, (4.34) 
+
+and let Hτ be the corresponding Hamiltonian. As proved in Section C.9, 
+
+γ(Hτ ) ≥ 2 − βτ ≥ 2 − β =: κ > 0. (4.35) 
+
+The spectral gap therefore remains open along the entire path. At τ = 0 , the ground state is the bosonic vacuum |0⟩. The posterior state can con-sequently be prepared by evolving adiabatically from τ = 0 to τ = 1 [AL18], with polynomial de-pendence on 1/κ and 1/ϵ , in addition to the cost of implementing the Hamiltonian path. 
+
+10 Acknowledgments 
+
+AB thanks Matteo Lostaglio for crucial feedback and the adiabatic state preparation idea. AB thanks Paul Mannix for extensive feedback. 
+
+# References 
+
+[AL18] Tameem Albash and Daniel A Lidar. “Adiabatic quantum computation”. In: Reviews of Modern Physics 90.1 (2018), p. 015002. issn : 0034-6861. 
+
+doi : 10.1103/revmodphys.90.015002. [Bak+08] Dominique Bakry et al. “A sim-ple proof of the Poincar´ e inequal-ity for a large class of probability measures”. In: Electronic Commu-nications in Probability 13 (2008), pp. 60–66. issn : 1083-589X. doi :10.1214/ecp.v13-1352. [Bar+25] Alice Barthe et al. “Gate-Based Quantum Simulation of Gaussian Bosonic Circuits on Exponentially Many Modes”. In: Physical Review Letters 134.7 (2025), p. 070604. 
+
+issn : 0031-9007. doi : 10.1103/phys-revlett.134.070604. [BCS21] Samantha Buck, Robin Coleman, and Hayk Sargsyan. “Continuous Vari-able Quantum Algorithms: an In-troduction”. In: arXiv (2021). doi :10.48550/arxiv.2107.02151. [Ber+17] Dominic W. Berry et al. “Quantum Algorithm for Linear Differen-tial Equations with Exponentially Improved Dependence on Pre-cision”. In: Communications in Mathematical Physics 356.3 (2017), pp. 1057–1081. issn : 0010-3616. doi :10.1007/s00220-017-3002-y. [BGK05] Anton Bovier, V´ eronique Gayrard, and Markus Klein. “Metastability in reversible diffusion processes II: pre-cise asymptotics for small eigenval-ues”. In: Journal of the European Mathematical Society 7.1 (2005), pp. 69–99. issn : 1435-9855. doi :10.4171/jems/22. [Bra+25] Sergey Bravyi et al. “Quantum sim-ulation of a noisy classical nonlin-ear dynamics”. In: arXiv (2025). doi :10.48550/arxiv.2507.06198. [Bra+26] Sergey Bravyi et al. “Quantum algo-rithms for stochastic nonlinear differ-ential equations”. In: arXiv (2026). 
+
+doi : 10.48550/arxiv.2606.08349. [CGZ13] Patrick Cattiaux, Arnaud Guillin, and Pierre Andr´ e Zitt. “Poincar´ einequalities and hitting times”. In: 
+
+Annales de l’Institut Henri Poincar´ e, Probabilit´ es et Statistiques 49.1 (2013), pp. 95–118. issn : 0246-0203. 
+
+doi : 10.1214/11-aihp447. [CW12] Andrew M Childs and Nathan Wiebe. “Hamiltonian Simulation Using Linear Combinations of Unitary Operations”. In: Quan-tum Information and Computation 
+
+12.11&12 (2012). issn : 1533-7146. 
+
+doi : 10.26421/qic12.11-12. [ESP21] Alexander Engel, Graeme Smith, and Scott E. Parker. “Linear embedding of nonlinear dynamical systems and prospects for efficient quantum algo-rithms”. In: Physics of Plasmas 28.6 (2021), p. 062305. issn : 1070-664X. 
+
+doi : 10.1063/5.0040313. [GJ06] Leslie Ann Goldberg and Mark Jerrum. “The Complexity of Ferromagnetic Ising with Local Fields”. In: Combinatorics, Proba-bility and Computing 16.1 (2006), pp. 43–61. issn : 1469-2163. doi :10.1017/s096354830600767x. [HN05] Bernard Helffer and Francis Nier. “Hypoelliptic Estimates and Spectral Theory for Fokker-Planck Operators and Witten Laplacians”. In: Lecture Notes in Mathematics (2005). issn :0075-8434. doi : 10.1007/b104762. [Jai+26] Siddhartha Jain et al. “Efficient Quantum Hermite Transform”. In: 
+
+Proceedings of the 58th Annual ACM Symposium on Theory of Com-puting (2026), pp. 541–552. doi :10.1145/3798129.3800772. 
+
+11 [Jos20] Ilon Joseph. “Koopman–von Neu-mann approach to quantum simu-lation of nonlinear classical dynam-ics”. In: Physical Review Research 2.4 (2020), p. 043102. doi : 10.1103/phys-revresearch.2.043102. [JVW90] F. Jaeger, D. L. Vertigan, and D. J. A. Welsh. “On the computa-tional complexity of the Jones and Tutte polynomials”. In: Mathemat-ical Proceedings of the Cambridge Philosophical Society 108.1 (1990), pp. 35–53. issn : 0305-0041. doi :10.1017/s0305004100068936. [Kow97] K. Kowalski. “Nonlinear dynami-cal systems and classical orthog-onal polynomials”. In: Journal of Mathematical Physics 38.5 (1997), pp. 2483–2505. issn : 0022-2488. doi :10.1063/1.531990. [LB99] Seth Lloyd and Samuel L Braun-stein. “Quantum Computation over Continuous Variables”. In: Phys-ical Review Letters 82.8 (1999), pp. 1784–1787. issn : 0031-9007. doi :10.1103/physrevlett.82.1784. [LT20] Lin Lin and Yu Tong. “Near-optimal ground state preparation”. In: Quantum 4 (2020), p. 372. doi :10.22331/q-2020-12-14-372. [Ris96] Hannes Risken. “The Fokker-Planck Equation, Methods of Solution and Applications”. In: Springer Series in Synergetics (1996). issn : 0172-7389. 
+
+doi : 10.1007/978-3-642-61544-3. [Stu10] A. M. Stuart. “Inverse prob-lems: A Bayesian perspective”. In: Acta Numerica 19 (2010), pp. 451–559. issn : 0962-4929. doi :10.1017/s0962492910000061. [TF23] Yu Tanaka and Keisuke Fujii. “A Polynomial Time Quantum Algorithm for Exponentially Large Scale Nonlinear Differen-tial Equations via Hamiltonian Simulation”. In: arXiv (2023). doi :10.48550/arxiv.2305.00653. [WL26] Hsuan-Cheng Wu and Xiantao Li. “From Nonlinear Stochastic Differ-ential Equations to Quantum Chan-nels: The Kolmogorov–Lindblad Mapping”. In: arXiv (2026). doi :10.48550/arxiv.2608.09903. 
+
+12 A Truncation estimates for the global Hermite cut-off 
+
+A.1 Ordering convention for polynomial differential operators 
+
+Note that the operators ˆqj and ˆpj do not commute. Therefore, we need to fix an ordering convention. Let 
+
+L = ∑
+
+> |β|≤ r
+
+aβ (x)∂β
+
+be a finite-order differential operator with polynomial coefficients. Since multiplication by xj is ˆqj and 
+
+∂xj = iˆpj , one may choose the ordering in which all position operators are placed to the left of all momentum operators: 
+
+P (ˆ q, ˆp) = ∑
+
+> |β|≤ r
+
+aβ (ˆ q)( iˆp)β . (A.1) 
+
+Then L = P (ˆ q, ˆp) on S(RN ).
+
+A.2 Hermite tails 
+
+We show that functions with a bounded oscillator Sobolev norm as in Equation (2.19) have controlled Hermite expansion tails. 
+
+Proposition 4 (Hermite tail bound) . Let s ≥ 0. Then 
+
+∥(I − Πm)u∥ ≤ (m + 1) −s/ 2∥u∥s, osc . (A.2) 
+
+Note that this is only a non-trivial when ∥u∥s, osc < +∞, that is u is in the domain of (I + ˆ n)s/ 2.
+
+Proof. Write 
+
+u = ∑
+
+> α∈NN
+
+uαhα.
+
+Since ˆ nh α = |α|hα, we have 
+
+∥u∥2 
+
+> s, osc
+
+= ∑
+
+> α∈NN
+
+(1 + |α|)s|uα|2.
+
+Moreover, 
+
+∥(I − Πm)u∥2 = ∑
+
+> |α|>m
+
+|uα|2.
+
+For |α| > m , one has (1 + |α|)−s ≤ (m + 1) −s. Therefore 
+
+∑
+
+> |α|>m
+
+|uα|2 = ∑
+
+> |α|>m
+
+(1 + |α|)−s(1 + |α|)s|uα|2 ≤ (m + 1) −s∥u∥2
+
+> s, osc
+
+.
+
+Taking the square root gives Equation (A.2). 
+
+A.3 Polynomial operators and oscillator Sobolev norms 
+
+We use the following standard estimate. 
+
+Lemma 1 (Polynomial control by the number operator) . Let P (ˆ q, ˆp) be an ordered polynomial of total degree d. Then, for every s ≥ 0, there exists a constant CP,s such that 
+
+∥P (ˆ q, ˆp)v∥s, osc ≤ CP,s ∥v∥s+d, osc (A.3) 
+
+for every v in the Hermite span. 
+
+13 Proof. It is enough to prove the estimate for monomials in ˆ qj and ˆ pj . Each ˆ qj or ˆ pj is a linear combination of ˆ aj and ˆ a† 
+
+> j
+
+. Thus it suffices to control products of creation and annihilation operators. For a Hermite expansion v = ∑ 
+
+> α
+
+vαhα,ˆaj v = ∑ 
+
+> α:αj≥1
+
+√αj vαhα−ej .
+
+Since αj ≤ | α|, this gives 
+
+∥ˆaj v∥ ≤ ∥ ˆn1/2v∥ ≤ ∥ v∥1,osc .
+
+Similarly, ˆa† 
+
+> j
+
+v = ∑
+
+> α
+
+√
+
+αj + 1 vαhα+ej ,
+
+and αj + 1 ≤ | α| + 1, so 
+
+∥ˆa† 
+
+> j
+
+v∥ ≤ ∥ (I + ˆ n)1/2v∥.
+
+The same argument with the weight ( I + ˆ n)s/ 2 inserted gives 
+
+∥ˆaj v∥s, osc + ∥ˆa† 
+
+> j
+
+v∥s, osc ≤ Cs∥v∥s+1 ,osc .
+
+Iterating this estimate over a product of at most d ladder operators gives Eq. (A.3). A finite linear combination only changes the constant. 
+
+A.4 Finite-time Galerkin error 
+
+We prove Theorem 1. Let L = P (ˆ q, ˆp) be an ordered polynomial of total degree d. By Lemma 1, 
+
+∥Lv ∥ ≤ CP ∥v∥d, osc (A.4) 
+
+on the Hermite span. More generally, with oscillator weights inserted, 
+
+∥Lv ∥s, osc ≤ CP,s ∥v∥s+d, osc . (A.5) 
+
+This follows from the fact that each ˆqj or ˆpj is a linear combination of ˆaj and ˆa† 
+
+> j
+
+, and hence changes total Hermite degree by at most one. Assume stability, that is, the projected dynamics satisfy 
+
+∥etL m ∥ ≤ CT , 0 ≤ t ≤ T, (A.6) 
+
+with CT independent of m. Define the error em between the solution to the dynamics in the projected space um and the solution to the dynamics in the full space projected on H≤m to be 
+
+em(t) = Π mu(t) − um(t).
+
+Since u solves ∂tu = Lu and um solves ∂tum = Lmum, we have that the error follows the same ODE as um, plus an additional term of high occupation numbers components of u feeding into H≤m.
+
+∂tem(t) = Π mLu (t) − Lmum(t)= Lmem(t) + Π mL(I − Πm)u(t). (A.7) 
+
+Moreover em(0) = 0 . Duhamel’s formula gives 
+
+em(t) = 
+
+∫ t
+
+> 0
+
+e(t−τ )Lm ΠmL(I − Πm)u(τ ) dτ. (A.8) 
+
+Therefore, 
+
+∥em(t)∥ ≤ CT
+
+∫ t
+
+> 0
+
+∥L(I − Πm)u(τ )∥ dτ. (A.9) 
+
+14 Using Equation (A.4), 
+
+∥L(I − Πm)u(τ )∥ ≤ CP ∥(I − Πm)u(τ )∥d, osc .
+
+Since Πm commutes with ˆn,
+
+∥(I − Πm)u(τ )∥d, osc = ∥(I − Πm)( I + ˆ n)d/ 2u(τ )∥.
+
+Applying Proposition 4 to (I + ˆ n)d/ 2u(τ ) gives 
+
+∥(I − Πm)u(τ )∥d, osc ≤ (m + 1) −s/ 2∥u(τ )∥s+d, osc .
+
+Hence 
+
+∥em(t)∥ ≤ CT CP t(m + 1) −s/ 2Cs+d (A.10) 
+
+Finally, 
+
+u(t) − um(t) = ( I − Πm)u(t) + em(t).
+
+Using Proposition 4 once more, 
+
+∥u(t) − um(t)∥ ≤ (m + 1) −s/ 2
+
+(
+
+∥u(t)∥s, osc + CT CP t sup  
+
+> 0≤τ≤T
+
+∥u(τ )∥s+d, osc 
+
+)
+
+. (A.11) 
+
+Since ∥u(t)∥s, osc ≤ ∥ u(t)∥s+d, osc , the same constant Cs controls both terms. The assumption in Equation (A.6) and the boundedness of the oscillator Sobolev norms are not automatic for arbitrary polynomial expressions P (ˆ q, ˆp). Polynomial bosonic operators may generate flows whose high-order oscillator norms grow rapidly, or even develop finite-time singularities at the level of the associated classical or Heisenberg dynamics. For example, for 
+
+H = 12 (ˆ pˆq2 + ˆ q2 ˆp),
+
+the Heisenberg equation gives 
+
+ddt ˆq(t) = i[H, ˆq(t)] = ˆ q(t)2.
+
+The corresponding classical equation ˙q = q2 has finite-time blow-up. This does not contradict unitarity of e−itH when H is self-adjoint; it says that polynomial observables and oscillator Sobolev norms need not remain uniformly controlled. This is why Theorem 1 is stated with explicit stability and regularity assumptions. 
+
+A.5 Ground-state consistency 
+
+We prove Theorem 2. Let 
+
+δm := ∥(I − Πm)ϕ∥.
+
+By Proposition 4 and the assumption on ϕ, δm → 0. Hence, for all sufficiently large m, Πmϕ̸ = 0 and 
+
+∥Πmϕ∥ ≥ 1/2. Define the normalized trial state 
+
+˜ϕm := Πmϕ
+
+∥Πmϕ∥ .
+
+By the variational principle, 
+
+0 ≤ λ0,m ≤ ⟨ ˜ϕm, H ˜ϕm⟩. (A.12) 
+
+Since Hϕ = 0 , we have 
+
+HΠmϕ = −H(I − Πm)ϕ. 
+
+15 Therefore 
+
+⟨ ˜ϕm, H ˜ϕm⟩ = ⟨Πmϕ, H Πmϕ⟩∥Πmϕ∥2 (A.13) 
+
+≤ ∥H(I − Πm)ϕ∥∥Πmϕ∥ . (A.14) 
+
+Using the oscillator-control assumption (2.21) ,
+
+∥H(I − Πm)ϕ∥ ≤ CH ∥(I − Πm)ϕ∥d, osc .
+
+Since Πm commutes with ˆn,
+
+∥(I − Πm)ϕ∥d, osc = ∥(I − Πm)( I + ˆ n)d/ 2ϕ∥.
+
+Applying Proposition 4 to (I + ˆ n)d/ 2ϕ gives 
+
+∥(I − Πm)ϕ∥d, osc ≤ (m + 1) −s/ 2∥ϕ∥s+d, osc . (A.15) 
+
+For all sufficiently large m, ∥Πmϕ∥ ≥ 1/2. Combining the previous estimates gives 
+
+0 ≤ λ0,m ≤ 2CH ∥ϕ∥s+d, osc (m + 1) −s/ 2 = Em. (A.16) 
+
+Now let ϕm be a normalized ground state of Hm. Since ϕm ∈ H ≤m,
+
+⟨ϕm, Hϕ m⟩ = ⟨ϕm, H mϕm⟩ = λ0,m .
+
+Decompose the ground state of the truncated operator along the ground state of the infinite-dimensional operator 
+
+ϕm = amϕ + ηm, ηm ⊥ ϕ. 
+
+The spectral gap of H implies 
+
+λ0,m = ⟨ϕm, Hϕ m⟩ ≥ γ∥ηm∥2. (A.17) 
+
+Using (A.16) , we obtain 
+
+∥(I − | ϕ⟩⟨ ϕ|)ϕm∥ = ∥ηm∥ ≤ 
+
+( Em
+
+γ
+
+)1/2
+
+. (A.18) 
+
+After choosing the phase of ϕm so that am ≥ 0, we have 
+
+∥ϕm − ϕ∥2 = 2(1 − am) ≤ 2∥ηm∥2,
+
+and therefore 
+
+∥ϕm − ϕ∥ ≤ 
+
+( 2Em
+
+γ
+
+)1/2
+
+. (A.19) 
+
+It remains to prove the lower bound on the truncated gap. Let v ∈ H ≤m be normalized and orthogonal to ϕm. Since v ⊥ ϕm,
+
+|⟨ v, ϕ ⟩| = |⟨ v, ϕ − ϕm⟩| ≤ ∥ ϕ − ϕm∥ ≤ 
+
+( 2Em
+
+γ
+
+)1/2
+
+.
+
+Using the spectral gap of H again, 
+
+⟨v, H mv⟩ = ⟨v, Hv ⟩ (A.20) 
+
+≥ γ
+
+(
+
+1 − |⟨ v, ϕ ⟩| 2)
+
+(A.21) 
+
+≥ γ − 2Em. (A.22) 
+
+By the min-max principle, this implies 
+
+λ1,m ≥ γ − 2Em. (A.23) 
+
+Together with λ0,m ≤ Em, this gives 
+
+γm = λ1,m − λ0,m ≥ γ − 3Em. (A.24) 
+
+This proves the theorem. 
+
+16 B Details for the symmetric bosonic encoding 
+
+B.1 The symmetric encoding isometry 
+
+We prove Proposition 1. Let 
+
+KN = span {|∅⟩ , |1⟩ , . . . , |N ⟩} .
+
+For α ∈ NN with |α| ≤ m, define the multiset 
+
+Mα = {1, . . . , 1
+
+︸ ︷︷ ︸
+
+> α1
+
+, 2, . . . , 2
+
+︸ ︷︷ ︸
+
+> α2
+
+, . . . , N, . . . , N 
+
+︸ ︷︷ ︸
+
+> αN
+
+, ∅, . . . , ∅
+
+︸ ︷︷ ︸
+
+> m−| α|
+
+}.
+
+Let Pα be the set of distinct ordered strings obtained by permuting this multiset. Its cardinality is 
+
+|P α| = m!(m − | α|)! ∏Nj=1 αj ! . (B.1) 
+
+The encoded state is 
+
+|α⟩F 7 → 1
+
+√|P α|
+
+∑
+
+> b∈P α
+
+|b1, . . . , b m⟩Q =: |α; m⟩Q . (B.2) 
+
+This state is invariant under permutations of the m registers, hence belongs to Sym m(KN ).If α̸ = β, then the two multisets Mα and Mβ are different. Therefore Pα and Pβ are disjoint sets of computational-basis strings. It follows that 
+
+⟨α|β⟩Q = 0 .
+
+For α = β, Equation (B.2) is normalized by construction. Hence the family {| α; m⟩Q}|α|≤ m is or-thonormal, and the map Vm |α⟩F = |α; m⟩Q is an isometry for |α| ≤ m.It remains to identify the image. A basis vector of Sym m(KN ) is specified by occupation numbers of the N + 1 labels 
+
+(α1, . . . , α N , α ∅), α∅ +
+
+> N
+
+∑
+
+> j=1
+
+αj = m. 
+
+Equivalently, it is specified by an N -mode occupation vector α = ( α1, . . . , α N ) satisfying |α| ≤ m,with α∅ = m − | α|. Thus the symmetric basis vectors are in one-to-one correspondence with the global Hermite modes retained in H≤m. Therefore Vm maps H≤m onto Sym m(KN ).The dimension is the number of weak compositions of m into N + 1 parts: 
+
+dim Sym m(KN ) = 
+
+((N + 1) + m − 1
+
+m
+
+)
+
+=
+
+(N + mm
+
+)
+
+. (B.3) 
+
+This is also the number of multi-indices α ∈ NN with |α| ≤ m.
+
+B.2 Encoded creation and annihilation operators 
+
+We prove Proposition 2. Recall that 
+
+KN = span {|∅⟩ , |1⟩ , . . . , |N ⟩} .
+
+For register r ∈ { 1, . . . , m }, define the single-register transitions 
+
+b† 
+
+> j,r
+
+= |j⟩⟨∅| r , bj,r = |∅⟩⟨ j|r .
+
+Let 
+
+B† 
+
+> j
+
+=
+
+> m
+
+∑
+
+> r=1
+
+b†
+
+> j,r
+
+, Bj =
+
+> m
+
+∑
+
+> r=1
+
+bj,r . (B.4) 
+
+17 These operators act symmetrically on the m registers and preserve the symmetric subspace. Let 
+
+N∅ =
+
+> m∑
+> r=1
+
+|∅⟩⟨∅| r . (B.5) 
+
+On the encoded state |α⟩Q, one has 
+
+N∅ |α⟩Q = ( m − | α|) |α⟩Q .
+
+The unnormalized transition operators have the actions 
+
+B† 
+
+> j
+
+|α⟩Q =
+
+> √
+
+(αj + 1)( m − | α|) |α + ej ⟩Q (B.6) 
+
+for |α| < m , and zero for |α| = m. Similarly, 
+
+Bj |α⟩Q =
+
+> √
+
+αj (m − | α| + 1) |α − ej ⟩Q . (B.7) 
+
+These are the standard matrix elements of occupation operators on the symmetric power. The factor 
+
+> √
+
+αj + 1 or √αj comes from the occupation of mode j, while the factor involving m − | α| comes from the occupation of the empty label. To remove the empty-label normalization, define 
+
+A† 
+
+> j
+
+= B† 
+
+> j
+
+N −1/2 
+
+> ∅
+
+, Aj = Bj (N∅ + I)−1/2, (B.8) 
+
+where N −1/2 
+
+> ∅
+
+is defined to be zero on the kernel of N∅. Acting on |α⟩Q, Equations (B.6) and (B.7) give 
+
+A† 
+
+> j
+
+|α⟩Q =
+
+> {√
+
+αj + 1 |α + ej ⟩Q , |α| < m, 
+
+0, |α| = m, 
+
+and 
+
+Aj |α⟩Q = √αj |α − ej ⟩Q .
+
+Therefore Aj and A† 
+
+> j
+
+are exactly the encoded versions of Πmˆaj Πm and Πmˆa† 
+
+> j
+
+Πm. The number operator is 
+
+Nm = mI − N∅. (B.9) 
+
+Hence 
+
+Nm |α⟩Q = |α| | α⟩Q ,
+
+which agrees with the total Hermite number operator on H≤m. The formulas for Qj and Pj follow from the identities 
+
+ˆqj = ˆaj + ˆ a†
+
+> j
+
+√2 , ˆpj = ˆaj − ˆa†
+
+> j
+
+i√2 .
+
+We finally comment on block encodings. The operators Bj and B† 
+
+> j
+
+are sums of m identical single-register transitions, selected by a register index r. They can therefore be block encoded by a standard linear-combination-of-unitaries construction using a uniform superposition over r ∈ { 1, . . . , m }. The diagonal corrections N −1/2 
+
+> ∅
+
+and (N∅ + I)−1/2 depend only on the number of empty slots and can be implemented by reversible counting and arithmetic. This gives block encodings of Aj and A† 
+
+> j
+
+with normalization O(√m). The operators Qj and Pj are fixed linear combinations of these, and Nm is diagonal with spectrum contained in {0, . . . , m }, giving normalization O(m).A linear form can be constructed using Linear Combination of Unitary (LCU) 
+
+L(v, w ) = ∑
+
+> j
+
+vj Qj + ∑
+
+> j
+
+wj Pj ,
+
+We use state preparation for the coefficient vectors v and w together with the same slot-selection construction. The normalization is O(√m(∥v∥ + ∥w∥)) .
+
+18 B.3 Boundary-safe polynomial evaluation and polynomial block encodings 
+
+We give the proof of Theorem 3. Throughout this subsection, the degree d is the constant degree appearing in Definition 1. There are two ingredients: boundary-safe evaluation and standard compo-sition rules for block encodings. 
+
+B.3.1 Boundary-safe evaluation 
+
+There is one technical point. If P has degree d, then applying P (ˆ q, ˆp) to a state in H≤m can pass through Hermite levels as high as m + d before returning to H≤m. Therefore, the correct Galerkin matrix is not obtained by simply replacing ˆqj , ˆpj with their m-truncated versions inside the polynomial. One must evaluate the polynomial in a slightly enlarged cut-off. Explicitly, if M = m + d, then 
+
+ΠmP (ˆ q, ˆp)Π m = Π mP (Π M ˆqΠM , ΠM ˆpΠM )Π m. (B.10) 
+
+We refer to this as boundary-safe polynomial evaluation. Let P (ˆ q, ˆp) be an ordered polynomial of degree at most d. Set M = m + d. We claim that 
+
+ΠmP (ˆ q, ˆp)Π m = Π mP (Π M ˆqΠM , ΠM ˆpΠM )Π m. (B.11) 
+
+It is enough to prove the claim for an ordered monomial 
+
+X1X2 · · · Xk, k ≤ d, 
+
+where each Xℓ is one of the operators ˆqj or ˆpj . Each Xℓ changes the total Hermite degree by at most one. Therefore, starting from a vector in H≤m, every intermediate vector appearing after applying at most k factors lies in H≤m+k ⊆ H ≤M .It follows that inserting ΠM between the factors has no effect on the component that starts and ends in H≤m:
+
+ΠmX1 · · · XkΠm = Π m(Π M X1ΠM ) · · · (Π M XkΠM )Π m.
+
+Linearity gives Equation (B.11) for any ordered polynomial P .
+
+B.3.2 Block encoding of structured linear forms 
+
+Let 
+
+L(a, v, w ) = aI +
+
+> N∑
+> j=1
+
+vj Qj +
+
+> N∑
+> j=1
+
+wj Pj
+
+on the cut-off-M encoded space. By Proposition 2, each Qj and Pj admits a block encoding with normalization O(√M ). If the normalized states 
+
+|v⟩ = 1
+
+∥v∥
+
+> N∑
+> j=1
+
+vj |j⟩ , |w⟩ = 1
+
+∥w∥
+
+> N∑
+> j=1
+
+wj |j⟩
+
+are efficiently preparable, a standard linear-combination-of-unitaries [CW12] construction gives block encodings of ∑
+
+> j
+
+vj Qj and ∑
+
+> j
+
+wj Pj
+
+with normalizations O(√M ∥v∥) and O(√M ∥w∥), respectively. Including the scalar term aI gives a block encoding of L(a, v, w ) with normalization 
+
+α(a, v, w ) = O
+
+> (
+
+|a| + √M (∥v∥ + ∥w∥)
+
+> )
+
+. (B.12) 
+
+19 B.3.3 Composition into ordered polynomials 
+
+Consider one ordered monomial 
+
+Pr(Q, P ) = crkr∏
+
+> ℓ=1
+
+L(ar,ℓ , v r,ℓ , w r,ℓ ).
+
+For each factor, let αr,ℓ denote the normalization in Equation (B.12). Composing block encodings gives a block encoding of the ordered product with normalization 
+
+αr = |cr|
+
+> kr∏
+> ℓ=1
+
+αr,ℓ . (B.13) 
+
+The ordering is preserved by applying the factor block encodings in the same order as in the monomial. Finally, summing over r = 1 , . . . , R by a linear-combination-of-unitaries construction gives a block encoding of 
+
+P (Q, P ) = 
+
+> R∑
+> r=1
+
+Pr(Q, P )
+
+with normalization 
+
+αP =
+
+> R∑
+> r=1
+
+|cr|
+
+> kr∏
+> ℓ=1
+
+O
+
+> (
+
+|ar,ℓ | + √M (∥vr,ℓ ∥ + ∥wr,ℓ ∥)
+
+> )
+
+. (B.14) 
+
+Since M = m + d, this is polynomial under the conditions of Theorem 3. Combining this construction with boundary-safe evaluation Equation (B.11) yields a block encoding of 
+
+ΠmP (ˆ q, ˆp)Π m
+
+on the cut-off-m subspace. This proves Theorem 3. 
+
+B.4 Readout from the symmetric encoding 
+
+We justify Proposition 3. Let 
+
+|ψm⟩Q = ∑
+
+> |α|≤ m
+
+cα |α⟩Q .
+
+B.4.1 Block-encoded observables 
+
+If Om has an (αO, a, ϵ ) block encoding UO, then the expectation 
+
+⟨Om⟩ψm = ⟨ψm| Om |ψm⟩
+
+can be estimated by a Hadamard test or amplitude estimation applied to UO and the state-preparation circuit for |ψm⟩Q. The sample complexity scales polynomially in αO and the desired inverse precision. When Om = P (Q, P ) is a structured polynomial observable, Theorem 3 supplies the required block encoding. 
+
+B.4.2 Occupation diagnostics 
+
+The total occupation operator is diagonal in the encoded basis: 
+
+Nm |α⟩Q = |α| | α⟩Q .
+
+Equivalently, in the register encoding, 
+
+Nm = mI − N∅,
+
+20 where N∅ counts the number of empty labels. Thus Nm can be measured by counting the number of registers not equal to ∅. This gives direct access to the distribution 
+
+Pr[ K = k] = ∑
+
+> |α|=k
+
+|cα|2, 0 ≤ k ≤ m. 
+
+Moments such as ⟨N rm⟩ are then obtained classically from samples of K.Large mass near K = m indicates that the state is interacting strongly with the boundary of the cut-off. This does not by itself prove that the approximation is bad, but it is a useful diagnostic that the cut-off should be increased. 
+
+B.4.3 Reduced Hermite matrices and marginal sampling 
+
+Sampling x ∼ ρ∞ cannot be efficient as x ∈ RN , and simply writing a single sample has exponential complexity when N = 2 n. A meaningful target is constant-dimensional marginal sampling. We describe the one-coordinate case; the extension to any constant-size set of coordinates is analogous. Consider an encoded state, and its corresponding Hermite expansion 
+
+|ψm⟩Q = ∑
+
+> |α|≤ m
+
+cα |α⟩Q , ψm(x) = ∑
+
+> |α|≤ m
+
+cαhα(x)
+
+Fix a coordinate of interest j ∈ { 1, . . . , N } and split the multi-index as 
+
+α = ( α̸ =j , α j ).
+
+Define the reduced Hermite matrix of coordinate j by 
+
+Γ(j) 
+
+> kℓ
+
+= ∑ 
+
+> α̸=j
+
+cα̸ =j ,k cα̸=j ,ℓ , 0 ≤ k, ℓ ≤ m. (B.15) 
+
+Here coefficients outside the global cut-off are understood to be zero. Equivalently, the sum only includes indices for which both |α̸ =j | + k ≤ m and |α̸ =j | + ℓ ≤ m.By orthonormality of the Hermite basis in the unobserved variables, the one-coordinate marginal density is 
+
+ρj (xj ) =  
+
+> ∫
+> RN−1
+
+|ψm(x)|2 dx ̸ =j =
+
+> m∑
+> k,ℓ =0
+
+Γ(j) 
+
+> kℓ
+
+hk(xj )hℓ(xj ). (B.16) 
+
+Thus, once Γ(j) is known, the marginal is a one-dimensional density with m + 1 Hermite modes. It can be evaluated classically in time polynomial in m. Standard one-dimensional quadrature and inverse-CDF sampling then give classical marginal samples with cost polynomial in m and the desired sampling accuracy. It remains to explain how the entries of Γ(j) are accessed from the encoded state. Define the mode-j
+
+occupation counter 
+
+Nj =
+
+> m∑
+> t=1
+
+|j⟩⟨ j|(t) . (B.17) 
+
+On the symmetric logical space, this agrees with A† 
+
+> j
+
+Aj , and 
+
+Nj |α⟩Q = αj |α⟩Q .
+
+Let P (j)0 be the projector onto zero occupation of mode j. It can be implemented by reversibly computing Nj and checking whether the result is zero. Algebraically, on the truncated space, it is the polynomial 
+
+P (j)0 =
+
+> m∏
+> r=1
+> (
+
+I − Nj
+
+r
+
+> )
+
+. (B.18) 
+
+21 Indeed, on a basis state with j-occupation aj ∈ { 0, . . . , m }, this polynomial evaluates to 1 if aj = 0 
+
+and to 0 otherwise. For 0 ≤ k, ℓ ≤ m, define 
+
+M (j) 
+
+> kℓ
+
+= (A† 
+
+> j
+
+)ℓ
+
+√ℓ! P (j)0
+
+Akj
+
+√k! . (B.19) 
+
+This operator removes k particles in mode j, checks that the mode is then empty, and creates ℓ
+
+particles in mode j. More precisely, 
+
+M (j) 
+
+> kℓ
+
+|α̸=j , k ⟩Q = |α̸=j , ℓ ⟩Q , (B.20) 
+
+whenever both states lie inside the global cut-off, and M (j) 
+
+> kℓ
+
+annihilates basis states whose j-occupation is not k. Therefore 
+
+M (j) 
+
+> kℓ
+
+= ∑ 
+
+> α̸=j
+
+|α̸=j , ℓ ⟩Q ⟨α̸=j , k |Q , (B.21) 
+
+where the sum is restricted to indices for which both states belong to H≤m.Taking the expectation in |ψm⟩Q gives 
+
+Γ(j) 
+
+> kℓ
+
+= ⟨ψm| M (j) 
+
+> kℓ
+
+|ψm⟩Q . (B.22) 
+
+For k̸ = ℓ, the operator M (j) 
+
+> kℓ
+
+is not Hermitian. Since 
+
+(
+
+M (j)
+
+> kℓ
+
+)†
+
+= M (j) 
+
+> ℓk
+
+,
+
+its real and imaginary parts are obtained from the Hermitian observables 
+
+12
+
+(
+
+M (j) 
+
+> kℓ
+
++ M (j)
+
+> ℓk
+
+)
+
+, 12i
+
+(
+
+M (j) 
+
+> kℓ
+
+− M (j)
+
+> ℓk
+
+)
+
+. (B.23) 
+
+The operators M (j) 
+
+> kℓ
+
+are built from the encoded primitives Aj , A† 
+
+> j
+
+, and Nj . Since k, ℓ ≤ m, and 
+
+m is the global truncation parameter, each M (j) 
+
+> kℓ
+
+has a block encoding with normalization and gate complexity polynomial in m and log N . Hence each entry of Γ(j) can be estimated with polynomial query and gate complexity. More explicitly, suppose each M (j) 
+
+> kℓ
+
+is block encoded with normalization ηM = poly( m) and gate cost CM = poly( m, log N ). Then estimating all entries of Γ(j) to entrywise accuracy δ and failure probability pfail has sampling query complexity 
+
+O
+
+(
+
+(m + 1) 2 η2
+
+> M
+
+δ2 log (m + 1) 2
+
+pfail 
+
+)
+
+, (B.24) 
+
+or, with coherent amplitude estimation, 
+
+O
+
+(
+
+(m + 1) 2 ηM
+
+δ log (m + 1) 2
+
+pfail 
+
+)
+
+. (B.25) 
+
+The corresponding gate complexity is obtained by multiplying by CM .Finally, entrywise accuracy controls the reconstructed marginal. Suppose 
+
+|̂Γ(j) 
+
+> kℓ
+
+− Γ(j) 
+
+> kℓ
+
+| ≤ δ
+
+for all 0 ≤ k, ℓ ≤ m, and define ̂
+
+ρj (xj ) = 
+
+> m
+
+∑
+
+> k,ℓ =0
+
+̂
+
+Γ(j) 
+
+> kℓ
+
+hk(xj )hℓ(xj ).
+
+22 Then 
+
+∥̂ ρj − ρj ∥L1(R) ≤
+
+> m
+
+∑
+
+> k,ℓ =0
+
+|̂ Γ(j) 
+
+> kℓ
+
+− Γ(j) 
+
+> kℓ
+
+|∥ hkhℓ∥L1(R)
+
+≤
+
+> m
+
+∑
+
+> k,ℓ =0
+
+δ∥hk∥L2(R)∥hℓ∥L2(R)
+
+= ( m + 1) 2δ. (B.26) 
+
+Thus choosing 
+
+δ = O
+
+( ϵmarg 
+
+(m + 1) 2
+
+)
+
+gives an L1-accurate reconstruction of the marginal density. The final sampling step is then classical and one-dimensional. It is useful to contrast this route with the quantum Hermite transform. In a local tensor-product truncation, one stores a coefficient vector in a register of the form 
+
+|ψ⟩ = ∑
+
+> α1,...,α N
+
+cα |α1⟩ · · · | αN ⟩ .
+
+An inverse quantum Hermite transform as in [Jai+26] applied coordinatewise would map this coeffi-cient representation to a discretized position representation, 
+
+|ψ⟩ 7 −→ ∑
+
+> x
+
+ψ(x) |x⟩ , (B.27) 
+
+after which measurement would sample from the discretized density. This is the natural strategy in a tensor-product encoding. The global symmetric encoding is different. It stores the state by occupations of indistinguishable excitations, not by assigning a Hermite register to each coordinate. There is therefore no immediate coordinatewise tensor-product structure on which to apply (QHT −1)⊗N . Moreover, when N = 2 n, a full position-basis sample has exponentially many coordinates. For the global truncation, the reduced-Hermite-matrix construction above is the appropriate readout primitive: it extracts low-dimensional marginals without expanding the whole state into a tensor-product position representation. 
+
+# C Fokker–Planck and Inverse problems 
+
+C.1 Stationarity of Gibbs densities for Fokker–Planck equations 
+
+We justify the stationarity claims used in Section 4.1. Consider 
+
+∂tρ = ∇ · (ρF ) + ∆ ρ. (C.1) 
+
+Let V : RN → R be such that 
+
+Z =
+
+∫
+
+> RN
+
+e−V (x)dx < +∞,
+
+and define 
+
+ρ∞(x) = Z−1e−V (x).
+
+The density ρ∞ is stationary for Equation (C.1) if and only if 
+
+∇ · (ρ∞F ) + ∆ ρ∞ = 0 . (C.2) 
+
+Assume that the drift admits the decomposition 
+
+F = ∇V + G. (C.3) 
+
+23 Since ρ∞ = Z−1e−V , the constant Z−1 plays no role in the stationarity equation. We compute 
+
+∇ · (e−V F ) + ∆ e−V = ∇ · (e−V ∇V ) + ∇ · (e−V G) + ∆ e−V . (C.4) 
+
+Using 
+
+∇e−V = −e−V ∇V, 
+
+we have 
+
+∆e−V = ∇ · (−e−V ∇V ).
+
+Therefore 
+
+∇ · (e−V ∇V ) + ∆ e−V = 0 ,
+
+and hence 
+
+∇ · (e−V F ) + ∆ e−V = ∇ · (e−V G). (C.5) 
+
+Thus ρ∞ = Z−1e−V is stationary if and only if 
+
+∇ · (e−V G) = 0 . (C.6) 
+
+Equivalently, 
+
+∇ · G = G · ∇ V. (C.7) 
+
+This is the weighted divergence-free condition. It is the ordinary divergence-free condition only when 
+
+V is constant. 
+
+C.2 Ground-state transform with weighted divergence-free drift 
+
+We derive Equation (4.10). Consider the Fokker–Planck equation 
+
+∂tρ = ∇ · (ρ(∇V + G)) + ∆ ρ, ∇ · (e−V G) = 0 . (C.8) 
+
+Let 
+
+ϕ = e−V / 2
+
+up to an irrelevant normalization constant, and write 
+
+ρ = ϕψ. 
+
+Since ϕ is time independent, 
+
+∂tρ = ϕ ∂ tψ. 
+
+We split the transformed generator into the reversible contribution generated by ∇V and the residual contribution generated by G.First consider the reversible part. We compute 
+
+∇(ϕψ ) = ϕ∇ψ + ψ∇ϕ. 
+
+Since 
+
+∇ϕ = − 12 ϕ∇V, 
+
+we have 
+
+∇(ϕψ ) = ϕ∇ψ − 12 ϕψ ∇V. 
+
+Therefore 
+
+∇ · (ρ∇V ) + ∆ ρ = ∇ · (ϕψ ∇V ) + ∆( ϕψ )= ∇ · 
+
+> (
+
+ϕ∇ψ + 12 ϕψ ∇V
+
+> )
+
+. (C.9) 
+
+24 Expanding the divergence gives 
+
+∇ · (ρ∇V ) + ∆ ρ = ∇ϕ · ∇ ψ + ϕ∆ψ + 12 ∇ϕ · (ψ∇V ) + 12 ϕ∇ψ · ∇ V + 12 ϕψ ∆V. (C.10) 
+
+The terms involving ∇ψ · ∇ V cancel because ∇ϕ = − 12 ϕ∇V . Hence 
+
+∇ · (ρ∇V ) + ∆ ρ = ϕ∆ψ − 14 ϕψ |∇ V |2 + 12 ϕψ ∆V. (C.11) 
+
+Dividing by ϕ gives 
+
+ϕ−1 [∇ · (ρ∇V ) + ∆ ρ] = ∆ ψ − 14 |∇ V |2ψ + 12 ∆V ψ = −HV ψ, (C.12) 
+
+where 
+
+HV = −∆ + 14 |∇ V |2 − 12 ∆V. (C.13) 
+
+Now consider the residual drift. We have 
+
+ϕ−1∇ · (ρG ) = ϕ−1∇ · (ϕψG )= G · ∇ ψ + ψ ϕ −1G · ∇ ϕ + ψ ∇ · G. (C.14) 
+
+Using ϕ−1G · ∇ ϕ = − 12 G · ∇ V and the weighted divergence-free condition 
+
+∇ · (e−V G) = 0 ⇐⇒ ∇ · G = G · ∇ V, 
+
+we obtain 
+
+ϕ−1∇ · (ρG ) = KGψ, KGψ = G · ∇ ψ + 12 (∇ · G)ψ. (C.15) 
+
+Combining the two contributions proves 
+
+∂tψ = −HV ψ + KGψ. (C.16) 
+
+The operator KG is skew-adjoint in L2(dx ). Indeed, for smooth compactly supported functions f, g ,
+
+⟨f, K Gg⟩ =
+
+∫
+
+f G · ∇ g dx + 12
+
+∫
+
+f g ∇ · G dx (C.17) = −
+
+∫
+
+g G · ∇ f dx − 12
+
+∫
+
+f g ∇ · G dx (C.18) = −⟨ KGf, g ⟩, (C.19) 
+
+where we used integration by parts. Thus, writing HG := −iK G, the operator HG is formally self-adjoint and KG = + iH G.We also verify that the stationary state is annihilated by both pieces. For the reversible part, define 
+
+Dj = ∂xj + 12 ∂xj V. 
+
+The formal adjoint in L2(RN , dx ) is 
+
+D† 
+
+> j
+
+= −∂xj + 12 ∂xj V. 
+
+Then 
+
+D† 
+
+> j
+
+Dj f =
+
+(
+
+−∂xj + 12 ∂xj V
+
+) ( 
+
+∂xj f + 12 (∂xj V )f
+
+)
+
+= −∂2 
+
+> xj
+
+f − 12 (∂2 
+
+> xj
+
+V )f + 14 (∂xj V )2f. (C.20) 
+
+25 Summing over j gives N∑
+
+> j=1
+
+D† 
+
+> j
+
+Dj = −∆ + 14 |∇ V |2 − 12 ∆V = HV .
+
+Thus HV ≥ 0 on its natural quadratic-form domain. Since 
+
+Dj ϕ = ∂xj (e−V / 2) + 12 (∂xj V )e−V / 2 = 0 ,
+
+we have 
+
+HV ϕ =
+
+> N∑
+> j=1
+
+D† 
+
+> j
+
+Dj ϕ = 0 .
+
+For the residual part, 
+
+KGϕ = G · ∇ ϕ + 12 (∇ · G)ϕ = − 12 (G · ∇ V )ϕ + 12 (∇ · G)ϕ = 0 ,
+
+again using ∇ · G = G · ∇ V . Hence ϕ = √ρ∞ is a zero mode of the full transformed generator −HV +
+
+KG. Setting G = 0 gives the reversible ground-state transform used in the posterior Hamiltonian construction. 
+
+C.3 Quadratic confinement and oscillator form 
+
+In this subsection we specialize to the reversible case and write H := HV . We derive Equations (4.14) and (4.16). If 
+
+V (x) = ∥x∥2,
+
+then 
+
+∇V = 2 x, |∇ V |2 = 4 ∥x∥2, ∆V = 2 N. 
+
+Substituting in Equation (C.13) gives 
+
+H = −∆ + ∥x∥2 − N. 
+
+Using the oscillator identity 
+
+2ˆ n = −∆ + ∥ˆq∥2 − N, 
+
+we obtain 
+
+H = 2ˆ n. 
+
+Now let 
+
+V (x) = ∥x∥2 + F0(x).
+
+Then 
+
+∇V = 2 x + ∇F0, ∆V = 2 N + ∆ F0.
+
+Therefore 
+
+H = −∆ + 14 |2x + ∇F0(x)|2 − 12 (2 N + ∆ F0(x)) = −∆ + ∥x∥2 − N + x · ∇ F0(x) + 14 |∇ F0(x)|2 − 12 ∆F0(x). (C.21) 
+
+The first three terms are 2ˆ n. Hence 
+
+H = 2ˆ n + WF0 (ˆ q),
+
+where 
+
+WF0 (x) = x · ∇ F0(x) + 14 |∇ F0(x)|2 − 12 ∆F0(x).
+
+If F0 is a polynomial, then WF0 is also a polynomial. In particular, the transformed operator is of the form covered by the polynomial block-encoding results of Section 3.3. 
+
+26 C.4 Bayesian inverse problems in whitened coordinates 
+
+We derive Equation (4.21). The observation model is 
+
+y = g(u) + η, η ∼ N (0 , Γ) ,
+
+and the prior is 
+
+u ∼ N (μ, Σ) .
+
+The posterior density with respect to Lebesgue measure on u is proportional to 
+
+exp 
+
+> (
+
+− 12 ∥u − μ∥2Σ − 12 ∥y − g(u)∥2Γ
+
+> )
+
+, (C.22) 
+
+where 
+
+∥u − μ∥2Σ = ( u − μ)T Σ−1(u − μ).
+
+Introduce the whitened coordinate 
+
+u = μ + √2 Σ 1/2x. 
+
+Then 12 ∥u − μ∥2Σ = 12
+
+> ∥∥∥
+
+√2 x
+
+> ∥∥∥2
+
+= ∥x∥2.
+
+The likelihood term becomes 12
+
+> ∥∥∥
+
+y − g(μ + √2 Σ 1/2x) 
+
+> ∥∥∥2Γ
+
+.
+
+The Jacobian of the affine change of variables is constant and is absorbed into the normalizing constant. Therefore the posterior density in x is 
+
+π(x|y) = Z−1 
+
+> y
+
+e−Vy (x),
+
+with 
+
+Vy(x) = ∥x∥2 + 12
+
+> ∥∥∥
+
+y − g(μ + √2 Σ 1/2x) 
+
+> ∥∥∥2Γ
+
+.
+
+This proves Equation (4.21). Finally, for any observable f for which the integral is well defined, 
+
+Eπ(·| y)[f (x)] = 
+
+> ∫
+
+f (x)π(x|y) dx. 
+
+Since ϕy = √π(·| y), this is ∫
+
+f (x)|ϕy(x)|2dx = ⟨ϕy, f (ˆ q)ϕy⟩.
+
+This proves Equation (4.23). 
+
+C.5 Structured forward maps and posterior Hamiltonian block encodings 
+
+Section 4.5 is stated directly in terms of Wy(ˆ q) having an efficient structured operator-polynomial representation. Here we give a useful sufficient condition in terms of the whitened residual 
+
+ry(x) = Γ −1/2 (
+
+y − g(μ + √2 Σ 1/2x)
+
+> )
+
+,
+
+so that 
+
+Fy(x) = 12 ∥ry(x)∥2 = 12
+
+> M∑
+> a=1
+
+ry,a (x)2. (C.23) 
+
+27 The posterior Hamiltonian is 
+
+Hy = 2ˆ n + Wy(ˆ q), Wy(x) = x · ∇ Fy(x) + 14 |∇ Fy(x)|2 − 12 ∆Fy(x). (C.24) 
+
+Assume that M = poly( n) and that each residual component has a constant-degree structured scalar representation 
+
+ry,a (x) = 
+
+> Ra
+
+∑
+
+> ρ=1
+
+ca,ρ ka,ρ 
+
+∏
+
+> s=1
+
+ℓa,ρ,s (x), ℓa,ρ,s (x) = aa,ρ,s + va,ρ,s · x, (C.25) 
+
+with ka,ρ ≤ p = O(1) , ∑ 
+
+> a
+
+Ra = poly( n), polynomially bounded scalar coefficients and vector norms, efficiently preparable normalized coefficient states, and classically computable inner products v · v′
+
+between all coefficient vectors appearing in the representation. We show that these assumptions imply that Wy(ˆ q) has an efficient structured operator-polynomial representation with only position operators. It is enough to check closure under the operations ap-pearing in Equation (C.24). Let 
+
+T (x) = c
+
+> k
+
+∏
+
+> s=1
+
+ℓs(x), ℓs(x) = as + vs · x, k = O(1) . (C.26) 
+
+Then 
+
+∇T (x) = c
+
+> k
+
+∑
+
+> t=1
+
+vt
+
+∏
+
+> s̸=t
+
+ℓs(x). (C.27) 
+
+Consequently, 
+
+x · ∇ T (x) = c
+
+> k
+
+∑
+
+> t=1
+
+(vt · x) ∏
+
+> s̸=t
+
+ℓs(x), (C.28) 
+
+which is again a sum of products of affine linear forms. The Laplacian is also closed in this representation. Since each ℓs is affine, 
+
+∆T (x) = c
+
+> k
+
+∑
+
+> t,u =1
+> t̸=u
+
+(vt · vu) ∏
+
+> s̸=t,u
+
+ℓs(x). (C.29) 
+
+Thus ∆T is structured provided the inner products vt · vu are classically computable. Now suppose each residual component has the form 
+
+ry,a (x) = 
+
+> Ra
+
+∑
+
+> ρ=1
+
+ca,ρ ka,ρ 
+
+∏
+
+> s=1
+
+ℓa,ρ,s (x), ka,ρ ≤ p. (C.30) 
+
+Then Fy = 12
+
+∑ 
+
+> a
+
+r2 
+
+> y,a
+
+is a structured polynomial of degree at most 2p and size polynomial in M and the Ra’s. Applying Equations (C.28) and (C.29) term by term shows that 
+
+x · ∇ Fy and ∆Fy
+
+also have polynomial-size structured representations. It remains to check |∇ Fy|2. By the calculation above, ∇Fy can be written as 
+
+∇Fy(x) = ∑
+
+> ρ
+
+bρ(x)vρ, (C.31) 
+
+where each bρ(x) is a structured polynomial of degree at most 2p − 1, and each vρ is one of the coefficient vectors appearing in the affine forms. Therefore 
+
+|∇ Fy(x)|2 = ∑
+
+> ρ,σ
+
+(vρ · vσ)bρ(x)bσ(x). (C.32) 
+
+28 This is again a polynomial-size structured polynomial, assuming the inner products vρ · vσ are com-putable. Its degree is at most 4p − 2.Combining the three pieces in Equation (C.24), we conclude that Wy is a structured polynomial of degree at most 4p − 2 and polynomial size. Hence, by Theorem 3, the truncated operator 
+
+ΠmWy(ˆ q)Π m
+
+admits a block encoding with polynomial normalization and gate complexity whenever m = poly( n).The term 2ˆ n is diagonal in the global Hermite basis and has normalization O(m). Therefore 
+
+Hy,m = Π m(2ˆ n + Wy(ˆ q))Π m
+
+also admits a block encoding with polynomial normalization and gate complexity. 
+
+C.6 Linear-Gaussian inverse problems 
+
+Consider a linear forward map, the whitened inverse problem has 
+
+V (x) = ∥x∥2 + 12 ∥b − Ax ∥2, (C.33) 
+
+with A ∈ RM ×N and b ∈ RM . Expanding, 
+
+V (x) = 12 xT Kx − hT x + 12 ∥b∥2, K = 2 I + AT A, h = AT b. (C.34) 
+
+Thus the posterior is Gaussian with precision K and mean K−1h. Since 
+
+K ⪰ 2I, 
+
+the potential is uniformly convex. The transformed Hamiltonian is 
+
+H = −∆ + 14 ∥Kx − h∥2 − 12 tr K. (C.35) 
+
+After shifting x by the posterior mean K−1h, this becomes 
+
+H = −∆ + 14 xT K2x − 12 tr K. (C.36) 
+
+Diagonalizing K = U T diag( κ1, . . . , κ N )U , one obtains a sum of independent harmonic oscillators: 
+
+H =
+
+> N∑
+> j=1
+> (
+
+−∂2 
+
+> zj
+
++ κ2
+
+> j
+
+4 z2 
+
+> j
+
+− κj
+
+2
+
+> )
+
+. (C.37) 
+
+The spectrum is 
+
+> N∑
+> j=1
+
+nj κj : nj ∈ N 
+
+> 
+
+. (C.38) 
+
+Therefore the spectral gap is 
+
+γ = λmin (K) ≥ 2. (C.39) 
+
+The precise constant depends only on the whitening convention; the important point is that the gap is bounded below by a constant because of the Gaussian prior. The same structure makes many readout tasks classically tractable. By the Woodbury identity, 
+
+K−1 = (2 I + AT A)−1 = 12 I − 14 AT
+
+> (
+
+I + 12 AA T
+
+> )−1
+
+A. (C.40) 
+
+29 Thus covariance queries reduce to linear algebra in the M × M matrix AA T . For example, for any efficiently accessible vector v ∈ RN ,
+
+vT K−1v = 12 ∥v∥2 − 14 (Av )T
+
+> (
+
+I + 12 AA T
+
+> )−1
+
+(Av ). (C.41) 
+
+Similarly, a coordinate marginal variance is 
+
+eTj K−1ej = 12 − 14 (Ae j )T
+
+> (
+
+I + 12 AA T
+
+> )−1
+
+(Ae j ). (C.42) 
+
+Thus, when M = poly( n) and the relevant matrix-vector products are classically accessible, the linear-Gaussian case is efficiently reducible to classical linear algebra. 
+
+C.7 Spectral gap for quadratic-square potentials 
+
+We prove the spectral-gap statement used in Section 4.6. Let 
+
+V (x) = ∥x∥2 + f (x)2, f (x) = xT Ax + b · x + c, (C.43) 
+
+with A = AT . Let 
+
+H = −∆ + 14 |∇ V |2 − 12 ∆V, ϕ = Z−1/2e−V / 2. (C.44) 
+
+Then Hϕ = 0 and H ≥ 0 by the ground-state transform. We show that 0 is isolated. Let dμ = Z−1e−V dx . For any χ = hϕ , the ground-state transform gives the Dirichlet identity 
+
+⟨χ, Hχ ⟩L2(dx ) =
+
+> ∫
+> RN
+
+|∇ h|2 dμ. (C.45) 
+
+Also, 
+
+χ ⊥ ϕ ⇐⇒ 
+
+> ∫
+
+h dμ = 0 . (C.46) 
+
+Thus a Poincar´ e inequality for μ implies a spectral gap for H.We now indicate why μ satisfies such an inequality. Consider the reversible Langevin generator 
+
+L = ∆ − ∇ V · ∇ . (C.47) 
+
+For sufficiently small α > 0, set 
+
+Vα(x) = ∥x∥2 + αf (x)2. (C.48) 
+
+A polynomial coercivity estimate gives constants c, C > 0 such that 
+
+∇V · ∇ Vα − ∆Vα ≥ c
+
+> (
+
+∥x∥2 + f (x)2|∇ f (x)|2)
+
+− C. (C.49) 
+
+This estimate follows by writing x = rθ and comparing the leading powers of r along each direction 
+
+θ ∈ SN −1. The positive terms either grow like r6, r4, or are controlled by the confining term ∥x∥2.Let 
+
+W (x) = eεV α(x) (C.50) 
+
+with ε > 0 sufficiently small. Then 
+
+LWW = ε∆Vα + ε2|∇ Vα|2 − ε∇V · ∇ Vα. (C.51) 
+
+Using Equation (C.49) and choosing ε small enough yields a Lyapunov drift condition: 
+
+LW ≤ − κW + B1BR (C.52) 
+
+30 for some κ, B, R > 0. Since e−V is smooth and bounded above and below on BR, the measure μ
+
+satisfies a local Poincar´ e inequality on BR. The Lyapunov criterion for Poincar´ e inequalities then implies a global Poincar´ e inequality: 
+
+∫ (
+
+h −
+
+∫
+
+h dμ 
+
+)2
+
+dμ ≤ CP
+
+∫
+
+|∇ h|2 dμ. (C.53) 
+
+See [Bak+08; CGZ13]. Now take χ ⊥ ϕ and write χ = hϕ . By Equation (C.46), ∫ h dμ = 0 . Combining Equations (C.45) and (C.53) gives 
+
+∥χ∥2 
+
+> L2(dx )
+
+=
+
+∫
+
+h2 dμ ≤ CP
+
+∫
+
+|∇ h|2 dμ = CP ⟨χ, Hχ ⟩. (C.54) 
+
+Hence 
+
+⟨χ, Hχ ⟩ ≥ C−1 
+
+> P
+
+∥χ∥2, χ ⊥ ϕ. (C.55) 
+
+Therefore 
+
+σ(H) ⊂ { 0} ∪ [C−1 
+
+> P
+
+, ∞). (C.56) 
+
+Finally, if χ ∈ ker H and χ = hϕ , then Equation (C.45) gives ∇h = 0 μ-almost everywhere. Since μ
+
+is equivalent to Lebesgue measure on the connected space RN , h is constant. Thus 
+
+ker H = span {ϕ}. (C.57) 
+
+This proves existence of a positive gap for each fixed instance. The argument does not give an inverse-polynomial lower bound on C−1 
+
+> P
+
+as the dimension or the instance parameters vary. 
+
+C.8 Quartic multiwell potentials and Ising hardness 
+
+We explain the hardness statement used in Section 4.6. The point is not that every quartic inverse problem is hard. Rather, the class of quartic multiwell potentials is expressive enough to approximate discrete spin systems. Let G be an Ising instance with spins si ∈ {± 1} and energy 
+
+EG(s) = − ∑
+
+> (i,j )
+
+Jij sisj − ∑
+
+> i
+
+hisi. (C.58) 
+
+Consider the quartic potential 
+
+VG,κ (x) = ∥x∥2 + κ
+
+> n
+
+∑
+
+> i=1
+
+(x2 
+
+> i
+
+− 1) 2 + βE G(x), (C.59) 
+
+where EG(x) is the same polynomial with si replaced by xi. The quadratic prior term ∥x∥2 is constant on the hypercube vertices and therefore does not change the relative spin weights. For large κ, the term κ ∑
+
+> i
+
+(x2 
+
+> i
+
+− 1) 2 creates 2n wells near the vertices s ∈ {± 1}n. Laplace approxi-mation gives ∫
+
+> Rn
+
+e−VG,κ (x)dx = Cκ,n e−n ∑
+
+> s∈{± 1}n
+
+e−βE G(s) (1 + oκ(1)) , (C.60) 
+
+where the factor Cκ,n is independent of the spin configuration when the wells are symmetric. Likewise, for observables f that vary slowly within each well, 
+
+∫ f (x)e−VG,κ (x)dx 
+
+∫ e−VG,κ (x)dx =
+
+∑ 
+
+> s
+
+f (s)e−βE G(s)
+
+∑ 
+
+> s
+
+e−βE G(s) + oκ(1) . (C.61) 
+
+Therefore ground-state observables of the continuous Hamiltonian approximate Ising Gibbs expecta-tions, because 
+
+ϕG,κ (x) = Z−1/2e−VG,κ (x)/2
+
+31 satisfies 
+
+⟨ϕG,κ , f (ˆ q)ϕG,κ ⟩ = 
+
+> ∫
+
+f (x)e−VG,κ (x)dx  
+
+> ∫
+
+e−VG,κ (x)dx . (C.62) 
+
+This construction is compatible with the inverse-problem form. The pinning wells arise from quadratic residuals gi(x) = x2 
+
+> i
+
+with observations near 1, giving terms (x2 
+
+> i
+
+− 1) 2. Pair interactions arise from quadratic residuals gij (x) = xixj with nonzero observations: expanding (xixj − yij )2 gives a term −2yij xixj plus quartic terms that are approximately constant inside the wells. Linear fields are produced similarly from affine residuals. Thus quadratic forward maps can generate quartic multiwell posterior landscapes whose low-temperature Gibbs weights approximate an Ising model. Exact evaluation of Ising and related Tutte partition functions is #P-hard in broad parameter regimes, and approximation with fields can also be hard depending on the parameter regime [JVW90; GJ06]. Consequently, one should not expect a general polynomial-time algorithm for arbitrary quartic posterior landscapes. This hardness statement is compatible with the spectral-gap existence result in Section C.7: the existence theorem gives γ > 0 for fixed instances, but does not provide an inverse-polynomial lower bound. In multiwell regimes, the gap can be exponentially small because of metastability between well-separated explanations of the data. 
+
+C.9 Uniform spectral gap from a Hessian lower bound 
+
+We prove the spectral-gap statement used in Section 4.6. Let 
+
+Vτ (x) := ∥x∥2 + τ F (x), 0 ≤ τ ≤ 1,
+
+and define 
+
+Hτ := −∆ + 14 |∇ Vτ |2 − 12 ∆Vτ . (C.63) 
+
+Assume that there exists β < 2 such that 
+
+∇2F (x) ⪰ − βI for all x ∈ RN . (C.64) 
+
+Set 
+
+κ := 2 − β > 0.
+
+Then, for all τ ∈ [0 , 1] ,
+
+∇2Vτ (x) = 2 I + τ ∇2F (x) ⪰ (2 − βτ )I ⪰ κI. (C.65) 
+
+First, this implies that Vτ is uniformly confining. Indeed, fixing x ∈ RN and applying Taylor’s formula to g(t) := Vτ (tx ) gives 
+
+Vτ (x) ≥ Vτ (0) + ∇Vτ (0) · x + κ
+
+2 ∥x∥2.
+
+Thus 
+
+Zτ := 
+
+> ∫
+> RN
+
+e−Vτ (x) dx < +∞.
+
+Define 
+
+dμ τ (x) := Z−1 
+
+> τ
+
+e−Vτ (x) dx, ϕτ := Z−1/2 
+
+> τ
+
+e−Vτ /2.
+
+We now record the ground-state transform identity. Let 
+
+Dj (τ ) := ∂xj + 12 ∂xj Vτ .
+
+Then 
+
+Dj (τ )ϕτ = 0 ,
+
+and 
+
+Hτ =
+
+> N∑
+> j=1
+
+Dj (τ )†Dj (τ ). (C.66) 
+
+32 Consequently, for any smooth h we define χ := hϕ τ ,
+
+Dj (τ )( hϕ τ ) = ( ∂xj h)ϕτ + hD j (τ )ϕτ = ( ∂xj h)ϕτ .
+
+Defining dμ τ (x) := ϕ2 
+
+> τ
+
+(x)dx 
+
+⟨χ, H τ χ⟩L2(dx ) =
+
+> N
+
+∑
+
+> j=1
+
+∥Dj (τ )χ∥2 =
+
+∫
+
+> RN
+
+|∇ h(x)|2 dμ τ (x). (C.67) 
+
+Moreover if χ is orthogonal to ϕτ then it has zero mean in the μτ measure, 
+
+χ ⊥ ϕτ ⇐⇒ 0 = ⟨χ, ϕ τ ⟩L2(dx ) =
+
+∫
+
+> RN
+
+h dμ τ . (C.68) 
+
+We use the standard Poincar´ e inequality for uniformly strongly convex Gibbs measures: if ∇2Vτ ⪰ κI ,then ∫
+
+> RN
+
+∣∣∣∣h −
+
+∫
+
+h dμ τ
+
+∣∣∣∣
+
+> 2
+
+dμ τ ≤ 1
+
+κ
+
+∫
+
+> RN
+
+|∇ h|2 dμ τ . (C.69) 
+
+Applying this to a function h with zero μτ -mean gives 
+
+∫
+
+|h|2 dμ τ ≤ 1
+
+κ
+
+∫
+
+|∇ h|2 dμ τ .
+
+Therefore, if χ = hϕ τ and χ ⊥ ϕτ , then 
+
+∥χ∥2 =
+
+∫
+
+|h|2 dμ τ ≤ 1
+
+κ
+
+∫
+
+|∇ h|2 dμ τ = 1
+
+κ ⟨χ, H τ χ⟩. (C.70) 
+
+Equivalently, 
+
+⟨χ, H τ χ⟩ ≥ κ∥χ∥2, χ ⊥ ϕτ . (C.71) 
+
+Thus 
+
+σ(Hτ ) ⊂ { 0} ∪ [κ, ∞), γ(Hτ ) ≥ κ = 2 − β. (C.72) 
+
+Finally, the ground state is unique. If Hτ χ = 0 and χ = hϕ τ , then (C.67) gives 
+
+∫
+
+|∇ h|2 dμ τ = 0 .
+
+Hence h is constant μτ -almost everywhere, and since μτ is equivalent to Lebesgue measure on the connected space RN ,
+
+ker Hτ = span {ϕτ }.
+
+33

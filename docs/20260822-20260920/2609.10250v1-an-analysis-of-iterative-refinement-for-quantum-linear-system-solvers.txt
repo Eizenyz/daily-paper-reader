@@ -1,0 +1,1254 @@
+Title: An analysis of iterative refinement for quantum linear system solvers
+
+URL Source: https://arxiv.org/pdf/2609.10250v1
+
+Published Time: Thu, 10 Sep 2026 01:12:23 GMT
+
+Number of Pages: 25
+
+Markdown Content:
+AN ANALYSIS OF ITERATIVE REFINEMENT FOR QUANTUM LINEAR SYSTEM SOLVERS 
+
+ADRIAN HARKNESS ˚, MOHAMMADHOSSEIN MOHAMMADISIAHROUDI : , BRANDON AUGUSTINO ; , GIACOMO NANNICINI § , AND TAMÁS TERLAKY ;
+
+Abstract. We present and analyze an iterative refinement (IR) framework for improving the precision dependence of algorithms that combine a quantum linear system algorithm (QLSA) with quantum state tomography. Existing QLSAs achieve polylogarithmic dependence on the inverse error tolerance to prepare a quantum state encoding the solution, but extracting a classical description of such a state via tomography typically introduces a polynomial dependence on the target precision. To retain polylogarithmic dependence in the inverse error tolerance throughout the entire process, we develop an IR scheme that solves a sequence of related linear systems to progressively refine the solution while requiring only fixed-precision quantum subroutines, finally obtaining a classical description of a high-precision solution. We analyze the proposed framework under three input models: quantum-read/classical-write RAM (QRAM), linear combinations of unitaries (LCU), and sparse-access oracles. We evaluate the proposed scheme through numerical experiments on both quantum simulators and real quantum hardware. The results demonstrate that iterative refinement efficiently improves the precision of the solution and exhibits robustness to hardware noise. 
+
+Key words. Systems of Linear Equations, Quantum Linear System Algorithms, Quantum State Tomography, Quantum Computing, Iterative Refinement. 
+
+AMS subject classifications. 65F10, 81P68, 68Q12 
+
+1. Introduction. It is widely believed that quantum computers can solve some problems faster than classical algorithms (“classical” means “non-quantum”). The increasing size and capabilities of current devices have added further momentum to the development of theory and algorithms for quantum computing, with the overarching goal of providing convincing evidence of a quantum advantage. Recently, considerable attention has been devoted to quantum algorithms for linear algebraic tasks. A particular interest lies in a class of methods that use quantum algorithms to prepare a quantum state |xy that is proportional to the solution of the linear system (1.1) Ax “ b, 
+
+for a given s-row sparse matrix A P Rdˆd (i.e., A has at most s nonzero entries per row) and a vector b P Rd. In the quantum linear system problem (QLSP), one has access to some quantum circuit describing A and the ability to prepare a quantum state |by that is proportional to the right-hand side vector b.Research into this subfield began with the work of Harrow, Hassidim, and Lloyd [24], who proposed what has come to be known as the HHL algorithm for solving the QLSP. In this seminal work, it was shown that a quantum computer could be used to 
+
+> ˚
+
+Physical and Computational Sciences Directorate, Pacific Northwest National Laboratory, Rich-land, WA, USA, and Department of Industrial and Systems Engineering, Lehigh University, Bethle-hem, PA, USA (adh323@lehigh.edu) 
+
+> :
+
+Department of Mathematics and Statistics, Quantum Science Institute, University of Maryland, Baltimore County, Baltimore, MD, USA 
+
+> ;
+
+Department of Industrial and Systems Engineering, Lehigh University, Bethlehem, PA, USA 
+
+> §
+
+Department of Industrial and Systems Engineering, and Department of Electrical and Computer Engineering, University of Southern California, Los Angeles, CA, USA 1arXiv:2609.10250v1 [quant-ph] 9 Sep 2026 2 HARKNESS ET AL. 
+
+solve a QLSP with a worst-case complexity 1 of 
+
+rOd
+
+ˆ s2κ2
+
+> A
+
+ϵ
+
+˙
+
+,
+
+where ϵ ą 0 is the accuracy to which the solution is obtained. Although the HHL algorithm originally exhibited quadratic dependence on κA, its poly-logarithmic de-pendence on the dimension of the problem opened the doors for a potential exponential quantum speedup for solving QLSPs. Given the fundamental role that linear systems play in science and mathematics, the result in [24] led to a series of works focused on improving the performance of QLSAs, which we review next. 
+
+1.1. Literature Review. The first enhancements to the complexity of the HHL algorithm were made in [1, 9, 39], in which the dependence on κA was improved from quadratic to almost linear (i.e., O pκA log κAq). Further improvements came by developing better tools for Hamiltonian simulation. Indeed, the HHL algorithm is built on the idea of using Hamiltonian simulation to simulate the unitary e´iHt on an input state |ψy for some time t, and early work that extended the HHL algorithm relied primarily on the sparse-access input model to query the elements of H. It was shown by [28] that one could perform optimal Hamiltonian simulation when the input matrix is given as a block-encoding . Under this framework, one has access to unitary operators that have the coefficient matrix in their top-left block: 
+
+U “
+
+ˆA{α ¨¨ ¨
+
+˙
+
+,
+
+where α ě 1 is a normalization factor (recall that U has operator norm 1, so normal-ization is necessary for general A). QLSAs based on the block-encoding framework were presented in [41, 9, 43], and the running time of these QLSAs was subsequently improved by [7] using variable-time amplitude amplification [1] and estimation. When provided access to a quantum-read/classical-write RAM (QRAM), [7] obtains a QLSA with worst-case query complexity 
+
+rOd,κ A, 1 
+
+> ϵ
+
+pκAαq .
+
+It is additionally shown in [7] how one can prepare block-encodings of matrices using various input models. We point out that using techniques based on quantum singular value transformation [18], one can design a QLSA with improved dependence on polylogarithmic factors compared to the algorithm in [7]. More recent developments have established QLSAs with optimal asymptotic de-pendence on both the condition number and the solution accuracy. Costa et al. [13] introduced an optimal-scaling QLSA based on a discrete adiabatic theorem and qubit-ized quantum walks, achieving query complexity 
+
+rO 1 
+
+> ϵ
+
+pκAq ,
+
+which is optimal in its combined dependence on κA and ϵ. This result initiated a more recent line of research aimed not only at attaining optimal asymptotic scaling, but also at reducing the constant factors hidden in the complexity bounds. Dalzell [14]    
+
+> 1We use rO, which suppresses the polylogarithmic factors in the “Big-O” notation. Subscripts of
+> rOindicate the parameters/quantities occurring in the suppressed polylogarithmic factors. ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA
+
+3      
+
+> Table 1
+> Comparison of representative quantum linear system algorithms. Here, κdenotes the condition number, sthe sparsity of the matrix, and ϵthe target precision.
+
+Paper Technique Query Complexity Input Model 
+
+[24] Phase estimation rOd
+
+`κ2s2{ϵ˘ Sparse access [1] Variable-time amplitude amplification 
+
+rOdpκs {ϵq Sparse access [9] Fourier/Chebyshev ap-proximation 
+
+rOd,κ {ϵpκs q Sparse access [7] QSVT rOd,κ {ϵpα κ q Block encoding [2] Time-optimal adiabatic quantum computing 
+
+rOd,κ {ϵpsκ q Input oracle ac-cess [14] Optimal QLSA + QSVT rOd, 1{ϵpα κ q Block encoding proposed the shortcut method, that uses quantum singular value transformation and eigenstate filtering techniques to obtain the same optimal OpκA log p1{ϵqq scaling while providing substantially improved explicit constant-factor guarantees. Costa et al. [12] performed a detailed numerical comparison of optimal QLSAs, including the discrete-adiabatic quantum-walk and shortcut approaches, demonstrating that their practical performance can differ substantially despite having identical asymptotic complexity. These developments suggest that the theoretical complexity of QLSAs has reached asymptotically optimal dependence on κA and ϵ, shifting increasing attention toward constant factors and the practical cost of employing QLSAs as subroutines in larger quantum algorithms. These developments have opened a line of research investigating how QLSAs can be leveraged to design quantum algorithms that obtain speedups over classical algorithms in which the dominant operation is solving a linear system of equations; examples are [31, 32, 3]. Besides QLSAs, the other main building block of the approach studied in this paper is iterative refinement (IR). IR was originally developed at a time when classical computers possessed capabilities just beyond the reach of today’s quantum computers, and its initial conception was a framework for computing extended-precision solutions to linear systems of equations using low-precision arithmetic [22, 42]. These ideas have since been extended to compute highly accurate (and at times, exact ) solutions to linear [19, 20, 21, 33, 44] and semidefinite optimization problems [30], and recent works have investigated their adaptability to quantum algorithms. IR has recently been deployed to improve the practical and theoretical performance of inexact classical algorithms for solving linear systems [5, 6]. 
+
+1.2. Contributions. We develop an iterative refinement (IR) framework for obtaining a classical solution to the linear system problem (1.1) using a quantum linear system algorithm (QLSA) followed by quantum state tomography (QTA). The main idea is to use QLSA and tomography only at a fixed precision in every refinement step, while progressively improving the accuracy of the classical solution through residual correction. As a consequence, the dependence of the overall algorithm on the final target precision is reduced from polynomial to polylogarithmic. We analyze the proposed framework under three input models: QRAM, sparse-access oracles, and linear combinations of unitaries (LCU). In all three cases, Al-4 HARKNESS ET AL. 
+
+gorithm 4.1 requires only O
+
+´
+
+log 
+
+´ }b}κA
+
+> ϵ
+
+¯¯ 
+
+iterations to obtain a classical vector x
+
+satisfying }x ´ A´1b} ď ϵ. Since every quantum linear-system solve and tomogra-phy step is performed at a fixed precision ξ ă 1, the dependence on the final target precision ϵ appears only through polylogarithmic factors. In the QRAM input model, for an s-sparse matrix A, our algorithm obtains an 
+
+ϵ-precise classical solution using 
+
+rOd,κ A, }b}
+
+> ϵ
+
+`}A}F dκ 2
+
+> A
+
+˘
+
+accesses to QRAM and 
+
+rOκA, }b}
+
+> ϵ
+
+pds q
+
+classical arithmetic operations. Under the sparse-access input model, the algorithm requires 
+
+rOd,κ A, }b}
+
+> ϵ
+
+`?sd κ 2
+
+> A
+
+˘
+
+queries to the sparse-access oracles describing A, together with 
+
+rOd,κ A, }b}
+
+> ϵ
+
+`?sd 2κ2
+
+> A
+
+˘
+
+additional quantum gates and 
+
+rOκA, }b}
+
+> ϵ
+
+pds q
+
+classical arithmetic operations. Finally, when the coefficient matrix is represented as a linear combination of unitaries A “ řK´1 
+
+> i“0
+
+αiUi, and a classical multiplication Uiv can be performed using at most CU arithmetic operations, our algorithm requires 
+
+rOd,κ A, }b}
+
+> ϵ
+
+`αdκ 2
+
+> A
+
+˘
+
+calls to the LCU input oracles, 
+
+rOd,α,κ A, }b}
+
+> ϵ
+
+`αd 2κ2
+
+> A
+
+˘
+
+additional quantum gates, and 
+
+˜OκA, }b}
+
+> ϵ
+
+pKC U q
+
+classical arithmetic operations. Thus, irrespective of the input model, iterative refinement removes the polynomial dependence on the final inverse precision that arises when a QLSA is followed directly by tomography. In particular, rather than increasing the precision of the quantum subroutines as ϵ decreases, our method executes only fixed-precision quantum circuits and achieves high accuracy through a logarithmic number of classical refinement steps. We complement the theoretical analysis with numerical experiments using both quantum simulators and real quantum hardware. The experiments demonstrate ge-ometric residual reduction in the noiseless setting and continued convergence in the presence of hardware noise. They also illustrate the principal resource advantage ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 5of the IR framework: high-precision classical solutions can be obtained through re-peated execution of relatively shallow, low-precision quantum circuits instead of a single high-precision circuit whose depth grows rapidly with the desired accuracy. This paper is an updated version of an earlier unpublished technical report [29]. Gilyén et al. [17] subsequently improved the dependence on κA to linear by decompos-ing the solution into different eigenspaces and applying iterative refinement separately within those eigenspaces. To the best of our knowledge, the results in [17] are not available in the open literature or on online repositories, and therefore we do not include them in our quantitative comparison. Related ideas are discussed in [8]. The remainder of this paper is organized as follows. Section 2 introduces notation and assumptions. Section 3 reviews the quantum linear-algebra tools, input models, QLSAs, and tomography algorithms used in our analysis. Section 4 presents the proposed iterative refinement algorithm and establishes its convergence. We then analyze its complexity under the QRAM, sparse-access, and LCU input models in Section 5, followed by numerical experiments on simulators and quantum hardware in Section 6. Section 7 concludes the paper. 
+
+2. Notation and assumptions. For any integer n, let rns “ t 0, . . . , n ´1u. The 
+
+i-th element of a vector x P Rn is denoted by xi for i P r ns, and we denote the ij -th element of a matrix M P Rmˆn by Mij for i P r ms and j P r ns. To refer to the i-th row of a matrix M , we write Mi, ¨ and write M¨,j when referring to its j-th column. Note that we use zero-based indices for vectors and matrices (i.e., the first element has index zero) because this considerably simplifies notation when dealing with coefficients of quantum states and the corresponding basis states. For a complex-valued vector 
+
+x P Cd, its real component is ℜpxq P Rd. For x P Rn, its amplitude encoding |xy, is the plog nq-qubit state 
+
+|xy “ 1
+
+}x}
+
+ÿ
+
+> jPr ns
+
+xj |jy .
+
+We assume that all logarithms are base 2, and that the sizes of all spaces are powers of 2; this is without loss of generality as we can always pad vectors and matrices with zeroes. The smallest and largest singular values of a matrix A are denoted by σmin pAq
+
+and σmax pAq, and the smallest and largest eigenvalues are denoted by λmin pAq, and 
+
+λmax pAq. Unless otherwise specified, sparsity of matrices is intended column- and row-wise: a matrix A is s-sparse if each column and row of A has at most s nonzero elements. The requirement of simultaneous column and row sparsity comes from the fact that for a general matrix A, before applying a QLSA we typically need to embed A
+
+into a larger Hermitian matrix; column and row s-sparsity of A ensures that the rows of the resulting matrix are s-sparse, which is assumed by the Hamiltonian simulation algorithms used in our QLSA of choice. For the quantum linear system solver we assume that σmax pAq “ 1 and σmin pAq “ 1{κA, as is common in QLSA literature. Up to rescaling, this is equivalent to assuming that we know the smallest and largest singular value of A. We keep this assumption throughout the paper, noting that it is sufficient to know singular values up to a constant prefactor. All quantum algorithms discussed below are successful with probability at least 
+
+1 ´ δ, with a cost that scales as Oppolylog 1 
+
+> δ
+
+q. Because this affects the complexity analysis only in polylogarithmic terms, to ease the notation we do not report this cost explicitly and state all results as if the algorithms were always successful: the dependence on δ should be implicitly assumed. 6 HARKNESS ET AL. 
+
+3. Preliminaries on quantum linear algebra. The (classical) LSP is formally defined as follows. 
+
+Definition 3.1 (LSP). Let A P Rdˆp be a matrix with condition number κA.Given b P Rd, the linear system problem (LSP) is to determine x P Rp such that 
+
+Ax “ b. 
+
+When d “ p and A is nonsingular, the LSP has the unique solution x˚ “ A´1b.Classical direct methods such as Gaussian elimination, and factorization techniques require Opd3q arithmetic operations in the dense setting. Faster asymptotic algorithms are possible through fast matrix multiplication. Strassen’s method reduces this cost to Opd2.81 q [38], while subsequent work has established matrix-multiplication expo-nents below 2.373 [11, 27]. For sufficiently sparse matrices, improved bounds are also possible; for example, [36] obtains a complexity of Opd2.331645 q under additional assumptions on sparsity and conditioning. Although in theory this has brought the computational complexity of matrix multiplication closer to d2 than to d3, these fast direct methods are typically not used in practice. Inexact iterative methods can provide better dependence on the dimension by directly computing an approximation to A´1b. The conjugate gradient (CG) method [25] solves symmetric positive definite systems with worst-case complexity 
+
+Opds ?κA log p1{ϵqq .
+
+For indefinite or nonsymmetric systems, related Krylov methods such as MINRES and GMRES are commonly used. Alternatively, one can symmetrize the system as 
+
+AJAx “ AJb, 
+
+although this squares the condition number and can increase the computational cost. Polynomial approximation methods provide another route to solving linear sys-tems. In particular, Chebyshev polynomials can approximate the inverse function on the spectrum of the coefficient matrix with degree 
+
+deg pqq “ OpκA log p1{ϵqq ,
+
+leading to a comparable dependence on κA and ϵ through repeated matrix-vector products; see, e.g., [37, Section 6.11]. For a more detailed discussion of classical iterative methods for linear systems, we refer the reader to [37]. We define the quantum analogue of the LSP following [14]; see also [1, 7, 24, 39] for earlier formulations. 
+
+Definition 3.2 (QLSP). Let A P Rdˆd be a matrix whose nonzero singular values lie in the interval r 1 
+
+> κA
+
+, 1s, and let b P Rd be a vector in the column space of A.Let x P Rd denote the solution of minimum norm to Ax “ b, and let |by and |xy be the amplitude encodings of b and x, respectively. Given ϵ P p 0, 1q, the Quantum Linear System Problem (QLSP) is to find a (possibly mixed) quantum state ρ satisfying 
+
+(3.1) 12 }ρ ´ | xyx x|} tr ď ϵ, 
+
+where }X}tr “ tr `?XX :˘.ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 7Here, κA is an upper bound on the condition number of A restricted to the orthogonal complement of its kernel; when A is invertible, this is the usual condition number, and the solution state reduces to (3.2) |xy “ A´1 |by}A´1 |by} .
+
+In order to efficiently prepare a state satisfying (3.1), QLSAs require access to 
+
+A and b via some appropriate quantum data structure. As we discuss next, the way in which the input is presented impacts the overall running time of the QLSA in a number of ways, such as the cost of preparing a state encoding the right-hand side and the subnormalization factor α of the block-encoding of the coefficient matrix. 
+
+3.1. Input models. We conduct a worst-case overall running time analysis for our algorithm using the standard gate-based quantum circuit model, as well as a model in which our data is stored using quantum-read/classical-write RAM (QRAM). The impact of the assumed input model is not limited to the cost associated with preparing quantum linear systems of equations. Instead, in the context of our IR scheme, whether or not we have access to QRAM also influences the QLSA we use and the cost of performing quantum state tomography. To study the impact of the data structure on our algorithms’ overall complexity, we consider three input models: the sparse access input model , the QRAM input model , and the linear combination of unitaries input model .
+
+3.1.1. Sparse access model. The sparse access input model directly corre-sponds to the commonly used way of accessing sparse matrices in classical computa-tion: it assumes access to the nonzero elements of the s-sparse matrix A P Rdˆd.As in [4], access to A is provided by two oracles. The first of these two oracles is a unitary Osparse  
+
+> A
+
+that calculates the function index : rns ˆ r ss Ñ r ns for input pi, ℓ q,giving the position of the ℓ-th nonzero element in the i-th row of A:
+
+Osparse  
+
+> A
+
+|i, ℓ y “ | i, index pi, ℓ qy .
+
+The second oracle is the unitary OA |i, j, z y “ | i, j, z ‘ Aij y that outputs a binary representation of the entries of A for every i, j P r ds.
+
+3.1.2. Quantum random access memory. We consider the quantum-accessi-ble data structure presented in [26]. Quantum-accessible refers to the fact that it is a classical data structure accessible in coherent superposition when stored in QRAM. This allows us to implement certain quantum operations more efficiently than in the sparse-access input model without QRAM. Note that we only need classical write access to QRAM; we do not need to be able to write in a superposition. As in [7], our analysis relies on the standard assumption that a QRAM of size w can be accessed at cost polylog pwq, and that the Opwq many gates required to implement the QRAM can be arranged in parallel to achieve a circuit depth of order O ppolylog pwqq , see [7, Section 2.2]. Computational complexity of algorithms using QRAM is not the total number of gates, but a measure of time that relates to the depth of the QRAM circuit. To be precise, we report the computational complexity of such algorithms in terms of number of QRAM accesses, number of additional gates, and number of classical operations to initialize the QRAM, see, e.g., [34, Ch. 5]. In the QRAM input model, all classical data (i.e., A and b, and any other r.h.s. vector that arises in the course of the IR scheme) is encoded in appropriate data structures stored in QRAM. The data structures can be efficiently computed and they are described in [26, 7]; the details are irrelevant for the purposes of this paper. 8 HARKNESS ET AL. 
+
+3.1.3. Linear Combination of Unitaries. A third input model commonly used to access a matrix A P Cnˆn, first proposed in [10], assumes that it is provided as a linear combination of unitary matrices (LCU): 
+
+A “
+
+> K´1
+
+ÿ
+
+> i“0
+
+αiUi.
+
+A common unitary basis to use, particularly when A is a Hamiltonian, is the Pauli basis: Ui P t c ¨ P1 b P2 b ... b Pn : c P t˘ 1, ˘iu, P j P t I, X, Y, Z uu . Given any linear operator A on log pnq qubits, a representation of A in the Pauli basis always exists, thus there always exists an LCU representation for A (the sparsity of the representation affects the computational cost of solving linear systems in this input model). Next, we provide results from [16, 18, 14], which establish how one can efficiently construct block-encodings of matrices using the sparse-access, QRAM, and LCU in-put models and use these block-encodings to solve linear systems with a quantum computer. 
+
+3.2. Complexity of the QLSP in the three input models. In the three input models discussed above, the QLSA with the best asymptotic query complexity uses the block-encoding model. We define here the necessary notions. 
+
+Definition 3.3 (Block-encoding). Let M P C2nˆ2n
+
+be an n-qubit operator and 
+
+ϵ ą 0. Then, an pn ` aq-qubit unitary U is an pα, a, ϵ q-block-encoding of M if U “ˆ ˜M ¨¨ ¨
+
+˙
+
+, such that }α ˜M ´ M } ď ϵ. 
+
+If ϵ “ 0, then U may simply be called an pα, a q-block-encoding of M . In the above definition, α ě 1 is called the subnormalization factor. U uses a extra qubits to implement M up to total error ϵ. The following result formalizes how to efficiently construct a block-encoding of a matrix stored in a quantum-accessible data structure. 
+
+Lemma 3.4 (Lemma 3.3.7 (2) in [16]). (Block-encoding matrices stored in QRAM) Let A P C2nˆ2n
+
+. If A is stored in a quantum-accessible data structure, then there exists unitaries UR and UL that can be implemented with Oppoly pn log p1{ϵqqq accesses to QRAM and additional gates, and U :
+
+> R
+
+UL is a p} A}F , n ` 2, ϵ q-block-encoding of A.
+
+One can also block-encode matrices to which we have sparse oracle access. The next result from [28] describes this construction and the associated cost. 
+
+Lemma 3.5 (Corollary 5 in [28]). (Block-encoding via sparse access oracles) Let 
+
+A P C2nˆ2n
+
+and }A} ď 1. If we have sparse oracle access to A, then we can construct a 
+
+pΘp1q, poly pnq, ϵ q-block-encoding of A using Op?sps{ϵqop1qq queries to the input oracles for A, and Op?sps{ϵqop1qpoly pn log sϵ qq additional gates. 
+
+Lastly, it is straightforward to block-encode matrices to which we have an LCU decomposition. The next result from [18] describes this construction and the associ-ated cost. 
+
+Lemma 3.6 (Specialization of Lemma 52 in [18]). (Block-encoding via a linear combination of unitaries) Let A “ řK´1 
+
+> i“0
+
+αiUi P C2nˆ2n
+
+be a linear combination of 
+
+n-qubit unitaries Ui with coefficients αi ą 0, and let α “ řK´1 
+
+> i“0
+
+αi. Assume that we have access to a state-preparation oracle PREP and a selection oracle SEL acting on ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 9
+
+a rlog Ks-qubit ancilla register and the n-qubit system register: 
+
+PREP |0ybrlog Ks “ 1
+
+?α
+
+> K´1
+
+ÿ
+
+> i“0
+
+a˜αi |iy , and SEL “
+
+> K´1
+
+ÿ
+
+> i“0
+
+|iy x i| b Ui,
+
+where ˜αi approximate the true coefficients up to total error řK´1 
+
+> i“0
+
+|˜αi ´ αi| ď ϵ. Then 
+
+U “
+
+´
+
+PREP : b I
+
+¯
+
+SEL pPREP b Iq
+
+is an pα, rlog Ks, ϵ q-block-encoding of A, using a single use each of SEL , PREP , and 
+
+PREP :, and OpKq additional gates. 
+
+With access to a unitary block-encoding of the coefficient matrix A, we can per-form the necessary matrix arithmetic operations that arise in solving a linear system of equations in time that depends only polylogarithmically on the dimension of the problem. In particular, the following result from [14] shows that one can use a block-encoding of the coefficient matrix A to solve a linear system. 
+
+Theorem 3.7 (Adapted from Theorem 4 in [14]). (Complexity of QLSA) As-sume that }b} “ 1, that b is in the column space of A, and that all nonzero singular values of A lie in the interval r 1 
+
+> κ
+
+, 1s. Let UA be an pα, a q-block-encoding of A, and let 
+
+Ub be a state-preparation unitary for |by. Let x denote the unique vector of minimum norm for which Ax “ b. Fix ϵ ą 0. Then there is a quantum algorithm to solve the QLSP to precision ϵ using an expected Q queries to UA, U :
+
+> A
+
+, and their controlled versions, as well as 2Q queries to Ub, U : 
+
+> b
+
+, and their controlled versions, where 
+
+Q ď 56 .0ακ ` 1.05 ακ ln 
+
+ˆ ?1 ´ ϵ2
+
+ϵ
+
+˙
+
+` 2.78 ln pακ q3 ` 3.17 .
+
+The number of additional gates is bounded by rOd, 1{ϵpακ q.
+
+3.3. Quantum state tomography. To solve the LSP with a QLSA, we will require a classical estimate of x from its amplitude encoding |xy. This can be provided by a quantum state tomography algorithm (QTA), of which there are many. For the purposes of this paper, we want an algorithm that achieves low sample complexity (i.e., number of copies of the quantum state used in the process) as well as low quantum and classical computational complexity (i.e., gate count of the quantum circuits, and number of arithmetic operations for any classical pre- or post-processing). Taking advantage of the fact that we have access to a circuit that prepares the quantum state of interest, the current state of the art in terms of sample and computational complexities is given by the algorithms of van Apeldoorn et al. [40]; other recent results with optimal sample complexity, e.g., [23, 35], rely on expensive classical operations that take time Opd3q for a d-dimensional quantum state, and would end up becoming a bottleneck for the IR scheme. We are interested in obtaining a description of a quantum state with error at most ϵ measured with the Euclidean distance. [40] shows that Ωpd{ϵq copies of the quantum state are necessary for this task. We give a precise statement for the version of tomography that we use, achieving sample complexity linear in d with or without QRAM. The gate complexity depends on the presence or absence of QRAM. Note that we only state the result for extracting the real part of the amplitudes; if we need the imaginary part as well (e.g., if the QLSA does not properly control the relative 10 HARKNESS ET AL. 
+
+phase of the solution), we only need to apply the algorithm with extra phase gates that do not affect the asymptotic complexity. 
+
+Theorem 3.8 ([40]). Let |ψy “ řd´1 
+
+> j“0
+
+vj |jy be a quantum state, v P Cd the vector with elements vj , and U |0y “ | ψy. There is a quantum algorithm that outputs 
+
+˜v P Rd such that }ℜpvq ´ ˜v}2 ď ϵ using Op dϵ log dq applications of U . In the standard circuit model, the algorithm additionally uses Op d2 
+
+> ϵ
+
+log dϵ q quantum gates. If QRAM is available, the gate complexity reduces to Op dϵ log dϵ q gates and accesses to QRAM. 
+
+In fact, [40] uses indexed-SWAP gates, a QRAM-like operation that can be imple-mented with rOpdq gates when acting on d qubits, see [40] for details. Since we assume access to QRAM we also assume access to indexed-SWAP gates. (Alternatively, a QRAM of very large size would achieve the same result without indexed-SWAP gates.) We note that if |ψy is a real vector (up to global phase), gate complexity rOp dϵ2 q can be achieved in the standard gate model without QRAM, at the cost of using rOp dϵ2 q
+
+applications of U (i.e., a worsening of a factor 1{ϵ) [17]. 
+
+3.4. A quantum oracle for the LSP. Here, we define an oracle OLS that uses a QLSA, followed by QTA and rescaling of the solution vector, to obtain a classical solution to the LSP. We will use this oracle extensively in the IR scheme presented in Section 4. 
+
+Definition 3.9 (Quantum linear systems oracle). Let A P Rdˆd have singular values in r1{p ακ q, 1{αs for some α, κ ě 1. Let b in Rd be such that || b|| “ 1 and b is in the column space of A. Let ξ P p 0, 1q. The quantum linear systems oracle OLS pA, b, ξ q
+
+returns a classical vector ¯x P Rd satisfying 
+
+}A¯x ´ b} ď ξ. 
+
+The next result bounds the query complexity of implementing OLS .
+
+Theorem 3.10 (Complexity of OLS ). Let A, b and ξ be as in Definition 3.9, let 
+
+UA be a p1, a q-block encoding of A{α and let Ub be a state-preparation unitary for |by.Let x denote the unique vector of minimum norm for which Ax “ b. Then we can implement OLS pA, b, ξ q using 
+
+rOd,κ A, 1
+
+> ξ
+
+ˆ α d κ 2
+
+> A
+
+ξ
+
+˙
+
+queries to UA and Ub, and quantum gates. In the standard circuit model without QRAM, the algorithm additionally uses rOd,κ A, 1
+
+> ξ
+
+´ αd 2κ2
+
+> A
+> ξ
+
+¯
+
+quantum gates. Proof. The oracle proceeds in four steps: estimate the solution norm }x}, prepare the normalized solution state |xy, obtain its classical description via tomography, and rescale. First, the QLSA of Theorem 3.7 learns }x} up to a constant multiplicative fac-tor as part of its execution (see [14]), and this estimate can be refined sufficiently to a relative precision of Opξq using amplitude estimation at an additional cost of 
+
+O pακ A log p1{ξq{ ξq queries [14, Section 5.4]; this cost is dominated by the tomogra-phy step below. Next, we apply Theorem 3.7 to prepare a state |x˚y with } | x˚y ´ | xy } ď αξ  
+
+> 2}x}
+
+; call 
+
+TLS 
+
+´ αξ 
+
+> 2}x}
+
+¯
+
+the number of queries to prepare the state. Then we apply the tomography ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 11 algorithm of Theorem 3.8 to the circuit preparing |x˚y, obtaining a classical unit vector 
+
+¯v with }¯v ´ | x˚y } ď αξ  
+
+> 2}x}
+
+; call TT O 
+
+´ αξ 
+
+> 2}x}
+
+¯
+
+the number of applications of the circuit that prepares |x˚y. The oracle returns ¯x :“ ¯ν¯v, where ¯ν is the norm estimate. To verify the error guarantee of Definition 3.9, decompose 
+
+A¯x ´ b “ ¯νA p¯v ´ | xyq ` p ¯ν ´ } x}q A |xy .
+
+For the first term, using }A} ď 1{α and }¯v ´ | xy } ď αξ  
+
+> 2}x}
+
+we obtain }¯νA p¯v ´ | xyq } ď 
+
+¯ν ¨ 1 
+
+> α
+
+¨ αξ  
+
+> 2}x}
+
+“ p 1 ` Opξqq ξ. For the second term, A |xy “ b{} x} exactly, so 
+
+} p ¯ν ´ } x}q A |xy } “ | ¯ν ´ } x}|{} x} “ Opξq.
+
+Hence }A¯x ´ b} ď p 1 ` Op1qq ξ, and adjusting the constants in the tolerances yields 
+
+}A¯x ´ b} ď ξ.For the complexity, the total number of applications of UA, Ub, their inverses and controlled versions is the number of copies of |x˚y consumed by tomography times the cost for preparing |x˚y:
+
+TT O 
+
+´ αξ 
+
+> 2}x}
+
+¯
+
+¨ TLS 
+
+´ αξ 
+
+> 2}x}
+
+¯
+
+“ O
+
+´ d }x} 
+
+> αξ
+
+log d
+
+¯
+
+¨ O
+
+´
+
+ακ A log 
+
+´ }x}
+
+> αξ
+
+¯¯ 
+
+“ O
+
+´ α d κ 2 
+
+> A
+> ξ
+
+¨ polylog 
+
+´
+
+d, κ A, 1
+
+> ξ
+
+¯¯ 
+
+,
+
+where we used the fact that }x} ď } A´1}} b} ď ακ A. The number of gates follows from Theorems 3.7 and 3.8. Combining Lemmas 3.4, 3.5, 3.6 with Theorem 3.10, we obtain the following. 
+
+Corollary 3.11 (Complexity of OLS in the QRAM input model). Let A P Rdˆd
+
+have nonzero singular values in r1{κA, 1s. Let b P Rd be such that }b} “ 1 and b is in the column space of A. In the QRAM input model we can implement OLS pA, b, ξ q
+
+with 
+
+rOd,κ A, 1
+
+> ξ
+
+ˆ }A}F dκ 2
+
+> A
+
+ξ
+
+˙
+
+accesses to QRAM and additional gates. 
+
+Corollary 3.12 (Complexity of OLS in the sparse access input model). Let 
+
+A P Rdˆd have nonzero singular values in r1{κA, 1s. Let b P Rd be such that }b} “ 1
+
+and b is in the column space of A. In the sparse access input model we can implement 
+
+OLS pA, b, ξ q with 
+
+rOd,κ A, 1
+
+> ξ
+
+ˆ ?sdκ 2
+
+> A
+
+ξ psκ A{ξqop1q
+
+˙
+
+accesses to the sparse oracles of Section 3.1.1 and rOd,κ A, 1
+
+> ξ
+
+´ ?sd 2κ2
+
+> A
+> ξ
+
+¯
+
+additional gates. 
+
+Corollary 3.13 (Complexity of OLS in the LCU input model). Let A “
+
+řK´1 
+
+> i“0
+
+αiUi P Rdˆd have nonzero singular values in r1{κA, 1s, and let α “ řK´1 
+
+> i“0
+
+|αi|.Let b P Rd be such that }b} “ 1 and b is in the column space of A. In the LCU input model we can implement OLS pA, b, ξ q with 
+
+rOd,κ A, 1
+
+> ξ
+
+ˆ αdκ 2
+
+> A
+
+ξ
+
+˙
+
+accesses to the LCU oracles of Lemma 3.6 and rOd,κ A, 1
+
+> ξ
+
+´ αd 2κ2
+
+> A
+> ξ
+
+¯
+
+additional gates. 12 HARKNESS ET AL. 
+
+Proof. This proof is slightly more involved than the previous ones because we need to account for the error in the construction of the block-encoding via Lemma 3.6. We choose a coefficient error δ ď ξ 
+
+> 8κA
+
+in the unitary PREP, so that the implemented unitary is an exact p1, rlog Ksq-block-encoding of a perturbed matrix Aδ , satisfying 
+
+}Aδ ´ A{α} ď δ{α ď ξ 
+
+> 8ακ A
+
+. We apply Theorem 3.10 to Aδ with precision ξ{2. This returns a vector ¯u with bounded norm }¯u} “ Opακ Aq. We have: 
+
+} Aα ¯u ´ b} ď } Aδ ¯u ´ b} ` } Aα ´ Aδ }} ¯u} ď ξ
+
+2 ` ξ
+
+8ακ A
+
+Opακ Aq ď ξ. 
+
+4. Iterative Refinement for the LSP using quantum subroutines. Iter-ative refinement is a classical computing technique used to obtain accurate solutions to systems of linear equations. This section summarizes the core idea at a high level before providing an analysis of our algorithm. 
+
+4.1. The algorithm. Our IR method for the LSP is presented in detail in Al-gorithm 4.1. In every iteration, there is a call to the quantum linear systems oracle 
+
+OLS , which we describe in detail in Section 3.4. There are two precision parameters: 
+
+ξ, the fixed precision we use for each of our oracle calls, and ϵ, the desired precision of the final solution. We assume the problem data pA, b q satisfies the hypotheses of Def-inition 3.9 (after normalizing b), and that A is invertible; the singular case is handled by replacing A´1 with the pseudoinverse A` throughout. The target is to find a classical solution x such that 
+
+∥Ax ´ b∥ ď ϵ. 
+
+We classically scale the linear system by setting 
+
+˜A Ð Aα , ˜b Ð b
+
+∥b∥ ,
+
+and use our IR algorithm to find a solution ˜x of the scaled system. Then, the solution of the original problem can be recovered as 
+
+x “ ∥b∥
+
+α ˜x. 
+
+Here, α is the subnormalization factor of the block-encoding of A. Note that in all of the input models considered here, α is explicitly known or can be estimated with classical operations whose cost is smaller than the cost of OLS , hence we can ignore this aspect in the analysis. The classical scaling x “ ∥b∥˜x{α leads to better complexity for the quantum oracle. To achieve ∥Ax ´ b∥ ď ϵ, we need 
+
+∥ ˜A˜x ´ ˜b∥ ď ϵ
+
+∥b∥ ;
+
+if we aim to achieve ∥x ´ A´1b∥ ď ϵ1, then we need 
+
+∥˜x ´ ˜A´1˜b∥ ď ϵ1α
+
+∥b∥ .
+
+As ∥˜x ´ ˜A´1˜b∥ ď ακ A∥ ˜A˜x ´ ˜b∥, then IR requires 
+
+∥ ˜A˜x ´ ˜b∥ ď ϵ1
+
+κA∥b∥ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 13 This allows us to set the target precision of the IR scheme. The algorithm starts from an initial point ˜xp0q P Rd that can be chosen arbitrarily, but it is reasonable to set to it be the all-zero vector. In each iteration, we first compute the residual and its norm classically as 
+
+rpkq “ ˜b ´ ˜A˜xpkq.
+
+We then prepare the normalized residual state 
+
+|rpkqy “ rpkq
+
+∥rpkq∥
+
+and call OLS to approximately solve the normalized refining system (Ref-Sys) ˜Au pkq « rpkq
+
+∥rpkq∥ .
+
+An approximate solution ˜upkq of (Ref-Sys) therefore provides a correction direction for the current residual. We update the current solution according to 
+
+˜xpk`1q Ð ˜xpkq ` ∥rpkq∥˜upkq.
+
+This section shows that we can use a fixed level of precision (e.g., ξ “ 10 ´1) for every call to OLS in Algorithm 4.1. In particular, while the desired final accuracy 
+
+ϵ may be arbitrarily small, the quantum linear systems oracle is only required to solve each refining system to the fixed precision ξ. Once ∥rpkq∥ ď ϵ 
+
+> ∥b∥
+
+, the algorithm terminates and reports the corresponding solution. As shown in Algorithm 4.1, the residual vector and its norm are computed clas-sically at every iteration. The normalized residual is then encoded into the quantum state |rpkqy and provided as the right-hand side to the quantum linear systems ora-cle. The oracle solves the refining system only to the fixed precision ξ, after which tomography is used to obtain the classical correction vector ˜upkq. The correction is then rescaled by the residual norm and added classically to the current iterate. Thus, high precision is achieved through the classical iterative-refinement procedure, while each quantum linear-system solve is performed only at fixed precision. 
+
+4.2. Convergence. In the following result, we establish that the sequence of solutions generated by Algorithm 4.1 satisfies the normalized linear system Ax “ ˜b
+
+with increasing accuracy. 
+
+Theorem 4.1. Let ˜xpkq and rpkq, k “ 0, 1, . . . be the sequence of solutions and residual produced by Algorithm 4.1. Then for all k ě 0,
+
+›››˜b ´ ˜A˜xpkq
+
+››› ď ξk.
+
+Proof. By induction. First, observe that }rp0q} “ } ˜b} “ 1 trivially holds at k “ 0.Now assume that }rpkq} ď ξk is true for any k ě 0 under the induction hypothesis, and check the residual at iteration k ` 1.The classical estimate ˜upkq satisfies 
+
+››››
+
+rpkq
+
+}rpkq} ´ ˜A˜upkq
+
+›››› ď ξ. 14 HARKNESS ET AL. 
+
+Algorithm 4.1 Iterative Refinement for the Linear System Problem 
+
+Input : Coefficient matrix A P Rdˆd, right-hand side vector b P Rd, error tolerances 
+
+0 ă ϵ ! ξ ă 1.
+
+Output : A classical vector x P Rd satisfying ∥Ax ´ b∥ ď ϵ.Normalize the system ˜b Ð b{∥b∥ and ˜A Ð A{α.Choose ˜xp0q Ð 0 and k Ð 0.Compute rp0q Ð ˜b ´ ˜A˜xp0q and ∥rp0q∥.
+
+while ∥rpkq∥ ą ϵ
+
+> ∥b∥
+
+1. Classically compute the residual 
+
+rpkq Ð ˜b ´ ˜A˜xpkq
+
+and its norm ∥rpkq∥.
+
+2. Prepare the normalized residual state 
+
+|rpkqy “ rpkq
+
+∥rpkq∥ .
+
+3. Use OLS p ˜A, r pkq{∥rpkq∥, ξ q to obtain a classical vector ˜upkq satisfying 
+
+˜A˜upkq ´ rpkq
+
+∥rpkq∥ ď ξ. 
+
+4. Update 
+
+˜xpk`1q Ð ˜xpkq ` ∥rpkq∥˜upkq.
+
+5. k Ð k ` 1.
+
+end Return x “ ∥b∥ 
+
+> α
+
+˜xpkq.Therefore, it follows that the updated solution in each iteration satisfies 
+
+›››rpk`1q
+
+››› “
+
+›››˜b ´ ˜A˜xpk`1q
+
+››› “
+
+›››˜b ´ ˜A
+
+´
+
+˜xpkq ` ∥rpkq∥˜upkq
+
+¯› ›› “
+
+›››˜b ´ ˜A˜xpkq ´ ∥rpkq∥ ˜A˜upkq
+
+›››
+
+“ } rpkq}
+
+››››
+
+rpkq
+
+}rpkq} ´ ˜A˜upkq
+
+›››› ď } rpkq}ξ ď ξk`1.
+
+Corollary 4.2. Let ξ ą 0 be fixed. Let 0 ă ϵ ! ξ ă 1. Then, Algorithm 4.1 terminates in at most R log p} b}{ ϵq
+
+log p1{ξq
+
+V
+
+“ O
+
+ˆ
+
+log 
+
+ˆ }b}
+
+ϵ
+
+˙˙ 
+
+iterations. Proof. By Theorem 4.1, }rpkq} ď ξk, and Algorithm 4.1 terminates once }rpkq} ď 
+
+ϵ{} b}. This is guaranteed as soon as ξk ď ϵ{} b}, i.e., for k ě log p} b}{ ϵq { log p1{ξq.The iteration bound provided in Corollary 4.2 is independent of the chosen input model. When the forward-error guarantee ››x ´ A´1b›› ď ϵ is sought, Algorithm 4.1 is invoked with tolerance ϵ{κA in place of ϵ: since ››x ´ A´1b›› ď ››A´1›› }Ax ´ b} ď 
+
+κA }Ax ´ b}, a residual of ϵ{κA suffices, and the iteration bound of Corollary 4.2 becomes O
+
+´
+
+log 
+
+´ }b}κA
+
+> ϵ
+
+¯¯ 
+
+.ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 15 
+
+4.3. Computational complexity. We now analyze the computational com-plexity of Algorithm 4.1. At each iteration, the residual 
+
+rpkq “ ˜b ´ ˜A˜xpkq
+
+and its norm are computed classically. The normalized residual 
+
+rpkq
+
+∥rpkq∥
+
+is used as the right-hand side of the quantum linear-system oracle OLS , which requires us to prepare a quantum state with amplitudes given by rpkq{∥rpkq∥. Note that the computation of the residual does not contribute to the query complexity of the block-encoding oracle. More precisely, one iteration of Algorithm 4.1 consists of the following operations. First, the matrix-vector product ˜A˜xpkq is computed classically and used to form rpkq.This takes Opnnz pAqq “ Opds q arithmetic operations. The normalization factor ∥rpkq∥
+
+is also computed classically. The normalized residual vector is subsequently encoded into the quantum state 
+
+|rpkqy “ 1
+
+∥rpkq∥
+
+> d
+
+ÿ
+
+> j“1
+
+rpkq 
+
+> j
+
+|jy.
+
+We denote the cost of preparing this state from its classical description by TSP . In the QRAM input model, once the classical data structure associated with rpkq has been constructed, the corresponding amplitude-encoded state can be prepared with polylogarithmic QRAM query complexity in the dimension [26]. After preparing |rpkqy, the algorithm calls oracle OLS p ˜A, r pkq{∥rpkq∥, ξ q. The re-sulting quantum state is converted into a classical correction vector using tomography. Since ξ is fixed throughout the iterative-refinement procedure, the quantum cost of each refining solve is independent of the final target precision ϵ. The complexity of solving one refining system can be derived directly from Theorem 3.10, taking ξ fixed. 
+
+4.4. A difference between classical and quantum IR. In classical IR sche-mes, one has the choice of the norm used to compute the error incurred by the linear system solution, i.e., the norm used to assess the size of the residual. The choice of the ℓ8-norm is common [15], and the convergence proof carries through without any impediment. In the quantum scheme described in Algorithm 4.1, however, the right-hand side vector rpkq is always normalized in the ℓ2-norm because it is encoded as a quantum state. As a consequence, we cannot measure errors in a different norm. We show where the proof of Theorem 4.1 fails if we wish to employ the ℓ8-norm. The classical estimate ˜upkq satisfies 
+
+››› rpkq 
+
+> }rpkq}2
+
+´ ˜A˜upkq
+
+›››8
+
+ď ξ. The induction step reads 
+
+›››rpk`1q
+
+›››8
+
+“
+
+›››˜b ´ ˜A˜xpk`1q
+
+›››8
+
+“
+
+›››˜b ´ ˜A
+
+´
+
+˜xpkq ` ∥rpkq∥2 ˜upkq
+
+¯› ››8
+
+“
+
+›››˜b ´ ˜A˜xpkq ´ ∥rpkq∥2 ˜A˜upkq
+
+›››8
+
+“ } rpkq}2
+
+››››
+
+rpkq
+
+}rpkq}2
+
+´ ˜A˜upkq
+
+››››8
+
+ď } rpkq}2ξ ď ?dξ k`1,
+
+whereas our goal was to obtain the tighter bound ››rpk`1q››8 ď ξk`1. This observation is particularly important in light of the fact that if we were only looking for an ℓ8-norm 16 HARKNESS ET AL. 
+
+error bound for the solution of the linear system, the tomography step would become computationally much cheaper: [40] shows that rOp1{ξ2q applications of the circuit to prepare the quantum state are sufficient to obtain a classical estimate with ℓ8-norm error at most ξ. Note that this is independent of the dimension d. Unfortunately, the discussion above shows that an ℓ8-norm error bound at each iteration does not suffice for our purposes, due to the ℓ2-norm normalization of the residual. 
+
+5. Complexity analysis in the three input models. We can now character-ize the total complexity of algorithm 4.1 under the QRAM, sparse access, and LCU input models, and compare it to results in the open literature. 
+
+5.1. Detailed complexity statements. In this section, as usual we assume that the singular values of A lie in r1{κA, 1s, and we take into account the normaliza-tions applied by Algorithm 4.1. 
+
+Theorem 5.1. Let A P Rdˆd be s-sparse, and let b P Rd. Let ϵ ą 0. In the QRAM input model, Algorithm 4.1 classically outputs a vector x P Rd satisfying ››x ´ A´1b›› ď ϵ using at most 
+
+˜Od,κ A, }b}
+
+> ϵ
+
+`}A}F dκ 2
+
+> A
+
+˘
+
+accesses to QRAM and additional quantum gates, and 
+
+˜OκA, }b}
+
+> ϵ
+
+pds q
+
+classical arithmetic operations. 
+
+Proof of this theorem follows by combining Corollary 3.11 and Theorem 4.1. Note that because }A} ď 1, then }A}F ď ?d.
+
+Theorem 5.2. Let A P Rdˆd be s-sparse, and let b P Rd. Let ϵ ą 0. In the sparse access input model, Algorithm 4.1 classically outputs a vector x P Rd satisfying ››x ´ A´1b›› ď ϵ using at most 
+
+˜Od,κ A, }b}
+
+> ϵ
+
+´?sdκ 2
+
+> A
+
+psκ Aqop1q
+
+¯
+
+accesses to sparse access oracles, 
+
+˜Od,κ A, }b}
+
+> ϵ
+
+`?sd 2κ2
+
+> A
+
+˘
+
+additional quantum gates, and 
+
+˜OκA, }b}
+
+> ϵ
+
+pds q
+
+classical arithmetic operations. 
+
+Proof of this theorem follows by combining Corollary 3.12 and Theorem 4.1. 
+
+Theorem 5.3. Let A P Rdˆd, and let b P Rd. Let ϵ ą 0. In the LCU input model, Algorithm 4.1 classically outputs a vector x P Rd satisfying ››x ´ A´1b›› ď ϵ using at most 
+
+˜Od,κ A, }b}
+
+> ϵ
+
+`αdκ 2
+
+> A
+
+˘
+
+accesses to LCU oracles, 
+
+˜Od,κ A, }b}
+
+> ϵ
+
+`αd 2κ2
+
+> A
+
+˘ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 17 
+
+Table 2 
+
+Complexity of algorithms for classically solving the LSP to ϵ-precision. For the proposed IR-based method, the dependence on the final precision ϵ is contained only in polylogarithmic factors. For quantum algorithms, the quantum complexity reports oracle/QRAM queries and, when relevant, additional gate complexity. As before, we use the assumption that }A} ď 1 so }A}F ď ?d.                                                     
+
+> Algorithm Input Model Classical Complexity Quantum Complexity
+> Factorization methods (dense) Classical Opd3q–Fast matrix multiplication ( ωă
+> 2.372864 ) [27] Classical Opdωq–Fast sparse solver [36] Classical sparse rOd,κ A,1{ϵ
+> `d2.331645 s˘–Conjugate Gradient ( Aą0) [25] Classical sparse rOd,κ A,1{ϵ
+> `ds ?κA
+> ˘–Chebyshev polynomial [37] Classical sparse rOd,κ A,1{ϵpdsκ Aq–QTA+QLSA ([14]) QRAM rOd,κ A,1{ϵ
+> `}A}Fdκ 2
+> A1{ϵ˘QRAM accesses QTA+QLSA ([14]) Sparse access rOd,κ A,1{ϵ
+> `?sdκ 2
+> A1{ϵ˘oracle queries, plus
+> rOd,κ A,1{ϵ
+> `?sd 2κ2
+> A1{ϵ˘gates QTA+QLSA ([14]) LCU rOd,κ A,1{ϵ
+> `αdκ 2
+> A1{ϵ˘input-oracle accesses, plus
+> rOd,κ A,1{ϵ
+> `αd 2κ2
+> A1{ϵ˘gates IR–QTA+QLSA (this work) QRAM rOκA,}b}{ ϵpds qrOd,κ A,}b}{ ϵ
+> `}A}Fdκ 2
+> A
+> ˘QRAM accesses IR–QTA+QLSA (this work) Sparse access rOκA,}b}{ ϵpds qrOd,κ A,}b}{ ϵ
+> `?sdκ 2
+> A
+> ˘oracle queries, plus
+> rOd,κ A,}b}{ ϵ
+> `?sd 2κ2
+> A
+> ˘gates IR–QTA+QLSA (this work) LCU rOκA,}b}{ ϵpKC UqrOd,κ A,}b}{ ϵ
+> `αdκ 2
+> A
+> ˘input-oracle accesses, plus
+> rOd,κ A,}b}{ ϵ
+> `αd 2κ2
+> A
+> ˘gates
+
+additional quantum gates, and ˜OκA, }b}
+
+> ϵ
+
+pKC U q
+
+classical arithmetic operations, where CU is an upper bound on the number of arith-metic operations necessary to compute each matrix-vector product with the matrices 
+
+Ui of the LCU decomposition. 
+
+The proof follows by combining Corollary 3.13 and Theorem 4.1; note that we as-sume that the coefficients αi are known classically and we have some type of classical description of the unitaries Ui as well. 
+
+5.2. Comparison to existing linear system solvers. Table 2 compares the running time of our algorithm to other classical and quantum algorithms in the liter-ature when applied to classically solving linear systems of equations. The proposed IR scheme is exponentially faster than the existing quantum approach, regardless of whether or not we have access to QRAM. The classical CG method overall has the fastest asymptotic running time: the quantum IR scheme described in this paper does not achieve quantum advantage. However, it represents a step toward potential quantum advantage, due to its poly-logarithmic dependence on the inverse of the precision to which we solve the linear system, compared to previous quantum approaches that incur polynomial cost in these quantities to obtain a classical description of the solution. Further improvements may be able to decrease the dependence on κ and show an asymptotic advantage compared to classical CG; in particular, as mentioned in Section 1.2, [17] relies on a preliminary version of this paper ([29]) to improve the κ dependence. 
+
+6. Numerical Experiments. In this section, we empirically validate the iter-ative refinement scheme presented in Algorithm 4.1 by solving randomly generated linear systems on both quantum computer simulators and quantum hardware. Our implementation uses the HHL algorithm [24] as the underlying QLSA, using textbook quantum phase estimation (QPE) to approximate eigenvalues of A to q bits of pre-cision and quantum state tomography to extract a classical solution vector at each 18 HARKNESS ET AL. 
+
+iteration. All code is publicly available on GitHub 2.We generate test instances Ax “ b where A P Rdˆd is a random Hermitian matrix with prescribed condition number κA and sparsity s, and b is a random right-hand side vector normalized to unit norm. The HHL circuit is constructed using Qiskit and transpiled at optimization level 3. At each IR iteration, we run 500 successful shots conditioned (post-selected) upon a successful mid-circuit ancilla measurement; this eliminates the need for amplitude amplification, while still serving as a proof-of-concept evaluation of our framework. 
+
+6.1. Convergence in simulation and quantum hardware. To demonstrate that Algorithm 4.1 works in practice while also being robust to hardware noise, we execute the full iterative refinement loop both in noiseless simulation and on quantum hardware. For simulation, we use the AerSimulator noiseless statevector backend; for hardware experiments, we execute on the IBM ibm_pittsburgh superconducting quantum computer (a 156-qubit Heron r3 processor). The test instance is an 8 ˆ 8
+
+random Hermitian system ( d “ 8) with condition number κA “ 5 and sparsity 4. To probe the sensitivity of the scheme to the precision of the quantum oracle, we sweep the size of the QPE register over q P t 3, 4, 5u qubits, using a total of log 2pdq` q`1 P t 7, 8, 9u
+
+qubits for the full QLSA; after transpilation to the device connectivity these circuits contain 1327 , 1820 , and 2353 two-qubit gates, respectively. All hardware runs employ dynamical decoupling together with Pauli twirling of the two-qubit gates for error mitigation.              
+
+> Figure 1.Residual norm convergence for an 8-variable linear system with qPt3,4,5u
+> QPE qubits over 12 iterative refinement iterations. (a) Noise-free simulation, in which each ad-ditional QPE qubit accelerates convergence. (b) The same three configurations executed on the IBM Pittsburgh quantum computer.
+
+Figure 1 shows the residual norm log 10 }Ax pkq ´b}2 as a function of the IR iteration index k. In noise-free simulation (panel (a)) the convergence rate is ordered by the precision of the quantum oracle as expected. Initializing the algorithm with a 10 ´9
+
+residual norm convergence criteria and a 12 -iteration budget, the algorithm attains the desired residual norm in 9 iterations for q “ 5 and 10 iterations for q “ 4, while 
+
+q “ 3 reaches only 6.6 ˆ 10 ´9 within the iteration budget. Each additional QPE qubit decreases the eigenvalue quantization error and therefore yields a more accurate search direction at every iteration.  
+
+> 2https://github.com/QCOL-LU/QLSAs ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA
+
+19 On hardware (panel (b)) all three configurations converge monotonically, reducing the residual by roughly an order of magnitude from 8.6 ˆ 10 ´1 to 1.03 ˆ 10 ´1 (q “ 3), 
+
+1.04 ˆ10 ´1 (q “ 4), and 7.3ˆ10 ´2 (q “ 5). However, the three curves are statistically indistinguishable from one another. This is due to the device error rate: at a median two-qubit gate error of 1.5ˆ10 ´3, the transpiled circuits accumulate between two and four expected two-qubit errors per execution, so the fidelity of the returned residual at each IR iteration is bottlenecked by decoherence rather than by the resolution of the QPE register. Increasing q improves the eigenvalue estimate but simultaneously deepens the circuit, and at current error rates the decoherence of the deeper circuits outweighs the improved eigenvalue resolution. Taken together, the two panels validate the premise of our approach: repeated application of a low-precision quantum oracle, combined with classical residual up-dates, yields a progressively more accurate classical solution. The scheme recovers the theoretically predicted dependence on oracle precision in the noise-free setting, and remains convergent on hardware even when each individual oracle call is corrupted by noise. 
+
+6.2. Sensitivity analysis. To directly quantify the resource savings afforded by IR, we compare the cumulative circuit depth required to solve a random 8-variable linear system to a fixed residual threshold of }Ax ´ b}2 ď 10 ´6 in noiseless simulation, with and without iterative refinement, as the condition number κA varies from 10 
+
+to 50 .Without iterative refinement, the cumulative circuit depth is simply the depth of a single high-precision HHL circuit. The precision of the algorithm is improved through increasing QPE register size (as the number of qubits in the QPE register corresponds to the number of digits of precision to which the eigenvalues of A are estimated). Note that while the precision of HHL improves exponentially with the number of QPE qubits q, this comes at the cost of exponentially increasing circuit depth, such that the HHL circuit depth scales linearly with the inverse precision. With iterative refinement, the cumulative circuit depth corresponds to the depth of the (low-precision) HHL circuit used, multiplied by the number of iterative refine-ment iterations. For the IR approach, we fix a small number of QPE qubits ( q P t 1, 3, 7u) and iterate Algorithm 4.1 until the cumulative residual falls below the threshold. The cumulative circuit depth is recorded directly from the transpiled circuits executed on the simulator at each iteration. For the direct (no-IR) baseline, a single HHL call must resolve eigenvalues to precision Opε{κAq, requiring q ě rlog 2pκA{εqs QPE qubits. We report two direct-HHL curves in Figure 2, carefully distinguishing measured from estimated quantities. First, at a relaxed threshold of ε “ 10 ´2, the required register sizes ( q “ 10 –13 over the tested range of κA) remain directly compilable; this curve reports actual transpiled circuit depths with no modeling involved. Second, at the target threshold of ε “ 10 ´6,the requirement grows to q “ 24 –26 , requiring circuits far too deep to simulate or execute, and impractical even to transpile. To estimate the corresponding depth, we transpile the full HHL circuit at every feasible QPE register size q “ 5, . . . , 17 and fit the model depth pqq « c0 `c¨γq to the measured transpiled depths, obtaining a growth rate γ « 2.26 ˘ 0.03 with c « 79 . The constant c0 has no physical interpretation: it merely allows the fit to account for contributions to the transpiled depth that grow more slowly than γq (state preparation, readout, and the QFT stage of phase estimation), and its fitted value is strongly correlated with c and γ. Its only role is to 20 HARKNESS ET AL. 10 15 20 25 30 35 40 45 50 
+
+Condition Number 
+
+10 3
+
+10 4
+
+10 5
+
+10 6
+
+10 7
+
+10 8
+
+10 9
+
+10 10 
+
+10 11 
+
+> Cumulative Circuit Depth
+
+Threshold = 1e-06                                      
+
+> HHL + IR (QPE = 7 qubits) HHL + IR (QPE = 3 qubits) HHL + IR (QPE = 1 qubit) Fit 95% prediction interval Direct HHL (no IR, extrapolated, = 10 6)
+> Direct HHL (no IR, measured, = 10 2)
+> q= 24
+> q= 25
+> q= 26
+> q= 10
+> q= 11
+> q= 12
+> q= 13
+> Figure 2 .Cumulative circuit depth required to reach the residual threshold }Ax ´b}2ďε, with and without iterative refinement. Solid curves with filled markers are measured transpiled depths: HHL + IR at the target ε“10 ´6, and direct HHL at the relaxed threshold ε“10 ´2, for which the required QPE register sizes are directly compilable. The dashed curve with hollow markers is the
+> extrapolated direct-HHL depth at ε“10 ´6, obtained from a fitted depth model; the shaded band is the fit’s 95% prediction interval. Boxed labels indicate the required QPE register size qon each plateau.
+
+prevent these sub-exponential contributions from biasing the estimate of γ, which is the parameter that governs the extrapolation. The fit is tight in log space ( R2 “ 0.999 ,residual standard error 0.137 in log-depth, i.e. a multiplicative depth uncertainty of roughly ˆ{˜ 1.15 within the calibrated range); the shaded band in Figure 2 shows the resulting 95% prediction interval, which widens to roughly ˆ{˜ 1.7 at the extrapolated register sizes. The exponential scaling of transpiled depth with QPE register size is expected, as each additional QPE qubit roughly doubles the number of controlled rotations in the phase estimation circuit; the fitted rate slightly exceeds 2 because of the overhead from the eigenvalue inversion subroutine. Figure 2 displays the results. The cumulative circuit depth for HHL + IR remains near 10 4 across the full range of κA and is effectively independent of the condition number. The comparison against direct HHL proceeds in two stages. At the com-pilable threshold of ε “ 10 ´2, the measured direct depths range from 2.8 ˆ 10 5 to 
+
+3.3ˆ10 6—already a factor of 30 –300 deeper than IR, even though IR is held to the far stricter target of 10 ´6. Tightening the direct baseline to the target ε “ 10 ´6 costs IR little more, while the extrapolated direct depth grows to 2.4 ˆ 10 10 –1.3 ˆ 10 11 , a gap of six to seven orders of magnitude. Moreover, both direct curves exhibit a staircase structure: each time κA increases enough to require an additional QPE qubit, the circuit depth jumps by a factor of γ « 2.3. The IR curves display no such depen-dence, as the per-iteration circuit is fixed and the number of IR iterations grows only ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 21 logarithmically in 1{ε.We also observe that the IR curves with q “ 1 and q “ 3 QPE qubits terminate at moderate values of κA, as the per-iteration QLSA precision becomes insufficient to converge within the allotted iteration budget. This reflects the practical requirement that the fixed precision ξ must satisfy ξ ă 1 for geometric convergence (Theorem 4.1); with too few QPE qubits, the effective per-iteration error improves too slowly to reach }Ax ´ b}2 ď 10 ´6 in 30 iterations. Nevertheless, even modest QPE precision (q “ 7) suffices across the full range of tested condition numbers. 
+
+6.3. Resource trade-offs. A key advantage of the IR scheme is the ability to trade iteration count for circuit complexity. Figure 3 illustrates this trade-off for a 
+
+64 -variable linear system solved in simulation. The left panel fixes the number of QPE qubits at q “ 6 and varies the number of tomography shots per IR iteration; the right panel fixes the shot count at 10 6 and varies the number of QPE qubits. Color encodes the resulting residual log 10 p} Ax pkq ´ b}2q at each parameter combination, and dashed contour lines show the cumulative quantum resources (shots and circuit depth, respectively) across all IR iterations up to that point. 0 1 2 3 4 5 6 7 8 9 10               
+
+> Iterative refinement iteration
+> 1100 200 300 400 500 600 700 800 900 1000
+> Shots per iteration
+> Cumulative shots
+> 8
+> 6
+> 4
+> 2
+> log 10 ( Ax  b 2)012345678910 11 12 13 14
+> Iterative refinement iteration
+> 1234567
+> Number of QPE qubits
+> Cumulative circuit depth
+> 12
+> 10
+> 8
+> 6
+> 4
+> 2
+> log 10 ( Ax  b 2)
+
+Figure 3 . Trade-offs between iterative refinement iterations and quantum resources for solving a 64-variable linear system to a desired residual using HHL. Color encodes the resulting residual at each parameter combination as log 10 p} Ax ´ b}2q, and contour lines show cumulative quantum resources across all IR iterations. In the left plot, 6 QPE qubits are used for the HHL circuit, and in the right plot, 10 6 shots are used to readout x from |xy at each iteration of iterative refinement. 
+
+These heatmaps reveal the characteristic structure of the trade-off: along the hor-izontal axis, each additional IR iteration incrementally improves precision at constant per-iteration cost; along the vertical axis, increasing the QPE register size (or shot budget) yields faster convergence per iteration but at the expense of deeper circuits (or more total measurements). The contour lines make the iso-resource surfaces ex-plicit. For instance, achieving a residual of 10 ´3 with 100 shots per iteration requires approximately 10 IR iterations, whereas 1000 shots per iteration achieves the same residual in only 2 iterations—but with roughly double the cumulative shots (2000 versus 1000). Operationally, given a fixed budget of quantum resources (shot count and/or circuit depth), one should aim to minimize the residual achieved along the corresponding contour line; in every case, this optimum is attained by using k ą 1
+
+iterations of iterative refinement rather than a single high-precision call. The same principle applies to circuit depth, which is the dominant resource con-straint on near-term hardware. The right panel of Figure 3 shows that one can reach arbitrarily high precision ζ by performing Oplog p1{ζqq iterations of a fixed, shallow circuit, rather than constructing a single deep circuit whose depth scales polynomi-ally in 1{ζ. The per-iteration circuit depth grows approximately exponentially in q22 HARKNESS ET AL. 
+
+(roughly a factor of 2 per additional QPE qubit), reflecting the cost of implementing controlled rotations of increasing precision in the QPE subroutine. The IR scheme fixes q at a modest value and compensates with additional iterations, keeping the per-iteration depth constant and the total depth scaling linearly in the iteration count. 
+
+6.4. Discussion. Taken together, these experiments corroborate the theoretical predictions of Section 4. The geometric convergence rate of Theorem 4.1 is clearly vis-ible in the simulator results for well-conditioned systems, where each iteration reduces the residual by a roughly constant factor on the logarithmic scale. The hardware ex-periment on ibm_pittsburgh demonstrates that this convergence persists—albeit at a reduced rate—on noisy superconducting devices, lending practical credibility to the IR framework. The sensitivity analysis highlights that the effective convergence rate depends on the interplay between κA and the QPE precision 2´q on HHL circuits: when q is large enough to resolve the eigenvalue spectrum of A, convergence is rapid; when it is not, additional QPE qubits are needed. Crucially, even in regimes where a single QPE register cannot achieve the target precision outright, the IR scheme allows one to distribute the precision requirement across multiple iterations, each employing a manageable circuit depth. From a resource perspective, the trade-off heatmaps confirm that the IR approach offers a practical path to high-precision solutions on near-term hardware: rather than requiring circuits whose depth grows polynomially in 1{ζ, one can execute Oplog p1{ζqq 
+
+repetitions of a constant-depth circuit, paying only a logarithmic overhead in the total number of quantum operations. This makes the scheme particularly attractive for early fault-tolerant devices, where circuit depth is still a primary bottleneck. 
+
+7. Conclusion. In this work, we present an iterative refinement scheme that uses low-precision quantum oracles to accurately solve classical linear systems. The key advantage of the proposed approach is that all quantum subroutines operate at fixed precision, reducing the dependence on the final target precision from polynomial to polylogarithmic when QLSAs are combined with quantum state tomography. We analyze the framework under QRAM, sparse-access, and LCU input models, and support the theoretical results with numerical experiments on both simulators and quantum hardware. The experiments demonstrate geometric residual reduction and show that repeated low-precision quantum solves can be more resource-efficient than a single high-precision solve. The main remaining classical cost is the matrix-vector multiplication required to compute the residual at each refinement step. Developing efficient quantum ap-proaches for residual computation is a natural direction for future research. 
+
+Acknowledgment. An earlier technical report [29], related to this work, was posted in 2023. We thank Ramin Fakhimi for his contributions to an earlier im-plementation of the QLSA and IR framework. This work is supported by the De-fense Advanced Research Projects Agency as part of the project W911NF2010022: 
+
+The Quantum Computing Revolution and Optimization: Challenges and Opportuni-ties . G. Nannicini is supported by ONR award # N000142312585. A. Harkness is supported by PNNL’s Quantum Algorithms and Architecture for Domain Science (QuAADS) Laboratory Directed Research and Development (LDRD) Initiative. This material is based upon work supported by the U.S. Department of Energy, Office of Science, National Quantum Information Science Research Centers, Quantum Science Center (QSC). The Pacific Northwest National Laboratory is operated by Battelle for ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 23 the U.S. Department of Energy under Contract DE-AC05-76RL01830. This research used resources of the Oak Ridge Leadership Computing Facility (OLCF), which is a DOE Office of Science User Facility supported under Contract DE-AC05-00OR22725. This research used resources of the National Energy Research Scientific Computing Center (NERSC), a U.S. Department of Energy Office of Science User Facility located at Lawrence Berkeley National Laboratory, operated under Contract No. DE-AC02-05CH11231. 
+
+REFERENCES [1] A. Ambainis , Variable time amplitude amplification and quantum algorithms for linear algebra problems , in 29th Symposium on Theoretical Aspects of Computer Science (STACS’12), vol. 14, LIPIcs, 2012, pp. 636–647. [2] D. An and L. Lin , Quantum linear system solver based on time-optimal adiabatic quantum computing and quantum approximate optimization algorithm , arXiv preprint arXiv:1909.05500, (2019). [3] B. Augustino, G. Nannicini, T. Terlaky, and L. F. Zuluaga , Quantum interior point methods for semidefinite optimization , Quantum, 7 (2023), p. 1110. [4] D. W. Berry, A. M. Childs, and R. Kothari , Hamiltonian simulation with nearly optimal dependence on all parameters , in 2015 IEEE 56th Annual Symposium on Foundations of Computer Science, IEEE, 2015, pp. 792–809. [5] E. Carson and N. J. Higham , A new analysis of iterative refinement and its application to accurate solution of ill-conditioned sparse linear systems , SIAM Journal on Scientific Computing, 39 (2017), pp. A2834–A2856. [6] E. Carson and N. J. Higham , Accelerating the solution of linear systems by iterative refinement in three precisions , SIAM Journal on Scientific Computing, 40 (2018), pp. A817– A847. [7] S. Chakraborty, A. Gilyén, and S. Jeffery , The power of block-encoded matrix powers: improved regression techniques via faster Hamiltonian simulation , arXiv preprint arXiv:1804.01973, (2018). [8] Y. Chen, A. Gilyén, and R. de Wolf , A quantum speed-up for approximating the top eigenvectors of a matrix , arXiv preprint arXiv:2405.14765, (2024). [9] A. M. Childs, R. Kothari, and R. D. Somma , Quantum algorithm for systems of linear equations with exponentially improved dependence on precision , SIAM Journal on Computing, 46 (2017), pp. 1920–1950. [10] A. M. Childs and N. Wiebe , Hamiltonian simulation using linear combinations of unitary operations , Quantum Inf. Comput., 12 (2012), pp. 901–924, https://doi.org/10.26421/ QIC12.11-12. arXiv:1202.5822. [11] D. Coppersmith and S. Winograd , Matrix multiplication via arithmetic progressions , in Proceedings of the nineteenth annual ACM symposium on Theory of computing, 1987, pp. 1–6. [12] P. Costa, A. M. Dalzell, D. An, and D. W. Berry , Constant factor analysis of optimal quantum linear solvers in practice , arXiv preprint arXiv:2604.22185, (2026). [13] P. C. Costa, D. An, Y. R. Sanders, Y. Su, R. Babbush, and D. W. Berry , Optimal scaling quantum linear-systems solver via discrete adiabatic theorem , PRX Quantum, 3 (2022), p. 040303. [14] A. M. Dalzell , A shortcut to an optimal quantum linear system solver , arXiv preprint arXiv:2406.12086, (2024). [15] J. Demmel, Y. Hida, W. Kahan, X. S. Li, S. Mukherjee, and E. J. Riedy , Error bounds from extra-precise iterative refinement , ACM Transactions on Mathematical Software (TOMS), 32 (2006), pp. 325–351. [16] A. Gilyén , Quantum singular value transformation & its algorithmic applications , PhD thesis, Institute for Logic, Language and Computation Universiteit van Amsterdam, ILLC Dissertation Series DS-2019-03., 2019. [17] A. Gilyén , Iterative refinement for improved tomography and quantum linear equation solving .Poster presented at QIP 2024, 2024. [18] A. Gilyén, Y. Su, G. H. Low, and N. Wiebe , Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics , in Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing, 2019, pp. 193–204. [19] A. Gleixner and D. E. Steffy , Linear programming using limited-precision oracles ,24 HARKNESS ET AL. Mathematical Programming, 183 (2020), pp. 525–554. [20] A. M. Gleixner, D. E. Steffy, and K. Wolter , Improving the accuracy of linear programming solvers with iterative refinement , in Proceedings of the 37th International Symposium on Symbolic and Algebraic Computation, 2012, pp. 187–194. [21] A. M. Gleixner, D. E. Steffy, and K. Wolter , Iterative refinement for linear programming , INFORMS Journal on Computing, 28 (2016), pp. 449–464, https://doi.org/ 10.1287/ijoc.2016.0692. [22] G. H. Golub and C. F. Van Loan , Matrix computations , JHU Press, Baltimore, MD, USA, 2023. [23] M. Guţă, J. Kahn, R. Kueng, and J. A. Tropp , Fast state tomography with optimal error bounds , Journal of Physics A: Mathematical and Theoretical, 53 (2020), p. 204001. arXiv:1809.11162. [24] A. W. Harrow, A. Hassidim, and S. Lloyd , Quantum algorithm for linear systems of equations , Physical Review Letters, 103 (2009), p. 150502. [25] M. R. Hestenes and E. Stiefel , Methods of conjugate gradients for solving , Journal of Research of the National Bureau of Standards, 49 (1952), p. 409. [26] I. Kerenidis and A. Prakash , Quantum recommendation systems , in 8th Innovations in Theoretical Computer Science Conference (ITCS 2017), C. H. Papadimitriou, ed., vol. 67 of Leibniz International Proceedings in Informatics (LIPIcs), Dagstuhl, Germany, 2017, Schloss Dagstuhl – Leibniz-Zentrum für Informatik, pp. 49:1–49:21. [27] F. Le Gall , Powers of tensors and fast matrix multiplication , in Proceedings of the 39th International Symposium on Symbolic and Algebraic Computation, 2014, pp. 296–303. [28] G. H. Low , Hamiltonian simulation with nearly optimal dependence on spectral norm , in Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing, 2019, pp. 491–502. [29] M. Mohammadisiahroudi, B. Augustino, R. Fakhimi, G. Nannicini, and T. Terlaky ,
+
+Exponentially more precise tomography for quantum linear system solutions via iterative refinement , tech. report, Lehigh University, 23T-007, 2023. [30] M. Mohammadisiahroudi, B. Augustino, P. Sampourmahani, and T. Terlaky ,
+
+Quantum computing inspired iterative refinement for semidefinite optimization ,Mathematical Programming, (2025), pp. 1–40. [31] M. Mohammadisiahroudi, R. Fakhimi, and T. Terlaky , Efficient use of quantum linear system algorithms in inexact infeasible IPMs for linear optimization , Journal of Optimization Theory and Applications, (2024), pp. 1–38. [32] M. Mohammadisiahroudi, R. Fakhimi, Z. Wu, and T. Terlaky , An inexact feasible interior point method for linear optimization with high adaptability to quantum computers ,SIAM Journal on Optimization, 35 (2025), pp. 2203–2233. [33] M. Mohammadisiahroudi, Z. Wu, B. Augustino, A. Carr, and T. Terlaky ,
+
+Improvements to quantum interior point method for linear optimization , ACM Transactions on Quantum Computing, 6 (2025), pp. 1–24. [34] G. Nannicini , Quantum algorithms for optimizers , SIAM, 2025. [35] A. Pelecanos, J. Spilecki, E. Tang, and J. Wright , Mixed state tomography reduces to pure state tomography , arXiv preprint arXiv:2511.15806, (2025). [36] R. Peng and S. Vempala , Solving sparse linear systems faster than matrix multiplication , in Proceedings of the 2021 ACM-SIAM Symposium on Discrete Algorithms (SODA), SIAM, 2021, pp. 504–521. [37] Y. Saad , Iterative Methods for Sparse Linear Systems , SIAM, 2003. [38] V. Strassen , Gaussian elimination is not optimal , Numerische Mathematik, 13 (1969), pp. 354–356. [39] Y. Subaşı, R. D. Somma, and D. Orsucci , Quantum algorithms for systems of linear equations inspired by adiabatic quantum computing , Physical Review Letters, 122 (2019), p. 060504. [40] J. van Apeldoorn, A. Cornelissen, A. Gilyén, and G. Nannicini , Quantum tomography using state-preparation unitaries , in Proceedings of the 2023 Annual ACM-SIAM Symposium on Discrete Algorithms (SODA), SIAM, 2023, pp. 1265–1318. [41] A. C. Vazquez, R. Hiptmair, and S. Woerner , Enhancing the quantum linear systems algorithm using richardson extrapolation , ACM Transactions on Quantum Computing, 3 (2022), pp. 1–37. [42] J. H. Wilkinson , Rounding Errors in Algebraic Processes , SIAM Classics in Applied Mathematics, 1994. [43] L. Wossnig, Z. Zhao, and A. Prakash , Quantum linear system algorithm for dense matrices , Physical Review Letters, 120 (2018). ANALYSIS OF ITERATIVE REFINEMENT FOR QLSA 25 
+
+[44] Z. Wu, M. Mohammadisiahroudi, B. Augustino, X. Yang, and T. Terlaky , An inexact feasible quantum interior point method for linearly constrained quadratic optimization ,Entropy, 25 (2023), p. 330.

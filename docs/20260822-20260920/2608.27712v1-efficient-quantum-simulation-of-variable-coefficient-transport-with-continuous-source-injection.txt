@@ -1,0 +1,830 @@
+Title: Efficient Quantum Simulation of Variable-Coefficient Transport with Continuous Source Injection
+
+URL Source: https://arxiv.org/pdf/2608.27712v1
+
+Published Time: Mon, 31 Aug 2026 00:15:04 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# Efficient Quantum Simulation of Variable-Coefficient Transport with Continuous Source Injection 
+
+Mohammad Mehedi Hasan Akash ,1 Turag Dev, 1 Nhat-Quang Nguyen ,2, 3 Yanzhu Chen ,2, 3 Huixuan Wu ,1 and Kourosh Shoele 1, ∗
+
+> 1
+
+Department of Mechanical and Aerospace Engineering, Joint College of Engineering, FAMU-Florida State University, Tallahassee, FL 32310 
+
+> 2
+
+Department of Physics, Florida State University, Tallahassee, FL 32306 
+
+> 3
+
+FSU Quantum Initiative, Florida State University, Tallahassee, FL 32306 
+
+(Dated: August 31, 2026) Quantum time-marching algorithms for transport partial differential equations commonly represent variable coefficients and forcing using register-expanding dilations, block-encoding oracles, or repeated postselection. We present an alternative algorithm for a forced variable-coefficient advection-diffusion equation in flow-inspired skew-symmetric form, treated as a prototype for flow-momentum equations, that incorporates spatially varying velocity, viscous dissipation, and persistent source injection with a peak logical requirement of nq + 1 qubits, where nq is the number of qubits encoding the spatial field. A centered skew-symmetric discretization renders the advection operator strictly skew-Hermitian for arbitrary velocity profiles, enabling an ancilla-free unitary implementation using a Gray-code Trotter sequence of controlled-Ry rotations. Diffusion is applied in the Fourier basis through a uniformly controlled rotation on one postselected ancilla, which is measured, reset, and reused between the two diffusion half-steps, while the source is incorporated classically within second-order Strang splitting. Statevector simulations for N = 16 and 32 recover second-order temporal convergence relative to high-accuracy classical solutions, while Richardson extrapolation delivers fourth-order accuracy and reduces the required kernel calls by factors of four to fourteen. Independent tests through N = 256 
+
+confirm second-order spatial consistency. We further show analytically and numerically that the per-step ancilla failure probability is directly proportional to the instantaneous viscous dissipation rate, making the postselection cost self-regulating over a fifty-fold viscosity range. Stable evolution is demonstrated for 5 × 10 4 time steps without observable secular error growth, while Gray-code advection accounts for 71 –95% of the transpiled controlled-NOT gates. The resulting fixed-width kernel provides a qubit-efficient building block for near-term hardware studies, although classical readout and state re-preparation remain the principal obstacles to coherent multistep evolution. 
+
+I. INTRODUCTION 
+
+Computational fluid dynamics rests on the numerical solution of partial differential equations whose discretized state vectors grow rapidly with spatial resolution, placing large-scale flow simulations among the most demanding workloads in scientific computing [1]. Quantum comput-ers offer a fundamentally different way to store such fields: amplitude encoding represents N = 2 nq field values in the amplitudes of only nq qubits, an exponentially compact register [2] on which the discretized evolution operators of the flow can act directly [3–5]. Realistic transport problems, however, rarely involve uniform coefficients; advecting velocities vary in space, viscous dissipation acts across all scales, and external forcing continuously injects momentum or scalar concentration into the flow. The central question addressed in this work is whether a quan-tum algorithm can correctly solve a transport equation that combines a spatially varying velocity U (x), viscous diffusion, and persistent source injection within a fixed qubit budget. Quantum algorithms for partial differential equations fall broadly into several families. Quantum linear systems  
+
+> ∗Corresponding author: kshoele@eng.famu.fsu.edu
+
+methods recast the discretized equation as a linear system and solve it with the Harrow-Hassidim-Lloyd algorithm and its high-precision descendants [6–9]; yet, these meth-ods are natural for steady-state problems but less suited to explicit time evolution. Variational approaches alter-natively encode the solution in a parametrized circuit, as applied to the one-dimensional advection-diffusion equa-tion by Ingelmann et al. [10], yet ansatz expressivity and barren plateaus restrict the scalability of this method. Another class of approaches uses Schrödinger embed-dings, in which the non-Hermitian transport operator is mapped to a Hamiltonian acting on an enlarged Hilbert space. Examples include Schrödingerisation [11, 12], the linear-combination-of-Hamiltonian-simulations approach of Novikau and Joseph [13], and Carleman lineariza-tion [14, 15]. These methods are broadly applicable, in which with Schrödingerisation, we can even accommodate variable coefficients and inhomogeneous terms [12]. Yet, this generality comes at the cost of register-expanding dilations and the associated ancilla overhead. The family that is most natural for fluid time inte-gration, and the one this work belongs to, advances the solution by time marching: the evolution operator over a step ∆t is decomposed by operator splitting into quantum circuits applied sequentially [16–20], mirroring classical time-stepping schemes. Brearley and Laizet [16] embed-arXiv:2608.27712v1 [quant-ph] 27 Aug 2026 2ded the discrete advection operator into a Hamiltonian simulation, handling general stencils, boundary condi-tions, and velocity fields through a Hermitian dilation with per-step post-selection. In this method, the construc-tion addresses only pure advection, with neither viscous diffusion nor a source term. Over et al. [17] block-encode the explicit advection-diffusion time-marching operator as a linear combination of an advection-like dilation and a corrective shift operator, but the shift-operator correc-tion encodes a spatially uniform diffusion coefficient, and the system must remain homogeneous . In later work, it was extended to non-periodic boundary conditions while retaining the homogeneous setting [21]. Bharadwaj and Sreenivasan [18] proposed compact linear-combination-of-unitaries algorithms with reduced qubit overhead for advection-diffusion at constant velocity, with oracle and state-preparation costs that grow once coefficients vary in space. Lubasch et al. [19] combine the quantum Fourier transform with quantum singular value transformation to obtain simple Fourier-space circuits, an approach whose Fourier-diagonal structure requires spatially uniform co-efficients. Across all of these algorithms, two restrictions persist. None provides a mechanism for persistent source injection. And where spatially varying velocity is sup-ported, it is done by embedding the advection operator in a Hermitian dilation, so that even the unitary part of the dynamics inherits an ancilla register and a per-step post-selection burden. Incorporating persistent source injection into any of these architectures would demand additional register-expanding embeddings that challenge near-term hardware limits [22]. Among the advection–diffusion time-marching constructions considered here, an explicit treatment com-bining spatially varying skew-symmetric advection, vis-cous diffusion, and persistent source injection within the present fixed-register nq + 1 architecture has not been demonstrated. Recent work further broadens the quantum-PDE landscape. Alipanah et al. [23] investigated Trotter-ized and variational quantum-dynamics formulations of the advection–diffusion equation, including simulator and superconducting-hardware demonstrations. Sato et al. [24] developed an LCHS-based framework for linear PDEs with spatially varying parameters, while Guseynov et al. [25] provided explicit gate-level block encodings for Hamiltonians arising from broad classes of discretized linear PDEs. Complementary complexity analyses of mul-tidimensional drift–diffusion equations have compared Fourier-based, Hamiltonian-simulation, quantum-linear-system, and quantum-random-walk formulations [26]. These developments demonstrate that variable-coefficient and transport PDEs can be addressed through several general-purpose quantum frameworks. The distinction pursued here is narrower: the skew-symmetric variable-coefficient advective generator is exploited directly as an ancilla-free unitary, while non-unitarity is confined to the one-ancilla diffusion primitive and persistent forcing is incorporated through a deterministic classical update. In this work, we discuss a hybrid quantum-classical algorithm for an energy-conserving variable-coefficient advection-diffusion equation with source injection. The method uses a skew-symmetric discretization of the con-tinuum generator − 12 [U ∂ x + ∂x(U ·)] inspired by the com-mon conservative representation of convective terms in the Navier-Stokes equations [27, 28]. For an arbitrary sam-pled velocity profile U (x), the discrete generator is skew-Hermitian, and its exponential is therefore exactly unitary. Consequently, in contrast to the embedding-based treat-ments discussed above, the advective dynamics can be im-plemented without dilation, ancillary degrees of freedom, or postselection. This unitary is implemented as a Gray-code Trotterized sequence of single-target controlled-Ry
+
+gates, with Gray-code ordering that reduces each nearest-neighbor coupling to a single-qubit transition. Viscous diffusion, the genuinely non-unitary part of the dynamics, is isolated in the Fourier basis and applied by a uniformly controlled Ry rotation [29] on one post-selected ancilla qubit, damping each Fourier mode individually. Source injection is handled entirely classically via Strang operator splitting [30], so the source step succeeds with probability 1 and incurs no ancilla overhead. Initial conditions are loaded by a Fourier state preparation based on a binary-tree decomposition [31] that encodes the Kn active modes at step n. The homogeneous kernel requires only nq + 1 
+
+qubits. We validate the model against high-accuracy clas-sical integrators of the same semi-discrete equation and report state preparation and reconstruction separately from the kernel resources. The remainder of the paper is organized as follows. Section II introduces the governing equation and its skew-symmetric operator decomposition, then develops the quantum circuit architecture, comprising sparse Fourier state preparation, uniformly controlled Ry diffusion, and Gray-code Trotterized advection, together with a commutator-based error estimate and the resulting qubit and gate budget. Section III validates the algorithm against high-accuracy classical integrators, characterizes its temporal convergence and Richardson-extrapolated ac-curacy, verifies the ancilla-dissipation identity linking post-selection cost to physical viscous dissipation, and reports circuit resource projections together with long-horizon stability. Section IV compares this algorithm relative to existing quantum transport solvers, examines the cost structure separating quantum kernel calls from the classi-cal state-preparation and readout boundary, and outlines the outlook toward multi-step and higher-dimensional extensions. Section V summarizes the principal findings and limitations.   
+
+> II. METHODOLOGY A. Governing Equation and Operator Splitting
+
+We consider the forced, variable-coefficient advection– diffusion equation in skew-symmetric form on the periodic 3domain x ∈ [0 , L ),
+
+∂u ∂t = − 12
+
+
+
+U (x) ∂u ∂x + ∂[U (x)u]
+
+∂x 
+
+
+
++ ν ∂2u∂x 2 + f (x),x ∈ [0 , L ), t ∈ [0 , T ]. (1) This split form is directly relevant to conservative flow simulations, as the symmetric combination of the advec-tive and conservative forms preserves the skew-adjoint transport structure and its associated quadratic invariant, consistent with energy-conserving formulations commonly used in CFD. Here, u(x, t ) denotes the evolving scalar field, U (x) = U0 + U1 sin(2 πx/L ) is the spatially varying transport velocity, with U0 = 1 .0 and U1 = 0 .3, ν is the kinematic viscosity, and f (x) is a prescribed time-independent forcing term. All quantities in Eq. (1) are nondimensional. The choice L = 1 fixes the length scale, with t, U (x), ν, and f (x) scaled accordingly. Periodic boundary conditions, u(0 , t ) = u(L, t ), permit a uniform discretization without ghost points or one-sided stencils. We use N = 2 nq grid points, xm = mh , with 
+
+h = L/N and m = 0 , . . . , N − 1, so that the discretized state is represented by u(t) ∈ CN . The semi-discrete evolution is 
+
+du
+
+dt = Kadv u
+
+| {z } 
+
+> advection
+
++ Ddiff u
+
+| {z } 
+
+> diffusion
+
++f . (2) Let Dc denote the periodic centered-difference ma-trix, satisfying DTc = −Dc, and let U =diag( U (x0), . . . , U (xN −1)) . The advection operator is constructed as 
+
+Kadv = − 12 (UD c + DcU) = 12 (C − CT ),
+
+C = −UD c. (3) This skew-symmetric construction is deliberate: at the continuum level, it corresponds to −U u x − (∂xU )u/ 2,rather than to the unsymmetrized term −U u x alone. Thus, the circuit implements Eq. (1) and, in the invis-cid unforced limit, retains an energy-conserving discrete advective generator. 
+
+Proposition 1 (Discrete advection structure) . For real grid values of U , K† 
+
+> adv
+
+= −Kadv . Consequently, 
+
+exp( tKadv ) is unitary and preserves ∥u∥2 for every t.Proof. Because U† = U and D† 
+
+> c
+
+= −Dc, taking the adjoint of Eq. (3) changes its sign. The exponential of a skew-Hermitian matrix is unitary. The diffusion operator Ddiff = F † diag( −νκ 2
+
+> k
+
+)F is di-agonal in Fourier space. For the even grid sizes N = 2 nq
+
+employed here, the signed physical wavenumbers follow the natural FFT ordering, 
+
+κk = 2πL
+
+( k, 0 ≤ k < N/ 2,k − N, N/ 2 ≤ k ≤ N − 1,
+
+(4) sys 0sys 1sys 2sys 3anc (a) (b) Fourier basis UCRY (D 1) UCRY (D 2), ∆t/2 SP (btree) IQFT QFT , ∆t/2 IQFT sys 0sys 1sys 2sys 3anc (12 more) RY (θ0) RY (θ1) RY (θ14 ) R Y (θ15 )Adv (∆t) 
+
+FIG. 1: Quantum circuit for one D–A–D time step with 
+
+nq = 4 (N = 16 Fourier modes). (a) Circuit overview. Sparse binary-tree state preparation, SP(btree), loads the source-corrected state | ˆS⟩ directly in the Fourier basis, eliminating a QFT before the first diffusion half-step 
+
+D(∆ t/ 2) . Each diffusion block applies a uniformly controlled Ry (UCRY) operation to the data register and a single ancilla, followed by an IQFT and post-selective ancilla measurement ( ⊗). The ancilla is reset and reused for the second diffusion half-step, which is preceded by a QFT because the advection step returns the register to the position basis. The advection circuit is detailed in Fig. 2. (b) UCRY implementation of the first diffusion half-step. For each Fourier mode k, the corresponding control pattern applies Ry (θk) to the ancilla, with 
+
+θk = 2 arccos( λk) and λk = exp  −νκ 2
+
+> k
+
+∆t/ 2. Filled (open) circles denote controls on |1⟩ (|0⟩). The rotations for k = 0 , 1, 14 , 15 are shown explicitly, with the intermediate modes represented by the dashed region. Post-selecting |0⟩anc yields the diffusion-attenuated state. where indices k > N/ 2 represent negative-frequency modes, while k = N/ 2 is the Nyquist mode with 
+
+κN/ 2 = −π/h . Since each Fourier mode is attenuated over a half-step by λk = e−νκ 2  
+
+> k∆t/ 2
+
+≤ 1, the diffusion update is non-unitary and must be implemented using an auxiliary ancilla [6] qubit. The simulation performed here is initialized from a normalized Gaussian profile, 
+
+u(x, 0) ∝ exp  −σ(x − xc)2, centered at xc = 0 .5 with width parameter σ = 60 , on a domain of length L = 1 .At each time level, the normalized field is amplitude-encoded in the quantum register in the Fourier basis. 4Following the same Fourier convention used for the state-preparation target explained later in Eq. (9), namely as, 
+
+|ψ(t)⟩ = 
+
+> N−1
+
+X
+
+> k=0
+
+ˆψk(t) |k⟩, ˆψk(t) = [F{ u(t)/∥u(t)∥2}]k
+
+√N ,
+
+(5) where F{·} denotes the discrete Fourier transform over the spatial grid index, the overline denotes complex conju-gation, and |k⟩ is the qubit register state encoding Fourier mode index k. Because u(t) is a real-valued physical field, its Fourier-space coefficients satisfy the Hermitian-symmetry relation ˆψN −k = ˆψk for k = 1 , . . . , N/ 2 − 1,while the zero-frequency and Nyquist coefficients are self-conjugate. Because ˆψk(t) is built directly from the nor-malized field u(t)/∥u(t)∥2, the register always stores a unit-norm Fourier-space state; no separate division by a norm is needed at the state-vector level. The physical norm ∥u(t)∥2 is not itself represented on the register: it is stored and propagated entirely in classical memory along-side the quantum state and multiplied back after quan-tum readout. This separation is essential because every quantum gate is unitary and therefore norm-preserving, whereas the physical PDE dynamics include dissipation and source injection that alter the global amplitude. The right-hand side of Eq. (2) decomposes naturally into three physically distinct contributions. The diffusion operator is implemented in Fourier space via an ancilla-assisted controlled rotation (Section II D). The advection operator is local in physical space and is realized by the Gray-code Trotter circuit (Section II D). The forcing term 
+
+f is a known, time-independent vector; because it requires no coherent superposition over unknown states, it is in-corporated through a purely classical arithmetic update surrounding each quantum step (Section II B). This di-vision between quantum subroutines for homogeneous advection-diffusion dynamics and classical arithmetic for source injection is the backbone of the present method’s hybrid architecture [31]. Within the homogeneous step, diffusion is applied as two symmetric half-steps flanking a single, unsplit advection step, a composition denoted diffusion-advection-diffusion (D–A–D) and detailed in Sec-tion II D.  
+
+> B. Strang Splitting and Classical Source Integration
+
+The full one-step evolution is organized through sym-metric Strang source splitting [30]. Denoting the half-step source map as S(∆ t/ 2) : u 7 → u + (∆ t/ 2) f and the homo-geneous advection-diffusion propagator over one step as 
+
+UDAD (∆ t), the update reads 
+
+un+1 = S  ∆t
+
+> 2
+
+ ◦ U DAD (∆ t) ◦ S   ∆t
+
+> 2
+
+ un, (6) Within the homogeneous propagator, diffusion is like-wise split into two symmetric half-steps flanking a single, unsplit advection step, UDAD (∆ t) = D(∆ t/ 2) ◦ A (∆ t) ◦D(∆ t/ 2) (Section II D); source injection and diffusion are each applied as symmetric half-steps, while advection is applied once, unsplit, per iteration. which is second-order accurate in time; the symmetric composition cancels the leading odd-order splitting error, giving a global error of 
+
+O(∆ t2). The source half-steps are executed entirely in classical memory. At the beginning of each Strang step, the first classical source half-step gives 
+
+v1 = un + ∆t 
+
+> 2
+
+f . (7) The vector v1 is then normalized, transformed to the Fourier basis, and supplied to the quantum circuit (Sec-tions II C and II D), which produces the homogeneous solution u∗. A second classical source half-step completes the time update. 
+
+un+1 = u∗ + ∆t 
+
+> 2
+
+f . (8) Source injection is deterministic and requires neither an-cilla qubits, post-selection, nor amplitude amplification; consequently P src succ = 1 , by construction. This value is not a probabilistic success rate but reflects the absence of any quantum post-selection step: source injection is a deterministic classical update, not a quantum circuit outcome. After the first half-step source update, v1 is normalized and Fourier-transformed classically to yield the Fourier co-efficient vector ˆS = F{ v1/∥v1∥2}/√N . The norm ∥v1∥2
+
+is stored classically and multiplied back after quantum readout to recover the physical field amplitude. In a prospective hardware or shot-based realization, where the post-selected outcome is itself a normalized state, this reconstruction additionally requires multiplying by √Pn, the classically tracked D-A-D success probability of Eq. (16); the statevector simulations reported here retain this factor automatically by working with the un-normalized post-selected branch. . The coefficient vector 
+
+ˆS is then passed to the sparse Fourier state-preparation primitive (Section II C), which encodes it directly into the quantum register in the Fourier basis, ready for the homogeneous quantum step.  
+
+> C. Sparse Fourier State Preparation
+
+Before each application of the homogeneous quantum circuit, the data register is initialized with the normalized Fourier-space representation of the current field. Since the homogeneous evolution (Section II D) begins with a diffusion operator that is diagonal in Fourier space, the state is prepared directly in the Fourier basis. This eliminates a redundant initial QFT and reduces the per-step gate cost by one O(n2 
+
+> q
+
+) operation. After the first classical source half-step, v1 is normalized and Fourier-transformed classically to yield the target Fourier coefficient vector, 
+
+ˆSk = [F { v1/∥v1∥2}]k
+
+√N , k = 0 , . . . , N − 1, (9) 5where F{·} denotes the discrete Fourier transform over the spatial grid index m = 0 , . . . , N − 1, the overline denotes complex conjugation, and k = 0 , . . . , N − 1 is the Fourier mode index. The complex conjugate and the 
+
+1/√N normalization ensure that the classically computed Fourier coefficients match the Fourier basis convention of the quantum circuit [32]. The target quantum state is therefore 
+
+| ˆS⟩ = 
+
+> N−1
+
+X
+
+> k=0
+
+ˆSk |k⟩, (10) which resides directly in the Fourier-coefficient basis. At step n, let In = {k : | ˆSk| > δ }, Kn = |I n|, and ηn =
+
+∥( ˆSk)k / ∈I n ∥2. The preparation uses the binary-tree state-preparation algorithm of Gleinig and Hoefler [31] (building on precursor amplitude-loading schemes for structured distributions [33]), which loads the Kn retained modes via a balanced binary cascade of controlled-Ry rotations and phase gates. Both the rotation angles and the phases of ˆSk
+
+are computed classically and encoded in the circuit. For the specific binary-tree construction considered here, the logical controlled-operation count scales as O(Knnq ) [29]; the corresponding CX count depends on the hardware basis-gate decomposition under the fixed ancilla budget. The resulting advantage therefore applies when Kn ≪ N ,while the worst-case scaling is O(N n q ). Smoothness alone does not guarantee sparsity at a fixed absolute threshold. Indeed, the recorded N = 16 viscosity runs have Kn = N
+
+at the final step for δ = 10 −10 . We therefore retain Kn
+
+explicitly in every end-to-end resource estimate rather than assigning the two-mode support of the forcing to the source-corrected state. The output state | ˆS⟩ enters the homogeneous quantum step formulated directly in the Fourier basis; no further basis change is needed before the first diffusion substep (Fig. 1(a)).  
+
+> D. Homogeneous Quantum Step: Diffusion-Advection-Diffusion
+
+The homogeneous quantum evolution applies the advection-diffusion operator UDAD (∆ t) through a sym-metric diffusion-advection-diffusion (D–A–D) splitting. The two operators require distinct quantum treatments: diffusion is non-unitary and is implemented using ancilla-assisted post-selection, whereas the advection operator is unitary and acts directly on the data register without ancillary qubits.  
+
+> 1. Diffusion in Fourier Space
+
+The diffusion operator Ddiff is diagonal in Fourier space, so each Fourier mode k evolves independently under the damping factor 
+
+λk = exp 
+
+
+
+−νκ 2
+
+> k
+
+∆t
+
+2
+
+
+
+, (11) for a half-step of duration ∆t/ 2. Being a non-unitary operation, the diffusion half-step is applied within an ancilla-assisted uniformly controlled rotation (UCRY block) [6, 34, 35]. With the data register in the Fourier-basis superposition P 
+
+> k
+
+ck|k⟩ and an ancilla qubit initial-ized to |0⟩anc , the joint transformation is 
+
+|k⟩| 0⟩anc 7 −→ | k⟩
+
+
+
+λk |0⟩anc +
+
+q
+
+1 − λ2 
+
+> k
+
+|1⟩anc 
+
+
+
+, (12) This operation is implemented by a mode-dependent 
+
+Ry (θk) rotation with θk = 2 arccos( λk), conditioned on the nq -qubit Fourier-mode index |k⟩. The QFT and IQFT circuits are implemented using Qiskit’s QFTGate primi-tive, whose canonical decomposition already includes the bit-reversal SWAP network required to produce natural-order output; no additional swap layer is appended in our implementation, so the native computational-basis index of the QFT/IQFT output coincides with the natu-ral (non-bit-reversed) Fourier-mode order. The rotation angles θk are constructed directly from the natural-order signed wavenumbers of Eq. (4) and supplied to the UCRY block in the same natural index order k = 0 , . . . , N − 1,so no additional classical reordering of the angle table is required. Consistency between the QFT/IQFT output and the UCRY angle ordering therefore does not rely on any wire reordering internal to the UCRY block, but on pairing Qiskit’s default swap-included QFT synthesis with a natural-order angle table. Post-selecting on |0⟩anc 
+
+recovers the desired attenuated amplitude λkck at mode 
+
+k. By acting simultaneously on all populated modes in superposition, the UCRY block applies the full diagonal dissipation map within a single multiplexed controlled-rotation block. The rotation angles θk depend only on 
+
+ν, k, and ∆t, all of which are fixed parameters, so the UCRY gate is pre-built once and reused at every time step (Fig. 1(b)). The post-selection probability for a normalized input state P 
+
+> k
+
+ck|k⟩ is 
+
+P diff succ = X
+
+> k
+
+|ck|2 λ2
+
+> k
+
+. (13) For physically relevant parameters with small ν and ∆t,we have λk ≈ 1 for all modes, so P diff succ remains close to unity. The quantitative values for the parameters used in the present study are reported in Section III. In a prospec-tive hardware implementation, post-selection failures can be handled via a per-step restart-until-success strategy, analogous to repeat-until-success (RUS) protocols [36]: upon an unsuccessful ancilla outcome (the UCRY measure-ment returning |1⟩anc ), the attempted step is discarded and the known input state is re-prepared from the classical checkpoint before the step is repeated. The abbreviation 6sys 0sys 1sys 2sys 3even layer, ∆t/2 even layer, ∆t/2 odd layer, ∆tsys 0sys 1sys 2sys 3Gray Bin 6 more RY (θ9)RY (θ8)6 more RY (θ1)RY (θ0)6 more Gray Bin RY (θ17 )RY (θ16 )
+
+FIG. 2: Quantum circuit for the advection substep 
+
+Uadv (∆ t) via the Gray-code Trotter decomposition (Eq. 14). The green background identifies this circuit as the detailed contents of the green Adv(∆ t) box in Fig. 1. The circuit is shown in a two-row layout with vertical tick marks marking the row break. Read left to right, top row: Bin →Gray , a classically precomputed permutation converting the register sys 0–sys 3 to Gray-code order so that adjacent grid indices m, m + 1 differ in exactly one qubit; even layer, ∆t/ 2, (nq − 1) -controlled 
+
+Ry (θ) gates on the even edges (m, m + 1) , m = 0 , 2, 4, . . . ,each targeting the single qubit that differs between the two coupled Gray-code labels (filled/open control circles denote ctrl = 1 /0); representative gates θ0 (edge (0 , 1) ,all anti-controls) and θ1 (edge (2 , 3) ) are shown, with the dashed box standing for the remaining six; odd layer, 
+
+∆t, the same construction on odd edges m = 1 , 3, 5, . . . ,with representative gates θ8 (edge (1 , 2) ) and θ9 (edge 
+
+(3 , 4) ). Bottom row: even layer, ∆t/ 2 repeats the even-edge layer at half step ( θ16 , θ17 on the same edges as 
+
+θ0, θ1), completing the symmetric splitting; Gray →Bin 
+
+restores binary ordering. The even-odd-even structure gives a local Trotter error of O(∆ t3), matching the Strang scheme’s second-order accuracy. For nq = 4 (N = 16 ), each layer has N/ 2 = 8 controlled Ry gates – 3 × 8 = 24 
+
+total, each with nq − 1 = 3 controls. RUS is used subsequently to refer to this restart-based strategy. This avoids the multiplicative accumulation of post-selection probability over the full trajectory. For an individual diffusion half-step, the corresponding restart factor is 1/P diff succ , whereas the success probability of a com-plete D-A-D step is the composite probability Pn defined in Eq. (16).  
+
+> 2. Advection via Gray-Code Trotter Decomposition
+
+The advection operator Kadv is local in physical space, coupling only nearest-neighbor grid points through the centered-difference stencil. Its skew-Hermitian structure ensures Uadv = eKadv ∆t is exactly unitary. Despite this structural simplicity, direct implementation in standard binary ordering is circuit-inefficient: adjacent grid points 
+
+m and m + 1 can differ by multiple bits in their binary representations, requiring multi-qubit controlled gates for each coupling. For example, grid points m = 1 (binary 01 )and m = 2 (binary 10 ) differ in two bits simultaneously, which would require a two-qubit controlled gate just for one nearest-neighbor coupling. Gray-code ordering removes this inefficiency by relabel-ing the grid points according to the binary-reflected Gray code, g(m) = m ⊕ (m ≫ 1) , for which adjacent labels dif-fer by a single bit. For example, with nq = 2 , the binary transition 01 → 10 flips two bits, whereas the Gray-code sequence 00 → 01 → 11 → 10 requires only one bit flip between successive states. The complete nq = 2 mapping is provided in Appendix C, Table IX. Under this relabeling, each nearest-neighbor coupling becomes a transition on a single target qubit, with the remaining nq − 1 qubits defining the control pattern. The logical transition therefore involves only one target qubit. Still, the basis-gate cost of the corresponding multicon-trolled operation depends on the available work ancillas and hardware connectivity. The resulting circuit topology directly reflects the sparsity structure of the advection operator (Fig. 2). The nearest-neighbor edges of the advection operator are partitioned into two groups: even edges connecting pairs (m, m + 1) for m = 0 , 2, 4, . . . and odd edges con-necting pairs (m, m + 1) for m = 1 , 3, 5, . . . . Applying the symmetric second-order decomposition of Suzuki [37], the full advection update over one time step is assembled as 
+
+Uadv (∆ t) ≈ U even 
+
+  ∆t
+
+> 2
+
+ ◦ U odd (∆ t) ◦ U even 
+
+  ∆t
+
+> 2
+
+ , (14) where Ueven and Uodd are sequential applications of the controlled Ry gates over the even and odd edge sets re-spectively. The rotation angle for edge (m, m + 1) is set as 
+
+θm = −2 ( Kadv )m,m +1 τ , where (Kadv )m,m +1 is the cor-responding centered-difference off-diagonal coefficient and 
+
+τ equals ∆t/ 2 for the even layers and ∆t for the odd layer above. The symmetric composition yields a local splitting error of O(∆ t3), giving second-order accuracy in time. The combination of Gray-code ordering and symmetric Trotter decomposition is what makes the advection circuit both gate-efficient and second-order accurate: Gray-code ordering ensures each edge requires only one target qubit, while the symmetric Trotter sequence ensures the overall splitting error matches the second-order accuracy of the Strang scheme. The resulting circuit structure is shown in Fig. 2 for nq = 4 .The complete homogeneous quantum update combines the preceding operators through a symmetric D–A–D composition. Let F map position-space amplitudes to the Fourier convention used by the circuit. For an input state 7prepared in the Fourier basis, the successful branch is 
+
+|ψout ⟩ = F †D 12 F A2(∆ t)F †D 12 | ˆS⟩,
+
+D 12 = diag 
+
+
+
+e−νκ 2 
+
+> k∆t/ 2
+
+
+
+, (15) where the operators act from right to left and A2 denotes the even-odd-even approximation of Eq. (14). Since | ˆS⟩
+
+is prepared directly in the Fourier basis, no initial QFT is required. The post-selection probability for one complete D–A–D step can be written as 
+
+Pn = p1,n p2,n |1, (16) where p1,n is the success probability of the first diffusion half-step and p2,n |1 is that of the second, conditioned on successful completion of the first. The relation Pn = p21,n 
+
+holds only when the spectral distributions entering the two diffusion steps are identical.  
+
+> E. Accuracy decomposition and commutator-based error estimate
+
+The comparisons below use the adaptive RK45 scheme and the explicit eighth-order DOP853 method, both ap-plied to the semi-discrete system in Eq. (2). Because these classical solutions retain the same spatial discretization, they serve as temporal-integration references rather than continuum benchmarks. A consistent error assessment therefore requires separating spatial discretization and temporal integration errors. For smooth periodic fields u
+
+and U , a Taylor expansion of Eq. (3) gives 
+
+Kadv Phu = Ph
+
+
+
+− 12 (U u x + ( U u )x)
+
+
+
++ O(h2), (17) where Ph samples the continuum field. The Fourier Lapla-cian is spectrally accurate for smooth periodic fields, so the centered advection stencil sets the algebraic spatial order. To characterize the temporal error, we augment the state as eu = ( u, 1) T and define the corresponding genera-tors 
+
+eS =
+
+0 f
+
+0 0
+
+
+
+, eD =
+
+Ddiff 00 0
+
+
+
+,
+
+eKe =
+
+Ke 00 0
+
+
+
+, eKo =
+
+Ko 00 0
+
+
+
+, (18) where Ke + Ko = Kadv is the even–odd edge partition. For a symmetric pair eτ A/ 2eτ B eτ A/ 2, we define 
+
+c(A, B ) = ∥[A, [A, B ]] ∥2
+
+24 + ∥[B, [B, A ]] ∥2
+
+12 . (19) Denote by Φ∆t the one-step Trotterized propagator com-posed of the three symmetric substeps above, and define 
+
+eLh = eS + eD + eK, with eK = eKe + eKo. The augmented semidiscrete system then satisfies ∂t eu = eLh eu, so eT eLh is the exact augmented semidiscrete flow over the interval T .Applying the Baker–Campbell–Hausdorff expansion [38] to the three nested symmetric compositions, we obtain the global semidiscrete estimate of 
+
+∥ΦM 
+
+> ∆t
+
+− eT eLh ∥2 ≤ T ∆t2eT Λh
+
+c( eS, eD + eK) + c( eD, eK)+ c( eKe, eKo) + O(T ∆t4), (20) where M = T / ∆t, and Λh = ∥ eS∥2 + ∥ eD∥2 + ∥ eKe∥2 +
+
+∥ eKo∥2 is the sum of generator norms. The deliberately conservative leading-order commutator estimate makes the dependence of the error constant on velocity, viscosity, grid spacing, and forcing explicit. If Fourier truncation is used in state preparation, its normalized one-step error is at most 2ηn/p1 − η2
+
+> n
+
+. Sta-bility then adds the term 
+
+eT Λh 
+
+> M−1
+
+X
+
+> n=0
+
+2ηn
+
+p1 − η2
+
+> n
+
+(21) to Eq. (20). Conditional on successful ancilla outcomes, the ideal UCRY diffusion map itself is exact; post-selection changes cost, not algorithmic bias. The accompanying analysis script evaluates Eqs. (17)–(20) and the observed local O(∆ t3) defect. Because ∥Ddiff ∥2 grows as N 2, the asymptotic temporal audit uses ∆tN 2 = constant under grid refinement; a fixed ∆t can otherwise leave the small-step regime on the finer grids.  
+
+> F. Qubit Budget and Circuit Cost
+
+The homogeneous quantum kernel requires nq data qubits plus one diffusion ancilla. The two UCRY applica-tions share that ancilla through mid-circuit measurement and reset, so the peak logical count is 
+
+npeak = nq + 1 . (22) No additional logical qubits are used by the classical source update or the ancilla-free binary-tree preparation. This peak count does not, however, determine the gate or sampling complexity. For simulation convenience, the statevector validation reported in Section III represents the two diffusion half-steps using separate ancilla registers rather than perform-ing an explicit mid-circuit measurement and reset. In the intended dynamic-circuit implementation, a single diffu-sion ancilla is measured, reset, and reused between the two half-steps, yielding the peak logical-qubit requirement 
+
+nq + 1 given in Eq. (22). One successful kernel call contains 3N/ 2 ( nq − 1) -controlled Ry rotations for advection, two N -mode UCRY blocks, and three Fourier transforms [39]. The correspond-ing logical block counts therefore scale as 
+
+Gkernel = 3N
+
+2 Gmc (nq − 1) + O(N ) + O(n2 
+
+> q
+
+), (23) 8where Gmc is the basis-gate cost of one multicontrolled rotation. It depends on the synthesis model: connectiv-ity, clean work ancillas, and relative-phase constructions must be specified. Consequently, 3N/ 2 is a hardware-independent logical rotation count, whereas an uncondi-tional O(N n q ) CX claim is not justified under the fixed 
+
+nq + 1 -qubit budget. The end-to-end hybrid step additionally requires a clas-sical FFT, preparation of the actual source-corrected state at O(Knnq ) gates, an expected 1/P n kernel attempts, and phase-sensitive reconstruction of the output amplitudes. Computational-basis sampling alone returns |um|2 and cannot supply the signs or phases needed for the next classical source addition. Even a probability histogram has 
+
+E[TVD] ≤ 12
+
+r N − 1
+
+Ns
+
+, (24) while generic amplitude reconstruction requires at least order N/ϵ 2meas state copies. For M steps, a transparent cost model is therefore 
+
+Cend = 
+
+> M−1
+
+X
+
+> n=0
+
+(Gprep (Kn) + Gkernel )/P n
+
++ Ctomo (N, ϵ meas ) + CFFT (N ). (25) We report the transpiled homogeneous kernel separately from these end-to-end terms in Sec. III G. TABLE I: Validation at ∆t = 10 −3, T = 1 .0. Relative 
+
+L2 errors of the quantum solution against the matched split-step reference (isolating the Trotter error of the advection circuit) and against DOP853 (total temporal error), together with the measured post-selection statistics of the diffusion ancilla. The source steps succeed with probability exactly one in all 2000 applications.                          
+
+> nqNL2vs. matched L2vs. DOP853 ¯Psucc min Psucc
+> 416 2.184 ×10 −52.232 ×10 −50.999349 0 .998896
+> 532 1.012 ×10 −41.015 ×10 −40.999369 0 .998892
+> III. RESULTS
+
+Unless stated otherwise, all results use the configura-tion defined in Section II A: U (x) = 1 .0 + 0 .3 sin(2 πx/L ),
+
+ν = 0 .008 , f (x) = 0 .5 sin(2 πx/L ), a normalized Gaussian initial condition, ∆t = 10 −3, and T = 1 .0, with N = 16 
+
+(nq = 4 ) and N = 32 (nq = 5 ). All quantum calcula-tions employ the Gray-code Trotterized advection circuit and the classical Strang source update. The circuits are simulated at the statevector level in Qiskit [32] to isolate algorithmic error, while finite-shot sampling effects and a depolarizing-plus-readout noise model are considered in Section III F and Appendix B. (a) (b) (c) x0 1Quantum DOP853 Classical (Strang) L2= 2.23 ×10 -5 (d) 
+
+∆ tnq = 4, p ≈ 2 nq = 5, p ≈ 2Richardson, p ≈ 4 Richardson, p ≈ 4  
+
+> O(∆ t 2)
+> O(∆ t 4)
+
+0.2 0.4 0.6 0.8 x0 10.2 0.4 0.6 0.8 0.3 0.2 0.1 -0.1 0u (x,T) 10 -4 10 -6 10 -8 |u q-u ref |L2 error 10 -4 10 -6 10 -8 10 -10 10 -2 L2 error 10 -4 10 -6 10 -8 10 -10 10 -2 10 -3 10 -2 ∆ t10 -3 10 -2 
+
+FIG. 3: Validation and temporal convergence. (a) Quan-tum field at T = 1 .0, ∆t = 10 −3, nq = 4 , against the DOP853 and matched split-step references. (b) Pointwise error against the DOP853 reference on a logarithmic scale; the matched split-step error curve is indistinguishable at this scale. (c),(d) Temporal convergence against DOP853 for nq = 4 and nq = 5 : the base scheme follows the second-order guide line over the full ∆t range, while the Richardson-extrapolated solutions lie two to four orders of magnitude below it and converge at fourth order. The corresponding nq = 5 validation panels appear in Ap-pendix A.  
+
+> A. Validation against classical references
+
+Three classical references with distinct roles are used. The matched split-step solver applies the identical Strang composition and identical discrete operators in floating-point arithmetic, with the single exception that the ad-vection exponential eKadv ∆t is evaluated exactly. Its dif-ference from the quantum solution therefore isolates the Gray-code Trotter error, up to the independently con-trolled state-preparation truncation error; conditioned on successful post-selection, the UCRY diffusion and QFT operations are algebraically exact. Two further numerical checks accompany this compari-son. The first audits the encoded real-valued initial condi-tion against the Hermitian-symmetry relation of Sec. II A: the maximum symmetry residual, max k | ˆψN −k − ˆψk| over 
+
+k = 1 , . . . , N/ 2 − 1, was 4.1 × 10 −16 for nq = 4 and 
+
+6.4 × 10 −16 for nq = 5 , with the imaginary parts of the zero-frequency and Nyquist coefficients below 10 −17 .This supports, but does not by itself demonstrate, Her-mitian symmetry at later evolution times. The second compares the complete QFT-UCRY-IQFT diffusion block with direct classical spectral damping ˆuk 7 → λk ˆuk at the canonical parameters nq = 4 , ν = 0 .008 , and ∆t = 10 −3,where the maximum pointwise amplitude residual be-tween the normalized post-selected quantum output and the normalized classically damped state was found to 9TABLE II: Temporal convergence against DOP853 and Richardson extrapolation over the pair (∆ t, 2∆ t). The observed order p = log 2[e(2∆ t)/e (∆ t)] confirms second-order accuracy; successive Richardson errors decrease by factors of 16 .0,identifying fourth-order behavior of the extrapolated solution.                                                         
+
+> nq= 4 nq= 5 ∆tL2error pRichardson L2error pRichardson
+> 0.01 2.23 ×10 −3––1.01 ×10 −2––
+> 0.005 5.58 ×10 −42.000 1 .65 ×10 −62.54 ×10 −31.998 4 .04 ×10 −5
+> 0.0025 1.39 ×10 −42.000 1 .03 ×10 −76.34 ×10 −42.000 2 .52 ×10 −6
+> 0.00125 3 .50 ×10 −52.000 6 .46 ×10 −91.59 ×10 −42.000 1 .57 ×10 −7
+
+be 8.6 × 10 −16 , confirming consistency of the QFT con-vention, mode ordering, and UCRY angle assignment to machine precision. Two independent adaptive integrations, RK45 and DOP853, use a relative tolerance of 10 −11 to integrate the same semi-discrete system, Eq. (2), in continuous time, so the deviation from them measures the total tem-poral discretization error. Their relative L2 distance is 
+
+5.97 × 10 −12 for N = 16 and 1.02 × 10 −11 for N = 32 ,which certifies that the semi-discrete reference introduces no ambiguity at the accuracy levels reported below. Table I and Figs. 3(a,b) summarize the outcome. The errors against the matched split-step and DOP853 refer-ences are close in magnitude, indicating that Gray-code Trotter splitting provides the dominant contribution to the measured temporal error at this time step, while the Strang source splitting contributes negligibly. The factor 
+
+≃ 4.6 increase from nq = 4 to nq = 5 at fixed ∆t is con-sistent with growth of the even–odd commutators under grid refinement; the corresponding commutator-scaling estimate is given by Eq. (20). This is purely a temporal-convergence comparison and the spatial-convergence check will be discussed next. The complete validation is repro-duced with a four-harmonic source f (x) in Appendix A, showing the same convergence behavior with quantita-tively similar error and success-probability levels.  
+
+> B. Convergence: temporal and spatial
+
+Table II and Figs. 3(c,d) establish two results. First, the observed convergence order is approximately 2.000 at both resolutions, confirming that the composition of Strang source splitting, the D-A-D operator factorization, and the even-odd Trotterized advection retains clean second-order accuracy through the complete quantum pipeline. Second, and less trivially, the Richardson-extrapolated solution 
+
+(4 u∆t −u2∆ t)/3 does not merely gain one order: successive extrapolated errors fall by factors of 16 .0 at both reso-lutions, i.e., the extrapolation converges at fourth order. This is a direct consequence of the time-symmetric con-struction of every splitting layer [30, 37], which restricts the error expansion to even powers of ∆t, so that eliminat-ing the ∆t2 term exposes ∆t4. This reduction in error also lowers the number of ideal kernel evaluations required for a given accuracy. At nq = 4 , the Richardson pair 
+
+(∆ t, 2∆ t) = (0 .005 , 0.01) requires 300 ideal kernel calls and reaches an error of 1.65 × 10 −6, whereas the unextrap-olated scheme requires 800 kernel calls at ∆t = 0 .00125 
+
+to reach only 3.5 × 10 −5. A fitted accuracy-to-kernel-cost projection is reported in Appendix A 2, Table VI. The projection indicates an ideal-kernel-count reduction of approximately a factor of four at a target error of 10 −4
+
+and approximately thirteen at 10 −6. These savings do not include state preparation, post-selection retries, or reconstruction and therefore are not interpreted as an end-to-end quantum speedup. The convergence analysis above isolates the temporal error relative to the semi-discrete reference. We next examine spatial convergence and how the semi-discrete operator approaches the continuum PDE under grid re-finement. Table III provides the continuum consistency check. The spatial refinement order approaches two monotoni-cally, while the local operator defect approaches O(∆ t3)
+
+at every resolution once the diffusive scale is resolved. To-gether with the global temporal slopes in Table II, these results distinguish the O(h2) spatial error from the O(∆ t2)
+
+accumulated splitting error. The manufactured-solution columns confirm this independently for the complete forced partial PDE rather than only the semi-discrete gen-erator. In particular, their refinement order approaches two, so both audits agree that the centered advection stencil sets the spatial error while the Fourier diffusion discretization remains more accurate for these smooth periodic data.  
+
+> C. State preparation accuracy
+
+Temporal and spatial discretization are not the only pipeline error sources: sparse Fourier state preparation introduces an additional error through threshold-based Fourier-mode truncation. The retained support Kn de-pends on both the truncation threshold and the evolving source-corrected state and therefore cannot be inferred from the sparsity of the forcing alone. The detailed min-imum, median, and maximum Kn, discarded norms ηn,and corresponding one-step truncation bounds are re-ported in Appendix A 3, Table VII. The result shows that tightening the threshold substantially increases the retained support and that, at stringent tolerances, Kn
+
+can approach N ; at the 10 −10 threshold, the recorded 
+
+N = 64 trajectory reaches Kn = N . Robustness was 10 TABLE III: Independent operator audit on grids from N = 8 to 256 . Eh is the relative consistency error in Eq. (17), 
+
+ph is its grid-refinement order, and ploc is the observed order of the one-step operator defect between the split and exact augmented maps. The reported ploc compares the two finest steps with ∆tN 2 = 0 .16 and 0.08 . The last two columns add the full-PDE manufactured-solution check at T = 0 .1 (exact solution u = e−t[sin(2 αx ) + 0 .2 cos(3 αx )] ,forcing evaluated analytically for U = 1 + 0 .3 sin( αx ), DOP853 tolerances 10 −11 and 10 −13 ).                                                         
+
+> semidiscrete operator audit full-PDE manufactured solution
+> nqNEhphploc L2error ph
+> 383.7281 ×10 −1–2.9971 ––416 1.0296 ×10 −11.8564 2 .9971 1 .14889 ×10 −1–532 2.6451 ×10 −21.9607 2 .9971 2 .91268 ×10 −21.97982
+> 664 6.6584 ×10 −31.9901 2 .9971 7 .30389 ×10 −31.99561
+> 7128 1.6675 ×10 −31.9975 2 .9970 1 .82731 ×10 −31.99894
+> 8256 4.1704 ×10 −41.9994 2 .9969 4 .56911 ×10 −41.99974
+
+examined over twelve amplitude-wavenumber parameter combinations spanning amplitude {0, 0.3, 0.6, 0.9} crossed with wavenumber {1, 2, 4} in U (x) = 1 + a sin(2 π k x/L );because a = 0 gives the same flat profile U = 1 regard-less of k, these combinations span ten distinct velocity fields. The per-step diffusion success probability gener-ally decreases with velocity contrast vmax − vmin , from 
+
+0.99904 at zero contrast to a minimum of 0.99596 at the largest contrast tested ( U ∈ [0 .1, 1.9] , k = 4 ). The relative L2 error follows a different pattern: at the funda-mental wavenumber ( k = 1 ) it grows mildly, whereas at the higher wavenumbers k = 2 and k = 4 it instead falls, to as low as 3.6 × 10 −5. The worst-case error is therefore specific to the fundamental-mode, high-contrast corner of the sweep rather than typical of the full grid. The skew-Hermitian defect of the audited advection matrices was zero to machine precision, and the largest diffusion Hermiticity defect was 1.65 × 10 −12 . 
+
+> D. Energy budget and the ancilla–dissipation identity
+
+The physical content of the post-selection statistics admits a sharp characterization. Expanding the UCRY success probability of Eq. (13) for small νκ 2max ∆t and combining the two diffusion half-steps yields 
+
+1 − Pn = ∆ t ε(tn)
+
+E(tn) + O(νκ 2max ∆t)2 + ∆ t2 + ηn
+
+ ,E = 12
+
+Z
+
+u2 dx, ε = ν
+
+Z
+
+|∂xu|2 dx, (26) Equation (26) is the analytical leading-order relation. The numerical comparisons in Fig. 4(c) and Table VIII evaluate it using a step-centered estimate: writing En =
+
+E(tn) and εn = ε(tn), with ¯En = 12 (En + En+1 ) and 
+
+¯εn = 12 (εn + εn+1 ), the evaluated prediction is ∆t ¯εn/ ¯En.(a) (b) (c) t t0 00.5 1 0.5 10t0 0.5 1246810 12 10 -4 ×Ancilla 1 - Psucc (measured) 0.030 0.025 0.020 0.015 0.010 E (t) 0.04 0.02 -0.02 -0.04 -0.06 Energy rate Per-step probability/rate 
+
+FIG. 4: Energy budget and the ancilla–dissipation iden-tity at nq = 4 . (a) Total energy E(t). (b) Injection ⟨uf ⟩,dissipation ν⟨| ∂xu|2⟩, and dE/dt ; the balance residual is bounded by 1.2 × 10 −4, consistent with the exact dis-crete energy conservation implied by the skew-Hermitian advection operator. (c) Measured per-step ancilla loss 
+
+1 − Psucc against the step-centered numerical evaluation of the leading-order relation in Eq. (26); the curves are indistinguishable (correlation within 4 × 10 −9 of unity). This identifies the per-step ancilla failure probabil-ity with the instantaneous relative viscous dissipation rate. For either half-step the scalar inequality 0 ≤
+
+x − (1 − e−x) ≤ x2/2 supplies a direct remainder bound; the second O(∆ t2) term accounts for the changed spec-trum between the two halves. Figure 4 verifies this identity directly: the measured 1 − Psucc and the step-centered evaluation ∆t ¯εn/ ¯En of the right-hand side of Eq. (26), evaluated from the solution fields, have a correlation co-efficient within 4 × 10 −9 of unity across all 1000 steps, reproducing the full non-monotonic time history of the dissipation. The correlation confirms the predicted time 11 TABLE IV: Viscosity sweep at nq = 4 , ∆t = 10 −3,
+
+T = 1 .0. A fifty-fold increase in ν reduces the cumu-lative success probability by only a factor of 2.9, and the reciprocal-mean Repeat-Until-Success (RUS) calls/step proxy stays below 1.0014 (an overhead below 0.14% ) per step throughout.                                     
+
+> νL2vs. DOP853 ¯Psucc min Psucc Ptotal (T=1) RUS calls/step proxy
+> 0.001 2.9×10 −50.99974 0.99964 0.773 1.0003 0.008 2.2×10 −50.99935 0.99890 0.522 1.0007 0.02 1.6×10 −50.99913 0.99760 0.417 1.0009 0.05 1.2×10 −50.99868 0.99404 0.268 1.0013
+
+dependence, while the remainder above is required to assess magnitude agreement. The ancilla measurement record can therefore act as a calibrated dissipation diag-nostic in the small-step regime. The central panel of Fig. 4 additionally verifies the discrete energy budget dE/dt = ⟨uf ⟩ − ε: the residual is bounded by 1.2 × 10 −4 against budget terms of order 
+
+3 × 10 −2, and is attributable to the O(∆ t2) splitting error and the finite-difference evaluation of dE/dt . Advection contributes identically zero to the budget, which is the discrete statement that the exact unitarity of the Gray-code circuit and the energy conservation of transport are the same property. The magnitude, rather than only the correlation, of Eq. (26) is tested separately by refining ∆t and tracking the maximum ancilla–dissipation remainder; to keep the main text focused on the primary results, that refinement study is reported in Table VIII in Appendix B. 
+
+E. Post-selection statistics across viscosity 
+
+Table IV and Figs. 5(a,b) quantify the single failure channel of the algorithm across a fifty-fold range of vis-cosity, from ν = 0 .001 to 0.05 . Over this range, the cumu-lative success probability at T = 1 decreases from 0.773 
+
+to 0.268 , a factor of approximately 2.9. The mechanism follows Eq. (26): the post-selection loss is concentrated in the high-wavenumber modes, and viscosity removes pre-cisely those modes, so the failure channel depletes its own source. The per-step traces show the corresponding signa-ture, with Psucc recovering toward unity as the spectrum empties. Under the Repeat-Until-Success protocol [36], in which the ancilla is measured after each UCRY block and the step is re-prepared from the classically stored field upon failure, using 1/ ¯Psucc as a reciprocal-mean proxy, the retry overhead remains below 0.14% per step through-out the sweep. Here, because each retry restarts from the same classically stored input, it introduces no addi-tional algorithmic approximation in the model. Accuracy simultaneously improves with ν, as dissipation suppresses the high-k content in which the Trotter commutator error resides. Thus, no adverse accuracy-success-probability tradeoff is observed over the tested parameter range. (a) (c) (b) (d) tt t0 1Psucc 0
+
+ν
+
+> Cumulative P total at T=1
+
+000.2 0.4 0.6 0.8 1Relative distance to u sQuantum, T = 50 eλt, λ = -0.0039 Classical (DOP853) -2 -1.5 -1 -0.5 0Cumulative log 10 P total 0.2 0.4 0.6 0.8 10.9995 0.999 0.9985 0.9 0.6 0.3 0.01 0.02 0.03 0.04 0.05 500 1000 1500 2000 2500 0 10 20 30 40 50 
+
+FIG. 5: Post-selection statistics across viscosity and hori-zon length. (a) Per-step success probability at the canon-ical viscosity ν = 0 .008 , recovering toward unity as dis-sipation empties the high-wavenumber modes. (b) Cu-mulative success probability across the viscosity sweep of Table IV. (c) Long-horizon integration to T = 50 : relative distance to the exact steady state us = −A−1f , where A
+
+is the discrete steady-state advection-diffusion operator and f the discrete forcing vector, along the classical tra-jectory, decaying on the slow-mode timescale τ = 257 ; the quantum solution at T = 50 (symbol) lies on the classical curve. (d) Cumulative log 10 P of the post-selection record over the full 5 × 10 4 steps, flattening as the spectrum con-centrates in weakly dissipated modes. 
+
+F. Measurement statistics and source sparsity 
+
+Sampling the final state with Ns shots reproduces the expected statistical behavior, with the total variation distance to the exact distribution falling from 4.3 × 10 −2
+
+at 10 3 shots to 7.0 × 10 −3 at 5 × 10 4 shots, consistent with the N −1/2 
+
+> s
+
+scaling (Fig. 8(a), Appendix B). Repeating the complete simulation and measurement with the four-harmonic source yields total variation distances that are equal to or smaller than the two-mode case at every shot count. Forcing complexity does not introduce a separate prob-abilistic source step as shown in (Fig. 8(b)). No additional sampling penalty is observed for this particular two-mode versus four-harmonic comparison, though this conclusion is not established for arbitrary forcing bandwidth. It can instead impact the step-dependent preparation cost indi-rectly through the spectral support Kn of the resulting source-corrected state, for which the stated binary-tree construction gives a logical preparation count scaling as 
+
+O(Knnq ). It can also affect the diffusion post-selection probability indirectly by changing the evolved Fourier spectrum. In the rerun, the four-harmonic source con-tains eight active conjugate Fourier modes, and its rela-tive errors against DOP853 are 2.57 × 10 −5 for nq = 4 12 and 1.29 × 10 −4 for nq = 5 , with mean per-step success probabilities 0.999247 and 0.999234 , respectively. Two further finite-shot results are deferred to Appendix B, where under the depolarizing-plus-readout noise model, the sampling-circuit distributional error varies only weakly with gate-error strength at fixed readout error, suggesting readout error contributes an important error floor. Also, we show that applying the Richardson extrapolation appli-cation to measured probability distributions is beneficial only above a shot threshold at which sampling noise falls below the splitting error. Below this threshold, the extrap-olation amplifies shot noise by the factor √17 /3 ≈ 1.37 ,in agreement with the measured degradation.  
+
+> G. Circuit resources
+
+Figure 6 summarizes the transpilation diagnostic. Within this homogeneous circuit, the advection block contributes 71% –95% of the CX count across the tested register sizes. The underlying depth and gate counts are reported in Appendix D, Table X. These counts do not establish an end-to-end Strang-step cost because state preparation, source arithmetic, phase-sensitive reconstruc-tion, mid-circuit measurement/reset, and device routing are excluded. Accordingly, the transpilation results indicate kernel-level scaling rather than end-to-end hardware cost or feasibility. A device-specific assessment would require transpilation of the complete Fourier-input dynamic cir-cuit, including step-dependent state preparation, reuse and reset of the diffusion ancilla, and the target-device connectivity. Hardware-independent kernel and end-to-end resource estimates are given in Eqs. (23) and (25), respectively. (a) (b) 3 4 5 6 3 4 5 60Other Source Prep QFT Diffusion Advection Depth CX count Gates per step 10 410 310 220 40 60 80 100 CX gate fraction (%) nq (system qubits) nq (system qubits) 
+
+FIG. 6: Transpiled diagnostic of the homogeneous D-A-D quantum kernel for nq = 3 –6. (a) Depth and CX count per kernel. (b) Stacked CX contribution by circuit block; the Gray-code advection circuit, which encodes the N
+
+values of U (x), dominates at all sizes. Table V makes the hybrid boundary quantitative. The compact register grows only from five to thirteen logical qubits over the displayed range, but the loaded veloc-ity data, controlled rotations, and measurement copies grow with N . At nq = 12 , for example, a single homo-geneous kernel contains 6144 logical advection rotations and 8192 logical diffusion-mode rotations, while generic phase-sensitive reconstruction at one-percent accuracy has a 4.096 × 10 7-copy proxy. These figures support the few-step kernel target but not an end-to-end exponen-tial speedup for the present readout-and-repreparation workflow.  
+
+> H. Long-horizon integration
+
+To probe error accumulation and post-selection scaling far beyond the validated horizon, the canonical case was integrated to T = 50 , i.e., 5×10 4 successive quantum steps. The relative L2 error against the independently rerun DOP853 reference at T = 50 is 1.7606 × 10 −5, comparable to its value at T = 1 , so no secular error growth is observed in this canonical T = 50 test across a fifty-fold extension of the horizon. The dynamics over this interval are governed by two well-separated timescales: the viscous modes relax within t ≲ 10 , while the spatial mean, which carries no direct viscous damping at k = 0 , is damped only through the shear coupling induced by the varying U (x),giving a slow eigenvalue Re λ = −3.89 × 10 −3 (τ ≃ 257 )and a large steady-state response. At T = 50 the slow mode has decayed by the factor e−50 /τ = 0 .82 , and the measured relative distance of the quantum solution from the steady state, 0.834874 , is consistent with the classical slow-mode trajectory [Fig. 5(c)]; the energy history and the T = 50 field comparison are shown in Appendix B. The post-selection record remains benign throughout: the cumulative success probability is 0.022178 , so a no-retry strategy would require approximately 45 .09 repetitions of the full trajectory, whereas an ideal per-step RUS accounting gives 5.000381 × 10 4 expected kernel attempts, an overhead of 0.008% . Here, we exclude tomography and re-preparation. The cumulative log 10 P curve flattens over time as the energy concentrates in weakly dissipated modes [Fig. 5(d)], in accordance with Eq. (26).   
+
+> IV. DISCUSSION A. Relation to existing quantum transport solvers
+
+The results substantiate a specific reallocation of quan-tum resources relative to prior time-marching solvers. Ex-isting algorithms purchase generality through embeddings: the Hermitian dilation of Ref. [16] attaches an ancilla reg-ister and per-step post-selection to the advective dynamics itself, while Schrödinger-embedding approaches [11–13] absorb the entire non-Hermitian operator into a dilated space. The present algorithm instead partitions the dy-namics by its physical character. The skew-symmetric advective generator in Eq. (1) is implemented unitarily for arbitrary sampled real U (x), with no ancilla and unit suc-cess probability. The dissipative part, which is genuinely 13 TABLE V: Hardware-independent resource projection per homogeneous kernel. The advection and diffusion columns count logical controlled rotations before basis decomposition. The last two columns are copy requirements at 
+
+ϵmeas = 0 .01 : the histogram value follows Eq. (24), whereas the tomography value is the generic N/ϵ 2meas phase-sensitive proxy [40]. State preparation, post-selection retries, and the M = 1000 repetitions are not included in these per-kernel counts.                                                   
+
+> nqNpeak qubits adv. rotations diff. rotations histogram shots tomography copies 416 524 32 3.75 ×10 41.60 ×10 5
+> 664 796 128 1.575 ×10 56.40 ×10 5
+> 8256 9384 512 6.375 ×10 52.56 ×10 6
+> 10 1024 11 1536 2048 2.5575 ×10 61.024 ×10 7
+> 12 4096 13 6144 8192 1.02375 ×10 74.096 ×10 7
+
+non-unitary, is isolated in the Fourier basis and assigned the minimal quantum resource of one post-selected ancilla. The affine source update is classical; its source-corrected output must subsequently be prepared on the data reg-ister. The experiments establish second-order temporal convergence of the ideal statevector pipeline and a fixed 
+
+nq + 1 -qubit kernel, not an end-to-end complexity advan-tage.  
+
+> B. Post-selection and physical dissipation
+
+The natural objection to any post-selected primitive concerns its failure rate, and the answer here is quantita-tively clear: Eq. (26) relates the per-step failure probabil-ity to the relative viscous dissipation rate to first order in 
+
+∆t, with the stated remainder. The measured correlation coefficient differs from unity by less than 4×10 −9, confirm-ing the predicted temporal relationship. The ideal RUS overhead can therefore be estimated a priori from the flow spectrum, before circuit construction. This leads to two observations. First, the cost is partly self-regulating: diffu-sion preferentially removes the high-wavenumber content responsible for most of the post-selection loss. Conse-quently, a fifty-fold increase in viscosity reduces the cumu-lative success probability by less than a factor of three (Ta-ble IV). Second, under per-step Repeat-Until-Success, a failed ancilla measurement simply triggers re-preparation from the classically stored field; the retry therefore repro-duces the same input state without introducing additional algorithmic approximation. The resulting retry overhead remains below 0.14% per step for all viscosities consid-ered and below 0.01% over the 5 × 10 4-step horizon. A trade-off identified by the data deserves note: Richardson extrapolation favors larger time steps while the success probability favors smaller ν ∆t, so the two optimizations compete weakly; at the parameters studied, both can be satisfied simultaneously.  
+
+> C. Cost structure and the hybrid boundary
+
+Within the audited homogeneous circuit, the advec-tion block accounts for 71% –95% of the CX gates. This does not imply a matching share of end-to-end cost: step-dependent preparation and phase-sensitive tomography were absent from that transpilation. The classical driver reads out and re-prepares the field at every time step; on hardware, the phase-sensitive reconstruction required by the present hybrid feedback boundary cannot be ob-tained from computational-basis sampling alone and, for generic amplitude reconstruction, requires a number of state copies that grows at least linearly with N at fixed accuracy. Consequently, the end-to-end pipeline does not retain the exponential memory compression of the encoding. No claim of asymptotic advantage is made, consistent with the stated scope of the present work. The measured 138 –564 CX figures at nq = 3 –4 belong to a physical-input statevector kernel with two ancillas and no device connectivity. They motivate, but do not by themselves certify, a few-step hardware demonstration.  
+
+> D. Analysis for end-to-end correctness
+
+The audits above establish continuum consistency, second-order global time accuracy, fourth-order Richard-son behavior, a third-order local splitting defect, and a quantitative preparation-truncation bound for the ideal pipeline. A complete correctness statement for a hard-ware execution must also connect the normalized quantum state and its stored norm to the physical field after every classical feedback step. One useful target is the physical-vector estimate 
+
+∥Phu(T ) − euM ∥2 ≤ Cstab (T )  Csh2 + CtT ∆t2
+
++ Cstab (T ) 
+
+> M−1
+
+X
+
+> n=0
+
+ϵloc ,n 
+
++ Enoise , (27) where ϵloc ,n = ϵprep ,n + ϵsynth ,n + ϵfb ,n . Here ϵprep ,n is con-trolled by Eq. (21), ϵsynth ,n covers finite-precision QFT and rotation synthesis, and ϵfb ,n covers phase-sensitive reconstruction, norm estimation, and re-preparation. The last term is an accumulated bound for gate, reset, ancilla-readout, and data-readout channels. Conditional on ideal successful UCRY outcomes, diffusion contributes no ad-14 ditional bias; ideal restart recovery changes only the ex-pected cost. The principal missing evidence is therefore a high-probability recursive bound for ϵfb ,n , as an amplitude error at one step becomes the input to the next source up-date. A refined analysis should use the skew-Hermiticity of Kadv and negative semidefiniteness of Ddiff to re-place the conservative eT Λh amplification in Eq. (20) by a discrete semigroup or logarithmic-norm stability con-stant. It should then combine concentration bounds for complex-amplitude reconstruction with rotation-synthesis and noisy-channel bounds. Finally, the constants should be tested uniformly under grid refinement, increasing velocity contrast, and the stiffness parameter ν∆tκ 2max .These steps would turn the separate verified components in Eq. (27) into a full discrete-to-continuum correctness argument. While they are not required to interpret the present ideal statevector results, they are required before claiming end-to-end hardware accuracy.  
+
+> E. Outlook
+
+The present framework suggests three natural exten-sions. First, fully coherent multi-step evolution would elimi-nate intermediate readout and state re-preparation. This requires a coherent source-injection procedure, for which the sparse Fourier support of the forcing suggests a linear-combination construction over the K active modes, to-gether with coherent norm tracking and observable es-timation without full-state tomography, e.g., through amplitude-estimation techniques [41], at the cost of an added ancilla and a second post-selection channel beyond the present diffusion step. Second, the spatial formulation can be generalized be-yond the present one-dimensional periodic setting. The Gray-code construction [42] extends to multiple dimen-sions by applying the edge decomposition independently along each coordinate direction. Non-periodic boundaries can likewise be incorporated through modified boundary stencils, although the exact skew-Hermitian structure is then weakened locally near the boundaries, consistent with the approach of Bengoechea et al. [21]. Third, implementation of the complete single-step cir-cuit on quantum hardware would provide a direct test of the predicted post-selection statistics, including the dissipation relation in Eq. (26), under realistic device noise. Beyond these extensions, nonlinear transport may be addressed through iterative linearization about the present linear quantum kernel.  
+
+> V. CONCLUSIONS
+
+In this work, we presented a hybrid quantum-classical al-gorithm for the forced skew-symmetric variable-coefficient advection-diffusion equation in Eq. (1), inspired by com-mon numerical techniques for flow simulations. The homo-geneous kernel uses nq +1 logical qubits and was validated against classical integrations of the same semidiscrete model. The construction rests on a single organizing principle that quantum resources are allocated according to the physical character of each operator. Advection is unitary for arbitrary sampled real U (x) because Eq. (3) is skew-Hermitian, and is realized as a Gray-code Trot-terized circuit with no ancilla and unit success probabil-ity. Diffusion, the only genuinely non-unitary element, is applied in the Fourier basis through one post-selected an-cilla. The source term is incorporated classically through Strang splitting and succeeds with probability one in ev-ery recorded application. An independent operator audit through N = 256 confirms second-order consistency of the centered skew-symmetric advection stencil. The numerical evidence supports four conclusions. The ideal statevector pipeline is second-order accurate in time, with observed orders of approximately 2.000 at both res-olutions, and its time-symmetric construction yields an even-power error expansion, so that classical Richardson extrapolation across two circuit kernel trajectories con-verges at fourth order. The one-step augmented-map de-fect converges at third order once ∆tN 2 is held fixed under grid refinement, as required to resolve the growing diffu-sive norm. The first-order ancilla-loss relation in Eq. (26) exhibits the predicted time dependence in the canonical case, while the fifty-fold viscosity sweep is consistent with the same dissipation-based interpretation. Finally, ad-vection accounts for 71% –95% of the CX count within the transpiled homogeneous-kernel diagnostic, whereas preparation and phase-sensitive reconstruction dominate the unresolved end-to-end boundary. The principal limitation is the classical readout and re-preparation between steps. Coherent multistep evolu-tion, an explicit tomography experiment, grid convergence of the canonical forced solution against an independent continuum reference, and device-specific dynamic-circuit transpilation are the immediate next tests. 
+
+> ACKNOWLEDGMENTS
+
+This work was supported by the Air Force Office of Scientific Research (AFOSR) under Grant No. FA9550-25-1-0029. 
+
+> AUTHOR CONTRIBUTIONS
+
+M.M.H. Akash: Conceptualization, Methodology, For-mal analysis, Writing – original draft, Writing – review & editing. N.-Q. Nguyen: Writing – review & editing. T. Dev: Writing – review & editing. Y. Chen: Concep-tualization, Supervision, Writing – review & editing. H. Wu: Conceptualization, Methodology, Supervision, Fund-ing acquisition, Writing – review & editing. K. Shoele: 15 Conceptualization, Methodology, Supervision, Funding acquisition, Writing – review & editing. 
+
+> DATA AVAILABILITY
+
+The code and result files that support the find-ings of this article are openly available at quan-tum_linear_1d_burgers. 
+
+> CONFLICT OF INTEREST
+
+The authors declare no competing interests.  
+
+> Appendix A: Robustness and supplementary accuracy audits 1. Source complexity and grid resolution
+
+This subsection verifies that the results of Section III are not specific to the single-mode forcing or to one grid resolution. Figure 7(a,b) shows the nq = 5 companion to Figs. 3(a,b); the error structure is identical to the nq = 4 
+
+case, with the magnitudes of Table I. (a) (b) Quantum DOP853 Classical (Strang) 
+
+= 1.02 ×10 -4 x0 10.2 0.4 0.6 0.8 x0 10.2 0.4 0.6 0.8 u (x,T) L210 -4 10 -5 10 -6 |u q-u ref |0.20 0.15 0.10 -0.05 -0.10 0
+
+FIG. 7: Validation at nq = 5 : companion to Fig. 3. (a) Solution field at T = 1 .0, ∆t = 10 −3, against the DOP853 and matched split-step references. (b) Pointwise error on a logarithmic scale ( nq = 5 ). The complete validation and convergence studies were repeated with the four-harmonic source f (x) = 0.5 P4 
+
+> j=1
+
+aj sin(2 πjx/L + ϕj ), for which the forcing alone has 8 Fourier modes rather than two. This does not im-ply that the source-corrected evolving state has Kn = 8 ;its support must be audited separately. All temporal signatures reported in the paper are reproduced. The observed convergence orders are 2.001 , 2.000 , and 2.000 at 
+
+nq = 4 and 2.000 , 2.000 , and 2.000 at nq = 5 ; successive Richardson errors again decrease by factors of 16 .0, falling to 7.8 × 10 −9 at nq = 4 and 2.0 × 10 −7 at nq = 5 for the finest pair. The error prefactors exceed the single-sine values by only 15% to 25% . The source steps succeed with probability exactly one, as they must, and the dif-fusion post-selection statistics are marginally lower than the single-sine case ( ¯Psucc = 0 .99923 versus 0.99937 at 
+
+nq = 5 ), consistent with the richer source placing slightly more amplitude in high-wavenumber modes. For the two forcing cases tested, temporal order, extrapolation behav-ior, and success probability remain quantitatively similar. No general claim about state-preparation cost follows from this test.  
+
+> 2. Richardson extrapolation and accuracy-to-kernel-cost scaling
+
+The fourth-order Richardson behavior established in Sec. III B can be translated into a practical comparison of the number of homogeneous-kernel evaluations required to reach a prescribed accuracy. This supplementary anal-ysis is intended only as an ideal-kernel comparison: state preparation, post-selection retries, measurement, recon-struction, and classical FFT costs remain separate terms in the end-to-end model of Eq. (25). TABLE VI: Accuracy-to-kernel-cost projection based on the fitted convergence laws ebase = C2∆t2 and eRich =
+
+C4∆t4. Counts are reported over T = 1 and include both trajectories required for Richardson extrapolation. They represent ideal homogeneous-kernel costs; state prepara-tion, RUS retries, and readout are accounted for sepa-rately in Eq. (25). 
+
+nq target L2 base Richardson reduction 4 10 −4 473 108 4.38 
+
+4 10 −6 4725 341 13 .86 
+
+5 10 −4 1008 240 4.20 
+
+5 10 −6 10075 756 13 .33 
+
+The base and Richardson errors are fitted as ebase =
+
+C2∆t2, eRich = C4∆t4, using the convergence data re-ported in Table II. For each target accuracy, the fitted time step determines the number of time steps required over T = 1 ; a Richardson estimate includes both the fine and coarse trajectories. Table VI reports the correspond-ing ideal homogeneous-kernel counts. The projection shows that the advantage of Richardson extrapolation grows as the requested accuracy becomes more stringent. At nq = 4 , the estimated kernel-count reduction increases from 4.38 at a target L2 error of 10 −4
+
+to 13 .86 at 10 −6; the corresponding factors at nq = 5 
+
+are 4.20 and 13 .33 . The similar reductions at the two resolutions are consistent with the observed second- and fourth-order temporal slopes. These factors quantify only the reduction in ideal kernel evaluations and are therefore not interpreted as an end-to-end quantum speedup.  
+
+> 3. Fourier truncation, retained support, and preparation error
+
+Sparse Fourier preparation introduces a controllable approximation because coefficients below the threshold 
+
+δ are discarded before loading the state. The relevant 16 quantity is therefore not the number of Fourier modes in the prescribed source alone, but the retained support 
+
+Kn of the complete source-corrected state at each time step. Because advection and source injection redistribute spectral amplitude during the evolution, Kn may grow substantially even when the original forcing is sparse. TABLE VII: Source-corrected Fourier preparation audit on the N = 64 run. Kn is the number of retained modes, ηn
+
+is the discarded Fourier norm, and the last column evaluates the normalized one-step bound in Eq. (21). threshold min Kn median Kn max Kn max ηn one-step bound 
+
+10 −4 11 15 17 1.438 × 10 −4 2.876 × 10 −4
+
+10 −6 15 23 25 2.485 × 10 −6 4.969 × 10 −6
+
+10 −8 29 38 44 3.950 × 10 −8 7.900 × 10 −8
+
+10 −10 42 50 64 2.144 × 10 −10 4.289 × 10 −10 
+
+10 −12 52 60 64 1.958 × 10 −12 3.915 × 10 −12 
+
+Table VII shows the expected tradeoff between trunca-tion error and preparation complexity. At the relatively loose threshold 10 −4, the N = 64 trajectory retains be-tween 11 and 17 modes, with median Kn = 15 . Tightening the threshold progressively enlarges the support: at 10 −10 ,the maximum support reaches all 64 Fourier modes, and at 10 −12 the median support is already 60 . At the same time, the discarded norm and the corresponding one-step bound decrease from O(10 −4) to O(10 −12 ).This audit makes explicit the principal tradeoff of the sparse preparation strategy. Aggressive truncation can substantially reduce the logical preparation count 
+
+O(Knnq ), but sufficiently stringent accuracy requirements can drive Kn toward N , eliminating the sparsity advan-tage. For this reason, the end-to-end resource estimates retain Kn explicitly rather than assuming that the evolv-ing state inherits the sparsity of the forcing.  
+
+> Appendix B: Measurement statistics, sampling-noise model, and long-horizon supplements 1. Sampling-circuit noise model
+
+This experiment characterizes the sensitivity of the reconstructed probability distribution to finite-shot and sampling-circuit noise; it does not constitute a device-level noisy execution of the complete D-A-D quantum kernel. The noise model combines depolarizing errors of probability p1 = 10 −3 on single-qubit gates and p2 on CX gates with a symmetric readout error of 2% per qubit, applied to the transpiled sampling circuit at 2 × 10 4 shots. Sweeping p2 ∈ { 0.001 , 0.005 , 0.01 , 0.02 } moves the TVD only from 4.9 × 10 −2 to 1.0 × 10 −1 [Fig. 8(c)], a factor of two across a twenty-fold change in gate error. No separate readout-only versus gate-only control was performed, so this sweep does not by itself isolate the dominant channel; the relatively weak variation across the tested two-qubit depolarizing-error range, in the presence of a fixed 2% 
+
+readout error, suggests that readout error contributes an important error floor in this sampling experiment. (a) (c) (b) (d) O (N -1/2 )sK = 2 (single sine) K = 8 (multi sine) 0Two qubit gate error p 2
+
+> TVD vs DOP853
+
+0.015 0.01 0.005 0Fine ∆tCoarse ∆tRichardson TVD TVD 0.04 0.03 0.02 0.015 0.010 0.04 0.03 0.02 0.015 0.010 0.10 0.09 0.08 0.07 0.06 0.05 0.04 0.005 0.01 0.015 0.02 TVD vs ideal Number of shots Ns Number of shots Ns 10 3 10 4 10 5 10 3 10 4 10 5
+
+FIG. 8: Finite-shot and sampling-noise evaluation at 
+
+nq = 4 . (a) Total variation distance (TVD) between sampled and exact final-state distributions, following the 
+
+N −1/2 
+
+> s
+
+reference scaling. (b) The same measurement for the two-mode ( K = 2 ) and four-harmonic ( K =8) sources; no additional sampling penalty is observed for the tested four-harmonic source. (c) Distributional error under the depolarizing-plus-readout noise model at 
+
+2 × 10 4 shots as a function of the two-qubit error rate. (d) Probability-space Richardson extrapolation at 2 × 10 4
+
+shots, illustrating the shot-noise amplification below the extrapolation threshold.  
+
+> 2. Ancilla–dissipation remainder refinement
+
+The magnitude of the ancilla–dissipation identity (Eq. (26)) is tested separately by refining ∆t and tracking the maximum remainder of the step-centered evaluation, 
+
+rn = (1 − Pn) − ∆t ¯εn/ ¯En, reported in Table VIII. Table VIII tests the magnitude, rather than only the correlation, of Eq. (26). The median order is 2.00006 ,and max n |rn|/∆t2 approaches 0.6103 . This verifies the stated quadratic remainder over a factor-eight refinement in time. 17 (a) (b) t0 10 20 30 40 50 00.5 11.5 -2.0 1.9 -1.8 1.7 --1.6 --1.5 1.4 - DOP853 Quantum x0 10.2 0.4 0.6 0.8 u (x, T=50) E (t) 
+
+FIG. 9: Long-horizon supplements to Sec. III H. (a) En-ergy history to T = 50 as the weakly damped quasi-mean mode charges toward the forced steady state. (b) Quan-tum and DOP853 fields at T = 50 (5×10 4 steps), agreeing to a relative L2 error of 1.8 × 10 −5.TABLE VIII: Refinement of the maximum ancilla– dissipation remainder of the step-centered evaluation, 
+
+rn = (1 − Pn) − ∆t ¯εn/ ¯En, with ¯En = 12 (En + En+1 )
+
+and ¯εn = 12 (εn + εn+1 ). The observed order is computed between successive time steps.                 
+
+> ∆tmax n|rn|order
+> 0.0040 9 .7655 ×10 −6–
+> 0.0020 2 .4413 ×10 −62.00004 0.0010 6 .1029 ×10 −72.00009 0.0005 1 .5257 ×10 −72.00006
+> 3. Richardson extrapolation under finite-shot sampling
+
+Applying (4 p∆t − p2∆ t)/3 to measured probability dis-tributions at 2 × 10 4 shots yields a TVD of 1.25 × 10 −2
+
+against the reference [43, 44]. This is worse than the 
+
+9.6 × 10 −3 of the fine-step measurement alone [Fig. 8(d)]. This trend is expected since the linear combination am-plifies independent shot noise by √16 + 1 /3 ≈ 1.37 , and indeed 1.37 × 9.6 × 10 −3 ≈ 1.32 × 10 −2 reproduces the measured value. Probability-space extrapolation is there-fore beneficial only when the sampling error lies below the splitting-error difference between the two time steps; at the present parameters, a shot-noise estimate suggests this would require shot counts roughly two orders of mag-nitude beyond 2×10 4. The statevector-level extrapolation of Section III B is unaffected by this threshold.  
+
+> 4. Long-horizon supplementary diagnostics
+
+Figure 9 completes the T = 50 study of Section III H. The energy grows monotonically after the initial viscous transient as the quasi-mean mode, which carries no direct viscous damping, charges toward its large steady-state am-plitude through the shear coupling d⟨u⟩/dt = 12 ⟨u ∂ xU ⟩;the system matrix is well conditioned (condition number 
+
+5.2 × 10 3), with slowest eigenvalue Re λ = −3.89 × 10 −3
+
+setting the τ ≃ 257 approach timescale. The quantum and DOP853 fields at T = 50 agree to a relative L2 error of 1.8 × 10 −5 after 5 × 10 4 quantum steps. 
+
+> Appendix C: Gray-code labeling and even–odd Trotter construction
+
+The Gray-code relabeling used in Sec. II D maps nearest-neighbor grid couplings onto transitions between computational-basis states differing in only one qubit. In ordinary binary ordering this property is not guaranteed; for example, the nq = 2 transition m = 1 → 2 corresponds to 01 → 10 , which changes two bits. TABLE IX: Binary and Gray-code labeling of grid points for nq = 2 (N = 4 ). Consecutive Gray-code labels differ in exactly one bit, whereas the binary transition m = 1 → 2
+
+changes two bits simultaneously.            
+
+> Grid index mBinary Gray code g(m)
+> 000 00 101 01 210 11 311 10
+
+Gray-code relabeling determines how an individual nearest-neighbor edge is encoded as a controlled single-target rotation (Fig. 2). The even-odd partition used in Eq. (14), by contrast, determines the symmetric Trotter ordering of those edge operations. Consequently, the two constructions serve distinct purposes: Gray code simpli-fies edge encoding, whereas the even-odd-even sequence supplies second-order temporal accuracy. 
+
+> Appendix D: Detailed circuit-resource audit
+
+Table X gives the raw transpilation counts underlying Fig. 6. The diagnostic circuit uses two diffusion ancillas and a leading QFT, whereas the production Fourier-input construction reuses one ancilla and omits that QFT; these counts therefore characterize the homogeneous D-A-D kernel in isolation, not an end-to-end hardware cost — step-dependent state preparation, classical source arithmetic, phase-sensitive reconstruction, and device connectivity/routing are not included. 18 TABLE X: Transpilation audit of the physical-input homogeneous D-A-D statevector circuit (basis {CX , √X, R z , X },optimization level 3). This audit uses two diffusion ancillas and includes a leading QFT; the production Fourier-input construction can reuse one ancilla and omits that QFT. The preparation column is the circuit for f alone and is not the preparation cost of the generally dense source-corrected state. The UCRY and QFT columns are counts for one block and are not additive components of the reported total. 
+
+nq sim. qubits depth CX total prep( f ) UCRY QFT advection adv. share 3 5 454 138 1 8 6 98 71% 
+
+4 6 1809 564 2 16 12 484 86% 
+
+5 7 2450 1297 3 30 20 1157 89% 
+
+6 8 6788 4072 4 52 30 3848 95% 
+
+[1] R. J. LeVeque, Finite difference methods for ordinary and partial differential equations: steady-state and time-dependent problems (SIAM, 2007). [2] M. A. Nielsen and I. L. Chuang, Quantum Computation and Quantum Information , 10th ed. (Cambridge Univer-sity Press, 2010). [3] S. Lloyd, Universal quantum simulators, Science 273 ,1073 (1996). [4] G. Malinverno and J. Blasco Alberto, A review of the current state-of-the-art of quantum computing for cfd: ap-proaches, advantages, and limitations, Aerotecnica Missili & Spazio , 1 (2025). [5] I. M. Georgescu, S. Ashhab, and F. Nori, Quantum simu-lation, Reviews of Modern Physics 86 , 153 (2014). [6] A. W. Harrow, A. Hassidim, and S. Lloyd, Quantum algorithm for linear systems of equations, Physical review letters 103 , 150502 (2009). [7] A. M. Childs, J.-P. Liu, and A. Ostrander, High-precision quantum algorithms for partial differential equations, Quantum 5, 574 (2021). [8] D. W. Berry, A. M. Childs, A. Ostrander, and G. Wang, Quantum algorithm for linear differential equations with exponentially improved dependence on precision, Com-munications in Mathematical Physics 356 , 1057 (2017). [9] P. C. S. Costa, D. An, Y. R. Sanders, Y. Su, R. Babbush, and D. W. Berry, Optimal scaling quantum linear-systems solver via discrete adiabatic theorem, PRX Quantum 3,040303 (2022). [10] J. Ingelmann, S. S. Bharadwaj, P. Pfeffer, K. R. Sreeni-vasan, and J. Schumacher, Two quantum algorithms for solving the one-dimensional advection–diffusion equation, Computers & Fluids 281 , 106369 (2024). [11] J. Hu, S. Jin, N. Liu, and L. Zhang, Quantum circuits for partial differential equations via schrödingerisation, Quantum 8, 1563 (2024). [12] N. Guseynov, X. Huang, and N. Liu, Quantum framework for simulating linear pdes with robin boundary conditions, Quantum Science and Technology 11 , 015057 (2026). [13] I. Novikau and I. Joseph, Quantum algorithm for the advection-diffusion equation and the koopman-von neu-mann approach to nonlinear dynamical systems, Com-puter Physics Communications 309 , 109498 (2025). [14] C. Sanavio, E. Mauri, and S. Succi, Explicit quantum cir-cuit for simulating the advection-diffusion-reaction dynam-ics, IEEE Transactions on Quantum Engineering (2025). [15] R. Demirdjian, T. Hogancamp, and D. Gunlycke, Effi-cient decomposition of the carleman linearized burgers’ equation, Physical Review A 113 , 032408 (2026). [16] P. Brearley and S. Laizet, Quantum algorithm for solv-ing the advection equation using hamiltonian simulation, Physical Review A 110 , 012430 (2024). [17] P. Over, S. Bengoechea, P. Brearley, S. Laizet, and T. Rung, Quantum algorithm for the advection-diffusion equation by direct block encoding of the time-marching operator, Physical Review A 112 , L010401 (2025). [18] S. S. Bharadwaj and K. R. Sreenivasan, Compact quan-tum algorithms for time-dependent differential equations, Physical Review Research 7, 023262 (2025). [19] M. Lubasch, Y. Kikuchi, L. Wright, and C. Mc Keever, Quantum circuits for partial differential equations in fourier space, Physical Review Research 7, 043326 (2025). [20] F. Gaitan, Finding flows of a navier–stokes fluid through quantum computing, npj Quantum Information 6, 61 (2020). [21] S. Bengoechea, P. Over, and T. Rung, Quantum time-marching algorithms for solving linear transport problems including boundary conditions, International Journal for Numerical Methods in Engineering 127 , e70326 (2026). [22] J. Preskill, Quantum computing in the nisq era and be-yond, Quantum 2, 79 (2018). [23] H. Alipanah, F. Zhang, Y.-X. Yao, R. Thompson, N. Nguyen, J. Liu, P. Givi, B. J. McDermott, and J. J. Mendoza-Arenas, Quantum dynamics simulation of the advection-diffusion equation, Physical Review Research 
+
+7, 043318 (2025). [24] Y. Sato, H. Tezuka, R. Kondo, and N. Yamamoto, Quan-tum algorithm for partial differential equations of non-conservative systems with spatially varying parameters, Physical Review Applied 23 , 014063 (2025). [25] N. Guseynov, X. Huang, and N. Liu, Gate construction of block-encoding for hamiltonians needed for simulating partial differential equations, Physical Review Research 
+
+7, 033100 (2025). [26] E. Devereux and A. Datta, Quantum algorithms for solv-ing a drift-diffusion equation: A complexity analysis, Phys-ical Review A 112 , 042419 (2025). [27] T. A. Zang, On the rotation and skew-symmetric forms for incompressible flow simulations, Applied Numerical Mathematics 7, 27 (1991). [28] Y. Morinishi, T. S. Lund, O. V. Vasilyev, and P. Moin, Fully conservative higher order finite difference schemes for incompressible flow, Journal of computational physics 
+
+143 , 90 (1998). [29] M. Mottonen, J. J. Vartiainen, V. Bergholm, and 19 
+
+M. M. Salomaa, Transformation of quantum states us-ing uniformly controlled rotations, arXiv preprint quant-ph/0407010 (2004). [30] G. Strang, On the construction and comparison of differ-ence schemes, SIAM journal on numerical analysis 5, 506 (1968). [31] N. Gleinig and T. Hoefler, An efficient algorithm for sparse quantum state preparation, in 2021 58th ACM/IEEE Design Automation Conference (DAC) (IEEE, 2021) pp. 433–438. [32] A. Javadi-Abhari, M. Treinish, K. Krsulich, C. J. Wood, J. Lishman, J. Gacon, S. Martiel, P. D. Nation, L. S. Bishop, A. W. Cross, et al. , Quantum computing with qiskit, arXiv preprint arXiv:2405.08810 (2024). [33] L. K. Grover and T. Rudolph, Creating superpositions that correspond to efficiently integrable probability distri-butions, arXiv preprint quant-ph/0208112 (2002). [34] A. M. Childs and N. Wiebe, Hamiltonian simulation using linear combinations of unitary operations, Quantum Infor-mation and Computation 12 , 901 (2012), arXiv:1202.5822. [35] D. An, J.-P. Liu, and L. Lin, Linear combination of hamil-tonian simulation for nonunitary dynamics with opti-mal state preparation cost, Physical Review Letters 131 ,150603 (2023). [36] A. Paetznick and K. M. Svore, Repeat-until-success: Non-deterministic decomposition of single-qubit unitaries, arXiv preprint arXiv:1311.1074 (2013). [37] M. Suzuki, Fractal decomposition of exponential operators with applications to many-body theories and monte carlo simulations, Physics Letters A 146 , 319 (1990). [38] A. M. Childs, Y. Su, M. C. Tran, N. Wiebe, and S. Zhu, Theory of trotter error with commutator scaling, Physical Review X 11 , 011020 (2021). [39] D. Coppersmith, An approximate fourier transform useful in quantum factoring, arXiv preprint quant-ph/0201067 (1994). [40] J. Haah, A. W. Harrow, Z. Ji, X. Wu, and N. Yu, Sample-optimal tomography of quantum states, in Proceedings of the 48th Annual ACM Symposium on Theory of Comput-ing (2016) pp. 913–925. [41] G. Brassard, P. Høyer, M. Mosca, and A. Tapp, Quantum amplitude amplification and estimation, Contemporary Mathematics 305 , 53 (2002). [42] C. Savage, A survey of combinatorial gray codes, SIAM Review 39 , 605 (1997). [43] K. Temme, S. Bravyi, and J. M. Gambetta, Error mitiga-tion for short-depth quantum circuits, Physical Review Letters 119 , 180509 (2017). [44] A. Kandala, K. Temme, A. D. Córcoles, A. Tejada, J. M. Chow, and J. M. Gambetta, Error mitigation extends the computational reach of a noisy quantum processor, Nature 567 , 491 (2019).

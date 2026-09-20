@@ -1,0 +1,513 @@
+{
+  "mode": "skims",
+  "generated_at": "2026-09-20T16:15:42.810610+00:00",
+  "stats": {
+    "mode": "skims",
+    "forced_all_quick": true,
+    "min_score": 8.0,
+    "deep_divecandidates": 13,
+    "deep_cap": null,
+    "deep_selected": 0,
+    "quick_candidates": 13,
+    "quick_skim_target": null,
+    "quick_selected": 13
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.25822v1",
+      "source": "arxiv",
+      "title": "Fast-forwarding quantum algorithms for weakly nonlinear dissipative differential equations and beyond",
+      "abstract": "We study a fast-forwarded quantum algorithm for solving weakly nonlinear dissipative ordinary differential equations. Our approach is a combination of the Carleman embedding technique and the linear combination of Hamiltonian simulation algorithm for linearized systems with fast-forwarded scaling. The complexity of our algorithm does not explicitly depend on the evolution time $T$, thus greatly improving the previous state-of-the-art $\\widetilde{\\mathcal{O}}(\\sqrt{T})$ to $\\mathcal{O}(1)$, and any remaining time dependence enters through the output norm and forcing parameters. We rigorously analyze the performance of this approach by convergence guarantees of the Carleman embedding for time-dependent coefficient matrices and detailed complexity estimates, and improve the realization of the Carleman-embedding-based algorithms by simplifying the post-selection step. In addition, we perform a numerical study on differential equations beyond the weakly nonlinear case, and identify possibility of achieving fast-forwarding scaling for systems with stronger nonlinearity or linear non-resonant effect.",
+      "authors": [
+        "Yixiang Li",
+        "Dong An"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.NA"
+      ],
+      "published": "2026-08-26T14:03:50+00:00",
+      "link": "https://arxiv.org/pdf/2608.25822v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "combines Carleman embedding with linear combination of Hamiltonian simulation for dissipative ODEs using fast-forwarded scaling",
+      "llm_evidence_cn": "结合 Carleman 嵌入与线性组合哈密顿量模拟求解耗散常微分方程",
+      "llm_evidence": "结合 Carleman 嵌入与线性组合哈密顿量模拟求解耗散常微分方程",
+      "canonical_evidence": "结合 Carleman 嵌入与线性组合哈密顿量模拟求解耗散常微分方程",
+      "llm_tldr_en": "A fast-forwarded quantum algorithm solves weakly nonlinear dissipative ODEs by combining Carleman embedding with linear combination of Hamiltonian simulation, removing explicit dependence on evolution time T.",
+      "llm_tldr_cn": "该文针对弱非线性耗散常微分方程求解中算法复杂度随演化时间 T 增长的问题，提出快速前进的量子算法。方法将 Carleman 嵌入技术与线性组合哈密顿量模拟相结合，对线性化系统引入快速前进缩放。复杂度不再显式依赖演化时间 T，从此前最优的 O(根号 T) 降至 O(1)，剩余时间依赖仅通过输出范数与强迫项参数体现，并对时变系数矩阵给出 Carleman 嵌入的收敛性保证。该结果显著降低时间推进成本，为非幺正与耗散动力学的高效量子模拟提供可证明的复杂度改进。",
+      "llm_tldr": "该文针对弱非线性耗散常微分方程求解中算法复杂度随演化时间 T 增长的问题，提出快速前进的量子算法。方法将 Carleman 嵌入技术与线性组合哈密顿量模拟相结合，对线性化系统引入快速前进缩放。复杂度不再显式依赖演化时间 T，从此前最优的 O(根号 T) 降至 O(1)，剩余时间依赖仅通过输出范数与强迫项参数体现，并对时变系数矩阵给出 Carleman 嵌入的收敛性保证。该结果显著降低时间推进成本，为非幺正与耗散动力学的高效量子模拟提供可证明的复杂度改进。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "linear combination of Hamiltonian simulation methods for non-unitary dynamics, time-dependent linear systems, and differential equation solvers",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.27712v1",
+      "source": "arxiv",
+      "title": "Efficient Quantum Simulation of Variable-Coefficient Transport with Continuous Source Injection",
+      "abstract": "Quantum time-marching algorithms for transport PDEs often represent variable coefficients and forcing through register-expanding dilations, block-encoding oracles, or repeated postselection. We present an alternative algorithm for a forced variable-coefficient advection-diffusion equation in flow-inspired skew-symmetric form that incorporates spatially varying velocity, viscous dissipation, and persistent source injection with a peak logical requirement of $n_q+1$ qubits. A centered skew-symmetric discretization makes the advection operator strictly skew-Hermitian for arbitrary velocity profiles, enabling an ancilla-free unitary realization using a Gray-code Trotter sequence of controlled-$R_y$ rotations. Diffusion is applied in the Fourier basis through a uniformly controlled rotation on one postselected ancilla, which is measured, reset, and reused between the two diffusion half-steps, while the source is incorporated classically through second-order Strang splitting. Statevector simulations for $N=16$ and $32$ recover second-order temporal convergence against high-accuracy classical solutions, while Richardson extrapolation gives fourth-order accuracy and reduces kernel calls by factors of four to fourteen. Independent tests through $N=256$ confirm second-order spatial consistency. We further show that the per-step ancilla failure probability is proportional to the instantaneous viscous dissipation rate, making postselection cost self-regulating over a fifty-fold viscosity range. Stable evolution is demonstrated for $5\\times10^4$ time steps without observable secular error growth, while Gray-code advection accounts for $71$--$95\\%$ of transpiled controlled-NOT gates. The fixed-width kernel provides a qubit-efficient building block for near-term hardware studies, although classical readout and state re-preparation remain the main obstacles to coherent multistep evolution.",
+      "authors": [
+        "Mohammad Mehedi Hasan Akash",
+        "Turag Dev",
+        "Nhat-Quang Nguyen",
+        "Yanzhu Chen",
+        "Huixuan Wu",
+        "Kourosh Shoele"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.NA"
+      ],
+      "published": "2026-08-27T21:00:39+00:00",
+      "link": "https://arxiv.org/pdf/2608.27712v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "quantum time-marching algorithm for variable-coefficient transport PDE",
+      "llm_evidence_cn": "变系数输运偏微分方程的量子时间推进算法",
+      "llm_evidence": "变系数输运偏微分方程的量子时间推进算法",
+      "canonical_evidence": "变系数输运偏微分方程的量子时间推进算法",
+      "llm_tldr_en": "Quantum time-marching schemes for transport PDEs usually need register-expanding dilations or postselection; this work instead gives an ancilla-light algorithm for forced variable-coefficient advection-diffusion with persistent source injection.",
+      "llm_tldr_cn": "量子时间推进方法求解输运偏微分方程时，通常依赖寄存器扩张、块编码预言机或重复后选择来表征变系数与源项，开销较大。本文针对带持续源注入的变系数对流-扩散方程，提出流型斜对称形式的算法：通过中心斜对称离散化使对流算子在任意速度剖面下严格斜Hermitian，并用格雷码Trotter序列实现无辅助比特的幺正演化，扩散项则另行处理。该方案仅需约n_q+1个逻辑量子比特，显著降低了资源需求，为变系数输运类偏微分方程的量子求解提供了高效构造。",
+      "llm_tldr": "量子时间推进方法求解输运偏微分方程时，通常依赖寄存器扩张、块编码预言机或重复后选择来表征变系数与源项，开销较大。本文针对带持续源注入的变系数对流-扩散方程，提出流型斜对称形式的算法：通过中心斜对称离散化使对流算子在任意速度剖面下严格斜Hermitian，并用格雷码Trotter序列实现无辅助比特的幺正演化，扩散项则另行处理。该方案仅需约n_q+1个逻辑量子比特，显著降低了资源需求，为变系数输运类偏微分方程的量子求解提供了高效构造。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.29756v1",
+      "source": "arxiv",
+      "title": "Pathwise Random Hamiltonian Simulation",
+      "abstract": "Randomized product formulas such as qDrift offer a resource-efficient alternative to deterministic Trotter--Suzuki decompositions for Hamiltonian simulation, removing their polynomial dependence on the number of Hamiltonian terms. qDrift, however, is intrinsically limited to first order in the evolution time, so its query complexity remains linear in the inverse of the target accuracy, $1/ε$. We introduce Pathwise Random Hamiltonian Simulation (PRHS), which extends qDrift to arbitrary order by subdividing each time step into $M$ correlated slices, each evolving under a term sampled from a quasi-probability distribution that we construct in closed form and prove unique, with a bias decaying factorially in $M$. Optimizing jointly over the number of slices $M$ and the number of independent blocks $N$ interpolates between the standard qDrift protocol at long times and a high-precision regime where the query cost grows slower than any power of $1/ε$, without requiring ancillary qubits. Numerical simulations of five molecular Hamiltonians confirm this advantage, with PRHS achieving accuracies two to four orders of magnitude beyond qDrift at equal query cost.",
+      "authors": [
+        "Davide Cugini"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph"
+      ],
+      "published": "2026-08-30T12:37:58+00:00",
+      "link": "https://arxiv.org/pdf/2608.29756v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "randomized Hamiltonian simulation with improved query complexity in 1/epsilon",
+      "llm_evidence_cn": "随机哈密顿量模拟，改善对1/ε的查询复杂度",
+      "llm_evidence": "随机哈密顿量模拟，改善对1/ε的查询复杂度",
+      "canonical_evidence": "随机哈密顿量模拟，改善对1/ε的查询复杂度",
+      "llm_tldr_en": "Introduces Pathwise Random Hamiltonian Simulation, extending qDrift to arbitrary order via correlated time slices, reducing query complexity dependence on inverse accuracy.",
+      "llm_tldr_cn": "论文针对qDrift等随机乘积公式仅具一阶精度、查询复杂度随精度倒数线性增长的问题，提出路径式随机哈密顿量模拟方法。该方法将每个时间步细分为M个相关切片，在每个切片上按闭式构造的拟概率分布采样哈密顿项，使偏差随M阶乘式衰减，从而将qDrift推广到任意阶。联合优化切片数与采样次数后显著降低了查询复杂度对精度倒数的依赖，为高效哈密顿量模拟提供了更优的复杂度保证。",
+      "llm_tldr": "论文针对qDrift等随机乘积公式仅具一阶精度、查询复杂度随精度倒数线性增长的问题，提出路径式随机哈密顿量模拟方法。该方法将每个时间步细分为M个相关切片，在每个切片上按闭式构造的拟概率分布采样哈密顿项，使偏差随M阶乘式衰减，从而将qDrift推广到任意阶。联合优化切片数与采样次数后显著降低了查询复杂度对精度倒数的依赖，为高效哈密顿量模拟提供了更优的复杂度保证。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "efficient Hamiltonian simulation algorithms with rigorous gate and query complexity guarantees",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.30629v1",
+      "source": "arxiv",
+      "title": "Gate-Efficient Implementation of the Query-Optimal Time-Dependent Hamiltonian Simulation",
+      "abstract": "The query-optimal algorithm of [CGWZ26] for general time-dependent Hamiltonian simulation uses $$   q = O\\left( αT +   \\frac{\\log(1/\\varepsilon)}{\\log\\left(e + \\log(1/\\varepsilon)/(αT) \\right)}   \\right) $$ queries to $\\mathrm{HAM\\mbox{-}T}$ within $\\varepsilon$ error for a Lipschitz-continuous time-dependent Hamiltonian $H(t)$ on $[0,T]$ satisfying $\\left\\lVert H(t)\\right\\rVert\\leqα$. However, its direct circuit implementation incurs a substantially larger gate overhead. In this note, we give an implementation of the same algorithm that retains its optimal query complexity and uses $$   O\\left[ q \\left( a + \\log\\left(1 + \\frac{T(α+ βT)}{\\varepsilon}   \\right) \\right) \\right] $$ one- and two-qubit gates, where $a$ is the number of block-encoding ancilla qubits and $β$ is the Lipschitz constant of $H$. The main ingredient is an exact dyadic factorization of the ordered update product in the underlying one-query transducer.",
+      "authors": [
+        "Boyang Chen",
+        "Minbo Gao",
+        "Zhengfeng Ji",
+        "Tongyang Li",
+        "Xinzhao Wang",
+        "Shuo Zhou"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.DS"
+      ],
+      "published": "2026-08-31T11:39:55+00:00",
+      "link": "https://arxiv.org/pdf/2608.30629v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "gate-efficient time-dependent Hamiltonian simulation",
+      "llm_evidence_cn": "门高效的时变哈密顿量模拟实现",
+      "llm_evidence": "门高效的时变哈密顿量模拟实现",
+      "canonical_evidence": "门高效的时变哈密顿量模拟实现",
+      "llm_tldr_en": "This note gives a gate-efficient circuit implementation of the query-optimal time-dependent Hamiltonian simulation algorithm, retaining optimal query complexity with bounded one- and two-qubit gate counts.",
+      "llm_tldr_cn": "一般时变哈密顿量模拟的查询最优算法虽达到最优查询复杂度，但直接电路实现会带来较大的门开销。本文给出同一算法的电路实现，在保持最优查询复杂度的同时，将单双量子比特门数控制在查询次数乘以对数因子的量级。该结果使查询最优的时变哈密顿量模拟在门复杂度上更具可实现性，对量子微分方程求解的时间推进具有直接价值。",
+      "llm_tldr": "一般时变哈密顿量模拟的查询最优算法虽达到最优查询复杂度，但直接电路实现会带来较大的门开销。本文给出同一算法的电路实现，在保持最优查询复杂度的同时，将单双量子比特门数控制在查询次数乘以对数因子的量级。该结果使查询最优的时变哈密顿量模拟在门复杂度上更具可实现性，对量子微分方程求解的时间推进具有直接价值。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "efficient Hamiltonian simulation algorithms with rigorous gate and query complexity guarantees",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.03440v1",
+      "source": "arxiv",
+      "title": "Convolution absorbing boundaries for explicit-circuit quantum simulation of the wave equation",
+      "abstract": "Explicit quantum circuits for the wave equation, built by Hamiltonian simulation, are restricted to closed domains, in which outgoing waves reflect off the edge of the computational region and return. We lift that restriction with absorbing boundaries of the convolution type - a complex-frequency-shifted perfectly matched layer realised through exponential-kernel memory variables - and make the resulting non-unitary dynamics quantum-implementable by Schrodingerisation. We obtain three results. First, explicit gate-level circuits for the absorbing evolution, obtained by extending a Bell- basis term-evolution circuit to projector-valued operator strings and Trotterising to second order; these run end to end on seventeen to twenty-one qubits and agree with exact references to within a tenth of a percent to a percent. Second, a structural obstruction: the memory form of the absorbing generator carries an irreducibly indefinite Hermitian part, whose largest eigenvalue grows as the square root of the absorption strength divided by the grid spacing and survives any diagonal rescaling of the memory fields. The known recovery threshold for Schrodingerisation then makes the post-selection cost grow exponentially in the simulated time. Third, a remedy: a Lyapunov symmetrizer, precomputed classically, renders the transformed generator dissipative and replaces that time-dependent penalty with a time-independent conditioning factor of several hundred, measured on grids of up to four thousand unknowns and saturating under mesh refinement. The crossover is early: past it the symmetrized recovery is cheaper by four to twenty-six orders of magnitude in post-selection cost, and at the longest horizons tested it is the only recovery that works.",
+      "authors": [
+        "Hoang Anh Nguyen",
+        "Ali Tura"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph"
+      ],
+      "published": "2026-09-03T06:51:11+00:00",
+      "link": "https://arxiv.org/pdf/2609.03440v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "non-unitary absorbing-boundary wave equation dynamics made quantum-implementable by Schrodingerisation with explicit gate-level circuits",
+      "llm_evidence_cn": "利用Schrodingerisation将非幺正的吸收边界波动方程动力学变为可量子实现，并给出显式门级电路",
+      "llm_evidence": "利用Schrodingerisation将非幺正的吸收边界波动方程动力学变为可量子实现，并给出显式门级电路",
+      "canonical_evidence": "利用Schrodingerisation将非幺正的吸收边界波动方程动力学变为可量子实现，并给出显式门级电路",
+      "llm_tldr_en": "Explicit quantum circuits for the wave equation were confined to closed domains where outgoing waves reflect. The authors add convolution-type absorbing boundaries and render the resulting non-unitary dynamics quantum-implementable via Schrodingerisation, giving explicit gate-level circuits and Trotterisation results.",
+      "llm_tldr_cn": "基于哈密顿量模拟的波动方程显式量子电路此前只能处理封闭区域，出射波会在计算区边缘反射并返回，限制了实际应用。作者引入卷积型吸收边界（复频移完美匹配层），并通过Schrodingerisation将由此产生的非幺正动力学转化为可量子实现的形式。文章给出了吸收演化的显式门级电路，将Bell基项演化电路推广到投影算子串并做二阶Trotter化，并在十七至二十量子比特规模上端到端运行。该工作拓展了量子偏微分方程求解器可处理边界条件的能力。",
+      "llm_tldr": "基于哈密顿量模拟的波动方程显式量子电路此前只能处理封闭区域，出射波会在计算区边缘反射并返回，限制了实际应用。作者引入卷积型吸收边界（复频移完美匹配层），并通过Schrodingerisation将由此产生的非幺正动力学转化为可量子实现的形式。文章给出了吸收演化的显式门级电路，将Bell基项演化电路推广到投影算子串并做二阶Trotter化，并在十七至二十量子比特规模上端到端运行。该工作拓展了量子偏微分方程求解器可处理边界条件的能力。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "Schrodingerization, Schrödingerization, Schrodingerisation, and Schrödingerisation transforms for simulating non-unitary dynamics and solving differential equations",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.14077v1",
+      "source": "arxiv",
+      "title": "IQFEM: A quantum finite element method for heterogeneous problems with immersed boundaries",
+      "abstract": "Quantum computing offers the potential to solve computational mechanics problems with a more favourable complexity scaling than classically possible. To realise this potential, a quantum-compatible formulation of the finite element method is essential. We present such a formulation for Poisson problems with spatially varying coefficients on general domains discretised by an immersed uniform Cartesian grid. The resulting banded sparse system matrices are encoded as the sum of diagonal matrices with polynomial entries and their products with shift matrices. The sum of the matrices is formed using the linear combination of unitaries (LCU) technique. The resulting block-encoded system matrix can be implemented using a polylogarithmic number of elementary gates. For immersed boundaries, the block-encoded system matrix is further processed using a diagonal indicator matrix with zeros and ones. The indicator matrix is defined in terms of an integer-valued level-set function composed of simple geometric primitives via Boolean set operations. The required integer operations are computed on the fly using quantum arithmetic. The resulting block-encoded linear system of equations is solved using quantum singular value transformation (QSVT). The overall gate count, including the QSVT, is $O(N_{\\text{tot}}^{2/d} \\operatorname{polylog}(N_{\\text{tot}}))$, where $d$ is the problem dimension and $N_{\\text{tot}}$ the number of grid points. In numerical examples that confirm the theoretical complexity estimates, the solutions converge approximately linearly for immersed problems and quadratically for simply connected domains.",
+      "authors": [
+        "Shehara Perera",
+        "Yiren Wang",
+        "Fehmi Cirak"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-09-12T17:49:31+00:00",
+      "link": "https://arxiv.org/pdf/2609.14077v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "quantum finite element method for Poisson PDEs with block encoding and LCU",
+      "llm_evidence_cn": "用量子有限元、块编码和LCU求解Poisson偏微分方程",
+      "llm_evidence": "用量子有限元、块编码和LCU求解Poisson偏微分方程",
+      "canonical_evidence": "用量子有限元、块编码和LCU求解Poisson偏微分方程",
+      "llm_tldr_en": "Presents a quantum-compatible finite element formulation for heterogeneous Poisson problems, encoding banded sparse matrices via LCU and block encoding with polylogarithmic cost.",
+      "llm_tldr_cn": "论文针对经典有限元难以获得量子复杂度优势的问题，提出一种可量子化的有限元格式，用于求解一般区域上具有空间变化系数的Poisson问题。方法在浸入式均匀笛卡尔网格上离散，将带状稀疏系统矩阵表示为多项式对角矩阵与移位矩阵乘积之和，并用线性组合酉算子技术构造块编码。所得系统矩阵可实现多对数级复杂度，为异质计算力学问题提供了具有量子加速潜力的求解框架。",
+      "llm_tldr": "论文针对经典有限元难以获得量子复杂度优势的问题，提出一种可量子化的有限元格式，用于求解一般区域上具有空间变化系数的Poisson问题。方法在浸入式均匀笛卡尔网格上离散，将带状稀疏系统矩阵表示为多项式对角矩阵与移位矩阵乘积之和，并用线性组合酉算子技术构造块编码。所得系统矩阵可实现多对数级复杂度，为异质计算力学问题提供了具有量子加速潜力的求解框架。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.18757v1",
+      "source": "arxiv",
+      "title": "Query-Optimal and Gate-Efficient Lindbladian Simulation",
+      "abstract": "We give a quantum algorithm for Lindbladian simulation given a block encoding of the Hamiltonian $H$ and a projected unitary encoding of the stacked jump operator $B=\\sum_{k=1}^m \\lvert k\\rangle\\otimes L_k$, with normalization factors $α_H$ and $α_B$, respectively. For evolution time $t$, set $τ=(α_H+α_B^2)t$. The algorithm approximates the evolution channel to diamond-norm error $\\varepsilon$ using $O\\!\\left(τ+\\frac{\\log(1/\\varepsilon)}{\\log\\!\\left(e+\\log(1/\\varepsilon)/τ\\right)}\\right)$ oracle queries, matching the query lower bound for Hamiltonian simulation. The number of additional one- and two-qubit gates is linear in the query complexity up to polylogarithmic factors. The query- and gate-complexity bounds extend to Lipschitz-continuous time-dependent Lindbladians under coherent time-indexed oracle access. Our construction uses a one-query transducer that implements a product of rational approximations to short-time evolution when supplied with a catalyst. We bound the error from omitting the catalyst by exploiting orthogonality between different sequences of Kraus labels. The gate implementation combines a compressed Kraus-label representation, which stores only the positions and values of the nonzero labels, with the rotation factorization of Chen et al.",
+      "authors": [
+        "Boyang Chen",
+        "Minbo Gao",
+        "Xinzhao Wang",
+        "Shuo Zhou"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.DS"
+      ],
+      "published": "2026-09-16T14:44:42+00:00",
+      "link": "https://arxiv.org/pdf/2609.18757v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "query-optimal gate-efficient Lindbladian simulation with block encoding and lower bound",
+      "llm_evidence_cn": "块编码下查询最优、门高效的Lindblad模拟及下界",
+      "llm_evidence": "块编码下查询最优、门高效的Lindblad模拟及下界",
+      "canonical_evidence": "块编码下查询最优、门高效的Lindblad模拟及下界",
+      "llm_tldr_en": "Given block encodings of the Hamiltonian and stacked jump operators, this algorithm simulates Lindbladians with query complexity matching the Hamiltonian-simulation lower bound and gate count linear in queries, extending to time-dependent cases.",
+      "llm_tldr_cn": "开放量子系统的Lindblad动力学模拟是量子算法的重要任务，但如何在查询与门复杂度上同时达到最优尚待解决。本文在哈密顿量块编码与堆叠跳跃算符投影幺正编码的输入模型下，给出Lindblad模拟量子算法，其查询复杂度与哈密顿模拟的查询下界相匹配，额外单双比特门数在查询复杂度上仅多对数因子。该结果还推广至Lipschitz连续的时间依赖Lindblad情形，为耗散动力学模拟提供了查询最优且门高效的严格资源保证。",
+      "llm_tldr": "开放量子系统的Lindblad动力学模拟是量子算法的重要任务，但如何在查询与门复杂度上同时达到最优尚待解决。本文在哈密顿量块编码与堆叠跳跃算符投影幺正编码的输入模型下，给出Lindblad模拟量子算法，其查询复杂度与哈密顿模拟的查询下界相匹配，额外单双比特门数在查询复杂度上仅多对数因子。该结果还推广至Lipschitz连续的时间依赖Lindblad情形，为耗散动力学模拟提供了查询最优且门高效的严格资源保证。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.26268v1",
+      "source": "arxiv",
+      "title": "Bosonic Encodings for Hermite-Galerkin Discretizations of High-Dimensional PDEs and Bayesian Inverse Problems",
+      "abstract": "The Koopman-von Neumann framework has been proposed to design quantum algorithms for non-linear dynamics. It maps a non-linear ordinary differential equation to a linear partial differential equation (PDE) governing a probability amplitude. Previous works represents this amplitude in the Hermite-function basis, equivalently as a bosonic state, and truncates the total Hermite degree to obtain a representation over $Θ(m\\log N)$ qubits, where $N$ is the number of variables and $m$ the truncation order. We extend this approach to a broader class of linear PDEs whose differential operators have a structured polynomial form. We prove convergence of the truncation for both time-dependent dynamics and gapped ground-state problems under explicit regularity and stability assumptions. We then introduce a qubit encoding that supports efficient block encodings of the truncated operators. Finally, we apply the framework to Bayesian inverse problems with Gaussian priors and observation noise, reducing posterior-state preparation to the preparation of a structured Hamiltonian's ground state.",
+      "authors": [
+        "Alice Barthe"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph"
+      ],
+      "published": "2026-08-26T18:00:16+00:00",
+      "link": "https://arxiv.org/pdf/2608.26268v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "quantum algorithms for linear PDEs via Hermite-Galerkin bosonic encoding with convergence proof",
+      "llm_evidence_cn": "基于Hermite-Galerkin玻色子编码的线性PDE量子算法及收敛性证明",
+      "llm_evidence": "基于Hermite-Galerkin玻色子编码的线性PDE量子算法及收敛性证明",
+      "canonical_evidence": "基于Hermite-Galerkin玻色子编码的线性PDE量子算法及收敛性证明",
+      "llm_tldr_en": "Extends the Koopman-von Neumann bosonic Hermite representation to a broader class of linear PDEs, proving truncation convergence for time-dependent dynamics.",
+      "llm_tldr_cn": "针对Koopman-von Neumann框架下非线性ODE映射为线性PDE时现有Hermite基表示适用范围有限的问题，本文将概率幅用Hermite函数基即玻色子态表示并截断总Hermite次数，把方法推广到微分算子具有结构化多项式形式的更一般线性PDE。论文证明时间依赖动力学与有隙基态情形下的截断收敛性，并给出量子比特复杂度。该工作为高维PDE及贝叶斯反问题提供了可证明收敛的量子算法构造，直接服务于微分方程量子求解主题。",
+      "llm_tldr": "针对Koopman-von Neumann框架下非线性ODE映射为线性PDE时现有Hermite基表示适用范围有限的问题，本文将概率幅用Hermite函数基即玻色子态表示并截断总Hermite次数，把方法推广到微分算子具有结构化多项式形式的更一般线性PDE。论文证明时间依赖动力学与有隙基态情形下的截断收敛性，并给出量子比特复杂度。该工作为高维PDE及贝叶斯反问题提供了可证明收敛的量子算法构造，直接服务于微分方程量子求解主题。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.30860v1",
+      "source": "arxiv",
+      "title": "Well-conditioned iterative methods for large open quantum systems",
+      "abstract": "Markovian open quantum systems are well modeled by the Lindblad Master Equation (ME) $\\frac{\\mathrm{d}}{\\mathrm{d} t} ρ_t = \\mathcal{L} ρ_t$, where $\\mathcal{L}$ is a linear (super-)operator and $ρ_t$ is the system state, a positive matrix. When designing or characterizing a quantum system, one is usually interested in the steady state $ρ_\\infty$ (such that $\\mathcal{L} ρ_\\infty = 0$), the first few excited states, and trajectories $t\\mapsto ρ_t$. In finite dimension, $ρ_t$ is an $n\\times n$ matrix, $\\mathcal{L}$ thus typically costs $n^4$ to store explicitly as a dense matrix, and $O(n^6)$ to diagonalize or invert exactly, making standard linear algebraic techniques expensive for large systems. However, $\\mathcal{L}$ usually costs only $O(n^3)$ to apply. This makes iterative methods appealing, but they do not work without a good preconditioner. In this article, our main observation is that a part of the Lindblad equation, corresponding to the so-called no-jump evolution $\\mathcal{S}$, can be inverted efficiently. Using this inverse map, we introduce an auxiliary completely positive trace-preserving (CPTP) map $Φ$ whose fixed point is directly related to $ρ_\\infty$, all the other eigenvalues having smaller magnitude. The map $Φ$ is thus well suited to iterative methods, and $ρ_\\infty$ can be found in a few Arnoldi iterations. Using the same inverse map $\\mathcal{S}^{-1}$ as preconditioner, we compute the low-lying spectrum efficiently via shift-invert Arnoldi, and, as a proof of concept, build an implicit time integrator that is competitive on stiff systems in the low-precision regime. For the steady-state and low excited states problems, our methods scale like $O(n^3)$ per iteration and offer state-of-the-art performance on CPU and GPU.",
+      "authors": [
+        "Gaspard Beugnot",
+        "Paul Gregory",
+        "Rémi Robin",
+        "Antoine Tilloy"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.NA"
+      ],
+      "published": "2026-08-31T14:22:05+00:00",
+      "link": "https://arxiv.org/pdf/2608.30860v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "iterative methods for Lindblad dissipative open quantum systems",
+      "llm_evidence_cn": "Lindblad耗散开放量子系统的迭代方法",
+      "llm_evidence": "Lindblad耗散开放量子系统的迭代方法",
+      "canonical_evidence": "Lindblad耗散开放量子系统的迭代方法",
+      "llm_tldr_en": "Well-conditioned iterative methods exploit the O(n^3) apply cost of Lindblad superoperators to compute steady states, excited states and trajectories of large open quantum systems.",
+      "llm_tldr_cn": "该文针对马尔可夫开放量子系统中 Lindblad 主方程超算子稠密存储代价达 n^4、精确对角化或求逆达 n^6 的瓶颈，提出良条件迭代方法。方法充分利用超算子作用仅需 O(n^3) 的特性，通过迭代求解稳态、前几个激发态以及时间轨迹。该框架避免了稠密矩阵运算的高代价，使大型开放量子系统的耗散动力学数值研究变得可行，为开放系统模拟提供了可扩展的计算途径。",
+      "llm_tldr": "该文针对马尔可夫开放量子系统中 Lindblad 主方程超算子稠密存储代价达 n^4、精确对角化或求逆达 n^6 的瓶颈，提出良条件迭代方法。方法充分利用超算子作用仅需 O(n^3) 的特性，通过迭代求解稳态、前几个激发态以及时间轨迹。该框架避免了稠密矩阵运算的高代价，使大型开放量子系统的耗散动力学数值研究变得可行，为开放系统模拟提供了可扩展的计算途径。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.30937v1",
+      "source": "arxiv",
+      "title": "Constrained minimax approximation for quantum signal processing",
+      "abstract": "Quantum signal processing (QSP) provides a simple and efficient framework for implementing polynomial transformations using quantum circuits. Its classical design stage leads to a constrained minimax approximation problem: find a polynomial of prescribed parity that approximates a target function uniformly on a fitting set while remaining bounded in magnitude by one on the domain $[0,1]$, which can be viewed as a semi-infinite constraint. Discretization converts the problem into a linear program, but feasibility at a set of finitely many sampled points does not ensure feasibility on the whole domain, especially when an optimal approximant reaches the boundary of the feasible set. We investigate two approaches to address this difficulty. A Remez exchange method combined with active-set constraint enforcement is efficient on many tested instances, but its stability depends on the target and problem geometry. We then introduce nonlinear Fourier retraction, which uses QSP completion and phase synthesis to turn a nearly feasible polynomial into phase factors for a feasible QSP polynomial without increasing the degree. Across representative problems, retraction largely preserves approximation accuracy and remains effective on instances where the Remez heuristic is unstable. The resulting workflow connects classical minimax approximation and semi-infinite optimization with nonlinear Fourier analysis, and is implemented in the qsppack software package.",
+      "authors": [
+        "Yulong Dong",
+        "James B. Larsen",
+        "Lin Lin",
+        "Rahul Sarkar"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.NA"
+      ],
+      "published": "2026-08-31T15:10:52+00:00",
+      "link": "https://arxiv.org/pdf/2608.30937v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "quantum signal processing polynomial approximation",
+      "llm_evidence_cn": "量子信号处理的多项式逼近设计",
+      "llm_evidence": "量子信号处理的多项式逼近设计",
+      "canonical_evidence": "量子信号处理的多项式逼近设计",
+      "llm_tldr_en": "The QSP design stage is cast as a constrained minimax polynomial approximation, and Remez exchange and related methods are studied to ensure feasibility over the whole domain.",
+      "llm_tldr_cn": "量子信号处理通过量子电路实现多项式变换，其经典设计阶段归结为受约束的极小极大逼近问题：在拟合集上一致逼近目标函数，同时在定义域上保持有界。本文针对离散化后有限采样点可行但不保证全域可行的问题，研究Remez交换等两种方法。该工作提升了QSP多项式设计的可靠性，为矩阵函数实现与奇异值变换提供关键工具。",
+      "llm_tldr": "量子信号处理通过量子电路实现多项式变换，其经典设计阶段归结为受约束的极小极大逼近问题：在拟合集上一致逼近目标函数，同时在定义域上保持有界。本文针对离散化后有限采样点可行但不保证全域可行的问题，研究Remez交换等两种方法。该工作提升了QSP多项式设计的可靠性，为矩阵函数实现与奇异值变换提供关键工具。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum signal processing frameworks for implementing matrix functions and transformations",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.07384v1",
+      "source": "arxiv",
+      "title": "Wavelength-Uniform Quantum Algorithms for Quantum Dynamics",
+      "abstract": "One of the main challenges in quantum simulation is the prohibitive cost of computing its solutions in the semi-classical regime, in which the de Broglie wavelength is small compared with the characteristic length scale and the solution is highly oscillatory. This difficulty is overcome by using the Weyl variable, under which the solution is not oscillatory. Furthermore, we use the exact Hermite moments and quantum singular value transformation to treat the polynomial and Fourier components of the potential, resulting in a quantum algorithm efficient for {\\it all} ranges of wavelengths. Specifically, it has a {\\it polynomial} complexity in spatial dimension, and discretization and query bounds {\\it without} negative powers of possibly small wavelength, thus enabling it to capture the correct physical observables even if the spatial grid does not resolve the frequency, hence defying the Nyquist-Shannon sampling theorem.",
+      "authors": [
+        "Shi Jin",
+        "Chuwen Ma"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph"
+      ],
+      "published": "2026-09-07T12:00:04+00:00",
+      "link": "https://arxiv.org/pdf/2609.07384v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "wavelength-uniform quantum algorithm with discretization and query bounds",
+      "llm_evidence_cn": "波长一致量子算法，具离散化与查询复杂度界",
+      "llm_evidence": "波长一致量子算法，具离散化与查询复杂度界",
+      "canonical_evidence": "波长一致量子算法，具离散化与查询复杂度界",
+      "llm_tldr_en": "Semi-classical quantum simulation is expensive because solutions oscillate rapidly at small de Broglie wavelength; using the Weyl variable and QSVT, this algorithm achieves polynomial complexity uniform over all wavelengths.",
+      "llm_tldr_cn": "在半经典区域，德布罗意波长远小于特征长度，解高度振荡，导致量子模拟求解代价高昂。本文引入Weyl变量使解不再振荡，并利用精确Hermite矩与量子奇异值变换分别处理势的多项式分量与Fourier分量，从而得到对所有波长范围都有效的量子算法。该算法的复杂度在空间维度上为多项式，其离散化与查询复杂度界不含小波长的负幂次，因而在快演化条件下依然高效，为量子动力学模拟提供了波长一致的复杂度保证。",
+      "llm_tldr": "在半经典区域，德布罗意波长远小于特征长度，解高度振荡，导致量子模拟求解代价高昂。本文引入Weyl变量使解不再振荡，并利用精确Hermite矩与量子奇异值变换分别处理势的多项式分量与Fourier分量，从而得到对所有波长范围都有效的量子算法。该算法的复杂度在空间维度上为多项式，其离散化与查询复杂度界不含小波长的负幂次，因而在快演化条件下依然高效，为量子动力学模拟提供了波长一致的复杂度保证。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "reducing dependence on evolution time, precision, condition number, and spatial discretization in quantum differential equation solvers",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.10250v1",
+      "source": "arxiv",
+      "title": "An analysis of iterative refinement for quantum linear system solvers",
+      "abstract": "We present and analyze an iterative refinement (IR) framework for improving the precision dependence of algorithms that combine a quantum linear system algorithm (QLSA) with quantum state tomography. Existing QLSAs achieve polylogarithmic dependence on the inverse error tolerance to prepare a quantum state encoding the solution, but extracting a classical description of such a state via tomography typically introduces a polynomial dependence on the target precision. To retain polylogarithmic dependence in the inverse error tolerance throughout the entire process, we develop an IR scheme that solves a sequence of related linear systems to progressively refine the solution while requiring only fixed-precision quantum subroutines, finally obtaining a classical description of a high-precision solution. We analyze the proposed framework under three input models: quantum-read/classical-write RAM (QRAM), linear combinations of unitaries (LCU), and sparse-access oracles. We evaluate the proposed scheme through numerical experiments on both quantum simulators and real quantum hardware. The results demonstrate that iterative refinement efficiently improves the precision of the solution and exhibits robustness to hardware noise.",
+      "authors": [
+        "Adrian Harkness",
+        "Mohammadhossein Mohammadisiahroudi",
+        "Brandon Augustino",
+        "Giacomo Nannicini",
+        "Tamás Terlaky"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.NA"
+      ],
+      "published": "2026-09-09T14:38:28+00:00",
+      "link": "https://arxiv.org/pdf/2609.10250v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "iterative refinement improves precision dependence of quantum linear system solvers",
+      "llm_evidence_cn": "迭代精化改进量子线性系统求解器的精度依赖",
+      "llm_evidence": "迭代精化改进量子线性系统求解器的精度依赖",
+      "canonical_evidence": "迭代精化改进量子线性系统求解器的精度依赖",
+      "llm_tldr_en": "An iterative refinement framework for quantum linear system solvers retains polylogarithmic dependence on inverse precision while extracting classical solutions via tomography.",
+      "llm_tldr_cn": "该文针对量子线性系统算法与量子态层析结合时，层析提取经典解会引入多项式精度依赖、破坏原本多项式对数复杂度的问题，提出迭代精化框架。方法通过求解一系列相关线性系统逐步精化解，只需调用固定精度的量子子程序。分析表明整个流程可保持对逆误差容限的多项式对数依赖，从而改善了量子线性系统求解与解态恢复的总成本，对微分方程量子求解器同样具有迁移价值。",
+      "llm_tldr": "该文针对量子线性系统算法与量子态层析结合时，层析提取经典解会引入多项式精度依赖、破坏原本多项式对数复杂度的问题，提出迭代精化框架。方法通过求解一系列相关线性系统逐步精化解，只需调用固定精度的量子子程序。分析表明整个流程可保持对逆误差容限的多项式对数依赖，从而改善了量子线性系统求解与解态恢复的总成本，对微分方程量子求解器同样具有迁移价值。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum algorithms for solving linear systems with improved complexity and condition number dependence",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.17796v1",
+      "source": "arxiv",
+      "title": "Quantum Block Encodings for Periodic Two-Phase Finite Element Operators: 2D Poisson and 2D Elasticity",
+      "abstract": "Quantum algorithms require embedding linear operators into unitaries using block encodings. The costs associated with these block encodings determine whether a quantum speedup is achieved. Efficient \\emph{shift decomposition} encodings have been proposed for 2D homogeneous scalar operators. Here, we present exact block encodings for 2D homogeneous elasticity, 2D two-phase bilinear Poisson, and 2D two-phase elasticity periodic finite-element operators.   For 2D homogeneous elasticity, the resulting linear combination of unitaries (LCU) has $L = 17$ terms for every Poisson ratio $ν$ and every mesh resolution, and the subnormalization is the closed form $α= E(33+ν)/\\bigl[6(1-ν^{2})\\bigr]$, exceeding $\\|\\mathbf{K}\\|_{2}$ by the resolution-independent factor $(33+ν)/24$.   To address two-phase periodic microstructures, we introduce two oracles with distinct roles: a node-to-element oracle, built from cyclic shifts, that carries a nodal index to each of the four incident element indices, and a microstructure-specific material oracle that marks phase membership with a sign. This yields 25 and 57 LCU terms for two-phase Poisson and elasticity, respectively; the latter reduces to 49 at $ν= 1/3$. The term counts are independent of mesh resolution, volume fraction, and phase contrast. The subnormalizations, provided in closed form, are independent of mesh resolution and volume fraction. In the scalar case, the tight bound $α= \\|\\mathbf{K}\\|_\\infty$ is achieved whenever a node lies entirely in the stiffer phase. In the elasticity case, that bound is not attained, since the shear coupling contributes entries of both signs to a row. An open-source implementation is available at https://github.com/UW-ERSL/PyBlockEncode",
+      "authors": [
+        "Krishnan Suresh"
+      ],
+      "primary_category": "cs.CE",
+      "categories": [
+        "cs.CE"
+      ],
+      "published": "2026-09-15T20:05:26+00:00",
+      "link": "https://arxiv.org/pdf/2609.17796v1",
+      "tags": [
+        "keyword:quantum-algo"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "exact block encodings for finite-element PDE operators",
+      "llm_evidence_cn": "有限元偏微分方程算子的精确块编码",
+      "llm_evidence": "有限元偏微分方程算子的精确块编码",
+      "canonical_evidence": "有限元偏微分方程算子的精确块编码",
+      "llm_tldr_en": "Exact shift-decomposition block encodings are given for 2D two-phase finite-element Poisson and elasticity operators, with 17 LCU terms and closed-form subnormalization independent of mesh resolution.",
+      "llm_tldr_cn": "该文针对量子算法求解偏微分方程时缺少两相有限元算子块编码的问题，提出基于移位分解的精确块编码构造。对二维齐次弹性、两相双线性泊松以及两相弹性周期有限元算子，得到的线性组合酉算子项数固定为17，子归一化系数给出闭式表达式，且不随网格分辨率增长。该结果明确了取得量子加速所需的编码代价，为有限元离散偏微分方程的量子求解提供了可直接使用的块编码与资源估计。",
+      "llm_tldr": "该文针对量子算法求解偏微分方程时缺少两相有限元算子块编码的问题，提出基于移位分解的精确块编码构造。对二维齐次弹性、两相双线性泊松以及两相弹性周期有限元算子，得到的线性组合酉算子项数固定为17，子归一化系数给出闭式表达式，且不随网格分辨率增长。该结果明确了取得量子加速所需的编码代价，为有限元离散偏微分方程的量子求解提供了可直接使用的块编码与资源估计。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "block encoding techniques for accessing matrices in quantum algorithms",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    }
+  ]
+}

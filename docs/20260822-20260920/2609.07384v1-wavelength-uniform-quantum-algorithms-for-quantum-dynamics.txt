@@ -1,0 +1,2594 @@
+Title: Wavelength-Uniform Quantum Algorithms for Quantum Dynamics
+
+URL Source: https://arxiv.org/pdf/2609.07384v1
+
+Published Time: Wed, 09 Sep 2026 02:10:20 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# Wavelength-Uniform Quantum Algorithms for Quantum Dynamics 
+
+## Shi Jin 1,2,3,* and Chuwen Ma 4,5,6,† 
+
+> 1
+
+School of Mathematical Sciences, Shanghai Jiao Tong University, Shanghai 200240, China 
+
+> 2
+
+Institute of Natural Sciences, Shanghai Jiao Tong University, Shanghai 200240, China 
+
+> 3
+
+MOE-LSC, Shanghai Jiao Tong University, Shanghai 200240, China 
+
+> 4
+
+School of Mathematical Sciences, East China Normal University, Shanghai 200241, China 
+
+> 5
+
+Key Laboratory of MEA, Ministry of Education, East China Normal University, Shanghai 200241, China 
+
+> 6
+
+Shanghai Key Laboratory of PMMP, East China Normal University, Shanghai 200241, China 
+
+Abstract 
+
+One of the main challenges in quantum simulation is the prohibitive cost of computing its solutions in the semi-classical regime, in which the de Broglie wavelength is small compared with the characteristic length scale and the solution is highly oscillatory. This difficulty is overcome by using the Weyl variable, under which the solution is not oscillatory. Furthermore, we use the exact Hermite moments and quantum singular value transformation to treat the polynomial and Fourier components of the potential, resulting in a quantum algorithm efficient for all ranges of wavelengths. Specifically, it has a polynomial complexity in spatial dimension, and discretization and query bounds 
+
+without negative powers of possibly small wavelength, thus enabling it to capture the correct physical observables even if the spatial grid does not resolve the frequency, hence defying the Nyquist-Shannon sampling theorem. 
+
+Introduction. Consider the von Neumann equation for mixed-state quantum dynamics: iℏ∂t̂ρ = [ ̂ H, ̂ρ],̂ H = − ℏ2
+
+2m ∆ + V (X), (1) where V : Rd → R is a real-valued potential, [ ̂ H, ̂ρ ] = ̂
+
+Ĥρ−̂ρ̂ H is the commutator, and ̂ρ (t) is a density operator with integral kernel ρ(t; X, Y ), X, Y ∈ Rd. We first nondimensionalize it by choosing a characteristic length 
+
+L (e.g., the scale over which V varies) and a characteristic energy E0 (e.g., the typical kinetic or potential energy). Rescaling space, time, and energy by L, L√m/E 0, and 
+
+E0, respectively, gives the dimensionless von Neumann equation (for clarity, we use the same variables) iε∂ t̂ρ ε = [ ̂ Hε,̂ρ ε],̂ Hε = −(ε2/2)∆ + V (X), (2) where ε = ℏ/(L√mE 0) is the ratio of the reduced de Broglie wavelength to the characteristic length scale L.The case of ε ≪ 1 is referred to as the semiclassical regime. Such a scaling also arises in the Born–Oppenheimer ap-proximation [1], in which ε ≪ 1 is proportional to the square root of the electron-to-nuclear mass ratio. Two main challenges in the numerical simulation of quantum dynamics are the curse of dimensionality, since 
+
+d can be O(10)– O(10 2), which motivates quantum com-putation, and the highly oscillatory nature of the solution, with frequency O(ε−1), in the semiclassical regime ε ≪ 1. In the latter case, the Nyquist–Shannon sampling theo-rem requires several mesh points per wavelength to resolve these oscillations, leading to a spatial mesh h = O(ε). 
+
+> ∗shijin-m@sjtu.edu.cn
+> †cwma@math.ecnu.edu.cn
+
+This demands O(ε−d) spatial unknowns for a wave func-tion and O(ε−2d) entries for a dense representation of the density-matrix kernel. A time integrator that resolves the quantum state may also require O(ε−1) time steps over an O(1) time interval. There has been tremendous effort devoted to overcom-ing the second computational challenge. For the linear Schrödinger equation describing pure-state quantum dy-namics, the classical Wentzel–Kramers–Brillouin (WKB) analysis gives an asymptotic solution whose phase and amplitude are governed by the eikonal and transport equa-tions, respectively. However, this description is no longer valid after the formation of caustics [2–4]. The more accurate Gaussian wave-packet methods can relax the numerical constraints to h = O(√ε) [5–7], yet they still have a computational complexity of O(ε−d/ 2) per time step, and are primarily designed for the regime ε ≪ 1, with accuracy guarantees that do not generally extend uniformly to ε = O(1). Previously, it was demonstrated that, for the linear Schrödinger equation, time-splitting (or Trotter splitting) schemes allow the time step τ to be independent of ε when physical observables, rather than the wave function itself, are required to be accurate [8–12]. However, for quantum dynamics, the more com-putationally challenging issue is spatial resolution. Even with a highly accurate spectral method, one still needs 
+
+h = O(ε). Breaking this prohibitive spatial-resolution constraint, in addition to the curse of dimensionality, is the aim of the present work. We introduce a quantum algorithm for the von Neu-mann equation (2) that, in addition to addressing the curse of dimensionality, achieves the following goals: (i) in the regime ε ≪ 1, the spatial mesh size h can be 1arXiv:2609.07384v1 [quant-ph] 7 Sep 2026 chosen independently of ε when computing prescribed smooth physical observables; and (ii) the algorithm works uniformly for all ε, and hence is applicable in both the semiclassical and quantum regimes. Moreover, we con-struct an end-to-end quantum algorithm for this method and prove, under the regularity and structured access assumptions specified below, that its resource bounds contain no negative power of ε and depend polynomially 
+
+on the spatial dimension d. To our knowledge, this is the first end-to-end quantum algorithm with an ε-uniform 
+
+representation, allowing Hamiltonian simulation and ob-servable readout over the full range of ε. In particular, when computing physical observables, the method does not require Nyquist–Shannon resolution of the original quantum state, because it does not need to computation-ally resolve the ε-scale oscillations when ε ≪ 1. Such an algorithm is important for applications ranging from Born–Oppenheimer molecular dynamics and nonadia-batic surface hopping in photochemistry [13–15], proton transfer in enzymes and in solution [16, 17], to mixed quantum–classical dynamics and strong-field ionization [18, 19]. A main ingredient of our method is the use of Weyl vari-ables , in which the solution is nonoscillatory, a property proved by Filbet and Golse [20, 21]. This property moti-vated their construction of a classical Hermite method with ε-uniform approximation estimates. In their one-dimensional classical method, the full projected potential term generally produces dense coupling matrices among the Hermite modes, so its application has a cost quadratic 
+
+in the number of retained modes at every spatial grid point. Their more efficient Taylor approximation replaces these dense matrices by fixed-bandwidth couplings, but is valid only for ε ≪ 1, not for ε = O(1). We overcome this restriction by using an integral representation of the full symmetric potential difference, which avoids any Taylor truncation in ε and remains accurate uniformly 
+
+for 0 < ε ≤ 1. For the polynomial component of the potential, we construct the corresponding block encoding using exact 
+
+projected Hermite moments, which remain sparse for fixed polynomial degree. For each Fourier mode, the full symmetric difference is represented as a matrix sinc function of a sparse Hermite coordinate matrix. We use quantum singular value transformation (QSVT) in an enlarged Hermite basis to implement this generally dense matrix function without forming it explicitly, and then project back to the retained modes and combine the Fourier modes using a linear combination of unitaries (LCU) [22, 23]. Hamiltonian simulation followed by over-lap estimation returns the prescribed physical observables 
+
+without reconstructing the full density matrix. Thus, for the structured problem class considered in this work, the quantum algorithm avoids the exponential storage cost of a direct classical discretization on the full tensor prod-uct grid when estimating a fixed number of prescribed observables. 
+
+The Weyl variable formulation.— Introduce the Weyl variables x = ( X + Y )/2 and y = ( X − Y )/ε , and set Rε(t, x, y ) = ρε(t; X, Y ). Equation (2) becomes 
+
+∂tRε = i 
+
+> d
+
+∑
+
+> j=1
+
+∂xj ∂yj Rε − iUε(x, y )Rε,Uε(x, y ) = V (x + εy/ 2) − V (x − εy/ 2) 
+
+ε . (3) Our target is a prescribed smooth observable with Weyl symbol a(x, p ): Aε(T ) = Tr[ ̂ρ ε(T ) Op W 
+
+> ε
+
+(a)] =
+
+⟨ˇa, R ε(T )⟩L2 
+
+> x,y
+
+, where ˇ a is the inverse Fourier transform of a in momentum. Thus the required output is a pairing with Rε, rather than its full reconstruction. The factor ε−1 in Eq. (3) conceals a cancellation. For 
+
+V ∈ C1,
+
+Uε(x, y ) = 
+
+∫ 1/2
+
+> −1/2
+
+y · ∇ V (x + sεy ) d s. 
+
+This averaged directional derivative tends to U0(x, y ) = 
+
+y · ∇ V (x) as ε → 0. The quantum implementation must preserve this cancellation: encoding the two shifted po-tentials separately and dividing by ε can introduce a normalization proportional to ε−1. We instead represent their difference before constructing the block encoding. Write V = VP + VF, where VP has fixed total degree 
+
+DP, and VF admits a Fourier integral or periodic series that can be truncated to the prescribed accuracy. This in-cludes polynomial traps with smooth localized or periodic perturbations. For qP = ⌊(DP − 1) /2⌋, the polynomial contribution is exactly 
+
+U P 
+
+> ε
+
+(x, y ) = 
+
+> qP
+
+∑
+
+> m=0
+
+ε2m
+
+22m
+
+∑
+
+> |ν|=2 m+1
+
+(∂ν VP)( x)yν
+
+ν! , (4) where ν is a multi-index. Only odd derivatives occur, and all powers of ε are nonnegative. Take DP = 0 when 
+
+VP = 0; polynomial sums are empty for DP = 0. Only VF must satisfy ∫ 
+
+> Rd
+
+(1 + ∥ξ∥1)|̂ VF(ξ)| dξ < ∞,where ̂ VF denotes the Fourier transform of VF. With 
+
+VF(x) = (2 π)−d ∫̂ VF(ξ)eiξ·x dξ, its contribution is 
+
+U F 
+
+> ε
+
+(x, y ) = i(2 π)d
+
+∫
+
+> Rd
+
+̂ VF(ξ)eiξ·x(ξ · y) sinc 
+
+( ε
+
+2 ξ · y
+
+)
+
+dξ, 
+
+(5) where sinc z = sin z/z and sinc 0 = 1. The periodic case uses the corresponding Fourier sum. Both components re-tain the full dependence on ε; neither uses an asymptotic truncation in ε. Either component may vanish. 
+
+Discretization.— We restrict and periodize the prob-lem in x on a box Ω x,δ ≃ Td, chosen so that the resulting observable error is O(δ), uniformly for 0 < ε ≤ 1. We use 
+
+M grid points per spatial direction and retain K Hermite modes per y direction. The construction proceeds in two steps: projection in y, followed by finite differences in x.2Let IM := {0, . . . , M − 1}d, IK := {0, . . . , K − 1}d.Let {Φk}k≥0 be the normalized one-dimensional Her-mite functions, and define Φ k(y) := ∏dj=1 Φkj (yj ). We seek the Hermite–Galerkin approximation RεK (t, x, y ) = ∑ 
+
+> k∈IK
+
+Rk(t, x )Φ k(y), whose coefficients are deter-mined by the projected system below. Let ej de-note the jth standard basis vector of Zd. Using 
+
+∂yj Φk = −√(kj + 1) /2 Φ k+ej + √kj /2 Φ k−ej , the Hermite–Galerkin projection of Eq. (3) gives i∂tRk =
+
+> d
+
+∑
+
+> j=1
+
+(√ kj
+
+2 ∂xj Rk−ej −
+
+√ kj + 1 2 ∂xj Rk+ej
+
+)
+
++ ∑
+
+> l∈IK
+
+[Uε,K (x)] kl Rl, (6) where Rm = 0 for m /∈ IK , and [Uε,K (x)] kl := ∫ 
+
+> Rd
+
+Uε(x, y )Φ k(y)Φ l(y) d y.We next discretize the x derivatives in Eq. (6) using an order-rx, fixed-width skew-Hermitian finite-difference stencil with mesh size h. Let Dx,h be the corresponding one-dimensional M × M finite-difference matrix with periodic boundary conditions. The Hermite derivative matrix is ( Dy,K )kl = √l/ 2 δk,l −1 −√(l + 1) /2 δk,l +1 , 0 ≤
+
+k, l < K [24]. Define Dxj ,h := I⊗(j−1)  
+
+> M
+
+⊗ Dx,h ⊗ I⊗(d−j)
+
+> M
+
+and Dyj ,K := I⊗(j−1)  
+
+> K
+
+⊗ Dy,K ⊗ I⊗(d−j) 
+
+> K
+
+, where In denotes the n × n identity matrix. Writing Rk(t, x i) for the resulting grid coefficients and collecting them into R(t) = 
+
+hd/ 2 ∑  
+
+> i∈IM,k∈IK
+
+Rk(t, x i)|i⟩| k⟩, we obtain i∂tR = ( Htr + U ex  
+
+> ε,h,K
+
+)R, (7) where Htr = − ∑dj=1 Dxj ,h ⊗ Dyj ,K , and the exact poten-tial block is U ex  
+
+> ε,h,K
+
+= ∑ 
+
+> i∈IM
+
+|i⟩⟨ i| ⊗ Uε,K (xi), with the local blocks defined above. This tensor representation requires no separability of the solution or potential. The distinction between projection and matrix evalua-tion is essential. Let PK project onto the first K Hermite modes and let Y denote multiplication by y. In general, 
+
+PK f (Y )PK̸ = f (PK Y P K ) on the retained subspace. For the polynomial contribution, we use the exact moments (Y[r] 
+
+> K
+
+)ℓk := 
+
+∫
+
+> R
+
+yr Φℓ(y)Φ k(y) d y, 0 ≤ ℓ, k < K. 
+
+The Hermite ladder matrix of size N is YN =∑N −2
+
+> k=0
+
+√(k + 1) /2( |k + 1 ⟩⟨ k| + |k⟩⟨ k + 1 |). Define its ac-tion on the jth Hermite factor by Yj,N := I⊗(j−1)  
+
+> N
+
+⊗ YN ⊗
+
+I⊗(d−j) 
+
+> N
+
+. For the canonical embedding JK,N : CK → CN ,Gauss–Hermite exactness gives Y[r] 
+
+> K
+
+= J† 
+
+> K,N
+
+Y rN JK,N 
+
+whenever N ≥ K + ⌊r/ 2⌋. Set Y[ν] 
+
+> K
+
+= ⊗ 
+
+> j
+
+Y[νj ] 
+
+> K
+
+and 
+
+Mν,V P = ∑
+
+> i
+
+(∂ν VP)( xi)|i⟩⟨ i|. Then 
+
+U P 
+
+> ε,h,K
+
+=
+
+> qP
+
+∑
+
+> m=0
+
+ε2m
+
+22m
+
+∑
+
+> |ν|=2 m+1
+
+Mν,V P ⊗ Y[ν]
+
+> K
+
+ν! . (8) At fixed DP, its number of nonzero diagonals is poly-nomial in d. Thus exact projection preserves sparse polynomial couplings. For the Fourier contribution, choose a paired quadra-ture with nodes ξq and positive weights wq , indexed by q ∈ Q , to obtain VF(x) ≈ ∑ 
+
+> q∈Q
+
+aq eiξq ·x, where 
+
+aq := wq̂ VF(ξq )/(2 π)d are the Fourier-mode amplitudes. The nodes and weights satisfy ξ−q = −ξq and w−q = wq ,so that a−q = aq because VF is real-valued. For a peri-odic potential, use the corresponding truncated Fourier series, with aq denoting its Fourier coefficients. Omit the zero mode, which cancels in the difference. Enlarge each Hermite register to ˜K = K + Lbuf modes and define 
+
+Jd = J⊗dK, ˜K , Aq, ˜K = ∑ 
+
+> j
+
+ξq,j Yj, ˜K , and Eq = ∑ 
+
+> i
+
+eiξq ·xi |i⟩⟨ i|.The finite-section Hermite approximation is 
+
+Ffs  
+
+> q,K
+
+:= J† 
+
+> d
+
+Aq, ˜K sinc 
+
+( ε
+
+2 Aq, ˜K
+
+)
+
+Jd,U F,fs  
+
+> ε,h,K
+
+:= i ∑
+
+> q∈Q
+
+aq Eq ⊗ Ffs  
+
+> q,K
+
+. (9) The additional Lbuf modes control the error from replac-ing the infinite Hermite matrices by finite ones. Although 
+
+Aq, ˜K is sparse, Ffs  
+
+> q,K
+
+is generally dense. Quantum singu-lar value transformation implements this matrix function without constructing it explicitly. 
+
+Quantum implementation.— A block encoding em-beds a normalized matrix into a unitary [23]. The trans-port and exact polynomial blocks admit direct sparse block encodings. For each Fourier mode, a linear com-bination of the Hermite ladder matrices gives a block encoding of Aq, ˜K /β q , where βq =
+
+√
+
+2 ˜K ∥ξq ∥1 ≥
+
+∥∥∥Aq, ˜K
+
+∥∥∥.The real odd function gq,ε (s) = s sinc( εβ q s/ 2) satisfies 
+
+|gq,ε (s)| ≤ 1 for s ∈ [−1, 1]. Approximating it by a real odd polynomial pq,ε through quantum singular value transformation [22, 23] implements 
+
+˜Fq,K := J† 
+
+> d
+
+βq pq,ε (Aq, ˜K /β q )Jd,U F,QSVT  
+
+> ε,h,K
+
+:= i ∑
+
+> q∈Q
+
+aq Eq ⊗ ˜Fq,K . (10) Using the same polynomial for each ( q, −q) pair preserves Hermiticity. The weighted sum is implemented by a linear combination of unitaries. For potential error tolerance δpot , define V1,Q =∑ 
+
+> q
+
+|aq | ∥ ξq ∥1 and βmax = max q βq . The Fourier nor-malization is αFpot =
+
+√
+
+2 ˜KV1,Q, and the maximum poly-nomial degree satisfies 
+
+nF = O
+
+(
+
+1 + εβ max + log 
+
+[
+
+1 + αFpot 
+
+δpot 
+
+]) 
+
+. (11) When Q = ∅, the Fourier block and its costs are omitted. Equation (11) makes the preserved cancellation explicit: neither normalization nor polynomial degree introduces an inverse power of ε.Combining the three blocks gives the Hermitian gener-ator 
+
+HWH = Htr + U P 
+
+> ε,h,K
+
++ U F,QSVT  
+
+> ε,h,K
+
+. (12) 3We implement e−iT H WH by qubitization and quantum signal processing [25]. The access assumptions are re-versible evaluation of polynomial derivatives, Fourier co-efficients, frequencies, and grid phases, together with coherent preparation of the Fourier weights and access to the quantum singular value transformation phases selected by the Fourier index. These costs must be uniform in ε. For a fixed computational box, define ΓP
+
+> m,d
+
+(Ω x) = ∑ 
+
+> |ν|=2 m+1
+
+∥∂ν VP∥L∞(Ω x) /ν !. The multi-nomial identity gives Γ P 
+
+> m,d
+
+≤ d2m+1 GP2m+1 ,d /(2 m + 1)!, where GP 
+
+> r,d
+
+= max |ν|=r ∥∂ν VP∥L∞(Ω x).
+
+Lemma 1 (Simulation at fixed discretization) . For fixed 
+
+h, K, Q, L buf , the block encoding of HWH has normaliza-tion 
+
+αWH = Orx,D P
+
+(
+
+dh −1K1/2 +
+
+> qP
+
+∑
+
+> m=0
+
+ε2mKm+1 /2ΓP
+
+> m,d
+
+(Ω x)+
+
+√ ˜K V1,Q
+
+)
+
+. (13) For 0 < δ sim < 1, simulation with operator-norm error at most δsim uses 
+
+Nsim = ˜O(T α WH + log δ−1sim 
+
+) (14) queries to this block encoding. The notation ˜O suppresses logarithmic factors. With a nonempty Fourier set, each such query uses O(nF) queries to the Hermite ladder block encodings, with the index 
+
+j selected coherently. Implementation details and error estimates are given in Secs. II–IV of the Supplemental Material below. 
+
+Inputs and observables.— Let R0 contain the sam-pled Hermite coefficients of Rε(0). The observable vector and its discrete prediction are (ba)i,k = hd/ 2
+
+∫
+
+> Rd
+
+ˇa(xi, y )Φ k(y) d y, AWH (T ) = ⟨ba, e −iT H WH R0⟩. (15) Writing sR = ∥R0∥2 and sa = ∥ba∥2, overlap estimation on the normalized vectors returns μ = AWH (T )/(sasR)[26, 27]. Multiplication by sasR recovers the observable without tomography. If sasR = 0, the discrete observable is zero and no overlap estimation is required. For the uniform result, we consider fixed-resolution observables and assume sR, s a, ∥ˇa∥L2 
+
+> x,y
+
+= O(1), uniformly in ε and d. Examples include finite-resolution versions of the mass, momentum, and kinetic-energy observables considered in [20]. A natural mixed-state input is a localized Gaussian wave-packet ensemble with O(1) momentum spread. For fixed x0 ∈ Rd and σ > 1/2, its positive trace-one density operator has a kernel in Weyl variables pro-portional to e−| x−x0|2/(2 σ2)e−| y|2/2, independently of ε.Since X − Y = εy , this family has physical coherence length O(ε), while its profile in Weyl variables remains fixed. It describes a semiclassical ensemble with a smooth phase-space distribution whose spatial and momentum widths are independent of ε. With trace-one normaliza-tion, ∥Rε
+
+> 0
+
+∥2 
+
+> L2
+> x,y
+
+= (2 σ)−d ≤ 1, so the assumed sampling bounds give sR = O(1), uniformly in ε and d. Only the Hermite mode k = 0 is occupied initially. The factorized Gaussian amplitudes have preparation cost polynomial in d, log M, log K, log δ−1 [28]; Gaussian observables can be treated similarly. The input restriction matters because ∥Rε
+
+> 0
+
+∥2 
+
+> L2
+
+=
+
+ε−d Tr[( ̂ρ ε
+
+> 0
+
+)2] [21]. A resolved trace-one pure-state family has sR = Θ( ε−d/ 2), and therefore lies outside the uni-form end-to-end guarantee, although the Hamiltonian block-encoding bounds remain valid. 
+
+Uniform accuracy selection.— To state the dis-cretization guarantee, define the first Fourier-moment tail 
+
+TF,d (Ξ) := 1(2 π)d
+
+∫
+
+> ∥ξ∥∞>Ξ
+
+∥ξ∥1 |̂ VF(ξ)| dξ, (16) with the corresponding sum for a periodic potential. The absolute zeroth and first Fourier moments are assumed to grow at most polynomially in d. Assume the uniform solution regularity, domain restriction and periodization, sampling, and preparation conditions in Secs. III and V of the Supplemental Material. For the dimension bounds, these conditions require polynomial growth in d
+
+of the regularity constants and of Γ P
+
+> m,d
+
+(Ω x,δ ), polynomial bandwidth to reach the required Fourier-tail accuracy, and polynomial costs for access to the selected data, at fixed T, δ, D P. Finiteness of the Fourier moments alone does not impose a quantitative tail decay rate. 
+
+Lemma 2 (Uniform parameter selection) . Under these assumptions, fix p ∈ N, p ≥ 1 with 2 p ≥ rx, as allowed by the solution regularity. For each d and 0 < δ < 1, choose 
+
+Kd,δ = O
+
+(
+
+poly( d) δ−2/(2 p−1) )
+
+. (17) Choose a paired Fourier quadrature with positive weights and ∥ξq ∥∞ ≤ Ξd,δ , so that √Kd,δ TF,d (Ξ d,δ ) = 
+
+O(δ/ [T poly( d)]), with quadrature error of the same or-der in operator norm. Assume its discrete moments sat-isfy ∑ 
+
+> q
+
+|aq | + V1,d,δ ≤ poly( d), uniformly in δ, ε , where 
+
+V1,d,δ = ∑ 
+
+> q∈Q d,δ
+
+|aq | ∥ ξq ∥1.The box Ω x,δ , mesh hd,δ , and additional Hermite modes can then be chosen independently of ε, with 
+
+Lbuf ,d,δ = O
+
+(
+
+d2Ξ2 
+
+> d,δ
+
++ dΞd,δ 
+
+√Kd,δ 
+
++ log 
+
+[
+
+1 + T poly( d)
+
+δ
+
+(1 + dΞd,δ 
+
+√Kd,δ 
+
+)] )
+
+.
+
+(18) Set ˜Kd,δ = Kd,δ + Lbuf ,d,δ . Selecting h−1 
+
+> d,δ
+
+≥ Ξd,δ and the remaining implementation tolerances gives sup 
+
+> 0<ε ≤1
+
+|AWH (T ) − Aε(T )| = O(δ). (19) 4(64,12,6) (96,16,8) (128,20,10) (192,28,12) (256,36,16) joint refinement ( M, K, Q)10 −7          
+
+> 10 −6
+> 10 −5
+> 10 −4
+> 10 −3
+> Eobs
+> (a) Joint M,K,Qrefinement
+> ε= 1
+> ε= 10 −1
+> ε= 10 −4
+> δobs
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> ε
+> 10 −7
+> 10 −6
+> 10 −5
+> Eobs
+> (b) Fixed grid ( M,K,Q) = (256, 36, 16)
+> Weyl--Hermite (F)
+> δobs
+
+Figure 1: Observable accuracy against an independent reference. (a) Joint refinement for ε = 1 , 10 −1, 10 −4. (b) A single choice ( M, K, Q ) = (256 , 36 , 16) gives Eobs < 10 −5 for all nine tested values of ε. The dashed line marks the prescribed tolerance. For fixed T, δ , the selected inverse mesh, bandwidth, and Hermite sizes are polynomial in d under the stated dimension assumptions. If VF = 0, take Qd,δ = ∅ and Ξd,δ = V1,d,δ = Lbuf ,d,δ = 0. 
+
+Main result.— The two lemmas separate the cost of evolving a finite representation from the accuracy with which it predicts the continuum observable. Combining them with overlap estimation gives the complete resource bound. 
+
+Theorem 1 (Uniform observable complexity) . Select 
+
+hd,δ , K d,δ , Qd,δ , L buf ,d,δ as in Lemma 2, and assume the access conditions of Lemma 1 and the uniform input and observable bounds above. Let αWH ,d (ε; δ) be Eq. (13) evaluated at these parameters and Ω x = Ω x,δ , and set Λd,δ = max {1, s Rsa/δ }. For nonzero sRsa, assume prepa-ration oracles OR|0⟩ = R0/s R and Oa|0⟩ = ba/s a, with costs uniform in ε. Then an estimate ˜A(T ) satisfies, with constant success probability, 
+
+| ˜A(T ) − Aε(T )| = O(δ), 0 < ε ≤ 1, (20) using 
+
+NH = ˜O[Λ d,δ {T α WH ,d (ε; δ) + log(1 + Λ d,δ )}] (21) queries to the block encoding of HWH and O(Λ d,δ ) calls to each preparation oracle and its inverse. If sRsa = 0, return ˜A(T ) = 0. The estimate is ˜A(T ) = sasR ˜μ, with simulation, normalized-state preparation, and overlap errors each chosen as O(Λ −1 
+
+> d,δ
+
+). At fixed T, δ, p, r x, D P, the stated regularity, potential, and access bounds make Eq. (21) polynomial in d. All selected discretization parameters are independent of ε, and the normalization contains no negative powers of ε. The same uniformity holds for the Fourier implementation in Eq. (11). Gate and working-qubit bounds, including preparation and selection costs, are given in Sec. IV of the Supplemental Material. With-out the assumed efficient access, the result is a bound on oracle queries; loading arbitrary data can still be costly. 
+
+A numerical benchmark.— We first test conver-gence by refining M, K, Q together. We then keep these parameters fixed and test whether the observable error remains below the prescribed tolerance across quantum and semiclassical regimes. Figure 1 uses VP = 0 and a periodized Gaussian barrier on [ −L, L ): 
+
+VG(x) = V0
+
+∑
+
+> m∈Z
+
+exp 
+
+[
+
+− (x − xc + 2 mL )2
+
+2σ2
+
+> V
+
+]
+
+,ξq = πq L , aq = V0
+
+√2πσ V
+
+2L e−σ2  
+
+> Vξ2
+> q/2
+
+e−iξq xc . (22) We take ( L, T, V 0, σ V , x c) = (6 , 2, 1.5, 0.7, 0), a fourth-order centered spatial stencil, and Fourier modes 0 <
+
+|q| ≤ Q. The smooth Gaussian input and detector pro-files are normalized in L2 
+
+> x,y
+
+; their explicit forms are given in Sec. VI of the Supplemental Material. The full finite-ε sinc factor is retained. The error Eobs (ε) = 
+
+|AεM,K,Q (T ) − Aε 
+
+> ref
+
+(T )| uses a separately refined ( x, y )Fourier pseudospectral reference with a different basis, stencil, and potential representation. For ( M, K, Q ) = (256 , 36 , 16), the maximum error over the nine tested values of ε is 6 .82 × 10 −7. Refining M , K,or Q individually changes the observable by at most 1 .32 ×
+
+10 −6 < 10 −5/3, while reference refinements change it by at most 8 .41 × 10 −8. With M, K, Q fixed, the prescribed observable accuracy is therefore attained at all tested values of ε. This benchmark tests the discretization; errors from quantum singular value transformation and Hamiltonian simulation are controlled separately by the operator-norm estimates above. 
+
+Summary.— The Weyl–Hermite representation makes the observable task accessible without resolving the original state’s wavelength. Exact projected mo-5ments preserve the polynomial contribution, while the sinc representation retains finite-ε effects in the Fourier contribution. For the mixed states and smooth observ-ables covered by Theorem 1, the algorithm achieves the prescribed observable accuracy for all 0 < ε ≤ 1 us-ing discretization parameters that do not depend on 
+
+ε. The error bound includes discretization, quantum simulation, and readout errors. A direct tensor grid stores ( M K )d coefficients; their amplitude encoding uses 
+
+d⌈log 2 M ⌉ + d⌈log 2 K⌉ system qubits. Under the stated regularity and structured-access assumptions, query and gate costs are polynomial in d and contain no inverse powers of ε. This advantage concerns estimation of a fixed number of smooth observables, with input prepara-tion and output normalization included in the resource accounting. 
+
+Acknowledgments.— SJ acknowledges support from NSFC Grant No. 12341104, the Shanghai Pilot Program for Basic Research, the STCSM Grant No. 24LZ1401200, the Shanghai Jiao Tong University 2030 Initiative, and the Fundamental Research Funds for the Central Uni-versities. CM was supported by the Fundamental and Interdisciplinary Disciplines Breakthrough Plan of the Ministry of Education of China (JYB2025XDXM112) and by NSFC Grant No. 12501607. CM was also partially supported by STCSM Grant No. 22DZ2229014. 
+
+Data availability.— Data for Figs. 1 and Fog. S1 are included in the Supplemental Materials. 
+
+References 
+
+[1] G. A. Worth and L. S. Cederbaum, Annu. Rev. Phys. Chem. 
+
+55 , 127 (2004). [2] V. I. Arnol’d, Funct. Anal. Appl. 1, 1 (1967). [3] B. Engquist and O. Runborg, Acta Numer. 12 , 181 (2003). [4] C. Sparber, P. A. Markowich, and N. J. Mauser, Asymptot. Anal. 33 , 153 (2003). [5] G. A. Hagedorn, Commun. Math. Phys. 71 , 77 (1980). [6] D. Huber and E. J. Heller, J. Chem. Phys. 87 , 5302 (1987). [7] S. Jin, P. A. Markowich, and C. Sparber, Acta Numer. 20 ,121 (2011). [8] W. Bao, S. Jin, and P. A. Markowich, J. Comput. Phys. 175 ,487 (2002). [9] F. Golse, S. Jin, and T. Paul, Found. Comput. Math. 21 , 613 (2021). [10] C. Lasser and C. Lubich, Acta Numer. 29 , 229 (2020). [11] S. Jin, X. Li, and N. Liu, Quantum 6, 739 (2022). [12] D. Fang and C. Qu, SIAM J. Numer. Anal. 64 , 876 (2026). [13] M. Born and R. Oppenheimer, Ann. Phys. (Leipzig) 389 , 457 (1927). [14] J. C. Tully, J. Chem. Phys. 93 , 1061 (1990). [15] I. Horenko, C. Salzmann, B. Schmidt, and C. Schütte, J. Chem. Phys. 117 , 11075 (2002). [16] D. Antoniou and S. D. Schwartz, Proc. Natl. Acad. Sci. U.S.A. 
+
+94 , 12360 (1997). [17] J. Åqvist and A. Warshel, Chem. Rev. 93 , 2523 (1993). [18] R. Kapral, Annu. Rev. Phys. Chem. 57 , 129 (2006). [19] W. Becker, X. J. Liu, P. J. Ho, and J. H. Eberly, Rev. Mod. Phys. 84 , 1011 (2012). [20] F. Filbet and F. Golse, J. Comput. Phys. 527 , 113810 (2025). [21] F. Filbet and F. Golse, Math. Comp., doi:10.1090/mcom/4236 (2026). [22] G. H. Low and I. L. Chuang, Phys. Rev. Lett. 118 , 010501 (2017). [23] A. Gilyén, Y. Su, G. H. Low, and N. Wiebe, Quantum singular value transformation and beyond: Exponential improvements for quantum matrix arithmetics, in Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing 
+
+(ACM, New York, 2019), pp. 193–204. [24] T. Tang, SIAM J. Sci. Comput. 14 , 594 (1993). [25] G. H. Low and I. L. Chuang, Quantum 3, 163 (2019). [26] P. Rall, Phys. Rev. A 102 , 022408 (2020). [27] G. Brassard, P. Høyer, M. Mosca, and A. Tapp, Quantum amplitude amplification and estimation, in Quantum Compu-tation and Information , edited by S. J. Lomonaco, Jr. and H. E. Brandt, Contemporary Mathematics Vol. 305 (American Mathematical Society, Providence, RI, 2002), pp. 53–74. [28] L. Grover and T. Rudolph, arXiv:quant-ph/0208112. 
+
+6Supplemental Material 
+
+Wavelength-Uniform Quantum Algorithms for Quantum Dynamics 
+
+Organization.— Section I defines the finite Weyl–Hermite system and derives its Gauss–Hermite representation. Sections II–IV prove, respectively, Lemma 1, Lemma 2, and Theorem 1 of the main text. Section V discusses inputs and observables, and Sec. VI records the independent-reference benchmark. Equations and figures in this document carry the prefix S; references to the main results use their original numbering. Both parts share the reference list preceding this supplement. We keep explicit all dependence on d needed by the resource bounds. The polynomial-in-d
+
+conclusion is conditional on the dimension-stable regularity, Fourier-access, and input–readout assumptions stated in Secs. II–V; no dimension-uniform PDE regularity theorem is asserted. Throughout, α, β, γ, ζ ∈ Nd 
+
+> 0
+
+are multi-indices, with |α| = ∑ 
+
+> j
+
+αj , xα = ∏ 
+
+> j
+
+xαj 
+
+> j
+
+, and ∂βx = ∏ 
+
+> j
+
+∂βj 
+
+> xj
+
+, and analogously in y. Dimension-dependent constants carry a subscript d and are kept explicit in the final resource bounds. 
+
+I. Finite Weyl–Hermite system I.A. Weyl variables and Hermite projection 
+
+We use the Weyl variables and evolution equation (3) of the main text: 
+
+x = X + Y
+
+2 , y = X − Yε , Rε(t, x, y ) = ρε(t; x + εy/ 2, x − εy/ 2) . (S1) In this representation, Uε(x, y ) = ∫ 1/2 
+
+> −1/2
+
+y · ∇ V (x + sεy ) d s. The Weyl formulation and its one-dimensional Hermite discretization were studied in Ref. [20]. The norm and observable pairings satisfy 
+
+∥Rε∥22 = ε−d ∥̂ρ ε∥2HS , ⟨ˇa, R ε⟩ = Tr[ ̂ρ ε Op W 
+
+> ε
+
+(a)] , (S2) where ˇ a(x, y ) = (2 π)−d ∫ 
+
+> Rd
+
+a(x, p )eiy·p dp and Op W 
+
+> ε
+
+denotes Weyl quantization with semiclassical parameter ε. The inner product is conjugate-linear in its first argument. Equation (S2) holds for real a; complex symbols are treated componentwise. The normalized Hermite functions are Φ k(y) = Hk(y)e−y2/2/[π1/4√2kk!] and Φ k(y) = ∏dj=1 Φkj (yj ), where Hk is the degree-k Hermite polynomial orthogonal with weight e−y2
+
+and leading coefficient 2 k. With Φ −1 = 0, the ladder identities 
+
+yΦk =
+
+√ k + 1 2 Φk+1 +
+
+√ k
+
+2 Φk−1, ∂y Φk = −
+
+√ k + 1 2 Φk+1 +
+
+√ k
+
+2 Φk−1 (S3) give, on span {Φ0, . . . , ΦK−1},
+
+YK =
+
+> K−2
+
+∑
+
+> k=0
+
+√ k + 1 2 (|k + 1 ⟩⟨ k| + |k⟩⟨ k + 1 |), Dy,K =
+
+> K−2
+
+∑
+
+> k=0
+
+√ k + 1 2 (|k⟩⟨ k + 1 | − | k + 1 ⟩⟨ k|).
+
+Let IK = {0, . . . , K − 1}d and ιK |k⟩ = Φ k. Define PK = ιK ι† 
+
+> K
+
+, ιK = ι⊗dK , Π K = P ⊗dK , and QK = I − ΠK . The retained space H(d) 
+
+> K
+
+= ran Π K = span {Φk : k ∈ IK } has dimension Kd. The tensor basis and cutoff do not require separability of the solution or potential: mixed derivatives ∂ν VP, monomials yν , and Fourier couplings ξ · y retain all coordinate interactions. The exact compressed moments are 
+
+Y[r] 
+
+> K
+
+:= ι† 
+
+> K
+
+yr ιK , Y[ν] 
+
+> K
+
+:= 
+
+> d
+
+⊗
+
+> j=1
+
+Y[νj ] 
+
+> K
+
+.
+
+In general, Y[r]
+
+> K
+
+̸ = ( YK )r : the latter inserts a projection onto the retained modes between consecutive multiplications. 
+
+I.B. Gauss–Hermite representation 
+
+We first describe the construction in one dimension. Let ˜K = K + Lbuf , where Lbuf is the number of additional Hermite modes beyond the retained K modes. Let {yq , ω H 
+
+> q
+
+} ˜K−1 
+
+> q=0
+
+be the Gauss–Hermite nodes and positive weights for the weight e−y2
+
+:
+
+∫
+
+> R
+
+e−y2
+
+f (y) d y ≈
+
+˜K−1∑
+
+> q=0
+
+ωH 
+
+> q
+
+f (yq ).
+
+The rule is exact for polynomials of degree at most 2 ˜K − 1, and the nodes are the zeros of H ˜K . Define 
+
+pk(y) := Hk(y)
+
+π1/4√2kk! , Φk(y) = e−y2/2pk(y).
+
+7Thus ∫ 
+
+> R
+
+e−y2
+
+pk(y)pl(y) d y = δkl . At a fixed spatial point xi, the exact retained potential matrix and its quadrature approximation are [Uε,K (xi)] kl =
+
+∫
+
+> R
+
+e−y2
+
+Uε(xi, y )pk(y)pl(y) d y
+
+≈
+
+˜K−1∑
+
+> q=0
+
+ωH 
+
+> q
+
+Uε(xi, y q )pk(yq )pl(yq ), 0 ≤ k, l < K. 
+
+The multiplication identity in Eq. (S3) gives the symmetric tridiagonal Hermite ladder matrix 
+
+Y ˜K =
+
+˜K−2∑
+
+> k=0
+
+√ k + 1 2 (|k + 1 ⟩⟨ k| + |k⟩⟨ k + 1 |).
+
+For v(yq ) := ( p0(yq ), . . . , p ˜K−1(yq )) ⊤, the recurrence and H ˜K (yq ) = 0 give Y ˜K v(yq ) = yq v(yq ). Let S ∈ R ˜K× ˜K have entries Skq := 
+
+√
+
+ωH 
+
+> q
+
+pk(yq ). Since deg( pkpl) ≤ 2 ˜K − 2, quadrature exactness gives (SS ⊤)kl = ∑
+
+> q
+
+ωH 
+
+> q
+
+pk(yq )pl(yq ) = δkl .
+
+Consequently, 
+
+Y ˜K = S diag( y0, . . . , y ˜K−1)S⊤, Uε(xi, Y ˜K ) := S diag q [Uε(xi, y q )] S⊤.
+
+In particular, [ Uε(xi, Y ˜K )] kl = ∑ 
+
+> q
+
+ωH 
+
+> q
+
+Uε(xi, y q )pk(yq )pl(yq ). For any N ≥ K, let JK,N : CK → CN be the canonical embedding, JK,N |k⟩ = |k⟩. The retained Gauss–Hermite approximation is therefore 
+
+Uε,K (xi) ≈ J† 
+
+> K,
+
+˜K Uε(xi, Y ˜K )JK, ˜K .
+
+This matrix function equals the quadrature approximation; it need not equal the exact projected multiplication operator. For a monomial yr , however, an N -point rule is exact for all retained matrix entries whenever r + 2 K − 2 ≤ 2N − 1, equivalently N ≥ K + ⌊r/ 2⌋. Applying the same diagonalization at size N therefore gives the exact identity 
+
+Y[r] 
+
+> K
+
+= J† 
+
+> K,N
+
+YrN JK,N , N ≥ K + ⌊r/ 2⌋. (S4) The polynomial block in Eq. (S9) uses these exact moments, with an auxiliary size N large enough for each required power. This choice of N is independent of the Fourier buffer: when VF = 0, the Fourier buffer may vanish while the polynomial moments are still evaluated exactly. For the nonpolynomial Fourier contribution, tensor products of the one-dimensional construction give Jd = J⊗dK, ˜K and the finite matrix function in Eq. (S11); its difference from the exact projected operator is bounded in Eqs. (S17)–(S19). 
+
+I.C. Finite differences and potential blocks 
+
+For a banded matrix A = ∑
+
+> η
+
+∑ 
+
+> k
+
+mη (k)|k + η⟩⟨ k|, set 
+
+b(A) := ∑
+
+> η
+
+max  
+
+> k
+
+|mη (k)|. (S5) An r-step Hermite expansion has r + 1 parity-compatible net shifts and at most 2 r paths, while each ladder factor is bounded by √(K + r)/2. Hence 
+
+b(Y[r] 
+
+> K
+
+) ≤ (r + 1)2 r
+
+( K + r
+
+2
+
+)r/ 2
+
+≤ Cr Kr/ 2, b(Y[ν] 
+
+> K
+
+) ≤ C|ν|K|ν|/2. (S6) Here we use the tensor-product extension of b, for which b(A ⊗ B) = b(A)b(B). Hence C|ν| depends only on the total degree |ν|, not on d.Let IM = {0, . . . , M − 1}d index a periodic grid of spacing h on the box Ω x. For an rxth-order centered difference of half-width Lx, let 
+
+Dx,h = h−1
+
+> Lx
+
+∑
+
+> ℓ=1
+
+c(rx) 
+
+> ℓ
+
+(Sℓ 
+
+> −
+
+− Sℓ
+
+> +
+
+), λ(rx) 
+
+> x
+
+= 2 
+
+> Lx
+
+∑
+
+> ℓ=1
+
+|c(rx) 
+
+> ℓ
+
+|, Dxj ,h := I⊗(j−1)  
+
+> M
+
+⊗ Dx,h ⊗ I⊗(d−j) 
+
+> M
+
+. (S7) 8Here S±|i⟩ = |i ± 1 (mod M )⟩, c(rx) 
+
+> ℓ
+
+∈ R, and In denotes the n × n identity matrix. The centered-difference coefficients satisfy 2 ∑Lx 
+
+> ℓ=1
+
+ℓc (rx) 
+
+> ℓ
+
+= 1 and the order-rx consistency conditions, so that Dx,h approximates + ∂x. For retained indices 0 ≤ kj < K , set 
+
+Rk(t, x ) = 
+
+∫
+
+> Rd
+
+R(t, x, y )Φ k(y) d y, (ShR)i,k = hd/ 2Rk(xi).
+
+Thus ShR ∈ CM dKd
+
+, and R0 contains the sampled initial coefficients. Section III specifies the restricted and periodized initial data and the associated restriction, sampling, and normalization errors. The tensor lift is Dyj ,K =
+
+I⊗(j−1)  
+
+> K
+
+⊗ Dy,K ⊗ I⊗(d−j) 
+
+> K
+
+. Then 
+
+Htr = −
+
+> d
+
+∑
+
+> j=1
+
+Dxj ,h ⊗ Dyj ,K , b(Dy,K ) ≤ √2K. (S8) For the retained indices k, l ∈ IK , define [Uε,K (x)] kl := 
+
+∫
+
+> Rd
+
+Uε(x, y )Φ k(y)Φ l(y) d y, U ex  
+
+> ε,h,K
+
+:= ∑
+
+> i∈IM
+
+|i⟩⟨ i| ⊗ Uε,K (xi).
+
+Thus the exact semidiscrete evolution in Eq. (7) of the main text is i ∂tR = ( Htr + U ex  
+
+> ε,h,K
+
+)R.For the split V = VP + VF of the main text, with VP of fixed total degree DP, write Uε = U P 
+
+> ε
+
++ U F 
+
+> ε
+
+. The polynomial expansion in Eq. (4) of the main text gives the exact retained block 
+
+U P 
+
+> ε,h,K
+
+=
+
+> qP
+
+∑
+
+> m=0
+
+ε2m
+
+22m
+
+∑
+
+> |ν|=2 m+1
+
+Mν,V P ⊗ Y[ν]
+
+> K
+
+ν! , (S9) where Mν,V P |i⟩ = ( ∂ν VP)( xi)|i⟩ and qP = ⌊(DP − 1) /2⌋. For VP = 0, take DP = 0; all polynomial sums are empty when DP = 0. We use Γ P
+
+> m,d
+
+(Ω x) = ∑ 
+
+> |ν|=2 m+1
+
+∥∂ν VP∥L∞(Ω x) /ν !. For VF(x) = (2 π)−d ∫
+
+> Rd
+
+̂ VF(ξ)eiξ·x dξ, where ̂ VF denotes the Fourier transform, choose paired nodes ξ−q = −ξq and positive weights w−q = wq , and set aq = wq̂ VF(ξq )/(2 π)d. For a periodic potential, aq is the corresponding Fourier coefficient. Omitting the dynamically irrelevant zero mode gives 
+
+V F 
+
+> Q
+
+(x) = ∑
+
+> q∈Q
+
+aq eiξq ·x, ξq̸ = 0 , a−q = aq ,
+
+where conjugate pairing follows from the reality of VF. The Fourier weights wq are distinct from the Gauss–Hermite weights ωH 
+
+> q
+
+of Sec. I.B. With sinc z = sin( z)/z , continuously extended at z = 0, define (Yj f )( y) = yj f (y), Aq =
+
+> d
+
+∑
+
+> j=1
+
+ξq,j Yj , fε(z) = z sinc( εz/ 2) ,F full  
+
+> q,K
+
+= ι†
+
+> K
+
+fε(Aq )ιK, Eq = ∑
+
+> i
+
+eiξq ·xi |i⟩⟨ i|.
+
+The exact Fourier target for the selected quadrature is 
+
+U F,tar  
+
+> ε,h,K
+
+= i ∑
+
+> q∈Q
+
+aq Eq ⊗ F full  
+
+> q,K
+
+.
+
+Let Mg denote multiplication by g. The exact retained-sector compression of the untruncated component is 
+
+U F,ex  
+
+> ε,h,K
+
+= ∑
+
+> i∈IM
+
+|i⟩⟨ i| ⊗ ι†
+
+> K
+
+MU F 
+
+> ε(xi,·)
+
+ιK.
+
+To approximate F full  
+
+> q,K
+
+, use the enlarged size ˜K = K + Lbuf and the tensor embedding Jd = J⊗dK, ˜K : CKd
+
+→ C ˜Kd
+
+from Sec. I.B. Define 
+
+Yj, ˜K = I⊗(j−1) 
+
+˜K ⊗ Y ˜K ⊗ I⊗(d−j)
+
+˜K , Aq, ˜K = ∑
+
+> j
+
+ξq,j Yj, ˜K ,βq =
+
+√
+
+2 ˜K ∥ξq ∥1 , βmax = max  
+
+> q∈Q
+
+βq , max ∅ := 0 . (S10) Set 
+
+Ffs  
+
+> q,K
+
+:= J† 
+
+> d
+
+fε(Aq, ˜K )Jd, U F,fs  
+
+> ε,h,K
+
+:= i ∑
+
+> q∈Q
+
+aq Eq ⊗ Ffs  
+
+> q,K
+
+. (S11) 9These are the finite-section matrices in Eq. (9) of the main text. The matrix F full  
+
+> q,K
+
+is the exact projected Fourier matrix used to quantify the finite-section error. For a real odd polynomial used in quantum singular value transformation (QSVT), denoted by pq,ε , set 
+
+˜Fq,K := J† 
+
+> d
+
+βq pq,ε (Aq, ˜K /β q )Jd, U F,QSVT  
+
+> ε,h,K
+
+:= i ∑
+
+> q
+
+aq Eq ⊗ ˜Fq,K .
+
+At finite precision, paired data are generated from one representative by exact conjugation or sign reversal: ˜a−q = ˜aq ,
+
+˜ξ−q = −˜ξq , and ˜E−q = ˜E† 
+
+> q
+
+. The paired modes share a real odd QSVT polynomial and adjoint-paired circuits, so the implemented Fourier generator remains Hermitian. Alternatively, taking its Hermitian part cannot increase the operator-norm error from the exact Hermitian target. The aggregate physical operator defect from finite-precision coefficients, oracle values, and phases is denoted by ηarith .For the proof, distinguish the exact Hamiltonian, the target using selected Fourier data with exact Hermite projection, and the implemented Hamiltonian: 
+
+Hex  
+
+> ε,h,K
+
+= Htr + U P 
+
+> ε,h,K
+
++ U F,ex  
+
+> ε,h,K
+
+, Htar  
+
+> ε,h,K
+
+= Htr + U P 
+
+> ε,h,K
+
++ U F,tar  
+
+> ε,h,K
+
+, HWH = Htr + U P 
+
+> ε,h,K
+
++ U F,QSVT  
+
+> ε,h,K
+
+,ηF = ∥∥Hex  
+
+> ε,h,K
+
+− Htar 
+
+> ε,h,K
+
+∥∥ , ηsyn = ∥∥Htar  
+
+> ε,h,K
+
+− HWH 
+
+∥∥ , ηpot = ∥∥Hex  
+
+> ε,h,K
+
+− HWH 
+
+∥∥ ≤ ηF + ηsyn . (S12) Indeed, D†  
+
+> xj,h
+
+= −Dxj ,h and D†  
+
+> yj,K
+
+= −Dyj ,K , the exact Hermite moments are real symmetric, and the Fourier modes are conjugate-paired. Hence all three terms in HWH are Hermitian. Here U ex  
+
+> ε,h,K
+
+= U P 
+
+> ε,h,K
+
++ U F,ex  
+
+> ε,h,K
+
+. The intermediate target separates Fourier quadrature error from finite-section and QSVT implementation errors. For a real Weyl symbol a, set (ba)i,k = hd/ 2
+
+∫
+
+> Rd
+
+ˇa(xi, y )Φ k(y) d y, Aε(T ) = ⟨ˇa, R ε(T )⟩L2 
+
+> x,y
+
+, AWH (T ) = ⟨ba, e −iT H WH R0⟩. (S13) We write sR = ∥R0∥2 and sa = ∥ba∥2.
+
+II. Proof of Lemma 1: simulation at fixed discretization 
+
+We use the reversible polynomial-derivative, Fourier-coefficient, frequency, grid-phase, Fourier-weight, and multiplexed-QSVT-phase access assumed in Lemma 1 of the main text. Direct reversible data access and standard arithmetic prepare 
+
+|q⟩| 0⟩ 7 −→ | q⟩
+
+> d
+
+∑
+
+> j=1
+
+√
+
+|ξq,j |∥ξq ∥1
+
+|j⟩| sgn( ξq,j )⟩
+
+with O(d) controlled rotations at the selected precision; a more succinct data oracle may reduce this cost. All primitive costs are uniform in ε and enter the gate bound in Section IV. For the shifted-diagonal representation in Eq. (S5), the standard PREPARE/SELECT construction block encodes 
+
+A with normalization b(A), using one controlled modular shift and one controlled amplitude rotation per selected diagonal [23]; the tensor-product construction is identical. From Eqs. (S7), (S8), and (S6), 
+
+αtr = dλ (rx) 
+
+> x
+
+h−1b(Dy,K ) = Orx (dh −1K1/2),αPpot ≤
+
+> qP
+
+∑
+
+> m=0
+
+ε2m
+
+22m
+
+∑
+
+> |ν|=2 m+1
+
+∥∂ν VP∥L∞(Ω x)
+
+ν! b(Y[ν] 
+
+> K
+
+)= ODP
+
+( qP∑
+
+> m=0
+
+ε2mKm+1 /2ΓP
+
+> m,d
+
+(Ω x)
+
+)
+
+.
+
+By the multinomial theorem, ΓP
+
+> m,d
+
+(Ω x) ≤ d2m+1 
+
+(2 m + 1)! max  
+
+> |ν|=2 m+1
+
+∥∂ν VP∥L∞(Ω x) . (S14) For fixed DP, the number of polynomial multi-indices is Nmi ,d = ∑qP
+
+> m=0
+
+(d+2 m
+
+> 2m+1
+
+), hence polynomial in d.The linear combination of unitaries (LCU) for the shifted diagonals of Aq, ˜K has normalization βq . Set θq = εβ q /2and 
+
+gq,ε (s) = s sinc( θq s) = 
+
+{
+
+sin( θq s)/θ q , θq̸ = 0 ,s, θq = 0 , |gq,ε (s)| ≤ 1 (s ∈ [−1, 1]) .
+
+10 For 0 < η ≤ 1/4, the standard Jacobi–Anger truncation, followed by a 1 + O(η) rescaling and a constant-factor tightening of the truncation tolerance, together with the usual Bessel tail bound, yields a real odd polynomial satisfying 
+
+∥pq,ε ∥L∞[−1,1] ≤ 1, ∥pq,ε − gq,ε ∥L∞[−1,1] ≤ η, deg pq,ε = O(εβ q + log η−1). (S15) The estimate remains uniform as θq → 0, as follows directly from the power series of J2m+1 (θq )/θ q .QSVT therefore block encodes fε(Aq, ˜K )/β q with normalized error η, equivalently with physical operator error βq η
+
+[22, 23]. Finite Hermite combinations are analytic vectors for Aq , so the following entire series may be compressed termwise on ran Π K . The finite-section error follows from 
+
+fε(A) = ∑
+
+> m≥0
+
+(−1) mε2mA2m+1 
+
+22m(2 m + 1)! . (S16) Each factor of Aq changes exactly one Hermite index by ±1. A path starting and ending in IK that visits an omitted level kj ≥ ˜K = K + Lbuf must contain at least Lbuf + 1 raising and Lbuf + 1 lowering steps in the same coordinate. Hence no odd path of degree r ≤ 2Lbuf + 1 detects the boundary, and the first possibly different odd power is R := 2 Lbuf + 3: 
+
+ι†
+
+> K
+
+Arq ιK = J† 
+
+> d
+
+Arq, ˜K Jd, r = 1 , 3, . . . , 2Lbuf + 1 . (S17) The ladder bounds ∥∥Arq ΠK
+
+∥∥ ≤ [∥ξq ∥1
+
+√2( K + r)] r ,
+
+∥∥∥Aq, ˜K
+
+∥∥∥ ≤ βq
+
+and Eq. (S16) yield 
+
+δfs  
+
+> q,K
+
+:= ∥∥F full  
+
+> q,K
+
+− Ffs 
+
+> q,K
+
+∥∥ ≤ ∑ 
+
+> r=2 m+1 >2Lbuf +1
+
+εr−1
+
+2r−1r!
+
+(
+
+[∥ξq ∥1
+
+√2( K + r)] r + βrq
+
+)
+
+. (S18) Write B = ∥ξq ∥1, R = 2 Lbuf + 3, and denote the two summands in Eq. (S18) by ur and vr . For odd r ≥ R, direct division gives max 
+
+{ ur+2 
+
+ur
+
+, vr+2 
+
+vr
+
+}
+
+≤ Cε 2B2 K + rr2 .
+
+Thus R ≥ C0(ε2B2 + εB √K), with C0 sufficiently large, makes both ratios at most a universal ρ < 1. Stirling’s inequality bounds the first tail terms by C(1 + B√K)e−cR ; summing the two geometric odd tails gives 
+
+δfs  
+
+> q,K
+
+≤ uR + vR
+
+1 − ρ ≤ C(1 + B√K)e−cL buf if Lbuf ≥ C(ε2B2 + εB √K).
+
+Here C, c, C 0, ρ are independent of d, q, K, ε ; the dimension enters only through B = ∥ξq ∥1. Consequently, for 0 < η fs ,q ≤ 1, a convenient sufficient condition is 
+
+Lbuf ≥ C
+
+[
+
+ε ∥ξq ∥1
+
+√K + Lbuf + log 1 + ∥ξq ∥1
+
+√Kηfs ,q 
+
+]
+
+.
+
+Using 2 ab ≤ a2 + b2 to solve for Lbuf yields 
+
+Lbuf ≥ C
+
+[
+
+ε2 ∥ξq ∥21 + ε ∥ξq ∥1
+
+√K + log 1 + ∥ξq ∥1
+
+√Kηfs ,q 
+
+]
+
+=⇒ δfs  
+
+> q,K
+
+≤ ηfs ,q . (S19) If the selected set Q is empty after zero-weight modes are discarded, we omit the Fourier block and set A0 = αFpot =
+
+βmax = nF = 0. Otherwise A0 > 0, and for target budgets ηfs , η QSVT > 0, let 
+
+A0 = ∑
+
+> q∈Q
+
+|aq |, ηfs = min 
+
+{ 14 , ηfs 
+
+A0
+
+}
+
+, ηfs ,q = ηfs .
+
+A common buffer satisfying Eq. (S19) for every mode then gives 
+
+∑
+
+> q
+
+|aq |δfs  
+
+> q,K
+
+≤ A0ηfs ≤ ηfs .αFpot = ∑
+
+> q∈Q
+
+|aq |βq =
+
+√
+
+2 ˜K V1,Q, V1,Q := ∑
+
+> q
+
+|aq | ∥ ξq ∥1 . (S20) 11 The outer Fourier LCU then prepares PREPARE F |0⟩ = 1
+
+√
+
+αFpot 
+
+∑
+
+> q∈Q
+
+√
+
+|aq |βq |q⟩.
+
+SELECT applies the coefficient phase, Eq , the global factor i, and the mode-multiplexed QSVT sequence. For a common QSVT tolerance η,
+
+∥∥∥F full  
+
+> q,K
+
+− ˜Fq,K 
+
+∥∥∥ ≤ δfs  
+
+> q,K
+
++ βq η + δarith  
+
+> q
+
+, ∑
+
+> q
+
+|aq |δfs  
+
+> q,K
+
+≤ ηfs , ∑
+
+> q
+
+|aq |δarith  
+
+> q
+
+≤ ηarith , η = min 
+
+{
+
+14 , ηQSVT 
+
+αFpot 
+
+}
+
+.
+
+Here δarith  
+
+> q
+
+includes finite-precision errors in the modewise QSVT phases, Fourier coefficients and frequencies, coordinate block encodings, and grid phases. The primitive precisions are tightened according to the relevant QSVT degree so that robust QSVT error propagation places their weighted sum within the aggregate physical operator budget ηarith .Consequently ηsyn ≤ ηfs + ηQSVT + ηarith , and Eq. (S12) gives 
+
+ηpot ≤ ηF + ηfs + ηQSVT + ηarith .
+
+Here ηarith belongs to the selected potential-generator approximation, whereas the later ηBE denotes only a further full-Hamiltonian block-encoding defect. For an aggregate potential-generator budget δpot , take 
+
+ηF, η fs , η QSVT , η arith = O(δpot ), ηQSVT = Θ( δpot ).
+
+The fixed allocation constants are chosen so that ηpot ≤ δpot . Thus a single outer LCU, in which the transport contribution is included once, has normalization 
+
+αWH (ε; h, K, Q, L buf ) = Orx,D P
+
+(
+
+dh −1K1/2 +
+
+> qP
+
+∑
+
+> m=0
+
+ε2mKm+1 /2ΓP
+
+> m,d
+
+(Ω x) + 
+
+√ ˜K V1,Q
+
+)
+
+. (S21) For fixed h, K, Q, L buf and the selected QSVT polynomials, let δsim be the simulation tolerance and ηQSP the quantum signal processing (QSP) error. If a finite-precision block encoding represents a Hermitian ˜HWH with physical operator defect 
+
+∥∥∥ ˜HWH − HWH 
+
+∥∥∥ ≤ ηBE , choose 
+
+ηQSP = 12 δsim , T η BE ≤ 12 δsim .
+
+Duhamel’s identity then bounds the total implemented-evolution error by δsim , and qubitization uses 
+
+Nsim = ˜O(T α WH (ε; h, K, Q, L buf ) + log δ−1sim 
+
+) (S22) full-Hamiltonian block queries [22, 25]. When αFpot > 0, one Fourier query invokes 
+
+nF = O
+
+(
+
+1 + εβ max + log 
+
+[
+
+1 + αFpot 
+
+δpot 
+
+]) 
+
+(S23) coordinate-block queries. Equations (S21)–(S23) prove Lemma 1, including the empty-Fourier case handled above. 
+
+III. Proof of Lemma 2: uniform parameter selection 
+
+Proof map and assumptions.— For the same observable, let Aε
+
+> box
+
+(T ), AεK (T ), and Aex  
+
+> ε,h,K
+
+(T ) denote its time-T values for the restricted–periodized, Hermite–Galerkin, and exact semidiscrete evolutions, respectively, and let ˜A(T ) be the final quantum estimate. The complete proof follows the chain 
+
+Aε(T ) −→ Aε
+
+> box
+
+(T ) −→ AεK (T ) −→ Aex  
+
+> ε,h,K
+
+(T ) −→ AWH (T ) −→ ˜A(T ). (S24) All continuum pairings in the first two arrows use the restricted observable. Moreover, RεK (0) = Π K Rε
+
+> box
+
+(0) and 
+
+R0 = ShRεK (0). The within-box difference between the continuum pairing defining AεK (T ) and the sampled pairing defining Aex  
+
+> ε,h,K
+
+(T ), including sampling, quadrature, and normalization, is assigned to δio ,d,δ below. The arrows represent, in order, restriction and periodization, Hermite truncation, spatial discretization, potential synthesis, and Hamiltonian simulation with readout. This section controls the deterministic arrows through AWH ; Section IV controls the last one. For fixed d, all analytic and data assumptions below are uniform in 0 < ε ≤ 1, but their constants need not be uniform in d. The polynomial-in-d statement additionally requires the listed parameters and reversible access and preparation costs to be polynomial in d.12 For X = Rd or an accuracy-selected periodic box Ω x,δ , define 
+
+N (d) 
+
+> m, X
+
+[F ] := ∑
+
+> α,β,γ,ζ ∈Nd
+> 0
+> |α|+|β|+|γ|+|ζ|≤ m
+
+∥∥xα∂βx yγ ∂ζy F ∥∥L2(X × Rdy ) , N (d) 
+
+> m
+
+:= N (d) 
+
+> m, Rd
+
+. (S25) Let Lε = i ∇x · ∇ y − iUε. Fix p ∈ N with p ≥ 1 and 2 p ≥ rx, set m∗ = 2 p + max {2, D P − 1}, and assume 
+
+VF ∈ W m∗+1 ,∞(Rd) together with 
+
+N(d) 
+
+> m∗,T
+
+:= sup 
+
+> 0<ε ≤10≤t≤T
+
+N (d) 
+
+> m∗
+
+[Rε(t)] < ∞. (S26) The same bound is assumed for the periodized solutions on the selected boxes; its supremum over 0 < δ < 1, 0 < ε ≤ 1, and 0 ≤ t ≤ T is denoted by N(d)
+
+> m∗,T, box
+
+. Reference [21] proves the corresponding propagation result in the one-dimensional subquadratic setting; for d > 1, both the bound and its dependence on d remain explicit hypotheses. Here Rε 
+
+> box
+
+solves the selected periodic-box equation with restricted–periodized initial data. On one fundamental box we first form U P 
+
+> ε
+
++ U F 
+
+> ε
+
+and then periodically extend the resulting real multiplication coefficient; we do not smoothly periodize VP. Thus the polynomial expansion in Eq. (4) of the main text and the Fourier split remain exact on the box. We assume that this periodic-box realization is well posed on a common invariant domain, that its generator Lε is skew-adjoint, and that its solutions satisfy the periodic Sobolev compatibility required by the sampling and stencil estimates below. We assume the standard observable-level domain estimate sup 0<ε ≤1 |Aε
+
+> box
+
+(T ) − Aε(T )| ≤ δdom ,d,δ ≤ cdom δ, including the induced initial-data and readout restriction errors; no dimension-uniform localization theorem is invoked. We record the only nonstandard point in the Hermite estimate. With Λ y = −∆y + |y|2 and QK = I − ΠK , Parseval gives ∥∥Λry QK F ∥∥2 ≤ (2 K + d)−(s−r) ∥∥Λsy F ∥∥2 , 0 ≤ r ≤ s, r, s ∈ R. (S27) The oscillator graph norm and the ladder identities imply, for Zj ∈ { yj , ∂ yj },
+
+∥ΠK Zj QK F ∥2 ≤ CpK−(p−1/2) ∥∥Λpy F ∥∥2 . (S28) More generally, if r = |ν| ≥ 1 is odd, then 
+
+∥ΠK yν QK F ∥2 ≤ Cr K−(p−1/2) 
+
+∥∥∥Λp+( r−1) /2 
+
+> y
+
+F
+
+∥∥∥2
+
+. (S29) Indeed, ∥yν G∥2 ≤ Cr
+
+∥∥∥Λr/ 2 
+
+> y
+
+G
+
+∥∥∥2
+
+, and Eq. (S27) applied to G = QK F supplies the remaining factor. The constants are independent of d for fixed r; all multi-index multiplicities are retained below. Define the Hermite–Galerkin approximation of this box solution by 
+
+∂tRεK = Π K LεΠK RεK , RεK (0) = Π K Rε
+
+> box
+
+(0) .
+
+For the error eK = RεK − ΠK Rε
+
+> box
+
+, skew-adjointness gives ddt ∥eK ∥2 ≤ ∥ ΠK LεQK Rε
+
+> box
+
+∥2 .
+
+Write VP(x) = ∑ 
+
+> |α|≤ DP
+
+vαxα, CP,d := ∑ 
+
+> α
+
+|vα|, and C(1) F,d := ∥∇ VF∥L∞(Rd;ℓ2). For any F in the displayed graph norms, let Rtr , RP, and RF denote the L2 norms of the transport, polynomial-potential, and Fourier-potential contributions to Π K LεQK F , respectively. The polynomial expansion in Eq. (4) of the main text, together with Eqs. (S28) and (S29), gives 
+
+Rtr ≤ CpK−(p−1/2) 
+
+> d
+
+∑
+
+> j=1
+
+∥∥Λpy ∂xj F ∥∥2 , RP ≤ Cp,D P CP,d K−(p−1/2) N (d) 
+
+> m∗,Ωx,δ
+
+[F ].
+
+An odd monomial of degree r requires weighted y-regularity of order 2 p + r − 1 and a coefficient of degree at most 
+
+DP − r; the total is at most m∗. Moreover, ∑
+
+> |ν|=r, ν ≤α
+
+(αν
+
+) = (|α|
+
+> r
+
+), so no additional d-dependent combinatorial constant is hidden here. For the Fourier part, the full integral representation, without Taylor expansion, gives 
+
+|U F 
+
+> ε
+
+(x, y )| ≤ | y|C (1) F,d . Hence 
+
+RF := ∥∥ΠK U F 
+
+> ε
+
+QK F ∥∥2 ≤ C (1) F,d K−(p−1/2) ∥∥Λpy F ∥∥2 ,
+
+uniformly in ε. Consequently, 
+
+∥ΠK LεQK Rε
+
+> box
+
+∥2 ≤ Cp,D P
+
+(1 + CP,d + C(1) F,d 
+
+)K−(p−1/2) N (d) 
+
+> m∗,Ωx,δ
+
+[Rε
+
+> box
+
+],
+
+13 where, for fixed p, D P, the constant Cp,D P is independent of d, ε, K, δ . Time integration, followed by the tail estimate (S27) for QK Rε
+
+> box
+
+, gives sup 
+
+> 0<ε ≤10≤t≤T
+
+∥Rε
+
+> box
+
+(t) − RεK (t)∥2 ≤ CHG ,d K−(p−1/2) , (S30) where 
+
+CHG ,d = Cp,D P
+
+[
+
+1 + T (1 + CP,d + C(1) F,d 
+
+)]
+
+N(d)
+
+> m∗,T, box
+
+is independent of ε, K, δ . Its dependence on d is displayed through the potential data and the regularity norm. For the spatial grid, take sx(d) = ⌊d/ 2⌋ + 1, set 
+
+Hsx(d) 
+
+> x
+
+L2 
+
+> y
+
+:= Hsx(d)per (Ω x,δ ; L2(Rdy )) ,
+
+and let Cst ,d,δ be the associated vector-valued sampling and stencil constant. At the cutoff Kd,δ selected in Eq. (S32) below, define 
+
+Gd,δ := sup 
+
+> 0<ε ≤10≤t≤Td
+
+∑
+
+> j=1
+
+∥∥∥∂rx+1  
+
+> xj
+
+∂yj RεKd,δ (t)
+
+∥∥∥Hsx (d) 
+
+> xL2
+> y
+
+.
+
+We assume Gd,δ < ∞ for each fixed d, δ , uniformly for 0 < ε ≤ 1. This is an additional spatial-regularity assumption: Eq. (S26) alone does not imply it when sx(d) increases with d. For the polynomial-in-d conclusion, we additionally assume that Cst ,d,δ Gd,δ grows at most polynomially in d at fixed δ. Let Rex  
+
+> ε,h,K
+
+be the exact sampled semidiscrete evolution initialized by ShRεK (0), and set eh = ShRεKd,δ − Rex  
+
+> ε,h,K d,δ
+
+. Let Lex  
+
+> ε,h,K
+
+:= −iHex  
+
+> ε,h,K
+
+. Then eh(0) = 0 and 
+
+∂teh = Lex  
+
+> ε,h,K
+
+eh + τh, τh := ∂t(ShRεK ) − L ex  
+
+> ε,h,K
+
+ShRεK ,
+
+where the order-rx stencil consistency and the vector-valued sampling bound give ∥τh∥2 ≤ Cst ,d,δ Gd,δ hrx . Since 
+
+Lex  
+
+> ε,h,K
+
+is skew-Hermitian, the energy estimate and time integration give sup 
+
+> t≤T
+
+∥eh(t)∥2 ≤ Cst ,d,δ T Gd,δ hrx . (S31) Under the main text’s assumption that the absolute zeroth and first Fourier moments are finite, define the weighted first-moment tail 
+
+TF,d (Ξ) = 
+
+
+
+(2 π)−d
+
+∫
+
+> ∥ξ∥∞>Ξ
+
+∥ξ∥1 |̂ VF(ξ)|dξ, Fourier integral ,
+
+∑ 
+
+> ∥ξq∥∞>Ξ
+
+|aq | ∥ ξq ∥1 , periodic series .
+
+With Aξ = ξ · y, since |z sinc( εz/ 2) | ≤ | z| and ∥yj ΠK ∥ ≤ √2K,
+
+∥A ξ sinc( εAξ /2)Π K ∥ ≤ √2K ∥ξ∥1 , ηF ≤ √2K TF,d (Ξ) + ηF,quad .
+
+Here ηF,quad is a uniform upper bound, over 0 < ε ≤ 1 and all grid points, on the retained-sector operator-norm defect of the in-band positive-weight Fourier quadrature. For a periodic series it includes any modes omitted inside the chosen band. Under the O(1) input–readout assumption stated in the main text, the following bounds can be chosen uniformly in 
+
+d; we retain their possible d-dependence to make the resource accounting explicit. Assume known bounds independent of ε and of the selected discretization, sR ≤ SR,d and sa ≤ Sa,d along the selected family, and set 
+
+Sd := max {1, S R,d Sa,d , S a,d , ∥ˇa∥2}
+
+and fix 0 < c K , c F < 1. We assume that the positive-weight Fourier quadrature (or periodic-series truncation) can be selected to satisfy the tail and in-band quadrature bounds below, with stable absolute weights as in Eq. (S34). Finiteness of the Fourier moments guarantees only the existence of a tail cutoff for each fixed d; the in-band quadrature property remains an assumption, and neither statement by itself implies polynomial dependence on d. For the polynomial-in-d resource conclusion, we therefore additionally assume that, at each fixed δ, the selected bandwidth Ξd,δ , mode count, quadrature and reversible-access costs, and input–output mesh threshold grow at most polynomially in d. Select 
+
+Kd,δ := min {K ≥ 1 : CHG ,d ∥ˇa∥2 K−(p−1/2) ≤ cK δ}, (S32) 
+
+√2Kd,δ TF,d (Ξ d,δ ) ≤ cF
+
+δT Sd
+
+, ηF,quad = O
+
+( δT Sd
+
+)
+
+.
+
+14 In particular, 
+
+Kd,δ = O
+
+[(
+
+1 + CHG ,d ∥ˇa∥2
+
+δ
+
+)1/(p−1/2) ]
+
+. (S33) For the selected quadrature, define 
+
+NQ,d,δ := |Q d,δ |, A0,d,δ := ∑
+
+> q
+
+|aq |,
+
+V1,d,δ := ∑
+
+> q
+
+|aq | ∥ ξq ∥1 , A0,d,δ + V1,d,δ ≤ CV,d .Bd,δ := max  
+
+> q
+
+∥ξq ∥1 , Bd,δ ≤ dΞd,δ . (S34) The stability constant CV,d is independent of δ and ε. Using Eq. (S19) at ε = 1, with aggregate physical operator tolerance O(δ/ (T Sd)), gives 
+
+Lbuf ,d,δ = O
+
+(
+
+B2 
+
+> d,δ
+
++ Bd,δ 
+
+√Kd,δ + log 
+
+[
+
+1 + T Sd max {1, C V,d }(1 + Bd,δ 
+
+√Kd,δ )
+
+δ
+
+] )
+
+. (S35) Thus the first two buffer terms are, in the worst case, O(d2Ξ2 
+
+> d,δ
+
++dΞd,δ 
+
+√Kd,δ ). Set ˜Kd,δ = Kd,δ +Lbuf ,d,δ . Substituting Eqs. (S10) and (S20) into Eq. (S23) with δpot = Θ( δ/ (T Sd)) gives 
+
+nF,d,δ = O
+
+1 + 
+
+√˜Kd,δ Bd,δ + log 
+
+1 + T Sd
+
+√ ˜Kd,δ V1,d,δ 
+
+δ
+
+ . (S36) This is a uniform upper bound on the maximal degree for 0 < ε ≤ 1; the instance-dependent degree replaces 
+
+√ ˜Kd,δ Bd,δ 
+
+by ε
+
+√ ˜Kd,δ Bd,δ .Let κio ,d,δ be the inverse-mesh threshold for input, normalization, and observable quadrature. We assume their aggregate observable-level error, including normalization factors, satisfies δio ,d,δ ≤ cio δ whenever h−1 ≥ κio ,d,δ .Section V illustrates this assumption for the factorized Gaussian input and smooth readout used in the main text. For more general structured inputs and readouts, the existence and stated scaling of this threshold are explicit assumptions. The mesh choice 
+
+h−1 
+
+> d,δ
+
+≍ max 
+
+{
+
+1,
+
+( T S a,d Cst ,d,δ Gd,δ 
+
+δ
+
+)1/r x
+
+, Ξd,δ , κ io ,d,δ 
+
+}
+
+(S37) controls the stencil error and prevents Fourier aliasing. Choose the QSVT and finite-precision arithmetic tolerances so that 
+
+ηpot = O
+
+( δT Sd
+
+)
+
+.
+
+The finite-section, QSVT, Fourier quadrature, and arithmetic defects enter this single operator budget. Applying the triangle inequality along the deterministic part of Eq. (S24), followed by Duhamel’s identity, Eqs. (S31) and (S30), and the domain and input–output assumptions above give the deterministic error bound sup 
+
+> 0<ε ≤1
+
+|AWH (T ) − Aε(T )| ≤ sasRT η pot + saCst ,d,δ T Gd,δ hrx
+
+> d,δ
+
++ ∥ˇa∥2 CHG ,d K−(p−1/2)  
+
+> d,δ
+
++ δio ,d,δ + δdom ,d,δ = O(δ). (S38) Here the last two terms contain the standard sampling, quadrature, restriction, and periodization errors allocated above. When VF = 0, take NQ,d,δ = Bd,δ = Ξ d,δ = Lbuf ,d,δ = CV,d = 0. This proves Lemma 2. 
+
+IV. Proof of Theorem 1: uniform observable complexity 
+
+Together with Eq. (S24), the final decomposition | ˜A(T ) − Aε(T )| ≤ | ˜A(T ) − AWH (T )| + |AWH (T ) − Aε(T )| shows that Eq. (S38) leaves only the normalized-state preparation, Hamiltonian-simulation, and overlap-estimation errors to allocate. Set Λd,δ := max {1, s Rsa/δ }.
+
+15 If sRsa = 0, return ˜A(T ) = 0; the deterministic bound in Eq. (S38) still controls its error from the continuum target. Otherwise, the preparation oracles of the main text are 
+
+OR|0⟩ = R0
+
+sR
+
+, Oa|0⟩ = ba
+
+sa
+
+.
+
+Estimate the normalized overlap 
+
+μ := 
+
+〈 ba
+
+sa
+
+, e −iT H WH R0
+
+sR
+
+〉
+
+, ˜A(T ) := sasR ˜μ, 
+
+where ˜μ is the overlap estimate. Allocate the normalized input-state, observable-state, Hamiltonian-simulation, and overlap-estimation errors so that their sum is O(Λ −1 
+
+> d,δ
+
+). After rescaling the normalized overlap, their contribution is at most O(sRsa/Λd,δ ) = O(δ); combining this with Eq. (S38) proves the end-to-end error statement. Evaluate the normalization in Eq. (S21) at the parameters chosen in Section III: 
+
+αWH ,d (ε; δ) := αWH (ε; hd,δ , K d,δ , Qd,δ , L buf ,d,δ ).
+
+The derivative estimate (S14) applies on Ω x,δ . Amplitude estimation and qubitized Hamiltonian simulation therefore use 
+
+NH = ˜O[Λ d,δ {T α WH ,d (ε; δ) + log(1 + Λ d,δ )}] ,Ncoord = O(NH nF,d,δ ) , Nprep = O(Λ d,δ ), (S39) with constant success probability [27]. To turn these oracle queries into an end-to-end gate bound, let Cout ,d,δ be the cost of the outer trans-port/polynomial/Fourier PREPARE–SELECT operations and let Cmode ,d,δ be the cost of one coordinate block and its mode-dependent arithmetic. If CR, Ca are the two state-preparation costs, then 
+
+Gtot = ˜O(NH [Cout ,d,δ + nF,d,δ Cmode ,d,δ ] + Λ d,δ (CR + Ca)) . (S40) Let ℓd,δ be the per-coordinate side length of the selected periodic box and define the corresponding grid size by Md,δ := ⌈ℓd,δ /h d,δ ⌉, with the usual harmless adjustment so that the periodic mesh closes. For the number 
+
+PDP,d = ∑qP
+
+> m=0
+
+(2d+2 m
+
+> 2m+1
+
+) of polynomial shifted-diagonal LCU labels (using ∑
+
+> |ν|=r
+
+∏ 
+
+> j
+
+(νj + 1) = (2d+r−1
+
+> r
+
+)), the working-register size is 
+
+nwork = O
+
+(
+
+d log Md,δ + d log ˜Kd,δ + log(1 + NQ,d,δ ) + log(1 + PDP,d )+ log(1 + nF,d,δ ) + log(1 + Λ d,δ ) + bd,δ + waccess ,d,δ 
+
+)
+
+, (S41) where bd,δ is sufficient for potential-generator precision O(δ/ (T Sd)) and full-Hamiltonian block-encoding precision ηBE 
+
+with T η BE = O(Λ −1 
+
+> d,δ
+
+). The costs CR, Ca target state-preparation error O(Λ −1 
+
+> d,δ
+
+), and waccess ,d,δ is the largest reversible workspace of all data-access, PREPARE–SELECT, QSVT-phase, and state-preparation oracles. Externally stored oracle data are not included. For fixed T, δ, p, r x, D P, these formulas are polynomial in d if the derived constants and parameters themselves—in particular CHG ,d , Cst ,d,δ , Gd,δ , κio ,d,δ , SR,d , Sa,d , Ξ d,δ , CV,d , NQ,d,δ , Md,δ , the displayed polynomial-derivative bounds, and all PREPARE, SELECT, phase, arithmetic, workspace, and state-preparation costs—grow at most polynomially in 
+
+d. This excludes a hidden O(NQ,d,δ ) table-loading cost unless NQ,d,δ is itself polynomial. Without these assumptions, Eq. (S39) is an oracle-query bound only. Finally, the instance-dependent Fourier degree and the normalization bound (S21) contain only nonnegative powers of ε, while Eq. (S36) and every selected parameter are uniform for 0 < ε ≤ 1. This proves Theorem 1. 
+
+V. Inputs and observables V.A. A positive uniformly regular input family 
+
+Fix σ > 1/2, x0, p 0 ∈ Rd, and define 
+
+ψεx0,p (X) = (2 πσ 2)−d/ 4e−| X−x0|2/(4 σ2)eip·X/ε ,τ 2 
+
+> ε
+
+= 1 − ε2
+
+4σ2 > 0, Gε(p) = (2 πτ 2 
+
+> ε
+
+)−d/ 2e−| p−p0|2/(2 τ 2 
+
+> ε)
+
+,̂
+
+ρ ε 
+
+> 0
+
+=
+
+∫
+
+> Rd
+
+Gε(p)|ψεx0,p ⟩⟨ ψεx0,p | dp. (S42) The choice σ > 1/2 ensures, uniformly for 0 < ε ≤ 1, 0 < c σ := 1 − 14σ2 ≤ τ 2 
+
+> ε
+
+≤ 1, ∥∥ψεx0,p 
+
+∥∥2 = 1 ,
+
+∫
+
+> Rd
+
+Gε(p) d p = 1 .
+
+16 Indeed, 
+
+⟨f, ̂ρ ε
+
+> 0
+
+f ⟩ =
+
+∫
+
+Gε(p)|⟨ ψεx0,p , f ⟩| 2 dp ≥ 0, Tr ̂ρ ε 
+
+> 0
+
+=
+
+∫
+
+Gε(p) d p = 1 .
+
+Substituting X = x + εy/ 2 and Y = x − εy/ 2 into the kernel of Eq. (S42) and evaluating the Gaussian momentum integral gives 
+
+Rε
+
+> 0
+
+(x, y ) = (2 πσ 2)−d/ 2e−| x−x0|2/(2 σ2)−| y|2/2+i p0·y .
+
+Thus Rε 
+
+> 0
+
+is independent of ε and 
+
+∥Rε
+
+> 0
+
+∥2 = (2 σ)−d/ 2, N (d) 
+
+> m
+
+[Rε
+
+> 0
+
+] < ∞ (m ≥ 0) . (S43) Since X − Y = εy , its O(1) y-width is an O(ε) coherence length in the original density kernel. For p0 = 0, Rε 
+
+> 0
+
+∝ e−| x−x0|2/(2 σ2)Φ0(y). Hence 
+
+s2 
+
+> R
+
+= hd ∑
+
+> i
+
+|R0(xi)|2 = ∥Rε
+
+> 0
+
+∥22 + O(δ) = O(1) .
+
+The amplitudes factor over coordinates. Grover–Rudolph conditional rotations, with reversibly computed Gaussian interval masses, prepare the normalized state with cost 
+
+CR = O(d poly(log M, log K, log( d/δ ))) ,
+
+uniformly in ε [28]. The mesh threshold κio ,d,δ absorbs the difference between cell-mass and point-sampled states. A uniform L2-norm bound is not automatic: Eq. (S1) gives 
+
+∥Rε∥22 = ε−d Tr[( ̂ρ ε)2].
+
+A trace-one pure-state family extending to ε → 0 therefore has ∥Rε∥2 = ε−d/ 2, whereas Eq. (S42) has purity ( ε/ (2 σ)) d
+
+and the uniform norm in Eq. (S43). This family verifies the uniform initial L2-norm bound, initial regularity, and structured-preparation assumptions. The propagated bound in Eq. (S26) remains the dynamical hypothesis of Lemma 2. 
+
+V.B. Smooth readout 
+
+We use the observable vector ba and pairing defined in Eq. (S13), with preparation and overlap estimation as in Sec. IV. For σa > 0, choose Ca = ( πσ 2
+
+> a
+
+)−d/ 4 and let ˇ a(x, y ) = Cae−| x−xa|2/(2 σ2 
+
+> a
+
+)Φ 0(y). Then 
+
+s2 
+
+> a
+
+= hd ∑
+
+> i
+
+|Cae−| xi−xa|2/(2 σ2
+
+> a)
+
+|2 = 1 + O(δ) = O(1) ,
+
+and the same factorized preparation gives Ca = O(d poly(log M, log K, log( d/δ ))). Local mass, momentum, and kinetic-energy densities obtained from Rε(x, 0) and its y-derivatives require additional trace regularity. Theorem 1 concerns fixed smooth L2 
+
+> x,y
+
+windows. 
+
+VI. Independent-reference numerical validation 
+
+The benchmark uses d = 1, x ∈ [−6, 6), T = 2, and 
+
+V (x) = 1 .5 ∑
+
+> m∈Z
+
+exp[ −(x + 12 m)2/(2(0 .7) 2)] .
+
+Let Gσ (x − xc) = ∑ 
+
+> m∈Z
+
+e−(x−xc+12 m)2/(2 σ2). The normalized input and detector are 
+
+R0(x, y ) = C0G0.7(x + 2 .5) e−y2/2+i1 .6y ,
+
+ˇa(x, y ) = CaG0.8(x − 1) e−y2/2+i1 .4y , ∥R0∥2 = ∥ˇa∥2 = 1 .
+
+This is an L2 
+
+> x,y
+
+normalization used for numerical conditioning. Rescaling R0 to unit trace would rescale the linear observable and all reported errors by the same ε-independent constant and would not change the convergence conclusions. The Weyl–Hermite calculation uses a periodic M -point grid, a fourth-order skew-Hermitian stencil, K
+
+Hermite modes, paired Fourier modes 0 < |q| ≤ Q, and exact projected finite-ε sinc blocks; its matrix exponential is applied by a Krylov routine, so it has no time-stepping error. The independent reference solves the Weyl equation on a uniform ( x, y ) grid with Fourier pseudospectral derivatives, pointwise Uε (using a cancellation-free Gaussian expression for small ε), and fourth-order Yoshida splitting. Its finest parameters are (Nx, N y , Y, ∆t, N img ) = (384 , 512 , 16 , 0.0025 , 4) .
+
+17 Here y ∈ [−Y, Y ), ∆ t is the splitting time step, and Nimg is the periodic-image cutoff used to evaluate the Gaussian sums. The benchmark tests the Weyl–Hermite discretization with exact projected finite-ε sinc blocks. The finite-section, QSVT, and arithmetic implementation errors are controlled analytically in Sections II and III, rather than simulated as quantum circuits in this benchmark. Define 
+
+Eobs (M, K, Q ; ε) = |AεM,K,Q (T ) − Aε
+
+ref (T )|, δobs = 10 −5.
+
+Joint refinement from (64 , 12 , 6) to (256 , 36 , 16) reduces Eobs from 1 .22 × 10 −3–3 .95 × 10 −3 to 1 .05 × 10 −7–6 .81 × 10 −7
+
+at ε = 1 , 10 −1, 10 −4. With the final choice fixed, max 
+
+ε∈{ 1,0.3,0.1,0.03 ,0.01 ,
+
+0.003 ,0.001 ,0.0003 ,0.0001 }
+
+Eobs = 6 .8126 × 10 −7 < 6.82 × 10 −7 < δ obs .
+
+One-at-a-time enrichments of M, K, Q change the observable by at most 2 .333 × 10 −7, 1 .315 × 10 −6, and 2 .855 × 10 −11 ,respectively; the largest one-at-a-time reference change is 8 .401 × 10 −8. These one-at-a-time changes are convergence diagnostics and are not added to the raw difference Eobs .10 −4 
+
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> ε
+> 10 −16
+> 10 −14
+> 10 −12
+> 10 −10
+> 10 −8
+> |Aj − Aref |
+
+(a) Separate reference component checks 
+
+> Nx
+> Ny
+> dt Y
+> images
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> ε
+> 10 −13
+> 10 −12
+> 10 −11
+> 10 −10
+> 10 −9
+> 10 −8
+> 10 −7
+> 10 −6
+> |Aenriched  − AM, K, Q|
+
+(b) One-at-a-time final-corner refinement    
+
+> increase M
+> increase K
+> increase Q
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> ε
+> 10 −8
+> 10 −7
+> 10 −6
+> 10 −5
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> boundary diagnostic
+
+(c) Finest-reference y-box check 
+
+> boundary mass fraction boundary amplitude ratio
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> ε
+> 10 −18
+> 10 −17
+> 10 −16
+> 10 −15
+> 10 −14
+> 10 −13
+> diagnostic
+
+(d) Algebraic and evolution checks    
+
+> |Im AM,K,Q|Hermiticity defect WH norm drift reference norm drift
+
+Figure S1: One-at-a-time audit of the independent reference and the final Weyl–Hermite choice ( M, K, Q ) = (256 , 36 , 16). State-level diagnostics are not used as an error bar for Eobs .18

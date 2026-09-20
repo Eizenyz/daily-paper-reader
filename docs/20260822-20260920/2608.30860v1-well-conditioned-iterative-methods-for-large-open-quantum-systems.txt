@@ -1,0 +1,1424 @@
+Title: Well-conditioned iterative methods for large open quantum systems
+
+URL Source: https://arxiv.org/pdf/2608.30860v1
+
+Published Time: Tue, 01 Sep 2026 02:47:15 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+# Well-conditioned iterative methods for large open quantum systems 
+
+## Gaspard Beugnot ‗1 , Paul Gregory †1 , Rémi Robin ‡2 , and Antoine Tilloy §2 1Alice & Bob, Paris, France 
+
+2Laboratoire de Physique de l’École Normale Supérieure, Mines Paris, Inria, CNRS, ENS-PSL, Sorbonne Université, PSL Research University, Paris, France 
+
+Abstract 
+
+Markovian open quantum systems are well modeled by the Lindblad Master Equation (ME)  
+
+> ddt
+
+ρt = Lρt, where L is a linear (super-)operator and ρt is the system state, a positive matrix. When designing or characterizing a quantum system, one is usually interested in the steady state 
+
+ρ∞ (such that Lρ∞ = 0), the first few excited states, and trajectories t 7 → ρt. In finite dimension, 
+
+ρt is an n × n matrix, L thus typically costs n4 to store explicitly as a dense matrix, and O(n6)
+
+to diagonalize or invert exactly, making standard linear algebraic techniques expensive for large systems. However, L usually costs only O(n3) to apply. This makes iterative methods appealing, but they do not work without a good preconditioner. In this article, our main observation is that a part of the Lindblad equation, corresponding to the so-called no-jump evolution S, can be inverted efficiently. Using this inverse map, we introduce an auxiliary completely positive trace-preserving (CPTP) map Φ whose fixed point is directly related to ρ∞, all the other eigenvalues having smaller magnitude. The map Φ is thus well suited to iterative methods, and ρ∞ can be found in a few Arnoldi iterations. Using the same inverse map S−1 as preconditioner, we compute the low-lying spectrum efficiently via shift-invert Arnoldi, and, as a proof of concept, build an implicit time integrator that is competitive on stiff systems in the low-precision regime. For the steady-state and low excited states problems, our methods scale like O(n3) per iteration and offer state-of-the-art performance on CPU and GPU. 
+
+1 Introduction 1.1 Motivations and scope of the paper 
+
+The Gorini–Kossakowski–Sudarshan–Lindblad (GKSL) equation [17, 25] is the most general dy-namics that can be followed by a Markovian open quantum system. For a density matrix ρ acting on a finite dimensional complex Hilbert space H = Cn, the GKSL equation reads, in its standard form, dρt
+
+dt = L(ρt) := − i[H, ρ t] + 
+
+> d
+
+X
+
+> j=1
+
+
+
+LjρtL† 
+
+> j
+
+− 12 {L† 
+
+> j
+
+Lj, ρ t}
+
+
+
+(1) where H = H† is the system Hamiltonian, and the Lj are arbitrary matrices which parameterize the so-called dissipators D[Lj]( ρ) := LjρL † 
+
+> j
+
+− 12 {L† 
+
+> j
+
+Lj, ρ }. The linear operator L generating the dynamics is called the Lindbladian, or sometimes Liouvillian. One can span all possible such dynamical generators L with d ⩽ n2 − 1 dissipators. Besides this mathematical generality in the Markovian case, the GKSL equation often provides an excellent approximate description for physical quantum systems coupled to realistic environ-ments, even if they are not strictly Markovian [7]. As a result, the GKSL equation is central for the quantitative understanding of open quantum systems, and is used routinely to model a wide range of quantum experiments, whenever decoherence and dissipation matter. 
+
+> ‗
+
+gaspard.beugnot@alice-bob.com 
+
+> †
+
+paul.gregory.w@gmail.com 
+
+> ‡
+
+remi.robin@minesparis.psl.eu 
+
+> §
+
+antoine.tilloy@minesparis.psl.eu 
+
+1arXiv:2608.30860v1 [quant-ph] 31 Aug 2026 In practice, there are three main questions one is interested in answering for Markovian open quantum systems. The first is to know the steady state ρ∞ of the dynamics, that is a positive semi-definite matrix with trace 1 such that L(ρ∞) = 0; such a state always exists in finite dimension. Assuming that it is unique, a fairly common case, this is the state reached by the system at long times, after transients have decayed. This is sometimes how quantum states of interest are prepared: one simply designs a dissipative dynamics L of which they are the stationary points. Further, observables in the steady state are easy to evaluate experimentally, thus used extensively to calibrate the physical parameters of a system [32, 13, 23, 9, 27, 21]. Hence, efficient steady-state computation is critical. Interestingly, steady states of the GKSL equation also appear in the context of tensor network states. In particular, they enter into the expression of expectation values of observables of continuous matrix product states (CMPS) in the thermodynamic limit [37, 20]. Having an efficient method to compute steady states would thus allow working with far larger CMPS. The second problem is to compute the spectral gap of the Lindbladian, or more generally its first few eigenvalues, because they determine the speed of convergence to the steady state. The last problem is to compute the real-time dynamics, i.e. to provide a good approximation of the solution of eq. (1) with given initial condition ρ0.Some example applications presented in this article involve an underlying infinite-dimensional Hilbert space, such as bosonic systems; in these cases, we truncate the Hilbert space to a finite dimension and do not consider the resulting truncation errors (see section B.1 for details). Ul-timately, we thus assume the Hilbert space dimension n to be finite, but possibly quite large 
+
+i.e. potentially n ⩾ 10 3.The GKSL equation is a simple linear equation, and thus it would seem the three problems we just mentioned should be trivial to solve using standard linear algebraic techniques (exact diagonalization, and exponentiation of L). Indeed, one can answer these questions exactly by seeing L as a linear operator on a vector space of dimension n2. With the standard imple-mentation of matrix multiplication, that is, excluding fast matrix multiplication à la Strassen or Coppersmith-Winograd [5], this implies a solution at cost O(( n2)3) = O(n6) for all three prob-lems. Unfortunately, this cost becomes prohibitive for n ≳ 100 , which is common for properly discretized systems of a few bosons. Fortunately, the Lindblad operator L is cheaper to apply than one may expect, because it is often sparse in two ways. First, the Hamiltonian H and generators Lj can be sparse matrices, for example if they can be expressed as simple combinations of discretized ladder operators. This sparsity is common in practice for bosonic systems, but not systematic, and thus we will not require it. The second source of sparsity is that the number d of generators Lj is usually O(1), far from saturating the upper bound n2 − 1. This, on the other hand, is the typical situation for the open quantum systems one encounters in practice. In the latter case, applying L to a state is done at the cost of matrix multiplication, that is n3 (instead of the naive n4). This well-known observation opens the way to using efficient iterative techniques based on Krylov subspaces to solve the three problems mentioned above, at cost O(n3). Unfortunately, in many situations we suffer from the fact that L is ill-conditioned, which is expected when solving a discretization of an initially unbounded Lindbladian. Thus, using iterative methods directly on L
+
+gives disappointing results. The main idea of this paper is to leverage the computationally cheap inversion of the no-jump part to provide efficient iterative techniques. This paper is organized as follows. In section 2 we review existing approaches for computing the steady state and introduce a new method based on the fixed point of a Completely Positive, Trace-Preserving (CPTP) map. In section 3 we build a preconditioner from the solution of a Lyapunov equation and relate it to the resolvent of the Lindbladian. In section 4 we apply this preconditioner to three tasks: computing the steady state as the solution of a linear system, computing the low-lying spectrum of L through a shift-invert transformation, and building an implicit method for time evolution. Each application is presented together with the relevant state of the art and with numerical benchmarks on representative examples. The appendix provides additional details: section A describes classical methods for solving the Lyapunov equation, section B gives the system parameters and implementation details used in the benchmarks, and section C provides a proof of the fact that the map defined in section 2 is indeed a trace preserving map. 
+
+1.2 Notations and preliminaries 
+
+We denote superoperators in calligraphic font (e.g. L) or capital Greek letters (e.g. Φ) and operators on the Hilbert space by capital letters (e.g. H, Lj). On the latter, we consider the 2operator norm ∥A∥∞ := sup ∥x∥=1 ∥Ax ∥, the trace-norm ∥A∥1 := Tr √A†A, and the entrywise max-norm ∥A∥max := max i,j |Aij | (which is only used as a numerical stopping criterion in this paper). On superoperators, we consider the operator norm induced by the trace norm, i.e. ∥L∥ := 
+
+sup ∥ρ∥1=1 ∥L(ρ)∥1. The adjoint of an operator (with respect to Hilbert space scalar product) A
+
+is denoted A†, while the adjoint of a super-operator (with respect to the Hilbert–Schmidt scalar product) X is denoted X∗.The Lindblad equation (1) can be decomposed as 
+
+L(ρ) = S(ρ) + K(ρ), (2) 
+
+S(ρ) := Gρ + ρG †, K(ρ) := 
+
+> d
+
+X
+
+> j=1
+
+LjρL † 
+
+> j
+
+, (3) 
+
+G := − iH − 12dX
+
+> j=1
+
+L† 
+
+> j
+
+Lj. (4) Here K is called the generator of the jump part of the Lindbladian and S the generator of the no-jump part. Note that both generate completely positive maps, i.e. etS and etK are Completely Positive (CP) maps for all t ⩾ 0.In this paper, we will repeatedly need to invert S, that is to solve the so-called continuous Lyapunov equation 
+
+S(X) = GX + XG † = Y, (5) for a given operator Y. This is a well studied problem in control theory, see [30] for a historical perspective. Note that from eq. (4), it is clear that the spectrum of G always lies in the closed left half-plane. Under the assumption that G has no eigenvalue on the imaginary axis, the solution is unique and can be expressed as 
+
+X = S−1(Y) = − 
+
+Z ∞
+
+> 0
+
+etG Ye tG †
+
+dt. (6) In particular, −S−1 is completely positive, being an integral of maps of the form Y 7 → etG Ye tG †
+
+.Solving such a Lyapunov equation is known to be computationally efficient, namely O(n3)
+
+while one might naively assume that, as the inversion of a superoperator, it would require O(n6)
+
+operations. We give more details on the algorithms in section A.1. 
+
+Remark 1 (Non-uniqueness of the decomposition) . The decomposition in eq. (2) is not unique, and the choice matters: the split is what decides how much of L we invert exactly through a Lyapunov solve, and how much is left to be resolved. The freedom to exploit is the shift of each jump operator by a multiple of the identity. Given c ∈ Cd, set 
+
+˜Lj := Lj + cjId , j = 1, . . . , d, (7) ˜H := H + 12i 
+
+> d
+
+X
+
+> j=1
+
+
+
+c∗ 
+
+> j
+
+˜Lj − cj ˜L†
+
+> j
+
+
+
+, (8) 
+
+the latter being Hermitian, and let ˜G be defined from ( ˜H, ˜Lj) as in eq. (4) . A direct computation then gives 
+
+L(ρ) = ˜Gρ + ρ ˜G†
+
+| {z }
+
+> ˜S(ρ)
+
++
+
+> d
+
+X
+
+> j=1
+
+˜Ljρ ˜L†
+
+> j
+
+| {z }
+
+> ˜K(ρ)
+
+. (9) 
+
+Every c thus yields an admissible no-jump/jump split, eq. (2) being the one with c = 0. Precisely, 
+
+˜G = G − B − 12
+
+P 
+
+> j
+
+|cj|2 with B := P 
+
+> j
+
+c∗ 
+
+> j
+
+Lj, so the shift moves Bρ + ρB † + P 
+
+> j
+
+|cj|2ρ from the no-jump part to the jump part, the latter remaining a Kraus map by construction. Two further gauges leave the split untouched: the first is an isometric mixing of the jump operators, 
+
+˜Li := P 
+
+> j
+
+uij Lj for i = 1, . . . , m with m ⩾ d and u†u = Id, the second is a global phase ˜H 7 → ˜H − γId ,
+
+γ ∈ R. They are not relevant here since they leave the map K unchanged. The gauge freedom in (7) and (8) has been leveraged before, e.g. in [8] to optimize the unravelling of the Lindblad equation. We stick throughout to the split of eq. (2) , and discuss in the conclusion the potential benefits of optimizing over c.
+
+32 Computing the steady state as the fixed point of CPTP maps 2.1 State of the art 
+
+We recall that the dimension of the kernel of L is at least one in finite dimension, and that ker L
+
+always contains a density matrix [38, Chapter 6]. We assume in this section that this dimension is exactly one. In this case, there exists a unique steady state ρ∞, i.e. ρ∞ ⪰ 0 with Lρ∞ = 0
+
+and Tr ρ∞ = 1. Standard approaches to compute the steady state can be classified into three main categories: diagonalization of the Lindbladian, solving a linear problem, or simulating the long-time dynamics. 
+
+Diagonalization of the Lindbladian. One finds ρ∞ as the eigenvector of L with eigenvalue of lowest magnitude (here, 0). This can be instantiated in two ways: • Dense direct solvers : one constructs explicitly the Liouvillian L as a n2 × n2 matrix and diagonalizes it using standard linear algebra libraries. Alternatively, one can diagonalize 
+
+L∗L which is positive semi-definite, and exploit this structure. • Iterative methods : Using the Arnoldi method, one can iteratively find the states with eigenvalue of lowest magnitude applying only L as a function. Iterative techniques are fast when one targets eigenstates corresponding to eigenvalues with largest magnitude, and thus the performance of this approach is typically not better than the dense approach above, unless the shift-invert method is used. This amounts to solving a linear system involving the Lindbladian, which is expensive and requires a good preconditioner to be efficient (see section 4.2). 
+
+Solving a linear problem. Since the identity is a left eigenvector of the Lindbladian, it is straight-forward to check that ρ∞ is the unique solution of the following linear problem: 
+
+eLηρ = ηId , (10) where eLη(ρ) := L(ρ) + η Tr (ρ) Id , (11) where η > 0 is an arbitrary positive constant. In the following, we sometimes fix η = 1 and denote 
+
+eL = eL1. Classical methods to solve eq. (10) include: • Dense direct solvers : Constructing the Liouvillian superoperator as a dense matrix ( n2 ×n2)and using LU/SVD. Scales as O(n6).• Sparse direct solvers : If the Hamiltonian and jump operators are sparse, L is also sparse, and so is the pinned system eLη1, which can be exploited using sparse linear solvers such as sparse LU (as implemented in QuTiP). A more advanced and parallelizable alternative is to use MUltifrontal Massively Parallel sparse direct Solver (MUMPS) [2, 1]. • Iterative methods : Using GMRES (or another variant) on the linear system. Unfortunately, for many systems of interest it does not work properly without a good preconditioner. QuTiP [22], for example, proposes an incomplete LU preconditioner, a general-purpose preconditioner for sparse systems. It may however not always be adapted to the specific structure of the Lindblad equation. Speedup can be obtained in specific cases, when com-puting multiple related steady states. The cost of computing the preconditioner can then be amortized [26]. In section 3, we propose a preconditioner that is adapted to the structure of the Lindbladian, and in section 4.2 show it can be used to compute the low-lying spectrum of L.
+
+Simulating long-time dynamics. A last approach, often used in practice, is to obtain the steady state by evolving an initial state ρ0 ⩾ 0, Tr ρ0 = 1 for a sufficiently long time T : ρ∞ =
+
+lim T →∞ eLT ρ0. This requires integrating the master equation, which can be computationally ex-pensive for stiff systems (as they require small time-steps or expensive solvers) and/or those with small spectral gaps (as the convergence with time T is slow).                   
+
+> 1QuTiP pins the trace condition with the slightly different term ηTr (ρ)|0⟩⟨ 0|, and right-hand side η|0⟩⟨ 0|in place of
+> ηId. Any operator Pwith Tr P̸=0substituted for Id in eq. (10) leaves ρ∞as the unique solution, and the choice |0⟩⟨ 0|
+> makes the system sparser still. With our own solver we found the symmetrized deflation ηTr (ρ)Id to perform best.
+
+42.2 New method based on an auxiliary CPTP map 
+
+We propose a new method that reformulates the steady state problem as that of finding the fixed point of a specific CPTP map Φ = − KS −1, defined whenever S is invertible. Then, as a CPTP map, Φ has its spectrum contained in the closed unit disk. An interesting result is that under the assumptions of theorem 1 below, 1 is a simple eigenvalue of maximal modulus, whose eigenvector ξ∞ yields the steady state through ρ∞ = − S−1ξ∞/ Tr (− S−1ξ∞), making Arnoldi iterations particularly efficient. Further, Φ can be efficiently applied at cost O(n3).The first point is made precise thanks to the following theorem: 
+
+Theorem 1 (Steady state as fixed point of a linear operator) . Assume dim ker (L) = 1 and recall that 
+
+G = − iH − 12
+
+Pdj=1 L† 
+
+> j
+
+Lj. Then either 
+
+• Sp (G) ∩ iR̸ = ∅. In this case there exists an eigenstate of H in the kernel of all jump operators, and the kernel of L is the span of the density matrix associated to that eigenstate. 
+
+• Sp (G) ∩ iR = ∅. Then S is invertible and Φ := − KS −1 is a CPTP map with a unique invariant state ξ∞. Besides, there exists a positive constant c such that ρ∞ = − cS−1ξ∞.
+
+Loosely speaking, either the steady state is a pure state, in which case it is easy to find by diagonalizing the no-jump generator G of eq. (4), or it is a mixed state and can be found as the fixed point of a CPTP map that is not computationally expensive to evaluate. Let us now give the proof of this result. 
+
+Proof. Assume Sp (G) ∩ iR̸ = ∅. Let −iλ , with λ ∈ R, be an eigenvalue of G with normalized eigenvector |ψλ⟩, i.e. G|ψλ⟩ = − iλ |ψλ⟩. Taking the scalar product with ⟨ψλ| gives 
+
+⟨ψλ|G|ψλ⟩ = − i⟨ψλ|H|ψλ⟩ − 12
+
+X
+
+> j
+
+∥Ljψλ∥2 = − iλ. (12) Taking the real part yields P 
+
+> j
+
+∥Ljψλ∥2 = 0, hence |ψλ⟩ ∈ T 
+
+> j
+
+ker (Lj); then G|ψλ⟩ = − iH |ψλ⟩
+
+shows that |ψλ⟩ is an eigenvector of H with eigenvalue λ. A direct computation then gives 
+
+L(|ψλ⟩⟨ ψλ|) = 0, and since dim ker (L) = 1, we get ker L = C|ψλ⟩⟨ ψλ|.Assume now Sp (G) ∩ iR = ∅; since the spectrum of G lies in the closed left half-plane, this means ℜ(Sp (G)) < 0 . Then Sp (G) ∩ Sp (− G†) = ∅, so the Sylvester equation GX + XG † = Y has a unique solution for every Y given by eq. (6). Hence, S is invertible. The map −KS −1 is completely positive as the composition of the two completely positive maps −S−1 (see eq. (6)) and K. The trace-preserving property is checked in section C. Let us now make the connection between the fixed points of Φ = − KS −1 and L. For any matrix 
+
+ρ we have 
+
+ρ ∈ ker L ⇐⇒ K(ρ) + S(ρ) = 0
+
+⇐⇒ −S−1K(ρ) = ρ
+
+⇐⇒ ρ ∈ ker (M − Id ), M := − S−1K,
+
+so that ker (M − Id ) = Cρ∞ is one-dimensional. The operators Φ = − KS −1 and M = − S−1K are similar, M = S−1ΦS, and their fixed points are in one-to-one correspondence: • if Mρ = ρ, then Φ(Kρ) = − KS −1Kρ = − K(− ρ) = Kρ, with Kρ̸ = 0 since S−1Kρ = − ρ̸ = 0;• if Φξ = ξ, then M(− S−1ξ) = S−1KS −1ξ = − S−1ξ, using KS −1ξ = − Φξ = − ξ.Hence ker (Φ − Id ) is one-dimensional as well, and the injective map ξ 7 → −S−1ξ maps it onto ker (M − Id ) = ker L, which proves ker L = − S−1 ker (Φ − Id ). Moreover, since Φ is CPTP, it admits an invariant steady state. Besides, as ker (Φ − Id ) is one-dimensional, this invariant state ξ∞ is unique. Finally, −S−1ξ∞ is positive semi-definite (by complete positivity of −S−1) and nonzero, so its trace is positive, and ρ∞ = − c S−1ξ∞ with c = 1/ Tr (− S−1ξ∞) > 0 .
+
+Remark 2 (Correspondence of kernels without uniqueness) . The assumption dim ker L = 1 plays no role in the correspondence itself. Assuming only that S is invertible, the proof above shows that 
+
+ker L = ker (M − Id ), with M = − S−1K, and that ξ 7 → −S−1ξ maps ker (Φ − Id ) bĳectively onto it, so that 
+
+ker L = − S−1 ker (Φ − Id ) (13) 
+
+holds in general; in particular dim ker (Φ − Id ) = dim ker L. Uniqueness of the steady state is only used to conclude that these two kernels are one-dimensional. 
+
+5Computing the fixed point of Φ. Theorem 1 allows us to compute the steady state ρ∞ by finding the fixed point of the CPTP map Φ = − KS −1. We recall that any CPTP map has its spectrum contained in the closed unit disk, and all eigenvalues of modulus one are semisimple [38, Theorem 6.6]. Since ker (Φ − Id ) is one-dimensional and 1 is a semisimple eigenvalue, 1 is a simple eigenvalue of Φ. Moreover it is of maximal modulus, which is precisely the regime in which Krylov methods are effective — in contrast with L, whose eigenvalue of interest is the smallest in magnitude. Simplicity does not, however, preclude other eigenvalues of modulus one, and remark 3 exhibits a system where Φ has three: a power iteration on Φ would then fail to converge. Arnoldi is less exposed, because it builds the whole Krylov subspace, in which every peripheral mode is represented, and we retain the Ritz vector whose Ritz value is closest to 1
+
+rather than the dominant one (Algorithm 4). In fig. 1, we plot the spectrum of L and Φ for a random Lindbladian (see section 2.3.1 for details). −6 −5 −4 −3 −2 −1 0      
+
+> Re (λ)
+> −6 −4 −2 0246
+> Im (λ)
+> (a) Spectrum of 
+> −1.0 −0.5 0.0 0.5 1.0
+> Re (ν)
+> −1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75 1.00
+> Im (ν)
+> (b) Spectrum of Φ = −  −1
+
+Figure 1: Spectra of a random dense Lindbladian (see section 2.3.1) for a Hilbert space of dimension 
+
+n = 6. (a) Spectrum of L; even for low-dimensional systems, the large spread of eigenvalues reflects the poor conditioning of L. (b) Spectrum of Φ = − KS −1; all eigenvalues lie within the unit circle (dashed). In both panels, the red star marks the eigenvalue corresponding to the steady state. 
+
+Remark 3 (Peripheral spectra of Φ). For CPTP maps arriving as solutions of a Lindblad equation, assuming uniqueness of the steady state ensures that there cannot be any non-trivial peripheral eigenvalues [38, Proposition 7.5], that is eigenvalues of modulus one different from 1. This is not the case for Φ, as illustrated by the following example: consider a three level system with jump operators L1 = |0⟩⟨ 1|, L 2 =
+
+|1⟩⟨ 2| and L3 = |2⟩⟨ 0|, and no Hamiltonian. The unique steady state is the maximally mixed state ρ∞ = Id  
+
+> 3
+
+,but Φ has three peripheral eigenvalues 1, e 2πi/3 , e −2πi/3 . This situation is completely analogous to that of periodic classical Markov chains, whose transition matrices have several eigenvalues on the unit circle despite the stationary distribution being unique. 
+
+Remark 4 (Relation with a numerical integration scheme) . The very recent paper [12] introduces a first-order, CPTP time-discretization of the Lindblad equation, given by: 
+
+ρn+1 = eδtG ρneδtG †
+
++ X
+
+> j
+
+Z δt 0
+
+Lje(δt −s)Gρne(δt −s)G†
+
+L† 
+
+> j
+
+ds (14) 
+
+= eδtG ρneδtG †
+
++ Φ(ρn − eδtG ρneδtG †
+
+), (15) 
+
+where the second equality holds whenever S is invertible. Since Φ is CPTP, the integrator above is CPTP as well. Note that in the limit δt → +∞, the scheme reduces to ρn+1 = Φ(ρn). It is thus remarkable that the steady state of this scheme in the limit δt → +∞, despite not being equal to the steady state of the continuous Lindblad dynamics, is directly related to it via theorem 1. 
+
+2.3 Numerical benchmarks 2.3.1 Description of the benchmarks 
+
+In order to validate the theoretical efficiency of the methods introduced in theorem 1, we bench-mark them on two classes of Lindbladian systems with markedly different structural properties: 610 2 10 3   
+
+> Hilbert-space dimension n
+> 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> Wall-clock time (s)
+> Dense (random)
+> 10 210 3
+> Hilbert-space dimension n
+> 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> Cat qubit
+> Linear System (ours, GPU) Linear System (ours, CPU) Arnoldi (ours, GPU) Arnoldi (ours, CPU)
+> MUMPS GMRES (KrylovKit.jl) GMRES+ILU (QuTiP) SVD (QuTiP) Time Evol. (Tsit5, dynamiqs)
+
+Figure 2: Runtime of steady-state solvers versus Hilbert-space dimension n, for the dense random Lindbladian (left) and the memory–buffer cat qubit (right). Our two methods (Arnoldi on Φ and preconditioned GMRES) beat all competitors on CPU, and further gain a ×50 speedup on the H100 GPU; the competitors (QuTiP SVD and ILU-GMRES, MUMPS, Krylov.jl GMRES) run on the Xeon CPU, and the time-evolution baseline on GPU for the cat family. See section B in the Appendix for the exact configurations. • A dense random Lindbladian , designed to assess robustness and performance on generic, unstructured generators: a random Hermitian Hamiltonian together with three dense jump operators with i.i.d. complex-normal entries. Details are provided in section B.1. • A physically motivated sparse Lindbladian describing memory–buffer cat states, representative of hardware-induced dynamics encountered in the Alice & Bob 2 quantum processors. All four jump operators and the Hamiltonian are sparse, and the system exhibits a small spectral gap. Details are provided in section B.1. The tests are performed on a single compute node equipped with a CPU Intel Xeon Platinum 8481C and 70 GB of RAM; GPU benchmarks were conducted on an Nvidia H100 with 80 GB of memory. All computations use double-precision floating-point arithmetic. For iterative algorithms, convergence is declared when all entries of L(ρ) fall below 10 −8 in absolute value, i.e. ∥L(ρ)∥max < 10 −8, after ensuring ρ is Hermitian with trace 1. Each simulation is terminated early if the runtime exceeds 100 s or if available memory is exhausted. The reported quantity is the total wall-clock time as a function of the Hilbert space dimension n. The methods that need the Liouvillian superoperator explicitly represent it as a matrix of size n2 × n2, possibly in a sparse data format for the cat qubit example. 
+
+2.3.2 Benchmark 
+
+The results of the benchmarks are reported in fig. 2. For small Hilbert space dimensions, several methods achieve comparable runtimes. As the dimension increases, however, the asymptotic scaling of the different approaches becomes clearly visible. The direct SVD-based solver quickly becomes prohibitively expensive, exhibiting the expected O(n6) scaling associated with dense factorizations. The iterative baselines (the ILU-preconditioned GMRES of QuTiP and the un-preconditioned Krylov.jl GMRES) also scale poorly and encounter memory limitations at larger dimensions. The sparse direct solver MUMPS performs well despite running on CPU, but it is not available on GPU and cannot be applied to large, dense operators arising in the random Lindbladian benchmark. Finally, the ODE integration approach is significantly slower in absolute 
+
+> 2https://alice-bob.com/
+
+7runtime, but displays favorable scaling. Its poor performance on the cat qubit benchmark is due to the difficulty of reaching the required tolerance, even at large propagation times 3.In contrast, the Arnoldi method applied to Φ and our preconditioned GMRES solver described in section 3 exhibit excellent scaling, outperform the other methods, and show a further consistent speedup when run on GPU. 
+
+3 A new preconditioner to compute the resolvent 
+
+Unfortunately, the previous method cannot be straightforwardly adapted to compute the low-lying spectrum of L. Indeed, the eigenvectors and eigenvalues of Φ = − KS −1 are not related in a simple way to those of L for eigenvalues of Φ different from 1. Hence, in this section we propose to leverage the cheap inversion of S to build a preconditioner for the shifted Lindbladian λ − L for some λ > 0 . We present in section 4 three applications of this preconditioner: (i) the computation of the steady state as a linear system (an alternative to the method presented in section 2.2), (ii) the computation of the low-lying spectrum of L through a shift-invert method, and (iii) the implicit time integration of the Lindblad equation. 
+
+3.1 A preconditioner from the no-jump resolvent Reminder: Iterative methods and preconditioning. Iterative methods are designed to solve approximately a linear system. Given an invertible complex matrix A and a vector b, they look for an approximate solution of Ax = b in the Krylov space 
+
+Vp = Span b, Ab, . . . , A p−1b , (16) that is, they approximate A−1b by q(A)b for some polynomial q of degree less than p. Such an approximation is exact as soon as p reaches the degree of the minimal polynomial of A (at most n2
+
+here), but in practice far fewer iterations are needed for a given tolerance. The convergence speed depends on the conditioning of the problem and, for non-normal operators, on the clustering of the eigenvalues away from the origin [35, 34]; for non-normal operators eigenvalues alone determine nothing and convergence can be arbitrarily bad [18, 3]; this is why iterative methods are seldom used without a preconditioner, that is an invertible operator P which is inexpensive to apply and which approximates A−1. We distinguish left preconditioning, which amounts to solving PAx = Pb , from right preconditioning, which uses 
+
+APy = b, x = Py. (17) While several Krylov-based iterative solver algorithms can be used, we restrict ourselves to GMRES [34] in our numerical experiments. 
+
+The no-jump resolvent. We are interested in solving linear systems of the form (λ−L)( ρ) = b for 
+
+λ > 0 , or the rank-one deflated variant of it (λ− eLη)( ρ) = b for λ ⩾ 0. The candidate preconditioner is the no-jump resolvent 
+
+RS 
+
+> λ
+
+:= ( λ − S)−1, (18) whose basic properties we now record. Throughout, we write 
+
+Gλ := G − λ2 Id . (19) For λ = 0, we recover the no-jump generator G and the no-jump resolvent RS 
+
+> 0
+
+= − S−1 is defined under the assumption that S is invertible, see theorem 1. For λ > 0 , the operator 
+
+(λ − S)( X) = −( GλX + XG †
+
+> λ
+
+) (20) is always invertible, as Gλ has spectrum in the open left half-plane. The computation of RS 
+
+> λ
+
+thus amounts again to solving a continuous Lyapunov equation. 
+
+Theorem 2 (KR S 
+
+> λ
+
+is a strict contraction) . Let λ > 0 and let ∥·∥ denote the norm induced by the trace norm. Then, 
+
+KR S 
+
+> λ
+
+< 1. (21) 
+
+> 3This is unsurprising: dissipative cat qubits exhibit a strong metastability, due to the exponential suppression of the bit-flip.
+
+8Proof. First note that RS 
+
+> λ
+
+is completely positive, and hence so is KR S
+
+> λ
+
+. The induced trace norm of a completely positive map Ψ is attained on density matrices: by the Russo–Dye theorem 
+
+∥Ψ∥ = ∥Ψ∗∥∞→∞ = ∥Ψ∗(Id )∥∞, and Ψ∗(Id ) ⪰ 0, so that ∥Ψ∥ = sup ρ⪰0, Tr ρ=1 Tr Ψ(ρ) (see e.g. [38, Chapter 6]). As a consequence, 
+
+KR S 
+
+> λ
+
+= sup  
+
+> ρ⪰0, Tr ρ=1
+
+Tr KR S
+
+> λ
+
+ρ. (22) Using the fact that Tr Lσ = 0 for any σ, we have Tr Kσ = − Tr Sσ. Hence, 
+
+KR S 
+
+> λ
+
+= sup  
+
+> ρ⪰0, Tr ρ=1
+
+− Tr SR S
+
+> λ
+
+ρ. (23) Writing −SR S 
+
+> λ
+
+= ( λ − S)RS 
+
+> λ
+
+− λRS 
+
+> λ
+
+= Id − λRS
+
+> λ
+
+, the trace becomes 
+
+− Tr SR S
+
+> λ
+
+ρ = 1 − λ Tr RS
+
+> λ
+
+(ρ). (24) For any normalized state |ψ⟩, RS 
+
+> λ
+
+in integral form gives Tr (RS
+
+> λ
+
+(|ψ⟩⟨ ψ|)) = R∞ 
+
+> 0
+
+eGλt|ψ⟩ 2 dt > 0 ,and by linearity Tr RS
+
+> λ
+
+(ρ) > 0 for every density matrix ρ. Since the set of density matrices is compact in finite dimension, the infimum δλ := min ρ⪰0, Tr ρ=1 Tr RS
+
+> λ
+
+ρ is attained and is positive. Combining with eqs. (23) and (24) yields KR S 
+
+> λ
+
+= 1 − λδ λ < 1 .
+
+Right preconditioning by the no-jump resolvent. We can now justify the use of RS 
+
+> λ
+
+as a right preconditioner for λ − L. Applying λ − L to the left of RS 
+
+> λ
+
+and using L = S + K gives 
+
+(λ − L) RS 
+
+> λ
+
+= Id − KR S
+
+> λ
+
+. (25) The quality of the preconditioner is thus governed by KR S 
+
+> λ
+
+, which theorem 2 bounds strictly below 1. Consequently the spectrum of the preconditioned operator Id − KR S 
+
+> λ
+
+is contained in the disk of center 1 and radius KR S 
+
+> λ
+
+< 1 ; in particular it is bounded away from the origin. For a non-normal operator, eigenvalue location alone does not, in full generality, determine the behavior of GMRES. Here, however, theorem 2 controls a norm which turns into an actual convergence rate. 
+
+Remark 5 (Geometric convergence of the preconditioned GMRES) . Write N := KR S
+
+> λ
+
+, so that the preconditioned system reads (Id − N)y = b. Its k-th Krylov space Vk contains the truncated Neumann iterate P 
+
+> j<k
+
+Njb, of residual Nkb, so residual minimality and ∥·∥ 2 ⩽ ∥·∥ 1 ⩽ √n ∥·∥ 2 on Cn×n give the following bound on the k-th GMRES residual rk:
+
+∥rk∥2 = min 
+
+> y∈Vk
+
+∥b − ( Id − N)y∥2 ⩽ Nkb 2 ⩽ √n ∥N∥k ∥b∥2 : (26) 
+
+by theorem 2 the preconditioned GMRES converges at least geometrically with ratio ∥N∥ < 1 , through a bound that uses no spectral information and hence is insensitive to non-normality. 
+
+Note that left preconditioning is less natural, as we would obtain Id −RS
+
+> λ
+
+K. Interestingly, while 
+
+RS
+
+> λ
+
+K and KR S 
+
+> λ
+
+are similar (thus have the same spectrum), contrary to KR S
+
+> λ
+
+, the norm of RS
+
+> λ
+
+K can be arbitrarily large. 4
+
+Remark 6 (Loss of the contraction at zero shift) . Theorem 2 requires λ > 0 , and its conclusion fails exactly at the endpoint. Indeed, if S is invertible, then RS 
+
+> 0
+
+= − S−1 and the error operator of eq. (25) becomes the CPTP map Φ = − KS −1 of theorem 1, so that KR S 
+
+> 0
+
+= ∥Φ∥ = 1: the contraction is no longer strict. This is not a mere technicality, since λ = 0 is precisely the shift at which two of our three applications operate: the steady-state solver of section 4.1 and the shift-invert of section 4.2 both precondition there, albeit on the deflated operator eLη rather than on L itself. Deflation does make the linear system nonsingular, but we have not established that it restores a strict contraction, and the peripheral eigenvalues of Φ exhibited in remark 3 might prevent this. So we claim no convergence rate for these two solvers. The gap is in the theory only: in all our experiments GMRES converges in a few iterations, as the benchmarks of section 4 show.                                      
+
+> 4Take n=2,H=0and a single jump operator L=√γ|0⟩⟨ 1|, so that G= − γ2|1⟩⟨ 1|is diagonal in the computational basis. A direct computation gives RS
+> λK(ρ) = γλρ11 |0⟩⟨ 0|and KR S
+> λ(ρ) = γγ+λρ11 |0⟩⟨ 0|, whence RS
+> λK=γ/λ ,which is unbounded as λ→0, while KR S
+> λ=γ/ (γ+λ)< 1 .
+
+93.2 Link with the resolvent formula 
+
+The estimate of theorem 2 has a second consequence, of a more theoretical nature: it yields an explicit series representation of the resolvent of the Lindbladian for λ > 0 ,
+
+RL 
+
+> λ
+
+:= ( λ − L)−1.
+
+Corollary 1 (Resolvent of the Lindbladian) . Assume λ > 0 . Then Id − KR S 
+
+> λ
+
+is invertible, λ belongs to the resolvent set of L, and RL 
+
+> λ
+
+is given by the convergent series 
+
+RL 
+
+> λ
+
+= RS
+
+> λ
+> ∞
+
+X
+
+> k=0
+
+(KR S
+
+> λ
+
+)k. (27) 
+
+Proof. By theorem 2, KR S 
+
+> λ
+
+< 1 , so the Neumann series P
+
+> k⩾0
+
+(KR S
+
+> λ
+
+)k converges, and its sum is the inverse of Id − KR S
+
+> λ
+
+. Multiplying eq. (25) on the right by that inverse gives 
+
+(λ − L) RS
+
+> λ
+
+ Id − KR S
+
+> λ
+
+−1 = Id , (28) so λ−L admits a right inverse. Hence, λ belongs to the resolvent set of L, and RL 
+
+> λ
+
+= RS
+
+> λ
+
+(Id −KR S
+
+> λ
+
+)−1,which is eq. (27). In fact, Equation (27) was already proved in the 1990s in a more general infinite-dimensional framework with unbounded generators. For this more complex setting, uniqueness of the solution of the Lindblad equation is not guaranteed, and is equivalent to the so-called conservativity of the minimal semigroup. It turns out that the resolvent of this minimal semigroup admits a representation 5 given by eq. (27). We refer to the works [10, 11]. Beyond its theoretical interest, the series eq. (27) is closely tied to the iterative solver of sec-tion 3.1: truncating it and running a preconditioned Krylov method explore the same space, the latter selecting the residual-minimizing element of that space. We come back to this connection, and to the steady state method it motivates, in section 4.1. 
+
+3.3 Numerical benchmarks 
+
+We benchmark our resolvent solver on the same two families of generators and with the same convergence criterion and hardware as in section 2.3. The linear system to solve is (λ − L)( ρ) = b.The right-hand side is the maximally mixed state b = Id /n , and we sweep three shifts λ =
+
+λmax · 10 {0, −1, −2}, where λmax estimates the spectral radius of L and is computed once, off the clock. Our solver is the right-preconditioned recycled GMRES of section 3.1; the competitors are a dense LU solve, MUMPS, and (un)preconditioned SciPy GMRES, all detailed in section B. The results are shown in fig. 3. At the largest shift λ = λmax the operator λ − L is well-conditioned, so even unpreconditioned GMRES converges in a handful of iterations and our preconditioner brings little gain (no measurable speedup on the sparse cat family). As λ decreases toward the singular limit λ → 0, the unpreconditioned iterations degrade while RS 
+
+> λ
+
+keeps the preconditioned spectrum clustered near 1 (theorem 2), and the advantage of our method becomes clear. We gain a factor ∼ 50 at λmax /100 on the cat family. The gain is largest on the dense systems, where the competitors are bound by the factorization of the n2 × n2 Liouvillian and drop out near 
+
+n ≈ 100 , whereas our matrix-free solver built from the n × n generator reaches n = 3000 . These improvements are again amplified on GPU. 
+
+4 Applications 
+
+The preconditioner of section 3 unlocks several applications. We detail three: an alternative to the fixed-point method of section 2 for the computation of the steady state, the computation of the low-lying spectrum of the Lindbladian through a shift-invert transformation, and an implicit time integrator for stiff master equations.  
+
+> 5More precisely, one usually works with the dual of the semigroup ( i.e. in the Heisenberg picture), thus the formula is stated for the dual and the series converges only in the strong operator topology
+
+10 10 1 10 2 10 3
+
+Hilbert-space dimension n
+
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> Wall-clock time (s)
+
+λ = λmax   
+
+> 10 110 210 3
+
+Hilbert-space dimension n
+
+λ = λmax /10   
+
+> 10 110 210 3
+
+Hilbert-space dimension n
+
+λ = λmax /100 
+
+Dense (random)   
+
+> Lyapunov GMRES (ours, GPU) Lyapunov GMRES (ours, CPU)
+> Dense LU (SciPy) MUMPS GMRES (SciPy) GMRES+ILU (SciPy) 10 110 210 3
+
+Hilbert-space dimension n
+
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> Wall-clock time (s)
+
+λ = λmax   
+
+> 10 110 210 3
+
+Hilbert-space dimension n
+
+λ = λmax /10   
+
+> 10 110 210 3
+
+Hilbert-space dimension n
+
+λ = λmax /100 
+
+Cat qubit 
+
+> Lyapunov GMRES (ours, GPU) Lyapunov GMRES (ours, CPU)
+> Dense LU (SciPy) MUMPS GMRES (SciPy) GMRES+ILU (SciPy)
+
+Figure 3: Runtime of resolvent solvers for (λ − L)( ρ) = Id /n versus Hilbert-space dimension n, at the three shifts λ = λmax , λ max /10, λ max /100 (columns), for the dense random Lindbladian (top) and the memory–buffer cat qubit (bottom). Our preconditioned GMRES is shown on CPU (dashed) and on the H100 GPU (solid); the competitors (dense LU , MUMPS, GMRES, GMRES + ILU) run on the Xeon CPU. The gain over the competitors is small at λ = λmax and grows as λ → 0, and is largest for the dense family and on GPU. See section B for the exact configurations. 
+
+4.1 Steady state as a preconditioned linear solve 
+
+Recall from section 2 that the steady state solves the deflated linear system eLη ρ = η Id of eq. (10), equivalently its λ = 0 form (0 − eLη) ρ = − η Id in the convention (λ − eLη)ρ = b of section 3.1, which is the one we precondition. Assuming the no-jump generator S to be invertible, we solve this system with the right-preconditioned GMRES of section 3.1, taking as preconditioner the no-jump resolvent at λ = 0, into which the rank-one deflation is folded by the Sherman–Morrison formula. Refer to eq. (32) and Algorithms 2 and 3 for a precise definition. This provides an alternative to the fixed-point iteration of section 2, with which it is on par in fig. 2. The series representation eq. (27) explains why this is natural. Assume S is invertible and set formally λ = 0 in eq. (27) (the series then need not converge, since KR S 
+
+> 0
+
+= ∥Φ∥ = 1): truncating it applied to some ρ0 amounts to spanning S−1 Span (KS −1)kρ0 , which is, up to the 
+
+S−1 transform, exactly the Krylov space Span (LS −1)kρ0 obtained by right preconditioning an equation of the form Lρ = ρ0 (indeed LS −1 = Id + KS −1, and both operators generate the same 11 Krylov spaces). Truncating the resolvent series and running a preconditioned Krylov method therefore explore the same space; the Krylov method additionally selects the residual-minimizing element of that space, whereas the truncated series takes the one prescribed by the Neumann expansion. 
+
+Remark 7 (Differentiating the steady state) . Because the steady state is obtained as the solution of a linear system, it is moreover differentiable through the adjoint method. Write the system as eLη(θ) ρ∞ = η Id , with 
+
+θ collecting the parameters of H and the Lj, and let J(ρ∞) be a smooth scalar figure of merit. Differentiating the system implicitly gives ∇θJ = − 
+
+D
+
+w, (∂θ eLη) ρ∞
+
+E
+
+, where the adjoint state w solves the single linear system eL∗ 
+
+> η
+
+w = ∇ρJ. The whole gradient thus costs one additional solve, to which the same no-jump preconditioner applies since λ − S∗ is again a Lyapunov operator. Crucially, one differentiates the exact solution rather than the GMRES iterations, so the cost and the accuracy of the gradient do not depend on the number of Krylov steps. This is known as implicit differentiation [24]. 
+
+4.2 Low-lying spectrum 
+
+The low-lying spectrum of L is the set of its eigenvalues of smallest magnitude; these determine the dissipative gap and the slowest relaxation rates of the system. As in section 2, we assume throughout this subsection that dim ker L = 1, and we place ourselves in the second case of theorem 1, in which the no-jump generator S is invertible. 
+
+4.2.1 State of the art 
+
+To the best of our knowledge, the methods available for computing the low-lying spectrum fall into two categories, which we described in section 2. 
+
+Dense diagonalization. One forms the Liouvillian as an n2 × n2 matrix and diagonalizes it, at a cost O(n6) that quickly becomes intractable. 
+
+Iterative diagonalization. One constructs a Krylov subspace to directly find the eigenvalues of L
+
+with lowest magnitude. This is very inefficient, as the Arnoldi method works well for eigenvalues with largest magnitude, and typically requires reconstructing the full space. An interesting option to make the iterative approach viable is the Arnoldi–Lindblad method of [28]: rather than diagonalizing L, it applies Arnoldi to the propagator eLt, whose action is evaluated by numerically integrating the master equation, without ever forming the n2 × n2
+
+matrix. The propagator sends the slowly-decaying modes of L (eigenvalues of real part closest to 
+
+0) to the eigenvalues of largest modulus of eLt, so Arnoldi naturally converges to the low-lying spectrum. This spectral reordering plays exactly the role of the shift-invert transformation we use below, with eLt in place of the resolvent (μ − L)−1; the two differ in how the transformed operator is applied. Arnoldi–Lindblad integrates the master equation, at a cost governed by the stiffness of the dynamics, whereas shift-invert solves a linear system, which is precisely what the preconditioner of section 3 makes inexpensive. 
+
+4.2.2 New method based on a preconditioned shift-invert 
+
+We propose to apply Arnoldi to the shift-inverted deflated Lindbladian (μ − eLη)−1, never forming the n2 × n2 Liouvillian: the deflation removes the zero mode, the shift-invert turns the targeted eigenvalues into the dominant ones, and the preconditioner of section 3 makes the resulting inner linear solves rather inexpensive. We now detail these three ingredients. 
+
+Deflating the zero mode. The Lindbladian is singular: its kernel is spanned by the steady state, and the vectorized identity is a left null vector. Inverting at the shift μ = 0 would thus invert a singular operator. We remove the zero mode by deflation, using the operator eLη(ρ) = 
+
+L(ρ) + η Tr (ρ) Id of eq. (10). Since any eigenvector of L associated with a nonzero eigenvalue λ
+
+is traceless (taking the trace of Lρ = λρ gives λ Tr ρ = 0), this leaves the nonzero eigenpairs of 
+
+L unchanged and replaces the zero eigenvalue by η n . The constant η > 0 is free and only fixes where the deflated mode lands: it should be taken large enough for ηn to sit well away from the eigenvalues we target, so that the shift-invert below does not turn it into a dominant one. We take 
+
+η = 1 in the benchmarks, and η = 10/n in fig. 4 to better illustrate this step. The only excluded value is η = 1/ Tr RS
+
+> μ
+
+(Id ), at which the deflated preconditioner of eq. (32) degenerates. 12 −6 −4 −2 0       
+
+> Re (λ)
+> −6 −4 −2 0246
+> Im (λ)
+> (a) Spectrum of 
+> −6 −4 −2
+> Re (λ)
+> −6 −4 −2 0246
+> (b) Spectrum of  ̃ 
+> 10
+> Re (λ)
+> −0.4 −0.2 0.0
+> Re (λ)
+> −0.2 −0.1 0.0 0.1 0.2
+> (c) Spectrum of  ̃ −1
+
+Figure 4: Random dense Lindbladian (section B.1) spectra for a Hilbert space of size n = 6. (a) Full spectrum of L. (b) Spectrum of eLη = L + η Tr (·) Id with η = 10/n , which shifts the steady-state eigenvalue to ηn = 10 (orange star) while leaving all nonzero modes unchanged. (c) Spectrum of eL−1η : the low-lying modes of eLη (small |λ|) become its dominant eigenvalues (large |1/λ |). The operator actually iterated in the text is (μ − eLη)−1, which at μ = 0 differs from eL−1η by an overall sign. In all panels, the red star marks the steady state, the green star the slowest-decaying nonzero mode, and the purple stars the next conjugate pair. The orange star in the second and third panels (b–c) marks the deflated steady-state eigenvalue. 
+
+Shift-invert Arnoldi. The targeted eigenvalues sit near 0, where Arnoldi applied to eLη directly converges slowly, since Arnoldi resolves the eigenvalues of largest magnitude first. We therefore apply it to the shift-inverted operator (μ − eLη)−1. This operator has the same eigenvectors as eLη,and an eigenvalue λ of eLη is sent to the eigenvalue ν = 1/ (μ − λ). The eigenvalues λ closest to the shift μ thus become the ν of largest modulus, which Arnoldi resolves first; each is mapped back through λ = μ − 1/ν . Taking μ = 0 targets the smallest-magnitude nonzero eigenvalues of L.
+
+The inner linear solves. Each Arnoldi step applies the shift-inverted operator once, i.e. solves a single linear system in μ − eLη, which we do with the right-preconditioned GMRES of section 3.1. The preconditioner is the no-jump resolvent RS
+
+> μ
+
+, corrected for the deflation: eLη differs from L by the rank-one term η |Id ⟩⟨ Id |, where ⟨Id |ρ⟩ = Tr ρ, and the Sherman–Morrison formula eq. (32) folds that term into the preconditioner exactly, at the price of one trace and one extra Lyapunov solve. The latter being independent of the right-hand side, it is computed once and reused throughout the Arnoldi run (Algorithm 2). Successive Arnoldi steps moreover solve nearby systems: rather than restarting each solve from scratch, we recycle the Krylov subspace and warm-start it with the previous solution [29, 36]. The full method is given in Algorithm 5 of section A.2. 
+
+4.2.3 Numerical benchmarks 
+
+We benchmark on the same two families as in section 2.3: the dense random Lindbladian and the memory–buffer cat qubit described in section B.1. Because our shift-invert Arnoldi never forms the n2 × n2 Liouvillian, it computes the low-lying spectrum of systems roughly one order of magnitude larger than the SciPy baselines, which both form the n2 × n2 Liouvillian and run out of memory beyond a few hundred basis states (fig. 5). This reach lets us resolve the low-lying spectrum of the cat qubit across cat sizes (fig. 6), recovering its characteristic noise bias: an exponentially suppressed bit-flip rate together with linearly growing phase-flip rates, the exact feature that makes the cat qubit attractive for quantum error correction. 
+
+4.3 Implicit solver 
+
+Integrating the master equation ˙ ρ = Lρ in high-dimensional systems is often hampered by stiff-ness: explicit integrators ( e.g. Runge–Kutta) require a time step ∆t small enough to resolve the fastest modes, and this restriction typically tightens with the truncation size when simulating truncated approximations of infinite-dimensional, unbounded Lindblad dynamics (see [33, Sec-tion 4]). By contrast, implicit schemes remain stable for much larger ∆t and are therefore better suited to stiff problems. 13 10 1 10 2      
+
+> Hilbert-space dimension n
+> 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> Wall-clock time (s)
+> Dense (random)
+> 10 110 210 3
+> Hilbert-space dimension n
+> 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> Cat qubit
+> SI Arnoldi (ours, GPU) ARPACK (SciPy) SVD (SciPy)
+
+Figure 5: Wall-clock time to compute the low-lying spectrum as a function of the Hilbert-space dimension n (log–log), for the dense random Lindbladian (left, section B.1) and the memory– buffer cat qubit (right, section B.1). Our shift-invert Arnoldi solver (SI Arnoldi, ours) is compared against the dense eigenvalues solver of NumPy and the ARPACK shift-invert solver of SciPy, both applied to the n2 × n2 Liouvillian. See section B for the exact configurations. Implicit methods have seen limited application to Lindblad equations because each time step entails solving an n2 × n2 linear system. The preconditioner of section 3 makes these linear solves practical even for large, dense systems, enabling efficient implicit time stepping. For the implicit Euler scheme, the step to be inverted reads 
+
+ρt+∆t = ρt + ∆t Lρt+∆t =⇒ ρt+∆t = ( Id − ∆t L)−1ρt = 1∆t RL
+
+> 1/∆t
+
+ρt. (29) This requires computing the action of the resolvent at each time step. We do this by preconditioning the linear system in eq. (29) with RS 
+
+> λ
+
+at the shift λ = 1/∆t , computed exactly with the same machinery as for the steady state in section 4.1. This is the one application in which the shift is strictly positive, so that theorem 2 applies and remark 5 guarantees a geometric convergence rate for the inner solves. 
+
+Benchmarks. We consider the random Lindbladian system introduced in section 2.3.1. We add a diagonal quartic term K N 2, with N = diag (0, 1, . . . , n − 1), to its Hamiltonian to have a knob on the stiffness of the resulting ODE. The step size of the implicit Euler scheme is chosen so that all the states of the simulation are close enough to a reference (expensive) simulation ρ⋆. That is, we choose ∆t s.t. 
+
+F(ρIE (k∆t ), ρ ⋆(k∆t )) ⩾ 0.99, 
+
+with F the fidelity between two density matrices. Results are presented in fig. 7. We see that the implicit Euler scheme requires a roughly constant number of steps regardless of the Kerr strength. This results in a large speedup over the explicit integrator as soon as the system is stiff enough. Further work would be required to make this a competitive solver in practice. Notably, adaptive step sizing as well as higher-order methods would be key. 
+
+5 Conclusion and perspectives 
+
+The methods of this paper all rest on a single observation: the Lindbladian splits as L = S + K,and the no-jump part S, however ill-conditioned L may be, can be inverted exactly at cost O(n3) by solving a continuous Lyapunov equation. From it we built two objects: the CPTP map Φ = − KS −1,whose fixed point yields the steady state and whose eigenvalue 1 is simple and of maximal modulus 14 1 10 |α|2 ≈ εd/g2   
+
+> 10 110 210 3
+> Hilbert-space dimension n
+> 10 −8
+> 10 −6
+> 10 −4
+> 10 −2
+> 10 0
+> −Re( λk)
+> Low-lying spectrum — cat qubit (lyapu/eig, H100)
+> −Re( λ1)−Re( λ2)−Re( λ3)
+
+Figure 6: Low-lying spectrum of the memory–buffer cat qubit (section B.1) computed with our solver: the three smallest nonzero decay rates −ℜ(λk) against the Hilbert-space dimension n
+
+(lower axis: the corresponding cat size |α|2 ≈ εd/g 2). The cat code space is two-dimensional, so under ideal two-photon stabilization the four operators acting on it would all be stationary; the residual single-photon loss lifts this degeneracy into a unique steady state and three slow modes. The slowest, λ1, is the bit-flip, whose rate is exponentially suppressed in |α|2; the other two, λ2
+
+and λ3, are phase-flip modes whose rates grow linearly in |α|2, see e.g. [15]. (theorem 1); and the no-jump resolvent RS
+
+> λ
+
+, a right preconditioner for λ−L whose error operator is a strict contraction for every λ > 0 (theorem 2), which yields both an explicit series for the resolvent of the Lindbladian (corollary 1) and a geometric convergence rate for the preconditioned GMRES (remark 5). Three distinct tasks then reduce to the same building block: computing the steady state, computing the low-lying spectrum by shift-invert Arnoldi, and integrating stiff dynamics implicitly. All of them manipulate n × n matrices only, never forming the n2 × n2 Liouvillian, and reduce to dense matrix products. This is why we measure large gains, further amplified on GPU. Several directions remain open. 
+
+Choosing the jump/no-jump split. We have not leveraged the gauge freedom of remark 1 in the present work, and we believe that an optimization on this additional degree of freedom should lead to quantitative improvements. We leave it to future work. Let us nonetheless give two theoretical remarks. First, assuming the number of jump operators d to be at least one, all gauge changes but a finite number make ˜ S invertible: retracing the proof of theorem 1, ˜ S is singular only if some ψ̸ = 0 satisfies Ljψ = − cjψ for every j. Second, the peripheral eigenvalues of remark 3 are not intrinsic to L but to the split: on that example the shift c = ( 1, 0, 0 ) leaves 1 simple and brings every other eigenvalue of ˜ Φ to modulus at most p3/8 , the pair e±2iπ/3 becoming 12 ± i2√2 .
+
+Beyond first order in time. The implicit integrator of section 4.3 is a proof of concept. Adaptive step-size selection and higher-order multistep schemes of backward differentiation formula (BDF) type would be needed to make it practical, and both fit the present machinery well: a BDF step requires inverting Id − β ∆t L for a scheme-dependent constant β, that is, up to the prefactor 
+
+1/ (β ∆t ), the same resolvent at the shift λ = 1/ (β ∆t ). Changing the order or the step size only moves that shift, which enters our Lyapunov backend through an element-wise division (Algorithm 1); the eigendecomposition of G is computed once and reused throughout. 15 0.0 2.5 5.0 7.5 10.0 12.5 15.0          
+
+> Kerr strength K/κ
+> 10 −2
+> 10 −1
+> 10 0
+> Wall-clock time (s)
+> Wall time
+> 0.0 2.5 5.0 7.5 10.0 12.5 15.0
+> Kerr strength K/κ
+> 10 −1
+> 10 0
+> 10 1
+> Speedup over Tsit5
+> Speedup
+> Implicit Euler (ours) Tsit5 (Dynamiqs)
+
+Figure 7: Comparison of our implicit Euler scheme with a generic explicit integrator (Tsit5) from dynamiqs [19]. On stiffer systems with high Kerr, the implicit Euler scheme takes fewer steps, resulting in a speedup with respect to the explicit integrator. 
+
+Acknowledgements 
+
+We warmly thank Pierre Guilmin, Pierre Rouchon, Alain Sarlette, and Hector Hutin for helpful discussions and comments on this work. This project has received funding from the European Research Council (ERC) from the QFT.zip project (grant agreement No. 101040260) and Plan France 2030 through the project ANR-22-PETQ-0006. 16 A Numerical implementation 
+
+All three solvers of the main text rely on the same tool: the exact inversion of the no-jump part S, which amounts to solving a continuous Lyapunov equation. We first describe how we solve it (section A.1), then how the steady-state and low-lying-spectrum solvers are built on top of it (section A.2). From this exact inversion, we introduce two algorithms, which the three solvers leverage: the no-jump resolvent RS 
+
+> λ
+
+(Algorithm 1) and the right preconditioner it induces (Algorithm 2). 
+
+A.1 Solving the continuous Lyapunov equation 
+
+We detail the standard methods to solve the continuous Lyapunov equation S(X) = GX +XG † = Y,and their shifted variant (λ − S)( X) = Y that yields the resolvent RS 
+
+> λ
+
+= ( λ − S)−1 used as a preconditioner. 
+
+A.1.1 Bartels–Stewart algorithm 
+
+The standard algorithm is the Bartels–Stewart algorithm [4, 16]. It computes the Schur decom-position G = UT U † with T upper triangular, transforming the equation into T ˜X + ˜XT † = ˜Y with ˜X = U†XU , ˜Y = U†YU , which is solved by back-substitution. When Y is Hermitian, so is X,halving the cost. The shift is applied on the triangular factor, T → T − λ2 Id, which realizes −RS
+
+> λ
+
+.The back-substitution is sequential and hard to parallelize on GPUs, and can suffer from stability issues; a mixed-precision refinement mitigates the latter [14]. 
+
+A.1.2 Eigendecomposition method 
+
+Alternatively, when G is diagonalizable, we use its eigendecomposition G = UΣU −1, Σ =
+
+diag (σ1, . . . , σ n). Writing V = U−† and ˆ X = V†XV , ˆ Y = V†YV , the shifted equation decouples element-wise, 
+
+(λ − σi − σ∗ 
+
+> j
+
+) ˆXij = ˆYij =⇒ ˆXij = ˆYij 
+
+λ − σi − σ∗
+
+> j
+
+, (30) so that 
+
+RS
+
+> λ
+
+(Y) = U
+
+ 1λ − σi − σ∗
+
+> j
+
+!
+
+> ij
+
+◦  V†YV  U†, (31) with λ = 0 recovering −S−1. Since ℜ(σi) < 0 under the assumption that S is invertible, the denominators never vanish for λ ⩾ 0.In other words, this exhibits a basis in which the superoperator S is diagonal. In particular, this provides a fast, matrix-matrix implementation of the inverse. 
+
+A.1.3 Comparison and implementation 
+
+Both methods scale as O(n3). The Bartels–Stewart algorithm has the smaller leading constant, but once computed, the eigendecomposition route requires matrix–matrix products (GEMM), which are extremely optimized on GPUs. The Bartels–Stewart variant, in contrast, relies on a Schur factorization and a subsequent back substitution. We did not find an efficient implementation of the latter on GPU. Because our workflow solves the Lyapunov equation repeatedly inside a Krylov solver, we precompute the eigendecomposition once and reuse it across all solves. The per-solve cost is four dense n × n products and one element-wise division. 
+
+Algorithm 1: No-jump resolvent RS 
+
+> λ
+
+via eigendecomposition 
+
+Input: generator G = − iH − 12
+
+P 
+
+> k
+
+L†
+
+> k
+
+Lk, shift λ ⩾ 0, operator Y
+
+Output: X = RS
+
+> λ
+
+(Y) = ( λ − S)−1(Y)
+
+Precompute (once): eigendecomposition G = UΣU −1; store U and V ← U−† ; // O(n3),general eigensolver 
+
+Apply: X ← U
+
+"
+
+(V†YV )ij 
+
+λ − σi − σ∗
+
+> j
+
+#
+
+U† ; // O(n3), GEMM-bound 
+
+17 A.2 Linear solver implementation GMRES. Every linear system we solve is a shifted, possibly deflated Lindbladian preconditioned on the right by the no-jump resolvent of Algorithm 1. Our GMRES is a custom, matrix-free implementation in JAX [6]: it never forms the n2 × n2 Liouvillian and applies L, RS 
+
+> λ
+
+and the preconditioner as functions on n × n matrices. It is a right-preconditioned restarted GMRES with Krylov subspace recycling: after each cycle we retain a small harmonic-Ritz subspace (U, C ) with 
+
+L R S 
+
+> λ
+
+U = C, which is passed to the next cycle and across successive solves, and each solve is warm-started from the previous iterate. The least-squares problem is solved by a QR factorization of the augmented Hessenberg matrix, and the Arnoldi basis is fully re-orthogonalized. For the steady state the stopping criterion is the size-independent ∥L( ˆρ)∥max < ε on the hermitized and trace-normalized state ˆ ρ.Written in the form λ − eLη = ( λ − L) − η |Id ⟩⟨ Id | of section 3.1, the two deflated systems of sections 2 and 4.2 carry the rank-one term −η Tr (·) Id = − η |Id ⟩⟨ Id |, in addition to the no-jump part. We add it into the preconditioner exactly with the Sherman–Morrison formula, written here for the shift λ = 0 (recall RS 
+
+> 0
+
+= (− S)−1): 
+
+ −S − η |Id ⟩⟨ Id |−1(X) = RS 
+
+> 0
+
+(X) + η Tr  RS 
+
+> 0
+
+(X)
+
+1 − η Tr  RS 
+
+> 0
+
+(Id ) RS 
+
+> 0
+
+(Id ), (32) which is defined as soon as η Tr  RS 
+
+> 0
+
+(Id )̸ = 1, the value at which the deflated no-jump operator 
+
+−S − η |Id ⟩⟨ Id | is itself singular. Here RS 
+
+> 0
+
+(Id ) and its trace are precomputed once, so the correction costs only one extra base solve and a trace, and the check above comes for free. It excludes a single value of η, far from the ones we use: Tr RS 
+
+> 0
+
+(Id ) = R∞ 
+
+> 0
+
+Tr  etG etG † dt is of the order of the dimension times a decay time, so its inverse is small compared to η = 1. Written for a general shift 
+
+λ, i.e. replacing −S by λ − S and RS 
+
+> 0
+
+by RS
+
+> λ
+
+, this defines the preconditioner Precond of Algorithm 2. 
+
+Algorithm 2: Deflated no-jump right preconditioner ( Precond )
+
+Input: operator X, shift λ, deflation coefficient c
+
+Output: Pλ(X), an approximation of the deflated  (λ − L) − c |Id ⟩⟨ Id |−1(X)
+
+Z ← RS
+
+> λ
+
+(X) ; // Algorithm 1 
+
+W ← RS
+
+> λ
+
+(Id ) ; // precomputed once 
+
+return Z + c Tr (Z)
+
+1 − c Tr (W) W ; // Sherman–Morrison, eq. (32) 
+
+We now assemble the three solvers. The steady state can be obtained either as the fixed point of Φ (Algorithm 4) or as the solution of the deflated linear system (Algorithm 3); the low-lying spectrum uses shift-invert Arnoldi (Algorithm 5). 
+
+Algorithm 3: Steady state via preconditioned GMRES 
+
+Input: H, {Lk}, deflation η, tolerance ε, Krylov size m
+
+Output: ˆρ with ∥L( ˆρ)∥max ⩽ ε, Tr ˆ ρ = 1
+
+Build RS 
+
+> λ
+
+(Algorithm 1) and P0 ≡ Precond (·, λ =0, c =η) (Algorithm 2); Solve eLη ρ = η Id (eq. (10)) by right-preconditioned GMRES( m):; recycle the Krylov subspace across restarts; warm-start from |0⟩⟨ 0|;each cycle: ˆ ρ ← 12 (ρ + ρ†), ˆ ρ ← ˆρ/ Tr ˆ ρ; stop if ∥L( ˆρ)∥max < ε ;
+
+return ˆρ
+
+Arnoldi. The steady state also arises as the fixed point of the CPTP map Φ = − KS −1 (theorem 1), whose dominant eigenvalue is 1. We find it by an explicitly-restarted Arnoldi iteration on Φ
+
+(Algorithm 4): each cycle builds a Krylov subspace of Φ, keeps the Ritz vector whose Ritz value is closest to 1, and restarts from it, tracking the running-best iterate. As for the linear solver, convergence is tested in batches on the reconstructed state. The low-lying spectrum is obtained by shift-invert Arnoldi on the deflated Lindbladian eLη
+
+(Algorithm 5). We iterate on (μ − eLη)−1, which maps the eigenvalues of L nearest μ to the dominant eigenvalues ν, recovered by λ = μ − 1/ν ; taking μ = 0 targets the smallest-magnitude nonzero modes. Each Arnoldi step applies this operator once, i.e. solves one linear system with the 18 Algorithm 4: Steady state as the fixed point of Φ
+
+Input: H, {Lk}, tolerance ε, Krylov size m, max restarts N
+
+Output: ˆρ with L( ˆρ) ≈ 0, Tr ˆ ρ = 1
+
+Build S−1 = − RS 
+
+> 0
+
+(Algorithm 1); define Φ(ξ) = − K(S−1ξ);
+
+for j = 1, . . . , N do 
+
+Run one Arnoldi( m) cycle on Φ; let ξ be the Ritz vector with Ritz value nearest 1;
+
+ρ ← −S−1(ξ); ˆ ρ ← 12 (ρ + ρ†); ˆ ρ ← ˆρ/ Tr ˆ ρ;
+
+if ∥L( ˆρ)∥max < ε then return ˆρ
+
+restart from ξ;
+
+return running-best ˆ ρ
+
+preconditioned recycled GMRES above. We use a thick-restart (Krylov–Schur) scheme, keeping the best Ritz pairs between cycles, and thread the inner GMRES recycling subspace through every matvec. The residual is measured directly on the true Lindbladian, max k ∥Lvk − λkvk∥max < ε ,on the raw eigenvectors (which are traceless and are not hermitized or normalized). We also tried the default ARPACK algorithm of Scipy ( scipy.sparse.linalg.eigs ), but as it does not benefit from end-to-end JAX compilation, it is slower by a constant factor. 
+
+Algorithm 5: Low-lying spectrum via shift-invert Arnoldi 
+
+Input: H, {Lk}, shift μ, deflation η, number of modes k, tolerance ε, Krylov size m, Ritz pairs to keep p
+
+Output: k smallest-magnitude nonzero eigenpairs (λk, v k) of L
+
+Build RS 
+
+> μ
+
+(Algorithm 1) and Pμ ≡ Precond (·, μ, η ) (Algorithm 2); Define OP (b): solve (μ − eLη) x = b by right-preconditioned recycled GMRES; 
+
+repeat 
+
+Extend the Arnoldi factorization of OP to size m (recycling threaded through each matvec); Ritz values ν of OP → eigenvalues λ = μ − 1/ν of L;Thick-restart: keep the p best Ritz pairs; 
+
+until max k ∥Lvk − λkvk∥max < ε or max restarts ;
+
+return the k eigenpairs of smallest |λ|
+
+B Benchmarks B.1 Description of the system Cat qubit (sparse). The sparse benchmark models cat-state stabilization in a memory–buffer architecture. With {a, a †} and {b, b †} the annihilation/creation operators of the memory and buffer modes, the dynamics is set by the Hamiltonian 
+
+H = g2
+
+ a2b† + a†2b − εd
+
+ b + b† , (33) and the four jump operators 
+
+L1 = pκb(1 + ¯nb) b, L2 = √κb ¯nb b†,L3 = pκa(1 + ¯na) a, L4 = √κa ¯na a†, (34) where ¯ na and ¯ nb denote the thermal occupations of the two modes. This captures two-photon exchange between the memory and the lossy buffer together with thermal excitation and relaxation in both modes (no Kerr term). The resulting Lindbladian is sparse, has a small spectral gap that shrinks with cat size, and admits a unique steady state, so S is invertible. The physical parameters are taken from [31] and listed in table 1. The creation and annihilation operators should verify [a, a †] = 1, [b, b †] = 1, and [a, b ] = [a, b †] = 0, an algebra that can only be represented in infinite dimension. In practice, for numerical 19 Table 1: Parameters of the memory–buffer Lindbladian used in the benchmarks. Parameter Value 
+
+g2/2π 0.763 MHz 
+
+κb/2π 2.6 MHz 
+
+κa/2π 9.3 kHz ¯na 10 %¯nb 1.1 %simulations, one truncates a to na levels and b to nb levels. Namely, one takes a := ˜a ⊗ Id nb and 
+
+b := Id na ⊗ ˜b
+
+˜a =
+
+
+
+0 √10 √2
+
+. . . . . .
+
+0 √na − 10
+
+
+
+∈ Cna×na , ˜b =
+
+
+
+0 √10 √2
+
+. . . . . .
+
+0 √nb − 10
+
+
+
+∈ Cnb×nb .
+
+The effective Hilbert-space dimension is n = na nb, with na and nb the memory and buffer truncations. As we scale n, we set the buffer drive εd = g2na/5 so that the target cat amplitude 
+
+α2 = εd/g 2 = na/5 stays well within the truncated memory space, and choose na = round (√3n ),
+
+nb = ⌊na/3 ⌋. This keeps the physically populated Fock states resolved while avoiding truncation artifacts. 
+
+Random (dense). The dense benchmark uses generic, unstructured generators. We draw ma-trices A0, . . . , A 3 ∈ Cn×n whose real and imaginary parts are i.i.d. standard normal, and set the Hermitian Hamiltonian and three jump operators 
+
+H = A0 + A†
+
+> 0
+
+2 , Lj = √γ A j (j = 1, 2, 3 ), γ = 0.1. (35) A single random stream is drawn in increasing n so the systems are reproducible. All generators are dense. 
+
+B.2 Description of the competing methods 
+
+We compare against established solvers for each of the three tasks; all run in double precision, with convergence declared when ∥L(ρ)∥max < 10 −8 on the hermitized, trace-one state, and each run capped at 100 s. Our own methods run on an Nvidia H100 GPU; the CPU competitors run on an Intel Xeon Platinum 8481C. 
+
+Steady state (fig. 2). Dense SVD — with QuTiP steadystate(method=’svd’) : forms the dense 
+
+n2 × n2 Liouvillian and solves via SVD. It’s exact up to machine precision and complexity scales as O(n6). Runs on CPU. 
+
+GMRES + ILU — QuTiP method=’direct’, solver=’gmres’, use_precond=True with atol =
+
+rtol = 10 −10 . This uses SciPy’s GMRES with an incomplete-LU left-preconditioner at its default fill/drop settings. This is an iterative running on CPU. 
+
+MUMPS — multifrontal sparse LU [2, 1] on the singular Liouvillian made regular by trace-pinning (row 0 replaced by the trace constraint, right-hand side a weighted e0), using column-major vectorization. We use the default MUMPS options. This is a direct, CPU-only method. 
+
+GMRES (Krylov.jl) — Julia LinearSolve.jl /KrylovJL_GMRES with reltol = 10 −8 on the same trace-pinned sparse system. Again, an unpreconditioned, iterative, CPU based method. 
+
+Time evolution — Dynamiqs mesolve with the explicit adaptive Tsit5 integrator (diffrax), rtol =
+
+atol = 10 −12 , integrated from |0⟩⟨ 0| to a fixed horizon ( 50 μ s dense, 2000 μ s cat) after which the residual is checked; runs on GPU. Our two entries are the fixed-point Arnoldi on Φ (Algorithm 4) and the preconditioned GMRES linear solver (Algorithm 3), both with the eigendecomposition Lyapunov backend. 20 Low-lying spectrum (fig. 5). NumPy dense — numpy.linalg.eig of the dense n2 ×n2 Liouvillian, keeping the four eigenvalues of smallest magnitude (which include the steady state); exact, O(n6).
+
+ARPACK — scipy.sparse.linalg.eigs in shift-invert mode with k = 4, sigma = − 10 −6,
+
+which=’LM’ , tol = 10 −6; the tiny nonzero shift keeps the LU factorization off the singularity of 
+
+L; no deflation, no preconditioner. Both baselines return four eigenvalues including the steady state, whereas our shift-invert Arnoldi (Algorithm 5) returns the three smallest nonzero modes; convergence is the eigenpair residual to fall below 10 −4 in max-norm. 
+
+Time evolution (fig. 7). The competitor is again Dynamiqs with the default Tsit5 integrator, here on GPU, with rtol = atol set to the loosest of {10 −4, 10 −6, 10 −8, 10 −10 } that meets the accuracy target. Our implicit Euler scheme applies the resolvent (Id − ∆t L)−1 (eq. (29)) with the Lyapunov preconditioner; in this regime a single preconditioned GMRES cycle per step suffices. The base system is the dense random Lindbladian ( γ = 0.1 ) to which we add a diagonal quartic term K N 2, with N = diag (0, 1, . . . , n − 1), to the Hamiltonian as a knob on stiffness. We fix n = 32 
+
+and sweep K ∈ [0, 15 ]. The step size ∆t is chosen by geometric doubling as the largest step whose trajectory stays within fidelity F ⩾ 0.99 of a reference Tsit5 run at rtol = atol = 10 −12 , evaluated at every step time. The implicit scheme uses a number of steps essentially independent of K,whereas the explicit integrator’s step count grows with stiffness. Consequently, implicit Euler wins only once the system is stiff enough: Tsit5 is faster below the crossover ( K ≈ 2.5 ), while implicit Euler reaches a ∼ 34 × wall-clock speedup at K = 15 . The advantage is specific to this low-precision regime; at tighter tolerances the required step size makes implicit Euler uncompetitive, which is why we present it as a proof of concept rather than a state-of-the-art solver. 
+
+Resolvent (fig. 3). Each method solves the vectorized shifted system (λ − L)( ρ) = Id /n , at 
+
+λ = λmax · 10 {0, −1, −2} with λmax the largest-magnitude eigenvalue of L, estimated once off the clock. As the spectrum of L lies in the closed left half-plane, λId − L is nonsingular for λ > 0 
+
+and no trace-pinning is needed. Convergence is ∥(λ − L)( ρ) − Id /n ∥max < 10 −8 on the hermitized state rescaled to its exact trace Tr (ρ) = Tr (b)/λ = 1/λ .
+
+Dense LU — numpy.linalg.solve on the dense n2 × n2 matrix λId − L; direct, O(n6), CPU. 
+
+MUMPS — multifrontal sparse LU [2, 1] on the sparse λId −L, default options; direct, CPU-only. 
+
+GMRES — scipy.sparse.linalg.gmres on λId − L, no preconditioner, rtol = 0, atol =
+
+10 −10 , restarted every 100 iterations, at most 5000 iterations; iterative, CPU. 
+
+GMRES + ILU — the same GMRES right-preconditioned by an incomplete-LU factorization (scipy.sparse.linalg.spilu ) of λId − L with drop_tol = 10 −4 and fill_factor = 20 ; the factorization (computed once) is part of the timed region. Our entry is the right-preconditioned recycled GMRES of section 3.1 (Krylov size 32 , 8 recycled vectors, atol = 10 −9) with the eigendecomposition Lyapunov backend for RS
+
+> λ
+
+.
+
+C Φ is trace-preserving Lemma 1. Assume Sp (G) ∩ iR = ∅. Then Φ = − KS −1 is trace-preserving. Proof. We recall that a CP map is trace-preserving if and only if its dual map is unital, i.e. maps the identity to itself. The dual of Φ is characterized by the following relation, valid for all operators 
+
+X, Y :Tr Φ∗(X)Y = Tr XΦ (Y) (36) 
+
+= Tr 
+
+X
+
+Z ∞
+
+> 0
+
+X
+
+> j
+
+LjetG Ye tG †
+
+L† 
+
+> j
+
+dt 
+
+ (37) 
+
+= Tr 
+
+
+
+Z ∞
+
+> 0
+
+X
+
+> j
+
+etG †
+
+L† 
+
+> j
+
+XL jetG dtY 
+
+ (38) So that 
+
+Φ∗(Id ) = 
+
+Z ∞
+
+> 0
+
+etG †  X
+
+> i
+
+L† 
+
+> i
+
+Li
+
+
+
+etG dt (39) 
+
+=
+
+Z ∞
+
+> 0
+
+−etG †
+
+(G + G†)etG dt (40) 
+
+=
+
+h
+
+− etG †
+
+etG 
+
+i∞ 
+
+> 0
+
+= Id , (41) 21 where the boundary term at infinity vanishes because ℜ(Sp (G)) < 0 . Thus the dual is unital and 
+
+−KS −1 is CPTP. 
+
+References 
+
+[1] P.R. Amestoy, A. Buttari, J.-Y. L’Excellent, and T. Mary. Performance and Scalability of the Block Low-Rank Multifrontal Factorization on Multicore Architectures. ACM Transactions on Mathematical Software , 45:2:1–2:26, 2019. [2] P.R. Amestoy, I. S. Duff, J. Koster, and J.-Y. L’Excellent. A fully asynchronous multifrontal solver using distributed dynamic scheduling. SIAM Journal on Matrix Analysis and Applications ,23(1):15–41, 2001. [3] M. Arioli, V. Pták, and Z. Strakoš. Krylov sequences of maximal length and convergence of GMRES. Bit Numer. Math. , 38(4):636–643, December 1998. [4] Richard H Bartels and George W Stewart. Algorithm 432 [C2]: Solution of the matrix equation 
+
+ax + xb = c [F4]. Communications of the ACM , 15(9):820–826, 1972. [5] Markus Bläser. Fast matrix multiplication. Theory Comput. , 5:1–60, 2013. [6] James Bradbury, Roy Frostig, Peter Hawkins, Matthew James Johnson, Chris Leary, Dou-gal Maclaurin, George Necula, Adam Paszke, Jake VanderPlas, Skye Wanderman-Milne, and Qiao Zhang. JAX: composable transformations of Python+NumPy programs. http: //github.com/jax-ml/jax , 2018. [7] Heinz-Peter Breuer and Francesco Petruccione. The theory of open quantum systems . Oxford University Press, USA, 2002. [8] Yu Cao, Mingfeng He, and Xiantao Li. Dynamically optimal unraveling schemes for simulat-ing Lindblad equations. Journal of Physics A: Mathematical and Theoretical , 59(16):165301, apr 2026. [9] H. J. Carmichael. Breakdown of photon blockade: A dissipative quantum phase transition in zero dimensions. Phys. Rev. X , 5(3):031028, Sep 2015. [10] A. M. Chebotarev and F. Fagnola. Sufficient conditions for conservativity of quantum dy-namical semigroups. Journal of Functional Analysis , 118(1):131–153, 1993. [11] A. M Chebotarev and F Fagnola. Sufficient Conditions for Conservativity of Minimal Quan-tum Dynamical Semigroups. Journal of Functional Analysis , 153(2):382–404, March 1998. [12] Hao Chen, Alfio Borzì, Denis Janković, Jean-Gabriel Hartmann, and Paul-Antoine Hervieux. Full- and low-rank exponential Euler integrators for the Lindblad equation. SIAM Journal on Scientific Computing , 48(1):A1–A26, 2026. [13] Daniel Dahan, Geva Arwas, and Eytan Grosfeld. Classical and quantum chaos in chirally-driven, dissipative Bose–Hubbard systems. npj Quantum Information , 8(1), February 2022. [14] Andrii Dmytryshyn, Massimiliano Fasi, Nicholas J Higham, and Xiaobo Liu. Mixed-precision algorithms for solving the Sylvester matrix equation. arXiv preprint arXiv:2503.03456 , 2025. [15] Kirill S. Dubovitskii. Bit-flip errors in dissipative cat qubits: Second-order perturbation theory. Phys. Rev. A , 111:012617, Jan 2025. [16] Gene Golub, Stephen Nash, and Charles Van Loan. A Hessenberg–Schur method for the problem ax + xb = c. IEEE Transactions on Automatic Control , 24(6):909–913, 1979. [17] Vittorio Gorini, Andrzej Kossakowski, and E. C. G. Sudarshan. Completely positive dy-namical semigroups of N-level systems. Journal of Mathematical Physics , 17(5):821–825, May 1976. [18] Anne Greenbaum, Vlastimil Pták, and Zdeněk Strakoš. Any Nonincreasing Convergence Curve is Possible for GMRES. SIAM J. Matrix Anal. Appl. , 17(3):465–469, 1996. [19] Pierre Guilmin, Adrien Bocquet, Élie Genois, Daniel Weiss, and Ronan Gautier. Dynamiqs: an open-source Python library for GPU-accelerated and differentiable simulation of quantum systems. https://github.com/dynamiqs/dynamiqs , 2025. 22 [20] J. Haegeman, J. I. Cirac, T. J. Osborne, and F. Verstraete. Calculus of continuous matrix product states. Phys. Rev. B , 88:085118, Aug 2013. [21] Michael J. Hartmann, Fernando G. S. L. Brandão, and Martin B. Plenio. Strongly interacting polaritons in coupled arrays of cavities. Nature Physics , 2(12):849–855, November 2006. [22] J.R. Johansson, P.D. Nation, and Franco Nori. QuTiP: An open-source Python framework for the dynamics of open quantum systems. Computer Physics Communications , 183(8):1760–1772, 2012. [23] E. M. Kessler, G. Giedke, A. Imamo ˇ glu, S. F. Yelin, M. D. Lukin, and J. I. Cirac. Dissipative phase transition in a central spin system. Phys. Rev. A , 86(1):012116, Jul 2012. [24] Steven G. Krantz and Harold R. Parks. The Implicit Function Theorem: History, Theory, and Applications . Birkhäuser, Boston, MA, USA, 2002. [25] G. Lindblad. On the generators of quantum dynamical semigroups. Communications in Mathematical Physics , 48(2):119–130, Jun 1976. [26] André Melo, Gaspard Beugnot, and Fabrizio Minganti. Variational perturbation theory in open quantum systems for efficient steady state computation. arXiv preprint arXiv:2504.00085 ,2025. [27] Fabrizio Minganti, Alberto Biella, Nicola Bartolo, and Cristiano Ciuti. Spectral theory of Liouvillians for dissipative phase transitions. Phys. Rev. A , 98(4):042118, Oct 2018. [28] Fabrizio Minganti and Dolf Huybrechts. Arnoldi-Lindblad time evolution: Faster-than-the-clock algorithm for the spectrum of time-independent and Floquet open quantum systems. 
+
+Quantum , 6:649, February 2022. [29] Michael L. Parks, Eric de Sturler, Greg Mackey, Duane D. Johnson, and Spandan Maiti. Recycling Krylov Subspaces for Sequences of Linear Systems. SIAM J. Sci. Comput. , 28(5):1651– 1674, 2006. [30] P. C. Parks. A. M. Lyapunov’s stability theory—100 years on. IMA Journal of Mathematical Control and Information , 9(4):275–303, December 1992. [31] U. Réglade, A. Bocquet, R. Gautier, J. Cohen, A. Marquet, E. Albertinale, N. Pankratova, M. Hallen, F. Rautschke, L.-A. Sellem, P. Rouchon, A. Sarlette, M. Mirrahimi, P. Campagne-Ibarcq, R. Lescanne, S. Jezouin, and Z. Leghtas. Quantum control of a cat qubit with bit-flip times exceeding ten seconds. Nature , 629(8013):778–783, 2024. [32] Josef Richter, Lucas Sá, and Masudul Haque. Integrability versus chaos in the steady state of many-body open quantum systems. Phys. Rev. E , 111:064103, Jun 2025. [33] Rémi Robin, Pierre Rouchon, and Lev-Arcady Sellem. Unconditionally stable time discretiza-tion of Lindblad master equations in infinite dimension using quantum channels. arXiv preprint arXiv:2503.01712 , 2025. [34] Youcef Saad and Martin H. Schultz. GMRES: A generalized minimal residual algorithm for solving nonsymmetric linear systems. SIAM Journal on Scientific and Statistical Computing ,7(3):856–869, 1986. [35] Yousef Saad. Iterative Methods for Sparse Linear Systems . Society for Industrial and Applied Mathematics, Philadelphia, PA, 2 edition, 2003. [36] Kirk M. Soodhalter, Daniel B. Szyld, and Fei Xue. Krylov subspace recycling for sequences of shifted linear systems. Appl. Numer. Math. , 81:105–118, July 2014. [37] F. Verstraete and J. I. Cirac. Continuous matrix product states for quantum fields. Phys. Rev. Lett. , 104:190405, May 2010. [38] Michael M. Wolf. Quantum channels & operations guided tour. Lecture notes, 2012. 23
