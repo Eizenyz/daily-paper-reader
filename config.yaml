@@ -90,6 +90,53 @@ subscriptions:
           source: generated
           note: ''
       updated_at: '2026-09-20T14:41:58.241Z'
+    - tag: quantum-algo
+      description: 我希望追踪量子科学计算中的基础算法和复杂度进展，寻找能够迁移到微分方程及动力学求解的新技术。
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: quantum linear systems
+          keyword_cn: 量子线性系统
+          query: quantum algorithms for solving linear systems with improved complexity and condition number dependence
+        - keyword: Hamiltonian simulation
+          keyword_cn: 哈密顿量模拟
+          query: efficient Hamiltonian simulation algorithms with rigorous gate and query complexity guarantees
+        - keyword: block encoding
+          keyword_cn: 块编码
+          query: block encoding techniques for accessing matrices in quantum algorithms
+        - keyword: quantum singular value transformation
+          keyword_cn: 量子奇异值变换
+          query: quantum singular value transformation for matrix functions and polynomial approximation
+        - keyword: quantum signal processing
+          keyword_cn: 量子信号处理
+          query: quantum signal processing frameworks for implementing matrix functions and transformations
+        - keyword: gate complexity
+          keyword_cn: 门复杂度
+          query: gate complexity analysis and improvements for quantum algorithm implementations
+      intent_queries:
+        - query: >-
+            quantum algorithms for linear systems and matrix functions with improved complexity, including
+            preconditioning and polynomial approximation
+          query_cn: 量子线性系统与矩阵函数计算的复杂度改进，包括预条件和多项式逼近
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            efficient implementations of Hamiltonian simulation, block encoding, quantum singular value transformation,
+            and quantum signal processing with rigorous resource analysis
+          query_cn: 哈密顿量模拟与量子变换的高效实现，具有严格资源分析
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            transferable algorithmic techniques for scientific computing, resource lower bounds, quantum speedup
+            conditions, state preparation, and amplitude estimation
+          query_cn: 可迁移到科学计算的通用算法技术、资源下界、量子加速条件，以及态制备和振幅估计方法
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-09-20T14:43:39.032Z'
 source_backends:
   arxiv:
     papers_table: arxiv_papers
