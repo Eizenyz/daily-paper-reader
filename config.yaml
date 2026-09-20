@@ -25,3 +25,77 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: quantum-ode
+      description: >-
+        我希望追踪量子算法求解常微分方程和偏微分方程的研究，尤其是时变线性微分方程、耗散系统、量子时间推进和快速演化算法。最关注可证明的复杂度改进：降低对演化时间、误差精度、条件数和空间离散规模的依赖，减少初态及源项态制备查询，以及降低解态恢复成本。也关注说明这些改进何时可行的稳定性条件、复杂度下界和不可能性结果。相关术语包括
+        quantum differential equations、quantum time marching、quantum dissipative dynamics、quantum fast
+        forwarding、quantum partial differential equations 和 quantum state
+        preparation。论文只要在上述某一方面有实质贡献即可，不要求同时满足全部条件。优先关注算法构造、关键数学估计和资源分析；仅以量子神经网络拟合方程、但没有相关理论分析的论文降低优先级。
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: quantum differential equations
+          keyword_cn: 量子微分方程
+          query: quantum algorithms for solving differential equations
+        - keyword: quantum dissipative dynamics
+          keyword_cn: 量子耗散动力学
+          query: quantum algorithms for dissipative dynamics and open quantum systems
+        - keyword: quantum fast forwarding
+          keyword_cn: 量子快速演化
+          query: quantum fast forwarding algorithms for rapid evolution of differential equations
+        - keyword: quantum partial differential equations
+          keyword_cn: 量子偏微分方程
+          query: quantum algorithms for solving partial differential equations
+        - keyword: quantum state preparation
+          keyword_cn: 量子态制备
+          query: quantum state preparation for initial states and source terms in differential equation solvers
+        - keyword: time-dependent linear differential equations
+          keyword_cn: 时变线性微分方程
+          query: quantum algorithms for time-dependent linear ordinary differential equations
+      intent_queries:
+        - query: >-
+            quantum algorithms for solving time dependent linear ordinary differential equations with provable
+            complexity improvements
+          query_cn: 求解时变线性常微分方程且具有可证明复杂度改进的量子算法
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            quantum time marching and fast forwarding methods for dissipative dynamics and partial differential
+            equations
+          query_cn: 用于耗散系统和偏微分方程的量子时间推进与快速演化方法
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            reducing dependence on evolution time, precision, condition number, and spatial discretization in quantum
+            differential equation solvers
+          query_cn: 降低量子微分方程求解器对演化时间、精度、条件数和空间离散规模依赖的研究
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            stability conditions, complexity lower bounds, and impossibility results for quantum differential equation
+            algorithms
+          query_cn: 量子微分方程算法的稳定性条件、复杂度下界和不可能性结果
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-09-20T14:36:08.858Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
