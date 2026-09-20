@@ -1,0 +1,253 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-20T14:48:46.456125+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 3,
+    "deep_cap": 7,
+    "deep_selected": 3,
+    "quick_candidates": 3,
+    "quick_skim_target": 12,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2609.18757v1",
+      "source": "arxiv",
+      "title": "Query-Optimal and Gate-Efficient Lindbladian Simulation",
+      "abstract": "We give a quantum algorithm for Lindbladian simulation given a block encoding of the Hamiltonian $H$ and a projected unitary encoding of the stacked jump operator $B=\\sum_{k=1}^m \\lvert k\\rangle\\otimes L_k$, with normalization factors $α_H$ and $α_B$, respectively. For evolution time $t$, set $τ=(α_H+α_B^2)t$. The algorithm approximates the evolution channel to diamond-norm error $\\varepsilon$ using $O\\!\\left(τ+\\frac{\\log(1/\\varepsilon)}{\\log\\!\\left(e+\\log(1/\\varepsilon)/τ\\right)}\\right)$ oracle queries, matching the query lower bound for Hamiltonian simulation. The number of additional one- and two-qubit gates is linear in the query complexity up to polylogarithmic factors. The query- and gate-complexity bounds extend to Lipschitz-continuous time-dependent Lindbladians under coherent time-indexed oracle access. Our construction uses a one-query transducer that implements a product of rational approximations to short-time evolution when supplied with a catalyst. We bound the error from omitting the catalyst by exploiting orthogonality between different sequences of Kraus labels. The gate implementation combines a compressed Kraus-label representation, which stores only the positions and values of the nonzero labels, with the rotation factorization of Chen et al.",
+      "authors": [
+        "Boyang Chen",
+        "Minbo Gao",
+        "Xinzhao Wang",
+        "Shuo Zhou"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.DS"
+      ],
+      "published": "2026-09-16T14:44:42+00:00",
+      "link": "https://arxiv.org/pdf/2609.18757v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "query-optimal quantum algorithm for Lindbladian (open-system) simulation",
+      "llm_evidence_cn": "查询最优的林德布拉德（开放系统）模拟量子算法",
+      "llm_evidence": "查询最优的林德布拉德（开放系统）模拟量子算法",
+      "canonical_evidence": "查询最优的林德布拉德（开放系统）模拟量子算法",
+      "llm_tldr_en": "A quantum algorithm simulates Lindbladians given block-encoded Hamiltonian and jump operators, achieving query-optimal and gate-efficient complexity that matches Hamiltonian simulation lower bounds and extends to time-dependent cases.",
+      "llm_tldr_cn": "开放量子系统的耗散动力学模拟长期受制于查询与门复杂度偏高的问题。本文在哈密顿量块编码与跳跃算子投影酉编码的输入模型下，给出林德布拉德演化的量子模拟算法，以τ=(αH+αB²)t为标度达到关于演化时间的查询复杂度，并匹配哈密顿量模拟的查询下界。算法的单双比特门数在查询复杂度上仅多出多项式对数因子，且界可推广至Lipschitz连续时变林德布拉德情形，为耗散与非幺正动力学的高效量子模拟奠定基础。",
+      "llm_tldr": "开放量子系统的耗散动力学模拟长期受制于查询与门复杂度偏高的问题。本文在哈密顿量块编码与跳跃算子投影酉编码的输入模型下，给出林德布拉德演化的量子模拟算法，以τ=(αH+αB²)t为标度达到关于演化时间的查询复杂度，并匹配哈密顿量模拟的查询下界。算法的单双比特门数在查询复杂度上仅多出多项式对数因子，且界可推广至Lipschitz连续时变林德布拉德情形，为耗散与非幺正动力学的高效量子模拟奠定基础。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.17796v2",
+      "source": "arxiv",
+      "title": "Quantum Block Encodings for Periodic Two-Phase Finite Element Operators: 2D Poisson and 2D Elasticity",
+      "abstract": "Quantum algorithms require embedding linear operators into unitaries using block encodings. The costs associated with these block encodings determine whether a quantum speedup is achieved. Efficient \\emph{shift decomposition} encodings have been proposed for 2D homogeneous scalar operators. Here, we present exact block encodings for 2D homogeneous elasticity, 2D two-phase bilinear Poisson, and 2D two-phase elasticity periodic finite-element operators.   For 2D homogeneous elasticity, the resulting linear combination of unitaries (LCU) has $L = 17$ terms for every Poisson ratio $ν$ and every mesh resolution, and the subnormalization is the closed form $α= E(33+ν)/\\bigl[6(1-ν^{2})\\bigr]$, exceeding $\\|\\mathbf{K}\\|_{2}$ by the resolution-independent factor $(33+ν)/24$.   To address two-phase periodic microstructures, we introduce two oracles with distinct roles: a node-to-element oracle, built from cyclic shifts, that carries a nodal index to each of the four incident element indices, and a microstructure-specific material oracle that marks phase membership with a sign. This yields 25 and 57 LCU terms for two-phase Poisson and elasticity, respectively; the latter reduces to 49 at $ν= 1/3$. The term counts are independent of mesh resolution, volume fraction, and phase contrast. The subnormalizations, provided in closed form, are independent of mesh resolution and volume fraction. In the scalar case, the tight bound $α= \\|\\mathbf{K}\\|_\\infty$ is achieved whenever a node lies entirely in the stiffer phase. In the elasticity case, that bound is not attained, since the shear coupling contributes entries of both signs to a row. An open-source implementation is available at https://github.com/UW-ERSL/PyBlockEncode",
+      "authors": [
+        "Krishnan Suresh"
+      ],
+      "primary_category": "cs.CE",
+      "categories": [
+        "cs.CE"
+      ],
+      "published": "2026-09-15T20:05:26+00:00",
+      "link": "https://arxiv.org/pdf/2609.17796v2",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "exact block encodings and LCU for 2D Poisson and elasticity finite-element operators",
+      "llm_evidence_cn": "针对二维泊松与弹性有限元算子给出精确块编码与 LCU 分解",
+      "llm_evidence": "针对二维泊松与弹性有限元算子给出精确块编码与 LCU 分解",
+      "canonical_evidence": "针对二维泊松与弹性有限元算子给出精确块编码与 LCU 分解",
+      "llm_tldr_en": "This work constructs exact block encodings for 2D periodic finite-element operators including two-phase Poisson and elasticity, giving LCU term counts and subnormalization constants that determine quantum speedups for PDE solvers.",
+      "llm_tldr_cn": "量子算法需将线性算子嵌入酉矩阵，而块编码代价决定能否获得加速；此前仅对二维齐次标量算子有高效移位分解编码。本文为二维齐次弹性、两相双线性泊松及两相弹性周期有限元算子构造精确块编码，给出 LCU 项数与次归一化常数的闭式表达。结果使这些偏微分方程离散算子的量子求解成本可精确评估，是量子 PDE 求解的关键使能技术。",
+      "llm_tldr": "量子算法需将线性算子嵌入酉矩阵，而块编码代价决定能否获得加速；此前仅对二维齐次标量算子有高效移位分解编码。本文为二维齐次弹性、两相双线性泊松及两相弹性周期有限元算子构造精确块编码，给出 LCU 项数与次归一化常数的闭式表达。结果使这些偏微分方程离散算子的量子求解成本可精确评估，是量子 PDE 求解的关键使能技术。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "block encoding techniques for accessing matrices in quantum algorithms",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.14077v1",
+      "source": "arxiv",
+      "title": "IQFEM: A quantum finite element method for heterogeneous problems with immersed boundaries",
+      "abstract": "Quantum computing offers the potential to solve computational mechanics problems with a more favourable complexity scaling than classically possible. To realise this potential, a quantum-compatible formulation of the finite element method is essential. We present such a formulation for Poisson problems with spatially varying coefficients on general domains discretised by an immersed uniform Cartesian grid. The resulting banded sparse system matrices are encoded as the sum of diagonal matrices with polynomial entries and their products with shift matrices. The sum of the matrices is formed using the linear combination of unitaries (LCU) technique. The resulting block-encoded system matrix can be implemented using a polylogarithmic number of elementary gates. For immersed boundaries, the block-encoded system matrix is further processed using a diagonal indicator matrix with zeros and ones. The indicator matrix is defined in terms of an integer-valued level-set function composed of simple geometric primitives via Boolean set operations. The required integer operations are computed on the fly using quantum arithmetic. The resulting block-encoded linear system of equations is solved using quantum singular value transformation (QSVT). The overall gate count, including the QSVT, is $O(N_{\\text{tot}}^{2/d} \\operatorname{polylog}(N_{\\text{tot}}))$, where $d$ is the problem dimension and $N_{\\text{tot}}$ the number of grid points. In numerical examples that confirm the theoretical complexity estimates, the solutions converge approximately linearly for immersed problems and quadratically for simply connected domains.",
+      "authors": [
+        "Shehara Perera",
+        "Yiren Wang",
+        "Fehmi Cirak"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-09-12T17:49:31+00:00",
+      "link": "https://arxiv.org/pdf/2609.14077v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "quantum finite element method for Poisson PDEs with LCU block encoding",
+      "llm_evidence_cn": "用量子有限元和LCU块编码求解泊松偏微分方程",
+      "llm_evidence": "用量子有限元和LCU块编码求解泊松偏微分方程",
+      "canonical_evidence": "用量子有限元和LCU块编码求解泊松偏微分方程",
+      "llm_tldr_en": "A quantum-compatible finite element formulation is proposed for Poisson problems with spatially varying coefficients, encoding banded sparse matrices via LCU and block encoding with polylogarithmic complexity.",
+      "llm_tldr_cn": "针对含空间变系数泊松问题在复杂区域上的求解，现有量子数值方法缺乏与之兼容的有限元离散框架。本文提出浸入式笛卡尔网格上的量子有限元格式，将带状稀疏系统矩阵表示为对角多项式矩阵与移位矩阵之和，并用线性组合酉算子（LCU）技术构造块编码。由此系统矩阵可在多项式对数复杂度内实现，为异质边界问题提供了量子加速的求解路径，可迁移至更一般的偏微分方程数值离散。",
+      "llm_tldr": "针对含空间变系数泊松问题在复杂区域上的求解，现有量子数值方法缺乏与之兼容的有限元离散框架。本文提出浸入式笛卡尔网格上的量子有限元格式，将带状稀疏系统矩阵表示为对角多项式矩阵与移位矩阵之和，并用线性组合酉算子（LCU）技术构造块编码。由此系统矩阵可在多项式对数复杂度内实现，为异质边界问题提供了量子加速的求解路径，可迁移至更一般的偏微分方程数值离散。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.13953v1",
+      "source": "arxiv",
+      "title": "Digital quantum lattice Boltzmann evolution by reversible compute and open-system reset",
+      "abstract": "Turbulent fluid simulation is computationally demanding because nonlinear interactions couple a wide range of scales. Quantum computing offers another computational model, but fluid evolution is nonlinear and dissipative whereas closed gate-based dynamics is linear and reversible. The lattice Boltzmann method (LBM) is an attractive discrete target because streaming is a local permutation, yet conventional collision reconstructs a nonlinear equilibrium and applies dissipative relaxation. We present a digital quantum lattice Boltzmann (QLBM) algorithm that keeps that nonlinear timestep in computational-basis registers. Each step writes the updated populations into a clean destination bank, uncomputes the workspace, and resets the obsolete source. The resulting channel is completely positive and trace preserving (CPTP), composes without intermediate measurement, and applies to any lattice Boltzmann stencil that can be evaluated reversibly into a clean bank. Forced D3Q19 homogeneous isotropic turbulence, in direct numerical simulation (DNS) and Smagorinsky large-eddy simulation (LES) at Reynolds number 15000 over one million lattice steps, shows statistical agreement in mass, energy budgets, spectra, and intermittency. The three-dimensional calculations use a digital-register emulator of the circuit. A separate D2Q9 implementation compiles the same contract to reversible gates and agrees bit-exactly with its integer twin. Two-bank storage and serial lattice depth limit near-term feasibility.",
+      "authors": [
+        "Muhammad Idrees Khan"
+      ],
+      "primary_category": "physics.comp-ph",
+      "categories": [
+        "physics.comp-ph",
+        "quant-ph"
+      ],
+      "published": "2026-09-12T13:53:07+00:00",
+      "link": "https://arxiv.org/pdf/2609.13953v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Digital quantum algorithm for dissipative nonlinear fluid PDE via lattice Boltzmann evolution",
+      "llm_evidence_cn": "基于格子玻尔兹曼的耗散非线性流体偏微分方程量子算法",
+      "llm_evidence": "基于格子玻尔兹曼的耗散非线性流体偏微分方程量子算法",
+      "canonical_evidence": "基于格子玻尔兹曼的耗散非线性流体偏微分方程量子算法",
+      "llm_tldr_en": "A digital quantum lattice Boltzmann algorithm handles nonlinear, dissipative fluid evolution by writing updated populations into clean registers, uncomputing the workspace, and resetting obsolete registers each timestep.",
+      "llm_tldr_cn": "湍流等非线性耗散流体演化难以在封闭可逆的量子线路中直接模拟，因为流体演化是非线性且耗散的，而门级动力学线性可逆。本文提出数字量子格子玻尔兹曼算法，把非线性碰撞步保留在计算基寄存器中，每步将更新后的布居写入干净的目标寄存器，随后反计算工作区并重置废弃寄存器。该构造使耗散型格子玻尔兹曼时间步得以逐步可逆推进。这为在量子计算机上求解耗散型偏微分方程提供了可逆化时间推进框架。",
+      "llm_tldr": "湍流等非线性耗散流体演化难以在封闭可逆的量子线路中直接模拟，因为流体演化是非线性且耗散的，而门级动力学线性可逆。本文提出数字量子格子玻尔兹曼算法，把非线性碰撞步保留在计算基寄存器中，每步将更新后的布居写入干净的目标寄存器，随后反计算工作区并重置废弃寄存器。该构造使耗散型格子玻尔兹曼时间步得以逐步可逆推进。这为在量子计算机上求解耗散型偏微分方程提供了可逆化时间推进框架。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.16721v1",
+      "source": "arxiv",
+      "title": "Rotation Collision based Quantum Lattice Boltzmann Methods",
+      "abstract": "In the existing quantum algorithms for the lattice Boltzmann method, resolving the unitarity problem of the BGK collision operator from first principles remains a fundamental challenge, and a systematically constructed unitary alternative that reproduces the BGK relaxation structure to leading order has not yet been established in the literature. In this work, we propose a novel quantum lattice Boltzmann method (QLBM) based on the rotation collision operator, in which the non-unitary BGK relaxation is replaced by a unitary rotation in the amplitude space of the distribution function, and the corresponding gate-level quantum circuits are also constructed. Specifically, the rotation collision operator is developed for both the D2Q5 model of the convection-diffusion equation and the D2Q9 model of the incompressible Navier--Stokes equations. It is worth noting that, for the D2Q5 model, the equilibrium-state preparation circuit can be precompiled and reused, and the resulting unitary blocks can be sequentially composed once the state-dependent collision parameters are specified. Finally, some numerical experiments are performed to validate the developed QLBM, demonstrating its accuracy and effectiveness.",
+      "authors": [
+        "Kangyang Zeng",
+        "Changshen Huang",
+        "Xi Liu",
+        "Xiaodong Niu",
+        "Zhenhua Chai"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn",
+        "quant-ph"
+      ],
+      "published": "2026-09-15T06:46:45+00:00",
+      "link": "https://arxiv.org/pdf/2609.16721v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Quantum lattice Boltzmann method replacing non-unitary BGK collision with a unitary rotation for convection-diffusion PDEs",
+      "llm_evidence_cn": "用量子旋转碰撞算符替代非幺正BGK碰撞，构造求解对流扩散偏微分方程的量子格子玻尔兹曼方法",
+      "llm_evidence": "用量子旋转碰撞算符替代非幺正BGK碰撞，构造求解对流扩散偏微分方程的量子格子玻尔兹曼方法",
+      "canonical_evidence": "用量子旋转碰撞算符替代非幺正BGK碰撞，构造求解对流扩散偏微分方程的量子格子玻尔兹曼方法",
+      "llm_tldr_en": "Proposes a quantum lattice Boltzmann method that replaces the non-unitary BGK relaxation with a unitary rotation in amplitude space, enabling gate-level circuits for convection-diffusion equations.",
+      "llm_tldr_cn": "现有量子格子玻尔兹曼方法难以从第一性原理解决BGK碰撞算符的非幺正性问题，也缺少能到领头阶重现BGK弛豫结构的系统性幺正替代方案。本文提出基于旋转碰撞算符的量子格子玻尔兹曼方法，将分布函数振幅空间中的非幺正BGK弛豫替换为幺正旋转，并构造了相应的门级量子线路。方法同时给出对流扩散方程的D2Q5模型等具体实现。该工作为用量子算法求解偏微分方程中的非幺正演化提供了可实现的构造思路。",
+      "llm_tldr": "现有量子格子玻尔兹曼方法难以从第一性原理解决BGK碰撞算符的非幺正性问题，也缺少能到领头阶重现BGK弛豫结构的系统性幺正替代方案。本文提出基于旋转碰撞算符的量子格子玻尔兹曼方法，将分布函数振幅空间中的非幺正BGK弛豫替换为幺正旋转，并构造了相应的门级量子线路。方法同时给出对流扩散方程的D2Q5模型等具体实现。该工作为用量子算法求解偏微分方程中的非幺正演化提供了可实现的构造思路。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.19184v1",
+      "source": "arxiv",
+      "title": "Suzuki-Trotter Decompositions and other Methods for Quantum Time Evolution",
+      "abstract": "(Suzuki-)Trotter decompositions, splitting methods, (Lie) product formulae... The most common numerical methods for the time evolution of quantum systems come with many names. And they are used practically everywhere with applications ranging from the solution of classical equations of motion and various Monte Carlo simulations to the real and imaginary time evolution on classical as well as quantum computers. Here we review the state of the art of said methods, focussing especially on the progress made over the last few years. We highlight recently discovered efficient time evolution algorithms and explain how best to use them in practice. A central part of this work is the estimation of error bounds that has improved greatly within the past decade. The relevance of time evolution methods for quantum computing is discussed with a focus on noisy hardware. Finally, a comprehensive overview of generalisations, related methods and alternatives to Trotterization is provided. This includes time-dependent Hamiltonian dynamics, processed methods, multi-product formulae, symplectic integrators, TDVP for tensor networks, quantum signal processing, Crouch-Grossman methods and more. The overall perspective in this work is that of a theoretical physicist. All mathematical proofs as well as some technical details are omitted for easier readability. Instead, this review serves as a hands-on guide and, of course, as a starting point for references that provide further details.",
+      "authors": [
+        "Johann Ostmeyer"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cond-mat.stat-mech",
+        "cond-mat.str-el",
+        "hep-lat",
+        "physics.comp-ph"
+      ],
+      "published": "2026-09-15T15:51:45+00:00",
+      "link": "https://arxiv.org/pdf/2609.19184v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "review of Suzuki-Trotter, splitting and product formulae for quantum time evolution with error bounds",
+      "llm_evidence_cn": "综述量子时间演化的Suzuki-Trotter、分裂与乘积公式及误差界",
+      "llm_evidence": "综述量子时间演化的Suzuki-Trotter、分裂与乘积公式及误差界",
+      "canonical_evidence": "综述量子时间演化的Suzuki-Trotter、分裂与乘积公式及误差界",
+      "llm_tldr_en": "This review surveys Suzuki-Trotter decompositions, splitting and product formulae for quantum time evolution, highlighting recent efficient algorithms and improved error bounds for classical and quantum simulation.",
+      "llm_tldr_cn": "量子系统时间演化的数值方法名称繁多且难以在实践中选用，其误差估计长期是瓶颈。本文综述了Suzuki-Trotter分解、分裂方法与乘积公式等主流技术，重点介绍近年在高效时间演化算法与误差界估计方面取得的进展，并给出实际使用建议。该综述连接了经典运动方程求解、蒙特卡洛模拟与实/虚时间演化，为哈密顿量模拟及微分方程时间推进提供可迁移的方法与严格复杂度保证。",
+      "llm_tldr": "量子系统时间演化的数值方法名称繁多且难以在实践中选用，其误差估计长期是瓶颈。本文综述了Suzuki-Trotter分解、分裂方法与乘积公式等主流技术，重点介绍近年在高效时间演化算法与误差界估计方面取得的进展，并给出实际使用建议。该综述连接了经典运动方程求解、蒙特卡洛模拟与实/虚时间演化，为哈密顿量模拟及微分方程时间推进提供可迁移的方法与严格复杂度保证。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "efficient Hamiltonian simulation algorithms with rigorous gate and query complexity guarantees",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

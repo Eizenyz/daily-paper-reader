@@ -1,0 +1,2659 @@
+Title: Suzuki-Trotter Decompositions and other Methods for Quantum Time Evolution
+
+URL Source: https://arxiv.org/pdf/2609.19184v1
+
+Published Time: Fri, 18 Sep 2026 00:04:25 GMT
+
+Number of Pages: 42
+
+Markdown Content:
+IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+# Journal of Physics A: Mathematical and Theoretical 
+
+> TOPICAL REVIEW
+
+Crossmark 
+
+> RECEIVED
+
+September 2026 
+
+> REVISED
+
+dd Month 2026 
+
+# Suzuki-Trotter Decompositions and other Methods for Quantum Time Evolution 
+
+Johann Ostmeyer  
+
+> Helmholtz-Institut für Strahlen- und Kernphysik, University of Bonn, 53115 Bonn, Germany
+> E-mail: ostmeyer@hiskp.uni-bonn.de
+
+Abstract 
+
+(Suzuki-)Trotter decompositions, splitting methods, (Lie) product formulae... The most common numerical methods for the time evolution of quantum systems come with many names. And they are used practically everywhere with applications ranging from the solution of classical equations of motion and various Monte Carlo simulations to the real and imaginary time evolution on classical as well as quantum computers. Here we review the state of the art of said methods, focussing especially on the progress made over the last few years. We highlight recently discovered efficient time evolution algorithms and explain how best to use them in practice. A central part of this work is the estimation of error bounds that has improved greatly within the past decade. The relevance of time evolution methods for quantum computing is discussed with a focus on noisy hardware. Finally, a comprehensive overview of generalisations, related methods and alternatives to Trotterization is provided. This includes time-dependent Hamiltonian dynamics, processed methods, multi-product formulae, symplectic integrators, TDVP for tensor networks, quantum signal processing, Crouch-Grossman methods and more. The overall perspective in this work is that of a theoretical physicist. All mathematical proofs as well as some technical details are omitted for easier readability. Instead, this review serves as a hands-on guide and, of course, as a starting point for references that provide further details.  
+
+> Keywords: Trotterization, time-dependent Hamiltonian dynamics, error bounds, quantum computing
+
+Contents 1 Introduction 3
+
+1.1 Literature recommendations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 41.1.1 Basics and prerequisites . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 41.1.2 Beyond this review . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 51.2 Outline of this review . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+
+2 Practical guidelines 5
+
+2.1 Method selection . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 62.2 Tips and tricks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72.2.1 Exploit sparsity of operators . . . . . . . . . . . . . . . . . . . . . . . . . . . 72.2.2 Tune on small systems . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72.2.3 Choose the best operator decomposition H = P 
+
+> k
+
+Ak . . . . . . . . . . . . . . 82.2.4 Generalise efficient 2-operator Trotterizations . . . . . . . . . . . . . . . . . . 82.2.5 Exploit potential operators hierarchies A ≪ B . . . . . . . . . . . . . . . . . 82.2.6 Think outside the box . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+
+3 Construction of higher order methods 9
+
+3.1 Omelyan’s optimisation ansatz . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 93.2 Yoshida’s method . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10 3.3 Suzuki’s recursive formula . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11 1arXiv:2609.19184v1 [quant-ph] 15 Sep 2026 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+4 Error estimation 11 
+
+4.1 General upper error bounds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11 4.1.1 Single-step error . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12 4.1.2 Long-time error accumulation . . . . . . . . . . . . . . . . . . . . . . . . . . . 12 4.2 Lower error bounds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14 4.3 Worst case errors for non-differentiable and unbounded problems . . . . . . . . . . . 14 4.4 Low-energy sector error bounds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 4.5 Model-specific error bounds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 4.5.1 Relevance of entanglement . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 4.5.2 Coulomb potential . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 4.5.3 Hubbard and t-J models . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 4.5.4 SYK model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 4.5.5 Transverse Ising model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 4.5.6 Bosonic systems . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 4.6 Empirical error estimation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16 
+
+5 Generalisations 16 
+
+5.1 Time-dependent Trotterizations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16 5.2 Making use of operator magnitude hierarchies . . . . . . . . . . . . . . . . . . . . . . 17 5.2.1 Interaction picture . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 5.3 Complex coefficients . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 5.4 Processed methods . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 5.5 Multi-product formulae . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 5.6 Randomised methods . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 5.6.1 Average over results equivalent by symmetry . . . . . . . . . . . . . . . . . . 20 5.6.2 Reducing the number of operators . . . . . . . . . . . . . . . . . . . . . . . . 20 5.6.3 Eliminating Trotter errors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20 
+
+6 Alternatives and related methods 21 
+
+6.1 Symplectic integrators . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 6.1.1 Energy conservation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 6.1.2 Comparison to Runge-Kutta methods . . . . . . . . . . . . . . . . . . . . . . 22 6.1.3 Relation to Trotterization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 6.1.4 Force-gradient integrators . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 6.2 Zassenhaus formula . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 6.3 Polynomial expansions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24 6.4 Quantum signal processing . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 6.4.1 Circuit optimisation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 6.5 Time-dependent variational principle . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 6.6 Numerical integration on manifolds . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 6.6.1 Crouch-Grossman methods . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 6.6.2 Munthe-Kaas methods . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 
+
+7 Quantum computing for time evolution 28 
+
+7.1 Theoretical potential and limitations . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 7.1.1 Computational complexities . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 7.1.2 No fast-forward theorem . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29 7.1.3 Tackling physical systems . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29 7.1.4 Ground state search . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29 7.2 The NISQ era . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29 7.2.1 Circuit depth reduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30 7.2.2 Error mitigation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30 7.2.3 Quantum-classical hybrid methods . . . . . . . . . . . . . . . . . . . . . . . . 30 
+
+8 Conclusion 31 
+
+8.1 Open problems . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31 
+
+References 32 
+
+2IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+1 Introduction 
+
+In quantum mechanics the dynamics of a state |ψ(t)⟩ with time t are governed by the Schrödinger equation 
+
+i ℏ ddt |ψ(t)⟩ = H |ψ(t)⟩ , (1) where H is the Hamiltonian operator and we set ℏ = 1 from now on. Given an initial state |ψ(0) ⟩
+
+and assuming H to be time-independent, the Schrödinger equation is formally solved by 
+
+|ψ(t)⟩ = e − i Ht |ψ(0) ⟩ . (2) The time evolution operator 
+
+U (− i t) ≡ e− i Ht (3) can be understood as a matrix exponential since H is a linear operator. Conceptually, exact diagonalisation (ED) is the simplest way to calculate U (τ ) for some real or imaginary time τ . It suffices to diagonalise 
+
+H = QDQ † (4) where D is a diagonal matrix containing the energy levels En of H as eigenvalues. The energies are real and the basis transformation Q is unitary because H is hermitian. Thus, the time evolution operator simplifies 
+
+U (τ ) = QeDτ Q† (5) and all the exponentials remaining are scalar. In practice, ED is only feasible analytically for very simple systems and numerically for relatively small systems. For problems beyond ED one typically has to resort to approximations. This review focuses on one of the most prominent numerical approximation methods. In physics, this method is usually referred to as Suzuki-Trotter decomposition or simply Trotterization. In a more mathematical context, the same concepts are called splitting methods or (Lie) product formulae . No matter the name, the idea is to split the Hamiltonian into a sum of simpler operators 
+
+H =
+
+> Λ
+
+X
+
+> k=1
+
+Ak (6) so that the matrix exponential eAk τ of every individual operator is relatively easy to calculate. Then the time evolution operator can be approximated via the n-th order scheme Sn
+
+U (τ ) = U (h)Nτ = Sn(h)Nτ + O (hn) (7) by Nτ steps of length h ≡ τNτ up to a systematically controllable error O (hn). The error can be expressed through the Baker-Campbell-Hausdorff (BCH) formula 
+
+eAeB = e A+B+ 12 [A,B ]+ 112 ([ A, [A,B ]]+[ B, [B,A ]])+ ··· , (8) where [A, B ] ≡ AB − BA denotes the commutator. An immediate consequence is that the Trotter error vanishes if all the operators Ak commute pairwise. Since this case is trivially solvable, we will assume from now on that the operators do not commute, that is [Ak, A k′ ]̸ = 0 for k̸ = k′.The order n of the error is dictated by the specific Suzuki-Trotter decomposition Sn composed of a product of terms eciAk h with a set of coefficients ci. Crucially, n refers to the order of the global error after the entire time τ . The local error after a single h-step, on the other hand, is of order O  hn+1 . It accumulates over Nτ steps to O  Nτ hn+1  = O (τ h n).The simplest product formula 
+
+S↑ 
+
+> 1
+
+(h) = e A1heA2h · · · eAΛh (9) is obtained by choosing all coefficients c = 1 equal. It reproduces the Lie product formula [1] (generalised to Λ operators) 
+
+ePΛ   
+
+> k=1 Akτ
+
+= lim  
+
+> Nτ→∞
+
+ eA1h · · · eAΛhNτ
+
+. (10) 3IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer While this original 1st order Trotter scheme [2] is very intuitive, it is also highly inefficient and should never be used in practice. Instead, the strictly superior 2nd order Strang splitting 1 [5] is obtained by simply reverting the order of the operators AΛ, . . . , A 1 in every other step 
+
+S2(h) ≡ S↑
+
+> 1
+
+ h
+
+2
+
+
+
+S↓
+
+> 1
+
+ h
+
+2
+
+
+
+= e 12 A1he 12 A2h · · · e 12 AΛhe 12 AΛh · · · e 12 A2he 12 A1h .
+
+(11) This concept readily generalises: an odd-order n scheme can always be elevated to the even order n + 1 by applying it alternately in the original and in the reverse order. Throughout most literature including this review, therefore, the focus lies exclusively on symmetric Suzuki-Trotter decomposition. Higher order Trotterizations are composed from lower order building blocks. We have already seen this for S2 which is composed out of two applications of S1 (with opposite operator orders) each scaled by the coefficient c = 12 . The general form of the product formula (7) thus reads 
+
+Sn(h) = 
+
+> Λ
+
+Y
+
+> k=1
+
+ec1Ak h
+
+! 1Y
+
+> k=Λ
+
+ed1Ak h
+
+!
+
+· · · 
+
+> Λ
+
+Y
+
+> k=1
+
+ecq Ak h
+
+! 1Y
+
+> k=Λ
+
+edq Ak h
+
+!
+
+, (12) where the ci, d i coefficients correspond to forward and backward order of the operators, respectively. In total, there are q cycles through A1, . . . , A Λ, . . . , A 1 and as many independent coefficients for symmetric schemes, visualised in fig. 1. It is essential that these products are ordered, e.g. S↓ 
+
+> 1
+
+(dih) = Q1 
+
+> k=Λ
+
+edihA k = e diAΛh · · · ediA1h, since the operators Ak do not commute and neither do their exponentials. Depending on the convention, the products might be resolved right-to-left or left-to-right. Both ways are used in the literature and this choice is irrelevant as long as it is consistent. Moreover, for symmetric Suzuki-Trotter schemes the coefficients are, of course, the same read either way. [A + B + < + C+ Bk + En + Fa ,
+
+# ( + 4 + C+ Bk + En + Fa ,
+
+# ]) 
+
+# ↳ [A .[Em , AJ] , Lis, Lin , Al] ,[Es ,
+
+# [is , Al] 
+
+# ↳
+
+# ·
+
+Figure 1: Visualisation of a Suzuki-Trotter scheme [6] with an arbitrary number Λ of operators Ak as in eq. (12). There are q cycles , each consisting of two ramps (forward purple, backward pink). Symmetric schemes obey the identity ci = dq+1 −i for all i ∈ { 1, . . . , q }. Reprinted figure from Ref. [7]. 
+
+The construction of splitting methods as well as their selection, application, error estimation and the development of alternatives are challenging tasks and active areas of research. In this review we collect the progress of the last several years made within the field of quantum time evolution. Practical aspects relevant for an ‘end user’ are covered as well as technical details of interest for a ‘developer’. 
+
+1.1 Literature recommendations 
+
+Parts of this review might require non-trivial prior knowledge while others might motivate the reader to go on a quest for deeper understanding and further details. In anticipation of both concerns, let us highlight several particularly relevant and useful reviews, books and lecture notes. 
+
+1.1.1 Basics and prerequisites It goes without saying that a solid knowledge of linear algebra is essential not just for the time evolution of quantum systems but for practically any computation in physics. Nevertheless, the efficient implementation of linear algebra operations on a (classical)       
+
+> 1It is also called Verlet decomposition [3], Størmer’s method or Leapfrog algorithm and was rediscovered multiple times over the centuries [4].
+
+4IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer computer can be surprisingly challenging. The Numerical Recipes [4] cover all these basics and more in great detail. Chapter 17 therein deals with the numerical integration of ordinary differential equations (ODEs) and is of particular interest in the context of this work. Section 7 of this review deals with quantum computing and, unfortunately, we do not have the space to introduce this topic from scratch. Instead, some textbook like that by Nielsen and Chuang [8] will have to do the heavy lifting. Lin and Wiebe’s lecture notes [9], on the other hand, provide an invaluable collection of up-to-date quantum algorithms. 
+
+1.1.2 Beyond this review The focus of this topical review lies on the progress made over the last few years. This also means that well established results cannot be covered in detail. It just so happens that Blanes, Casas and Murua have recently published a review [10] that perfectly fills this hole. Ref. [10] should be considered a first starting point by anyone interested in a broad overview and the mathematical background of splitting methods. While the book by Hairer, Lubich and Wanner on geometric numerical integration [11] is less recent, it is certainly not outdated yet. There is hardly any other reference as comprehensive on topics broadly related to symplectic integrators. We hope that this review will prove useful in many branches of physics, but we also acknowledge that some topics will require further literature research for practical applicability. In particular, tensor networks are only glanced over briefly in section 6.5. Fortunately, once more, there is a review at hand complementing this work: Paeckel et al. have collected time-evolution methods specifically for matrix-product states [12]. 
+
+1.2 Outline of this review 
+
+For starters, we will discuss the practical application of time evolution methods in section 2. This includes guidelines as to the optimal choice of method in a given setting. In particular, alternatives to Suzuki-Trotter decompositions are highlighted before elaborating on specific Trotter schemes. Section 2 ends with some hands-on tips and tricks concerning the efficient implementation of time evolution algorithms. A brief summary of various techniques to construct higher order Trotter methods in section 3 is followed by a review of error estimators in section 4. Reliable error estimation can be crucial for the prediction of computational costs and, correspondingly, the required resources. Upper and lower error bounds are discussed as well as generally applicable and model-specific estimators. Subsequently, we provide an overview of aforementioned generalisations (sec. 5), alternatives and further methods related to Trotterization (sec. 6). From a physical perspective, the main generalisation is the reintroduction of time dependence into the Hamiltonian H(t). Beyond that, we focus on approaches that might be more efficient than classical Trotterization in one setting or another. Their applicability and advantages are covered as well as potential drawbacks. Some of the alternatives like quantum signal processing (sec. 6.4) are optimised for the use on quantum computers. Given the surging interest in quantum computing for time evolution, section 7 is dedicated to this topic in particular. Quantum devices promise to provide a natural platform for efficient time evolution, but it is not yet mature enough for useful contributions to physics. In section 7 we illuminate the long-term potential of quantum computers for time evolution without neglecting to emphasise the challenges currently posed by hardware noise and recent approaches to overcome these challenges. We conclude in section 8, ending with a number of open questions in the field. 
+
+2 Practical guidelines 
+
+Suzuki-Trotter decompositions are a tool for time evolution. It is important to realise that they are not the goal in and of themselves. Before proceeding with the implementation of a Trotterized time evolution, one should therefore consider whether there are superior alternatives. Central questions concerning the application at hand are: • Can we get away with approximate unitarity? If yes, a polynomial Taylor or Chebyshev expansion (sec. 6.3) of the time evolution operator is typically computationally more efficient than any Trotter method. Alternatively, 
+
+multi-product formulae (MPF, sec. 5.5) allow to obtain a higher order from linear combinations of lower order Trotterizations. • Is a more specialised tool available? 5IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer E.g. for tensor networks the time-dependent variational principle (TDVP, sec. 6.5), for 
+
+quantum computing optimised circuits based on quantum signal processing (QSP, sec. 6.4), or for classical equations of motion (EOM) symplectic integrators (sec. 6.1) might be applicable. Having answered both questions with ‘no’, it is likely that a Suzuki-Trotter decomposition is the method of choice. In the following we will discuss how to choose and tune the most appropriate scheme for the desired time evolution. For a visualisation of this decision tree, the flow chart at the end of Ref. [6] is recommended. Note also that the methods explained below are directly applicable for time-dependent Hamiltonians following the prescription of theorem 3 in section 5.1. 
+
+2.1 Method selection 
+
+During the development phase of a new project, it is usually a safe bet to start with the simple second order Strang splitting S2 from equation (11). The method is sufficiently good for testing and very easy to implement. Once correctness is ascertained and the computational cost of the time evolution becomes critical, higher order methods should be considered. As a rule, in realistic time evolution problems the final time τ is dictated by the problem. To reach this time after Nτ steps comes at a computational cost (number of floating point operations or gates) proportional to qN τ where q is the number of cycles within a single step. Now a method needs to be found that allows to reach time τ with a minimal error for fixed computational resources or with minimal computational effort for a fixed target error. Both approaches are easiest understood by applying them to the toy model simulations depicted in figure 2. The right panel shows the error after a fixed simulation time as a function of the computational cost. Now, presume limited computational resources qN τ ≤ 500 . In that case one should choose the lowest-lying Trotter scheme with the smallest error along the qN τ = 500 line (here the order n = 6 
+
+scheme in tab. 2 by Maležič et al. [7]). Alternatively, one might require a relative error no larger than ∆n ≤ 10 −10 . Thus, the preferred method would be the left-most one along the ∆n = 10 −10 
+
+line (here the order n = 8 scheme by Morales et al. [13]).                                                      
+
+> 2345678910 11 12
+> Chain length ,L
+> 10 −7
+> 10 −6
+> 10 −5
+> 10 −4
+> 10 −3
+> 10 −2
+> Experimental error,  ∆n
+> Computational cost qN τ= 500
+> Order
+> n= 2
+> n= 4
+> n= 6
+> n= 8
+> Order
+> n= 2
+> n= 4
+> n= 6
+> n= 8 10 210 3
+> Computational cost ,qN τ
+> 10 0
+> 10 −2
+> 10 −4
+> 10 −6
+> 10 −8
+> 10 −10
+> Chain length L= 6
+> Strang [3, 5] (q= 1)
+> Forest & Ruth [14] (q= 3)
+> Maležič et al. [7], tab. 1 (q= 6)
+> Yoshida [15] (q= 7)
+> Blanes & Moan [16] (q= 10)
+> Maležič et al. [7], tab. 2 (q= 14)
+> Morales et al. [13] (q= 17)
+> Order
+> n= 2
+> n= 4
+> n= 6
+> n= 8
+> Order
+> n= 2
+> n= 4
+> n= 6
+> n= 8
+
+Figure 2: Errors of Trotterized time evolution in the quantum Heisenberg model approximated by the relative error ∆n in Frobenius norm as a function of the system size L (left) and the computational cost qN τ (right). All simulations used the fixed total time t = 10 The gray lines indicate where the two plots were simulated at, i.e. qN τ = 500 and L = 6 , respectively. Adapted figure from Ref. [17]. 
+
+For the Suzuki-Trotter decompositions within a given order n there is a clear efficiency ranking (smallest error at fixed cost and time, sec. 3.1). At the time of writing the best 4th and 6th order schemes are by Maležič et al. [7] with the coefficients provided in tables 1 and 2. Highly efficient splitting methods of orders n = 8 , 10 were found by Morales et al. [13]. All of these schemes are implemented in the qiskit-omelyan package [18] as part of the Ecosystem for Qiskit [19]. Moreover, all the coefficients derived for Ref. [7] can be found together with the accompanying code [20]. In contrast to the ranking above, a direct comparison of efficiencies between orders is not meaningful. Asymptotically for small time steps h → 0, higher order methods will always beat lower order ones. However, in practice we are rarely interested in the asymptotic regime and for large steps higher order methods often have a significant overhead. This overhead is also highly dependent on the Hamiltonian H and the choice of operators Ak for the decomposition 6IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer    
+
+> Table 1: Coefficients for eq. (12) of the most efficient order n= 4
+> Suzuki-Trotter scheme to date [7].
+
+i ci = dq+1 −i
+
+1 0.074 082 572 180 463 262 2 0.232 923 088 374 338 803 3 0.296 820 560 634 668 408 4 0.122 086 989 386 933 251 5 −0.350 153 632 343 424 469 6 0.124 240 421 767 020 743    
+
+> Table 2: Coefficients for eq. (12) of the most efficient order n= 6
+> Suzuki-Trotter scheme to date [7].
+
+i ci = dq+1 −i i ci = dq+1 −i
+
+1 0.037 251 326 545 569 924 8 −0.200 016 005 078 878 524 2 0.120 600 278 793 781 562 9 0.074 145 714 537 530 386 3 0.266 062 994 460 763 541 10 0.087 345 801 243 357 893 4 0.163 668 553 338 143 183 11 0.044 234 977 360 777 830 5 0.071 316 838 327 437 583 12 −0.230 821 838 291 030 424 6 0.058 117 508 592 333 414 13 −0.237 197 828 922 049 295 7 0.188 707 697 234 255 120 14 0.056 583 981 858 007 803 
+
+H = P 
+
+> k
+
+Ak. In addition, lower order methods allow more intermediate measurements because each step is shorter at the same overall cost. That said, in many cases the decision is not as hard as it might seem at first. For instance, the simulations shown in figure 2 feature a clear overall winner, namely the order n = 6 scheme in tab. 2 by Maležič et al. [7]. Up to a very slim high-error region and the very high-cost regime, this Trotterization always features the lowest error at a given computational cost. Therefore, at least in simulations of systems similar to the quantum Heisenberg model used in [7] one can always use this decomposition without second thought. 
+
+2.2 Tips and tricks 2.2.1 Exploit sparsity of operators In quantum computing local operators eAk h that act only on one or two spin-type degrees of freedom are naturally identified with local gates. Similarly, in classical simulations it is essential to use sparse matrix implementations of these operators whenever possible. Generally speaking, sparse matrix-vector multiplications reduce the runtime in 
+
+N dimensions from O  N 2 to O (N ). Often, it is not even required to store the operator eAk h
+
+explicitly (in matrix form). Instead, a functional prescription can be the most efficient realisation. Let us consider a simple example. A quantum spin chain of length L has the dimension 
+
+N = 2 L. Working in the usual computational basis 
+
+B = {| 0 · · · 00 ⟩ , |0 · · · 01 ⟩ , |0 · · · 10 ⟩ , . . . , |1 · · · 11 ⟩} , (13) we can explicitly write down the action of a local operator on every state. For instance, the Pauli matrix σx acts on the k-th spin as 
+
+ei σxk h = cos( h)1 + i sin( h)σxk (14) 
+
+⇒ ei σxk h |i1, . . . , i k−1, i k, i k+1 , . . . , i L⟩ (15) 
+
+=
+
+(
+
+cos( h) |i1, . . . , i k−1, 0, i k+1 , . . . , i L⟩ + i sin( h) |i1, . . . , i k−1, 1, i k+1 , . . . , i L⟩ if ik = 0 ,
+
+cos( h) |i1, . . . , i k−1, 1, i k+1 , . . . , i L⟩ + i sin( h) |i1, . . . , i k−1, 0, i k+1 , . . . , i L⟩ if ik = 1 .
+
+This prescription can be realised classically with a simple loop over all N basis states without ever constructing the N × N matrix ei σxk h explicitly. Since σxk acts only on a single spin, the non-trivial operations can be reduced to a 2-dimensional subspace. More generally, an operator involving l spins requires 2l non-trivial operations that have to be repeated N times each, resulting in a runtime of order O  2lN .
+
+2.2.2 Tune on small systems Let us revisit figure 2. We have already learned from the right panel how to choose a Suzuki-Trotter decomposition or, more generally, any time evolution algorithm once representative benchmark simulations are available. In practice, the target system is often too large and simulations thereof too expensive for full benchmarks. Fortunately, according to Maležič et al. [7] benchmarks of the target system can be replaced by benchmarks on smaller systems using the same model. This is demonstrated in the left panel of figure 2 where the relative error ∆n is plotted for multiple lengths L of the same model. The total dimension of the system is 
+
+2L in this example. We observe that the error quickly approaches the thermodynamic limit. In particular, the hierarchy of Trotter efficiencies remains constant for all L ≥ 5. Thus, a viable procedure for finding the best model-dependent Trotterization is to first benchmark the model on a small and cheap system. Whichever time evolution method performs best on the small systems, will likely be optimal on the target system as well. This can be verified via simulations of a slightly larger (here e.g. L = 7 ) system until convergence is reached. 7IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+2.2.3 Choose the best operator decomposition H = P 
+
+> k
+
+Ak As a rule of thumb, one should try to find a decomposition of the Hamiltonian H into as few operators Ak as possible, i.e. minimise the number Λ of operators under the constraint that all of them have to be cheap to exponentiate. From a theoretical perspective, fewer operators come with tighter error bounds [21, 22], see theorem 2. In addition, the first-same-as-last property of each cycle within and of symmetric Trotterizations as a whole allows to save computational costs (gate count) by combining 
+
+ediA1heci+1 A1h = e (di+ci+1 )A1h. The fewer intermediate operators cannot be merged, the larger this effect. Moreover, efficient Suzuki-Trotter schemes like those in tables 1 and 2 are (almost) always optimised for Λ = 2 operators and their efficiency becomes less reliable for larger Λ.There is no formal guarantee that this will lead to an optimal result, since the error in practice might be small even if theoretical error bounds are very loose. Thus, it might be worth exploring some alternatives. Different ways to decompose the Hamiltonian can be constructed systematically based on the commutation graph between the different operators [23]. As has been demonstrated empirically in [6], there can be synergies between specific operator choices and Trotter schemes leading to a reduced error. Multiple attempts have been made recently to optimise the operator decompositions in special cases [24–26]. Deviating from the minimal-Λ rule should, however, remain the exception. 
+
+2.2.4 Generalise efficient 2-operator Trotterizations As we will discuss in more detail in section 3, it is much easier to construct a Suzuki-Trotter decomposition for exactly 2 operators, 
+
+e(A+B)h+O(hn+1 ) = e Aa 1heBb 1heAa 2h · · · eBb q heAa q+1 h (16) than to build a product formula as in equation (12) for any number Λ of operators Ak directly. Moreover, the efficiency of 2-operator schemes is well understood, allowing to optimise splitting methods over the decades [6, 7, 13, 16, 27, 28]. A priori, it is not obvious that these methods are applicable to general Hamiltonians at all. Fortunately, theorem 1 provides a simple prescription that allows to construct the generally applicable coefficients ci, d i for the decomposition (12) from the ai, b i coefficients via a telescope sum. This prescription has first been derived by McLachlan [29] and an intuitive visual proof is provided in Ref. [6]. 
+
+Theorem 1 (Generalising coefficients for 2 operators [6, 29]) . Let the coefficients ai and bi as in equation (16) define a 2-operator decomposition of order n and set 
+
+c1 = a1 , d1 = b1 − c1 , (17) 
+
+c2 = a2 − d1 , d2 = b2 − c2 , (18) ... ...
+
+cq = aq − dq−1 , dq = bq − cq . (19) Then the decomposition Sn(h) of Λ ≥ 2 non-commuting operators Ak as in equation (12) defined by these coefficients ci, d i is exact to order n as well. We remark that specialised Suzuki-Trotter decompositions have been constructed for the case of exactly Λ = 3 operators [28]. 
+
+2.2.5 Exploit potential operators hierarchies A ≪ B It is rather common in physics and related subjects that different operators come at vastly different scales, say ∥A∥ ≪ ∥ B∥ in some norm. In this case the smaller operator should be treated as a perturbation of the larger one. Several methods have been derived to exploit such a separation of scales. They are discussed in section 5.2 in detail. The principal idea is to elevate the error in B to a higher order than A, or even to perform the time evolution in B exactly and interpret perturbations by A in the ‘interaction picture’. 
+
+2.2.6 Think outside the box Any reader prepared to invest some additional tuning effort to reduce the error or computational cost by a few more percent is referred to section 5. In particular, complex coefficients (sec. 5.3) allow for supreme efficiency at the cost of exact unitarity. Alternatively, processed methods (sec. 5.4) can be very useful for long-time evolution when results at intermediate time steps are not required. Multi-product formulae (sec. 5.5) construct higher order approximations of the time evolution operator from linear combinations of appropriately chosen standard Trotter product formulae. Especially on noisy quantum hardware, randomised methods (sec. 5.6) might also be a viable option since they allow to use shallower circuit, trading hardware noise for algorithmic noise. 8IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+3 Construction of higher order methods 
+
+Let us now dive into the details of product formula construction and optimisation. For this we assume a Hamiltonian H = A + B consisting of exactly two operators and refer to theorem 1 for the generalisation to Λ > 2 operators. Repeatedly applying the BCH formula (8), allows us to write 
+
+e(A+B)h+O1 h+O3 h3+O5 h5+··· = e Aa 1heBb 1h · · · eBb q heAa q+1 h , (20) where the error terms O1,3,... are defined by the coefficients ai, b i. For instance 
+
+O1 =
+
+> q+1
+
+X
+
+> i=1
+
+ai − 1
+
+!
+
+A +
+
+> q
+
+X
+
+> i=1
+
+bi − 1
+
+!
+
+B (21) denotes the first order local error . It needs to vanish so that the global error approaches zero in the limit of small steps h → 0.Since we require the Suzuki-Trotter decomposition defined by the coefficients ai, b i to be symmetric, all the local even-order errors O2 = O4 = · · · = 0 vanish immediately. A scheme Sn has the global error order n if all the local errors Ol = 0 with l < n are zero and On+1 ̸ = 0 . This leading order error On+1 then dominates in the so-called scaling region , that is once the step size h
+
+is small enough. The error terms can always be written as a linear combination of nested commutators 
+
+O1 = ( ν − 1) A + ( σ − 1) B , (22) 
+
+O3 = α[A, [A, B ]] + β[B, [B, A ]] , (23) 
+
+O5 = γ1[A, [A, [A, [A, B ]]]] + γ2[A, [A, [B, [A, B ]]]] + γ3[B, [A, [A, [A, B ]]]] + γ6[B, [B, [B, [B, A ]]]] + γ5[B, [B, [A, [B, A ]]]] + γ4[A, [B, [B, [B, A ]]]] , (24) with ν, σ defined by equation (21) and the higher order error coefficients α, β, γ k constructed in a similar manner. The explicit derivation of the coefficients becomes very involved for higher orders and we refer to Ref. [7] for technical details. There is no unique way from O3 on to express the nested commutators and the coefficients α, β, γ k depend on the specific basis choice. Ref. [30] lists the most common bases for the BCH splitting like the Hall [31] and the Lyndon basis [32]. Casa et al. [30, 33] have further introduced a very compact right-nested basis which has been employed successfully for higher order Trotter scheme construction by Maležič et al. [7]. In equation (24) we use this basis, featuring an aesthetically pleasing symmetry under A ↔ B exchange and γk reversal. Counting the number of coefficients ν, σ, α, β, γ, . . . yields the number of constraints #C that all need to be satisfied (all coefficients equal to zero) to obtain a Trotterization of given order n. This constraint count has been summarised in table 3 up to order n = 10 .      
+
+> Table 3: Number of constraints #Cand free parameters for different orders nand numbers of cycles q.Parentheses denote ranges of integer values and the ‘*’ values are only conjectured to be true. Table adapted from [7] based on [16].
+
+Order n 2 4 6 8 10 
+
+#C 2 4 10 28 84 Cycles q [1, 2] [3, 6] [7, 8] [9, 14] [15, 26] [27, 30] [31, 62*] Free parameters [0, 1] [0, 3] 0 [0, 5] 0 [0, 3] 0A symmetric decomposition of q cycles comes with q + 1 independent parameters ai, b i. Thus, the desired order conditions can always be fulfilled once q ≥ #C − 1. Rather surprisingly, from order n ≥ 6 on there exist ‘accidental’ solutions with fewer cycles than one would have expected. The regions in which schemes of a given order can be realised are also collected in table 3 together with the number of free parameters. Based on the scaling observation of the minimal cycles 
+
+qmin = 2 n/2 − 1, it is conjectured in Ref. [7] that (accidental) order n = 12 solutions exist from 
+
+q ≥ 63 cycles on. 
+
+3.1 Omelyan’s optimisation ansatz 
+
+These free parameters for q ≥ #C can be optimised to derive maximally efficient Suzuki-Trotter schemes. This approach has been pioneered by Omelyan et al. [27, 34] who have defined the 9IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer efficiencies 
+
+Eff n = 1
+
+qnErr n
+
+(25) by means of the error 
+
+Err 2 = p|α|2 + |β|2 , Err 4 =
+
+vuut 6X
+
+> j=1
+
+|γj |2 (26) for orders n = 2 , 4 and analogously for higher orders using the leading order error coefficients. The factor qn accounts for the computational cost of a single step with the error Err n.The (numerical) optimisation of these efficiencies quickly becomes very challenging which is why to date Omelyan’s ansatz has not been applied for high orders n > 6. Whenever feasible, however, this method has produced the most efficient Trotter schemes of their time [6, 16, 27]. For symplectic integrators (sec. 6.1) the original work by Omelyan et al. [34] is still unsurpassed. The current efficiency records for general Suzuki-Trotter decompositions of orders n = 4 , 6 are held by Maležič et al. [7]. They have been obtained by a large-scale numerical search using the Levenberg-Marquardt algorithm [35, 36] starting from multiple initial conditions. As can be seen from fig. 3, there are increasingly many local minima in the error landscape for higher numbers of cycles q. With q = 4 
+
+cycles (left) the error Err 4 has 3 distinct real branches leading to 6 minima in total, the lowest of which is marked by a star. There is an additional complex-valued minimum (sec. 5.3) with even higher efficiency (listed in Sec. 3.2.6 of [6]). The picture becomes much less transparent for the error Err 6 at q = 14 cycles with hundreds of local minima. Some of them are shown in the right panel of fig. 3 against the distance from the ‘origin’ 
+
+¯x2 = 2 
+
+> q
+
+X
+
+> i=1
+
+
+
+ci − 12q
+
+2
+
+. (27)       
+
+> −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+
+Free parameter 
+
+> 10 −2
+> 10 0
+> 10 2
+> 10 4
+> Error function , Err 4
+
+Polynomial manifold for 4 cycles               
+
+> Forest & Ruth [14] (q= 3)
+> Omelyan’s FR [27] (q= 4)
+> Branch 1 Branch 2 Branch 3 Complex branch Branch 1 Branch 2 Branch 3 Complex branch
+> 2×10 −75×10 −71×10 −6
+> Leading error ,Err 6
+> 1.01.52.02.5
+> Distance from the origin , ¯x
+> Local minima
+> 1st local minimum Global minimum
+
+Figure 3: Efficiency optimisation results. Left: Error manifolds of 4th order schemes at q = 4 cycles, more manifold visualizations at q = 5 and q = 6 cycles are available [20]. Right: A collection of order n = 6 
+
+schemes at q = 14 cycles plotted for their distance from the origin ¯x against the leading-order error Err 6.The global and 1st local minima are highlighted. The 1st local minimum performs very well in practice and is provided in tab. 2. Adapted figure from Ref. [7]. 
+
+It has been observed by Maležič et al. [7] that the two local minima with the lowest theoretical error have very different magnitudes of the individual coefficients ci, reflected in their ¯x values. As we will discuss in more detail in section 4.1.2, the stability and long-time error accumulation is greatly enhanced for more evenly spread coefficients, that is smaller ci. Intuitively, this makes sense because fewer negative and overly large steps are taken, leading to a smoother interpolation of the dynamics. This is why Maležič et al. ultimately recommend the 1st local minimum (tab. 2) rather than the global one. 
+
+3.2 Yoshida’s method 
+
+As is vividly demonstrated by the increasing number of local minima from q = 4 to q = 14 , there are practical limitations to the applicability of Omelyan’s ansatz. For orders as high as n ≥ 8 it 10 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer makes sense to drop some degrees of freedom. This is where the method pioneered by Yoshida [15] comes in. Rather than building the full Suzuki-Trotter decomposition from scratch with 2 operators (effectively from S1 building blocks), Yoshida proposed to use 2nd order Strang splitting 
+
+S2 building blocks 
+
+Sn(h) = S2(wmh) · · · S2(w2h)S2(w1h) S2 (w0h) S2(w1h)S2(w2h) · · · S2(wmh) , (28) 
+
+w0 = 1 − 2
+
+> m
+
+X
+
+> i=1
+
+wm . (29) The original motivation was to find the weights wi allowing for a minimal number of cycles 
+
+q = 2 m + 1 for a given order n in the hope to simultaneously minimise the computational cost. By now, it is well established that Trotter schemes with the minimal number of cycles are rarely efficient and it is worth increasing m beyond the required minimum [16, 27]. Nevertheless, the ansatz (28) is still well applicable and requires to solve far fewer order conditions than Omelyan’s method. This allowed Morales et al. [13] to find the most efficient product formulae of orders 
+
+n = 8 , 10 to date. 
+
+3.3 Suzuki’s recursive formula 
+
+A review of Suzuki-Trotter decompositions would not be complete without mentioning Suzuki’s contributions formalising the theory [37] and developing a recursive construction of higher order splitting methods [38, 39]. To this day the recursive construction 
+
+Sn+2 (h) = Sn(snh)p Sn ((1 − 2ps n)h) Sn(snh)p , (30) 
+
+sn = 12p − (2 p) 1
+
+> n+1
+
+(31) is very widely spread in time evolution applications. This is understandable, not only because the construction is historically well established, but also because it is simple and very generally applicable. In fact, any symmetric order-n Trotterization Sn and any integer p ≥ 1 lead to a valid scheme of order n + 2 . However, only p = 2 produces reasonably efficient product formulae and even they require q = 5 n/ 2−1 cycles for order n decompositions. The sheer length of these splitting methods makes them highly impractical for n + 2 > 4.We recommend not to use this recursive construction any more. Instead, the optimised Suzuki-Trotter decompositions discussed in the previous sections 3.1 and 3.2 provide greatly superior alternatives. 
+
+4 Error estimation 
+
+Besides the derivation of ever more efficient time evolution methods, the last few years have seen a great collective effort in quantifying the errors of these methods. The main challenge here is to replace the simple but very loose upper bounds based on the error terms in eqs. (22) to (24) by maximally tight estimators. As a rule, some previously fixed target accuracy can be obtained using significantly larger Trotter time steps than naively expected [40, 41], especially for local observables. Tighter error estimation allows to exploit this property and save compute time. In section 4.1 we first review upper error bounds that are generally applicable for smooth bounded operators. These bounds are broadly split into two classes: errors after a single Trotter step (sec. 4.1.1) and error accumulation over long times (sec. 4.1.2). Lower error bounds are added in section 4.2. Next, in section 4.3 we drop the “smooth” and “bounded” conditions and find that some state-depende bounds can still be derived. General error bounds are typically not very tight since they do not take any specific features of the underlying model or measured observables into account. For this reason a closer focus is laid on special observables, in particular the low-energy sector, in section 4.4 and on some classes of models in section 4.5. As opposed to these theoretical bounds, empirical error estimation methods are reviewed in section 4.6. 
+
+4.1 General upper error bounds 
+
+As discussed in section 3, the leading order Trotter error is given by a linear combination of higher order nested commutators. The full evaluation of the resulting error is not feasible in most cases which is why the sum of operators is typically bounded using the triangle inequality. A notable exception has been presented in [42] where embedded error estimation using two Trotter decompositions of different orders is derived. 11 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer Most of the errors estimates in the literature, both theoretical and empirical, are calculated for a specific operator norm. For instance, Ref. [7] uses the Frobenius norm, Ref. [22] relies on the spectral norm, and in Ref. [13] the error of the eigenvalues is advocated. It is an open problem how much can be concluded about specific observable errors from the various norms. In practice, it has been observed that a Suzuki-Trotter decomposition with a small error in one norm will typically also perform well according to other metrics [13]. This does not come as a surprise since on finite-dimensional spaces all norms are equivalent. Therefore, the specific norm choice is typically less important than one might initially expect. 
+
+4.1.1 Single-step error The triangle inequality in its simplest form reproduces the error estimates minimised in Omelyan’s method (sec. 3.1). The bounds obtained this way are, however, very loose and they are not applicable for more than two operators. More general rigorous error bounds based on the same concept have been provided in [43] and significantly improved in [44]. The series by (some of) the same authors culminates in [40]. The results of [40] have yet again been significantly generalised by Schubert and Mendl [22]. They have derived rigorous error bounds for arbitrary Trotterizations. Previously, similar error bounds had been found for the special case of the Hubbard model [21]. Generalised commutator-based error bounds for time-dependent Hamiltonians and Trotterized Lindbladian simulations have been derived in Refs. [45] and [46, 47], respectively. The bounds by Schubert and Mendl are presented in theorem 2. They use the full product of K
+
+operators. That is, for regular Trotterizations with q cycles and Λ distinct operators this implies 
+
+K = 2 q(Λ − 1) + 1 (using the first-same-as-last property). Note also that the coefficients ci, d i form equation (12) (or ai, b i from eq. (16)) have already been absorbed into the operators Ai. The bounds require to choose some splitting s ∈ { 1, . . . , K }. They are valid for every choice of s, but typically they are tightest for s ≈ K 
+
+> 2
+
+.
+
+Theorem 2 (Generally applicable error bounds [22, 48]) . Let Sn(h) = e AK h · · · eA1h be a product formula of order n. Then for every s ∈ { 1, . . . , K } the error of the product formula 
+
+Sn(h) − eHh  
+
+> 2
+
+≤ |h|n+1 
+
+(n + 1)! 
+
+> s
+
+X
+
+> j=2
+
+X  
+
+> pj+··· +ps=npj̸=0
+
+ npj , . . . , p s
+
+
+
+ad ps 
+
+> As
+
+· · · ad pj 
+
+> Aj
+
+Bj 2
+
++
+
+> K
+
+X
+
+> j=s+1
+
+X  
+
+> ps+1 +··· +pj=npj̸=0
+
+ nps+1 , . . . , p j
+
+
+
+ad ps+1  
+
+> As+1
+
+· · · ad pj 
+
+> Aj
+
+Bj 2
+
+! (32) is bounded in spectral norm ∥·∥ 2 with the p-fold adjoint action 
+
+ad pC D := [ C, · · · [C
+
+| {z }
+
+> p-times
+
+, D ] · · · ] and (33) 
+
+Bj := 
+
+> j−1
+
+X
+
+> ℓ=1
+
+Aℓ, j = 2 , . . . , K . (34) 
+
+Remark. The formula appears daunting at first, but there is no need to derive all the terms from scratch. The authors of [22] also provide a python package [48] automating the symbolic evaluation of the nested commutators. Moreover, a practical approach using projector Monte Carlo for the estimation of commutator norms has been presented in [49]. Theorem 2 does not provide tight bounds. The discrepancy between empirical and estimated errors can be observed in the left panel of figure 4 as the distance between the solid and the dashed lines. Therein three different Trotterizations have been used for a simple example Hamiltonian. In the very same work [22] Schubert and Mendl also provide strictly tighter bounds for the 2nd order Strang splitting (Proposition 1 in the published version and prop. 2 on arXiv). Even these bounds still overestimate the true error as can be seen from the blue lines in figure 4. That said, at the time of writing, theorem 2 provides the tightest known generally applicable bounds. 
+
+4.1.2 Long-time error accumulation An upper bound for the total Trotter error after some final time τ = Nτ h can be obtained directly from the error of a single time step error (τ ) ≤ Nτ error (h) (35) 12 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 10 2 10 1 10 0           
+
+> t10 11
+> 10 9
+> 10 7
+> 10 5
+> 10 3
+> 10 1
+> 10 1
+> error
+> Splitting for Fermi-Hubbard on a 1D lattice, v = -1, u = 1
+> empir. error (L = 4), Strang comm. scaling, Strang empir. error (L = 4), Suzuki4 comm. scaling, Suzuki4 empir. error (L = 4), AK 11-4 comm. scaling, AK 11-4
+> h
+> 10 −7
+> 10 −6
+> 10 −5
+> 10 −4
+> 0246810
+> Strang (11) Suzuki [38] Unif. Non-Unitary [6] Blanes & Moan [16]
+> error /t t
+
+Figure 4: Trotter error after a single time step Sn(− i h) − e− i Hh  
+
+> 2
+
+with the error bounds from theorem 2 for the Fermi-Hubbard model (left) and relative long-time error 1 
+
+> t
+
+Sn(− i t) − e− i Ht  
+
+> F
+
+for the Heisenberg model (right). The Strang splitting (11) is of order n = 2 , all the other Trotter schemes are of order n = 4 .Reprinted figures from Ref. [22] (left) and Ref. [6] (right) with adapted labels. 
+
+by triangle inequality. For this reason the long-term n-th order Trotter error scales as 
+
+O  Nτ hn+1  = O  τ n+1 /N nτ
+
+ = O (τ h n).The error accumulation in practice is often much milder than one might expect from the triangle inequality. For instance, at long times only the diagonal parts of the error terms (22) to (24) etc. in the Hamiltonian eigenbasis contribute to the total error [50] (see Theorem 3 therein and note that their δd = t∆td corresponds to τ h n in our notation). It has been shown independently in Refs. [51, 52] that the error bounds from the triangle inequality can be considerably improved upon using the ansatz O (hn) + O (τ h n). Importantly, the coefficient in front of the asymptotically leading term with τ -dependence can be very small. Following the argument by Chen [51], the idea behind this ansatz is that the error at each step can be split into a ‘parallel’ and an ‘orthogonal’ part. The parallel part accumulates over time and should ideally be small. The orthogonal part, on the other hand, only leads to an error oscillation and becomes negligible at long times. More specifically, the parallel operator space H∥ contains all operators (e.g. from eqs. (22) to (24)) that commute with the Hamiltonian. Now any error operator O∥ ∈ H∥ will add up linearly with every time step since its contribution does not change over time. In contrast, operators from the orthogonal complement O⊥ ∈ H⊥ do not commute with the Hamiltonian [O⊥, H ]̸ = 0 and change ‘direction’ averaging out over time. This is reminiscent of the notion of a shadow Hamiltonian ˜H coined in the context of symplectic integrators (sec. 6.1) [53]. The Trotterized time evolution is equivalent to the exact time evolution with ˜H = H + O (hn) defined by the sum of all error operators via the BCH formula (8). Operators O∥ that commute with the Hamiltonian define conserved quantities (in particular the energy directly related to H), so they are physically the most important to get right. In other words, it is natural that error contributions from 
+
+˜H − H ∈ H∥ accumulate. The resulting effect can be observed in the right panel of figure 4 where the long-time error (in Frobenius norm) is monitored. First of all we confirm that all the different Suzuki-Trotter decompositions converge to a constant-in-time ratio error /τ and thus the error follows the expected asymptotic order O (τ ). On shorter time scales, however, there are clearly visible oscillations that can be explained by significant contributions from the orthogonal error in H⊥. Larger oscillations indicate smaller parallel coefficients and consequently smaller asymptotic errors. This is particularly vividly demonstrated by the non-unitary scheme from Ref. [6] that appears to have extremely small parallel H∥ error contributions. The fourth order scheme was constructed so that all complex-valued coefficients have the same real part Re( ci) = Re( di) = 110 .The way the error splits into parallel and orthogonal contributions strongly depends on the Trotterization. Based on the observations from figure 4 it has been conjectured in Ref. [6] that the most favourable error accumulation is obtained for maximally uniform (real parts of the) coefficients. This has been proven by Maležič et al. [7] for second order product formulae using the framework derived by Chen [51]. Ref. [7] also provides additional empirical evidence strengthening the conjecture for higher orders (see fig. 3, right). In fact, the most efficient 4th and 6th order schemes in tables 1 and 2 already were selected by Maležič et al. as a compromise of small local errors and favourable error accumulation. 13 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer                       
+
+> 0246800.20.4
+> t
+> error
+> Upper bound Trotter error Lower bound for Nt= 20 ,L= 5 10 110 210 3
+> 10 −8
+> 10 −5
+> 10 −2
+> Nt
+> error
+> 100 modes
+> 200 modes
+> 300 modes
+> 400 modes
+> 800 modes upper bound O(N−1/4
+> t)
+> scaling for ∞modes
+> O(N−2
+> t)
+
+Figure 5: Trotter errors. Left: First order operator error S1(− i t) − e− i Ht  
+
+> 2
+
+for the XX model with a spin chain of length L = 5 . Upper and lower bounds (sec. 4.2) are compared to the true error as a function of final time t for a fixed number of steps Nt = 20 . Right: Second order error S2(− i t) − e− i Ht  Ψ100 for the ground state Ψ100 of the hydrogen atom after the fixed final time t = 1 at different discretization levels (∞ modes means no discretization). The analytic bound (sec. 4.3) for the singular Coulomb potential scales as O
+
+
+
+N −1/4
+
+> t
+
+
+
+, not with the naïve O  N −2
+
+> t
+
+ applicable to smooth potentials. Reprinted figures by the HB+ group from Ref. [54] (left) and Ref. [55] (right) with adapted labels. 
+
+4.2 Lower error bounds 
+
+So far, we have only discussed upper error bounds which typically greatly overestimate the true error. It is instructive to investigate lower bounds as well because they could be used to estimate the minimal resources required for a given simulation. Hahn et al. (referred to as part of the HB+ group below) provide such lower bounds for the first order Trotter method (9) and a Hamiltonian composed of two operators [54]. While the generalisation to a similar level as in theorem 2 will still required a lot of work, these bounds already demonstrate a great potential empirically. In the left panel figure 5 the lower error bounds from Ref. [54] are compared to the true error and the upper bounds from theorem 2 for a simple toy model. Rather intriguingly, the lower bounds tend to follow the trend of the true error much more closely than the upper bounds. This discrepancy is certainly warrants further investigations. 
+
+4.3 Worst case errors for non-differentiable and unbounded problems 
+
+The usual error estimation based on power law expansions breaks down if the operators under investigation are not sufficiently smooth. It turns out, however, that even for exponentials of non-differentiable operators rigorous bounds can be derived. The convergence of Trotter formulae can still be guaranteed in most cases, but the error scaling might be worse than expected and is not even necessarily a polynomial with an integer power [56]. The first essential step when dealing with non-differentiable and especially unbounded operators is to use state-dependent vector norms for the error bounds rather than operator norms. Not only can the operator norms diverge while individual initial states are evolved stably [45, 57]. It has also been shown that in the non-divergent case vector norms can be exponentially tighter than the usual operator norm estimator [58]. Members of the HB+ group [55] have derived state-dependent Trotter error bounds applicable for singular potentials. In Ref. [59], they provide applications of these bounds to an open quantum system with a bosonic environment. The ground state Ψ100 of the hydrogen atom (Coulomb potential) is found to be a particularly interesting case. Its slowest convergence in step size is limited to O
+
+
+
+h 14
+
+
+
+independently of the theoretical order of the product formula [55]. This behaviour can be clearly observed in the right panel of figure 5 where the error scaling of Ψ100 is plotted for different levels of regularisation. The number of modes corresponds to the number of discrete points in position space. At any finite number of modes the singularity of the Coulomb potential is shielded and for small enough step sizes (large enough Nt) the asymptotic scaling 
+
+O  h2 is recovered. This transition occurs at higher Nt for finer discretisations and the continuous case ( ∞ modes) is expected to follow the worst case O
+
+
+
+h 14
+
+
+
+scenario. The state-dependent bounds have been generalised by Becker et al. [60] for potentials of the form V (x) ∝ | x|−α with α ≤ 1. When non-differentiable states are also allowed, the convergence in the Trotter step size can be arbitrarily slow [61]. 14 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+4.4 Low-energy sector error bounds 
+
+State-dependent error bounds are not only useful when the operator norm fails. They can also be relevant in practical simulations which are often primarily interested in the ground state of a given system or the first few excited states. For instance, Mizuta and Kuwahara [62] have derived rigorous bounds for the Trotter error of low-energy states. This error turns out to be substantially reduced compared to those of generic states, including better scaling with the system size. Similarly, Bay-Smidt et al. [63] have found that the energy gap typically has a much smaller Trotter error than might have been expected from commutator-based bounds. In applications like adiabatic quantum computing (sec. 7.1) it is particularly important to quantify the error in the low-energy sector during evolution with a time-dependent Hamiltonian (sec. 5.1). Improved bounds for this specific scenario have been provided in Ref. [64]. When focusing on the ground state, it is a natural approach in physics to treat excited states as perturbations. The efficacy of this ansatz for the low-energy error estimation has been demonstrated in Ref. [65]. Therein, the perturbative error estimates have been shown to feature a considerably higher correlation with the true error than generic bounds like those from theorem 2. Unfortunately, so far the applicability of these bounds is limited to the second order Strang splitting. 
+
+4.5 Model-specific error bounds 
+
+The more information is available, the better the results will be. Of course, this general rule is also applicable to the error estimation in time evolution simulations. In particular, model-specific error bounds can be much more accurate than general estimations. Below, we provide a list of references for well-investigated models without going into too much detail about their results. 
+
+4.5.1 Relevance of entanglement Before naming any model explicitly, let us note that the entanglement entropy can often be estimated or at least bounded for systems with local interactions. Whenever the entropy saturates to some maximal value Smax , the Trotter error for large systems scales with Smax , that is it becomes asymptotically independent of the system size [66]. Moreover, the error of local observables is found to spread with the so-called operator scrambling [67]. It has also been observed in Ref. [68] that the variance of the Trotter error over different initial states with equal entanglement will depend on this entanglement. While the error itself remains non-zero, its distribution is found to become more sharply peaked with higher entanglement and non-stabilizerness (“magic”). Some states, on the other hand, exhibit unexpectedly small errors. These states are dubbed “Trotter scars” in Ref. [69]. 
+
+4.5.2 Coulomb potential As mentioned in section 4.3, the Coulomb potential features an extremely slow O
+
+
+
+h 14
+
+
+
+worst case convergence in the step size [55]. The error in the particle number N for many-body Coulomb interactions has also been found to be a polynomial O  N 4.5
+
+with fractional exponents [70, 71]. 
+
+4.5.3 Hubbard and t-J models For the fermionic Hubbard and t-J models there might be no need to re-evaluate the commutators from theorem 2. Schubert and Mendl [22] have already applied their theorem to the Hubbard model and these results can be used directly. Even earlier similar bounds had been derived specifically for Hubbard and t-J models in Ref. [72]. 
+
+4.5.4 SYK model Explicit error bounds based on higher order commutators have also been derived for the Sachdev-Ye-Kitaev (SYK) model [73]. 
+
+4.5.5 Transverse Ising model A less conventional error estimation has been presented for the transverse field Ising model. In Ref. [74] some conserved quantities are shown to stay exactly constant during time evolution even at finite Trotter step sizes. 
+
+4.5.6 Bosonic systems Up to this point we have been implicitly identifying operators with their matrix representation for the sake of simplicity and intuition. This identification fails for infinite-dimensional representation like bosonic systems that have continuous degrees of freedom. Norms in infinite dimensions are not necessarily meaningful. Therefore, the HB+ group has proposed, based on Refs. [75, 76], to estimate the distance between the true time evolution operator and its Trotterized counterpart via a metric induced by the underlying Lie group [77]. 15 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer Spin-Boson models, on the other hand, are considered in Ref. [59]. 
+
+4.6 Empirical error estimation 
+
+Finally, the most reliable way to determine an error in any specific case is to measure it. A simple test is to measure known conserved quantities like the energy. Whenever these quantities are not conserved well enough, one can reduce the Trotter step size adaptively (ADA-Trotter) [78]. A possible generalisation of this idea is to monitor individual observables of interest in order to derive case-dependent optimised Trotterizations. In Ref. [79] this approach has been used to minimise the Trotter error for the measurement of given observables. It turns out that the order in which the Trotter operators are applied can lead to different projections of the error onto said observable. A specialised quantum algorithm for the numerical error extraction has been proposed in Ref. [80]. 
+
+5 Generalisations 
+
+Suzuki-Trotter decompositions can be generalised in many ways. First and foremost, in section 5.1 we will explore time-dependent Hamiltonians and the necessary adjustments summarised in theorem 3. Even for constant Hamiltonians, it might make sense to use time-dependent operators in the interaction picture. In section 5.2 this ansatz is explained together with other methods to exploit hierarchy separations between operators with different orders of magnitude. Sections 5.3 to 5.5 explain three different approaches to increase the efficiency of splitting methods. At the cost of exact unitarity we can introduce complex-valued coefficients (sec. 5.3) or multi-product formulae (sec. 5.5). The latter cancel out leading order errors through linear combinations of several independent Trotterizations with different time steps. Processed methods introduced in section 5.4, on the other hand, elevate the first-same-as-last property to a whole new level cancelling out significant parts of the cost at each step. Finally, randomised methods are discussed in section 5.6. They allow to reduce circuit depths considerably without introducing a systematic bias at the cost of statistical errors. 
+
+5.1 Time-dependent Trotterizations 
+
+Throughout this review we have been focusing on Hamiltonians without explicit time dependence. Let us now briefly investigate the subtle changes required if the variation of the Hamiltonian with time cannot be ignored. This is relevant for physical systems that are externally driven (pumped) as well as for adiabatic quantum computing in ground state search (sec. 7) and interesting as a generalisation in its own right. The formal solution to the Schrödinger equation with a time-dependent Hamiltonian 
+
+i ddt |ψ(t)⟩ = H(t) |ψ(t)⟩ (36) 
+
+⇒ | ψ(t1)⟩ = U (t1, t 0) |ψ(t0)⟩ (37) can still be expressed through a time evolution operator 
+
+U (t1, t 0) ≡ T 
+
+n
+
+e− i R t1 
+
+> t0dtH (t)
+
+o
+
+(38) 
+
+= lim 
+
+> Nt→∞
+
+
+
+e− i H(t1−h)h · · · e− i H(t0+h)he− i H(t0)h
+
+, (39) but now U (t1, t 0) depends on both the initial and the final times rather than simply their difference 
+
+t1 − t0 = Nth. The time ordering operator T {·} ensures an ordered exponential. This ordering is necessary since the Hamiltonian does not commute with itself at a different time any more. Remarkably, every time-independent Suzuki-Trotter method is directly applicable for time-dependent Hamiltonians at the same computational cost using the prescription of theorem 3. 
+
+Theorem 3 (Generalising Trotter formulae for time-dependent Hamiltonians [39, 81]) . Let the coefficients ci and di as in equation (12) define a Suzuki-Trotter decomposition of order n and 
+
+H(t) = PΛ 
+
+> k=1
+
+Ak(t) be a time-dependent Hamiltonian. Then the decomposition 
+
+Sn(t, h ) = 
+
+> q
+
+Y
+
+> i=1
+
+" ΛY
+
+> k=1
+
+eciAk (t+eih)h
+
+! 1Y
+
+> k=Λ
+
+ediAk (t+eih)h
+
+!# 
+
+, (40) 
+
+ei := 
+
+> q
+
+X
+
+> j=i
+
+dj +
+
+> q
+
+X
+
+> j=i+1
+
+cq (41) 16 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer is an order n approximation of the time evolution operator 
+
+T
+
+n
+
+eR t+ht dsH (s)o
+
+= Sn(t, h ) + O  hn+1  . (42) 
+
+Remark. Here we use the order convention Qqi=1 Mi = M1M2 · · · Mq explicitly. Note also that the time shifts ei are the same for the entire i-th cycle (see fig. 1) and that they are not symmetric in 
+
+ci and di.Theorem 3 presents the results of Refs. [39, 81] using a notation different from the original in order to be consistent with the rest of this review. Let us therefore re-iterate the crucial steps of the derivation leading up to theorem 3. We start with the following trick: 
+
+e− i Ak (t)e− i T h := e − i T he− i Ak (t+h) (43) 
+
+⇒ T 
+
+n
+
+e− i R t+ht dsH (s)o
+
+= e − i( H(t)+ T )h . (44) Suzuki [81] introduced the so-called time-shift operator e− i T h and showed that the identity (44) is fulfilled exactly. An intuitive proof is provided by Hatano and Suzuki in sec. 4 of Ref. [39]. Once the time ordering has been symbolically absorbed into the exponent, we can use any classical Trotterization for the effective Hamiltonian Heff (t) ≡ P 
+
+> k
+
+Ak(t) + T . A general product formula based on equation (12) then becomes 
+
+Sn(t, h ) = e c1T h
+
+> Λ
+
+Y
+
+> k=1
+
+ec1Ak (t)h
+
+! 1Y
+
+> k=Λ
+
+ed1Ak (t)h
+
+!
+
+ed1T h · · · 
+
+> 1
+
+Y
+
+> k=Λ
+
+edq−1Ak (t)h
+
+!
+
+edq−1T h ecq T h
+
+> Λ
+
+Y
+
+> k=1
+
+ecq Ak (t)h
+
+! 1Y
+
+> k=Λ
+
+edq Ak (t)h
+
+!
+
+edq T h
+
+(45) 
+
+= e T h
+
+> Λ
+
+Y
+
+> k=1
+
+ec1Ak (t+(1 −c1)h)h
+
+! 1Y
+
+> k=Λ
+
+ed1Ak (t+(1 −c1)h)h
+
+!
+
+· · · 
+
+> 1
+
+Y
+
+> k=Λ
+
+edq−1Ak (t+( dq +cq +dq−1)h)h
+
+! ΛY
+
+> k=1
+
+ecq Ak (t+dq h)h
+
+! 1Y
+
+> k=Λ
+
+edq Ak (t+dq h)h
+
+!
+
+.
+
+(46) Collecting the time shift coefficients into a general prescription for ei immediately reproduces theorem 3. Ikeda et al. [82] have derived specialised splitting methods up to order n ≤ 6 for the special case that the time dependence of every operator is contained in a scalar prefactor Ak(t) = xk(t)Ak.While these methods outperform the classical Suzuki formulae (sec. 3.3) in some cases, the schemes from tables 1 and 2 by Maležič et al. [7] in combination with theorem 3 are expected to be more efficient. 
+
+5.2 Making use of operator magnitude hierarchies 
+
+Let us assume a Hamiltonian 
+
+H = H0 + ϵ X
+
+> k
+
+Ak (47) with ϵ ≪ 1 and, in consequence, a clear separation of scale between the main contribution H0 and perturbations Ak. This is not a rare situation and it can be exploited to significantly reduce the simulation error. Any regular Trotterization Sn of order n comes with an error scaling as O (ϵh n). In particular, the leading error is always linear in ϵ.Omelyan et al. have employed their framework discussed in section 3 to address this limitation. Rather than treating all the higher order nested commutators contributing to the error on an equal footing, errors with low powers of ϵ (equivalently, high powers of H0) are prioritised. This way, a method scaling as O  ϵ2h4 + O  ϵh 6 and one with the error of order O  ϵ2h2 + O  ϵh 8 are derived. Their results are listed in Appendix A of Ref. [27]. Note that these splitting methods were originally designed for exactly two operators, but their generalised efficacy with the help of theorem 1 has been demonstrated in Ref. [83]. Hierarchies including not two but three different scales H = P 
+
+> k
+
+H0,k + ϵ1
+
+P 
+
+> k
+
+Ak + ϵ2
+
+P 
+
+> k
+
+Bk
+
+with ϵ2 ≪ ϵ1 ≪ 1 have been explored in Ref. [84]. The so-called Symmetry-Protected Randomized near-Integrable Trotter (SPRINT) formulae presented therein use different order Trotter schemes (or even entirely different methods) for the splitting of the individual contributions from H0, A,and B, respectively. 17 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+5.2.1 Interaction picture Allowing for the additional limitation that the operator exponential 
+
+e(H0+ϵA k )h can be calculated for each k, we can express the problem in the so-called interaction picture [85–87] 
+
+Sint  
+
+> 1
+
+(h) = e H0h Y
+
+> k
+
+
+
+e−H0he(H0+ϵA k )h
+
+(48) with the local error [83] 
+
+U (h) − Sint  
+
+> 1
+
+(h) 2 ≤ ϵ2
+
+Z h
+
+> 0
+
+dv 
+
+Z v
+
+> 0
+
+ds X
+
+> k1<k 2
+
+∥[Ak1 (s), A k2 (v)] ∥2 = O  ϵ2h2 . (49) Crucially, there is no error contribution linear in ϵ. Bosse et al. [83] discuss the method and its generalisations in great detail. In Ref. [83] it is called Trotter Heuristic Resource Improved Formulas for Time-dynamics (THRIFT). The extensive benchmarks and comparisons with alternative methods presented in Ref. [83] (including Omelyan’s [27] method discussed above) are highly educational. It is also found in Ref. [83] that higher order THRIFT methods can be constructed from the first order building block (48) in much the same way one would construct standard product formulae starting with the first order Trotterization (9). Randomisation (sec. 5.6) can be used to further elevate the error order to O  ϵ2 for general Trotter schemes and to O  ϵ3
+
+for THRIFT [88]. As a rule, more specialised algorithms are also more efficient which and all the available analytic knowledge should be utilised. This is why operator magnitude hierarchies (47) are worth exploiting, be it with Omelyan’s specialised schemes [27] or by means of the interaction picture [83]. 
+
+5.3 Complex coefficients 
+
+The coefficients ci, d i in the product formula (12) are typically limited to real values in order to guarantee exact unitarity Sn(i h)† = Sn(i h)−1 (preservation of phase space in symplectic integrators). Exact unitarity is not always required, though, and unitarity violations to the same order O (hn) as the ‘usual’ error might be acceptable. In this case complex-valued coefficients 
+
+ci, d i ∈ C introduce additional degrees of freedom for the efficiency optimisation described in section 3. Some highly optimised complex-valued 4th order Trotter schemes have been derived and benchmarked in Ref. [6]. This includes a 4th order method with constant real parts 
+
+Re( ci) = Re( di) = 110 with remarkably favourable long-time error accumulation (sec. 4.1.2). Real coefficients require at least one negative element for order n ≥ 4 decompositions. A larger variety of product formulae with complex coefficients [28, 89–92] has been derived for higher order symplectic integrators (sec. 6.1). Interestingly, there are two intuitive yet incompatible choices generalising the real symmetry of the coefficients. Either the symmetry ci = dq+1 −i is simply carried over preserving reversibility 
+
+S(i h)−1 = S(− i h), dubbed palindromic in Ref. [92]. Alternatively, symmetric-conjugate schemes obeying ci = d∗ 
+
+> q+1 −i
+
+allow to identify complex conjugation with time reversal Sn(i h)† = Sn(− i h).Symmetric-conjugate Trotterizations are found to violate unitarity less over long times [92] and are thus preferable. Either version can easily be converted into the other by using the complex conjugates c∗ 
+
+> i
+
+, d ∗ 
+
+> i
+
+in every second step. Such composite methods are found to be particularly stable for long evolution times [93]. The apparent efficiency of splitting methods with complex coefficients can be deceptive. Each multiplication of two complex numbers on a classical computer requires four real number multiplications and this overhead needs to be taken into account. 
+
+5.4 Processed methods 
+
+A time step of a Suzuki-Trotter decompositions can also be written as 
+
+S(h) = P (h) ˆS(h) P (h)−1 , (50) where ˆS denotes the kernel and P the processor . Up to this point, we have been working with trivial processors (i.e. S = ˆS and P = 1), but truly processed methods are readily available in the literature [13, 94] including those optimised for symplectic integrators [95] (sec. 6.1). The idea to generalise product formulae in this way was first mentioned by Butcher [96] and refined by Blanes 18 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer et al. [97]. While processed methods are rather cumbersome and inefficient for individual time steps, repeated applications can be contracted 
+
+S(h)Nτ = P (h) ˆS(h)Nτ P (h)−1 , (51) potentially saving a significant part of the computational cost. To reach maximal efficiency, the kernel ˆS should be as cheap as possible. It does not even have to be of the same order n as the full processed method S.Since the computation of intermediate results would require additional insertions of the processor P , it would negate the advantage gained in equation (51). Therefore, processed formulae are viable primarily for long-time evolution without interest in the full trajectory. 
+
+5.5 Multi-product formulae 
+
+Starting with a Trotter scheme Sn0 of even order n0, we can build a multi-product formula (MPF) or Richardson extrapolation 
+
+S(s) 
+
+> n,n 0
+
+(h) = 
+
+> m
+
+X
+
+> j=1
+
+aj Sn0
+
+ hkj
+
+kj
+
+(52) that approximates the time evolution operator to order 
+
+n = n0 + 2( m − 1) (53) using m linear combinations of the base scheme Sn0 with different step sizes hkj . Blanes et al. [98] have shown that the unitarity (or symplectic nature) of such a method is preserved at least up to order 
+
+s = max (2 n0 + 1 , n + 3) . (54) MPFs can, for instance, be calculated during the post processing [99, 100] of a quantum computation (sec. 7). In the context of quantum computing MPFs are also often referred to as 
+
+linear combinations of unitary (LCU) formulae [101]. The coefficients aj have to be determined from a matrix equation [98] and solutions exist for any tuple of distinct positive integers kj . In the special case of n0 = 2 Chin [102] has derived a closed form solution 
+
+aj = Y 
+
+> l̸=j
+
+k2
+
+> j
+
+k2 
+
+> j
+
+− k2
+
+> l
+
+. (55) Particularly efficient combinations of kj tuples and coefficients aj have been derived by Low et al. and tabulated at the very end of Ref. [103]. In this case, a high efficiency is achieved when the total number of Trotter steps P 
+
+> j
+
+kj is small and at the same time the coefficients aj are well conditioned, i.e. P 
+
+> j
+
+|aj | is also small. Crucially, only O  n2 log n steps are required for a ‘well-conditioned’ MPF (meaning P 
+
+> j
+
+|aj | = O (log n)) of order n which is an exponential improvement over classical (single) product formulae [103, 104]. More precise error bounds for MPFs similar to those of theorem 2 have been derived by Zhuk et al. [105], generalised by Aftab et al. [106] and refined by Mizuta [107]. An alternative constant-depth MPF [108] of order n = 4 can be constructed using the ansatz 
+
+S4,2(2 h) = 
+
+> 2
+
+X
+
+> j=1
+
+aj S↑ 
+
+> 1
+
+(κj h) S↓ 
+
+> 1
+
+((1 − κj )h) S↑ 
+
+> 1
+
+((1 − κj )h) S↓ 
+
+> 1
+
+(κj h) . (56) While less general than equation (52), appropriately chosen coefficients aj , κj allow to keep the number of steps (circuit depth) constant for both constituent time evolutions. MPFs do not preserve unitarity exactly, but the deviation is often negligible since s > n . For this reason, they can be a good alternative when very high precision is required and polynomial expansions (sec. 6.3) are not possible. 
+
+5.6 Randomised methods 
+
+There are several conceptually distinct ways to randomise Suzuki-Trotter decompositions. For starters, the order of the operators H = P 
+
+> k
+
+Ak within each step can be permuted randomly and to some extent the step size can be varied. This is found to reduce the 1st and 2nd order Trotter errors [109, 110], but the effect becomes negligible at higher orders [109]. 19 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+5.6.1 Average over results equivalent by symmetry Trotterization does not preserve all the physical symmetries of a given system exactly. As a consequence, theoretically conserved quantities (e.g. the total magnetisation in a spin system) might experience an unphysical drift. This drift can be alleviated by means of taking the average over several randomly chosen representatives of the same symmetry group [111]. The observable of interest does not have to be conserved (which would be rather boring), it only needs to share some symmetries with the Hamiltonian for the averaging to be applicable. 
+
+5.6.2 Reducing the number of operators Alternatively, some of the operators (or gates) can be dropped entirely according to a given probability. In the occasions when they are sampled, they need to be applied with correspondingly larger steps. Such an approach trades sample-wise accuracy for shallower time evolution circuits. The accuracy can be recovered via averaging over multiple random realisations. This leads to an exponential multiplicative sampling overhead. More specifically, the number of repetitions (shots) Γ required for a constant error rate scales as 
+
+Γ = e O  
+
+> ∥H∥21τ2
+> Ng
+> 
+
+, (57) where Ng denotes the (average) total number of gates in one shot [112]. In quantum computations shallower circuits reduce the hardware noise while the large number of independent simulations is prone to efficient parallelisation in classical simulations [113]. There are several algorithms realising this idea in different ways. The first such algorithm, dubbed quantum stochastic drift protocol (qDRIFT), was proposed by Campbell [114] and generalised in Ref. [115]. In qDRIFT at each Trotter step exactly one of the operators is sampled according to its weight in the Hamiltonian. More flexibility is introduced in the Time Evolution via Probabilistic Angle Interpolation (TE-PAI) algorithm [112]: every operator is either applied at a given time or not, completely independently of the number of other operators applied at this same time. Note that the TE-PAI algorithm is not randomising the usual Trotter sequence, but it is built from a limited set of specified angle operations PAI [116]. Based on qDRIFT, the higher order methods qSHIFT [117] and pathwise random Hamiltonian simulation (PRHS) [118] have been put forward. Adjusting the gate sampling according to properly chosen conditional probabilities exactly cancel lower order Trotter errors on average. Combinations of Trotterization and qDRIFT are applicable to imaginary time evolution and, in consequence, quantum Monte Carlo (QMC) algorithms [119]. In Ref. [120] QMC simulations of systems with weak long-range interactions have been argued to benefit the most from randomisation on the operator level. Randomised Trotter schemes can also be combined with multi-product formulae (MPF, sec. 5.5), further increasing their effective order [121, 122]. MPFs can be exploited even more efficiently by sampling only the remainder error after a Trotter step. This ansatz has been used in Ref. [123]. Based on the earlier work [124], Wang et al. have derived an algorithm with poly-logarithmic error scaling that moreover allows to elevate an order n Trotter formula to order 
+
+2n + 1 .
+
+5.6.3 Eliminating Trotter errors Rather than just increasing the Trotter order, with randomised time evolution it is possible to eliminate the discretisation entirely. This has been achieved by Granet and Dreyer [125] by applying the operators at different times distributed uniformly between 
+
+0 and the final time T . The number of times each operator is applied has to be chosen from a Poisson distribution depending on the weight of the respective operator. Since the times are chosen from a continuum, no discretisation error is introduced. Ref. [125] has also served as an inspiration for a continuous formulation of TE-PAI [126, 127]. An alternative way to remove the Trotterization error is to add an operator after each time step that exactly cancels the error, very similarly to the approach in Refs. [123, 124]. While the additional operator would be infeasible to calculate exactly, it can be sampled without bias for instance using the continuous time TE-PAI algorithm. This bias correction has been dubbed probabilistic Trotter error reversal (PTER) [128]. It has a relatively small overhead with respect to the underlying Trotter scheme and introduces low noise levels because the main time evolution is still performed deterministically. Both, the computational overhead and the noise level, can be systematically reduced with efficient higher order splitting methods. Randomised time evolution methods like the one by Granet and Dreyer [125], the continuous TE-PAI algorithm [126], or PTER [128] can be useful tools to avoid Trotter errors and to reduce the circuit depth, especially on noisy quantum computers. It is, however, crucial to keep in mind 20 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer that these methods introduce statistical errors leading to a substantial increase in the required number of shots. It is strongly case- and hardware-dependent whether this trade-off is worthwhile. 
+
+6 Alternatives and related methods 
+
+In the beginning of section 2 we have cautioned against the use of Trotterization without having considered potential alternatives. These alternative methods for time evolution are discussed in the following. There is certainly no guarantee that the list below is complete, but it covers most topics discussed in the recent literature on quantum time evolution. We start with symplectic integrators of classical equations of motion in section 6.1. They are a special case of Suzuki-Trotter decompositions and allow some simplifications. In particular, one of the third order nested commutators appearing in the BCH expansion (8) can be evaluated explicitly. The resulting force-gradient term discussed in section 6.1.4 can be included into the integrator. This is itself a special case of splitting methods based on the Zassenhaus formula (sec. 6.2) that incorporate the maximal amount of analytic knowledge about higher order commutators. From section 6.3 on we leave Trotterization behind entirely. Therein, we discuss polynomial expansions of the matrix exponential and argue that they are the first choice in any classical computation. Theoretically exact unitarity is a small price to pay for the superior efficiency and precision achievable through Chebyshev or Taylor approximations. In section 6.5 the two primary time evolution methods TEBD and TDVP employed in matrix product state and, more generally, tensor network simulations are briefly introduced. Yet another approach has recently gained popularity for simulations on (noisy) quantum computers: quantum signal processing and circuit optimisation. Minimal depth quantum circuits that are compiled case-by-case are reviewed in section 6.4. Finally, the Crouch-Grossman and Munthe-Kaas methods for the numerical integration on manifolds (sec. 6.6) allow to solve the generalised Schrödinger equation with a time- and state-dependent Hamiltonian. These methods, however, start with the premise that the exponential 
+
+ehH can be calculated for any given time and state. Thus, they solve a very different problem and can be decoupled entirely from the Trotterization itself. 
+
+6.1 Symplectic integrators 
+
+The applicability of Suzuki-Trotter decompositions is not limited to the quantum world. Very prominently, the equations of motion (EOM) in classical mechanics can also be solved numerically using Trotter schemes. In this context they are referred to as symplectic integrators and the exact unitarity of splitting methods translates to exact phase space volume conservation [11, 129]. Among other advantages, this property can be used for sampling algorithms like the hybrid Monte Carlo (HMC) [130] where it guarantees detailed balance. In particular, the energy does not experience any drift over time. This is the main distinguishing feature from standard Runge-Kutta (RK) methods [131, 132] which will typically see the energy diverge or approach zero in the long run. In their original work [34] that also forms the basis of section 3.1 Omelyan et al. have catalogued all (efficient) 2nd and 4th order symplectic integrators. See especially table 2 of Ref. [34]. A few sporadic higher order integrators are provided in Ref. [34] as well. Unless very high accuracy is required, these are still the best schemes available. 
+
+6.1.1 Energy conservation We start with a classical Hamiltonian (identified as the energy) 
+
+H = T (p) + V (x) , (58) where T denotes the kinetic energy solely depending on the momentum p and V is a potential that depends on the position x. The absence of mixing terms containing both p and x is essential for the efficacy of symplectic integrators. Now the EOM read 
+
+˙p = − ∂H
+
+∂x = −V ′(x) ,
+
+˙x = ∂H
+
+∂p = T ′(p) ,
+
+(59) where ˙x ≡ ∂x ∂τ is used as the standard physicists’ notation for the time derivative. Numerical symplectic integration does not lead to an exact conservation of H at finite step sizes. However, any order n symplectic integrator conserves a so-called shadow Hamiltonian 
+
+˜H = H + O (hn) exactly [133]. The specific form of ˜H depends on the chosen integrator and it can 21 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer Explicit Runge-Kutta Symplectic Implicit Runge-Kutta 
+
+x(τ + h) = x(τ ) + hT ′(p(τ )) x(τ + h) = x(τ ) + hT ′(p(τ )) x(τ + h) = x(τ ) + hT ′(p(τ + h)) 
+
+p(τ + h) = p(τ ) − hV ′(x(τ )) p(τ + h) = p(τ ) − hV ′(x(τ + h)) p(τ + h) = p(τ ) − hV ′(x(τ + h))       
+
+> Table 4: Different update schemes for the time step τ→τ+hfor classical EOM (59). These steps define a valid first order (Euler) method or, more generally, the building blocks (ramps, see fig. 1) for higher order methods. Of course, the symplectic integration can also start with a momentum update.
+
+be derived in terms of nested commutators (or Poisson brackets) of the operators involved [53]. Since ˜H is constant in time, the true Hamiltonian H can never deviate by more than O (hn) from the conserved energy. 
+
+6.1.2 Comparison to Runge-Kutta methods There are three conceptually different ways to perform a minimal time step for these EOM numerically. They are listed in table 4 and they differ in the amount of information from the future time τ + h used in the update at time τ . In RK methods p and x are updated at the same time while symplectic integrators update them alternately. For the sake of completeness let it be noted that RK methods are designed to solve ODEs of the form 
+
+˙z = f (t, z ) (60) and, in the given setting, one would interpret the tuple z = ( x, p )T as a vector. This more general approach ignores some of the physical information at our disposal resulting in worse performance. An RK method with s stages is defined via a so-called Butcher tableau [134] 
+
+˜c1 ˜a11 · · · ˜a1s
+
+... ... . . . ...
+
+˜cs ˜as1 · · · ˜ass 
+
+˜b1 · · · ˜bs
+
+(61) listing the coefficients ˜aij , ˜bi, ˜ci with ˜ci = Psj=1 ˜aij and Psi=1 ˜bi = 1 for the update step 
+
+z(τ + h) = z(τ ) + h
+
+> s
+
+X
+
+> i=1
+
+˜biki + O  hn+1  , (62) 
+
+ki = f
+
+τ + ˜ cih, z (τ ) + h
+
+> s
+
+X
+
+> j=1
+
+˜aij kj
+
+ . (63) Here, we use the tilde to distinguish these coefficients from those in Suzuki-Trotter decompositions. Butcher tableaus for efficient nth order RK methods are readily available in the literature [135–137]. We can now generalise the notion of explicit and implicit RK methods introduced in table 4. Explicit methods only use information available from previous steps, that is 
+
+˜aij = 0 for all j ≥ i. All RK methods that are not explicit are implicit. 
+
+6.1.3 Relation to Trotterization We write the EOM (59) in the compact form 
+
+˙z = DHz , (64) with the linear operator DH = DT + DV defined via the Poisson brackets DAz := {z, A }, i.e. 
+
+DT = T ′(p)∂x and DV = V ′(x)∂p. The formal solution of the EOM is then simply given by 
+
+z(τ ) = e τ D H z(0) (65) and eτ D H can be interpreted as a time evolution operator that needs to be Trotterized. Crucially, 
+
+ehD T = 1 + hD T and ehD V = 1 + hD V (66) 
+
+⇒ ehD T
+
+xp
+
+
+
+=
+
+xp
+
+
+
++ h
+
+T ′(p)0
+
+
+
+and ehD V
+
+xp
+
+
+
+=
+
+xp
+
+
+
++ h
+
+ 0
+
+−V ′(x)
+
+
+
+(67) 22 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer can be evaluated exactly because D2 
+
+> T
+
+= D2 
+
+> V
+
+= 0 due to the absence of x,p-mixing terms in H.Therefore, any update scheme that alternates between x and p steps with coefficients from a Suzuki-Trotter decomposition is also a valid symplectic integrator. In classical (non-relativistic) mechanics the kinetic energy is quadratic in the momentum 
+
+T (p) ∝ p2 which allows the additional simplification 
+
+[DV , [DV , [DV , D T ]]] = 0 . (68) Thus, for orders n ≥ 4 some of the nested commutators that make up the leading order error vanish. For instance, in equation (24) the γ4 and γ6 terms drop out assuming A = DT and 
+
+B = DV . The resulting simplified error functions can be minimised in order to obtain maximally efficient symplectic integrators at a given order. Be aware that efficient symplectic integrators are not necessarily efficient general splitting methods. In fact, the exploitation of the identity (68) even means that some 6th order symplectic integrators are only 4th order Trotter schemes. For lower-order polynomial potentials even more order conditions can be dropped in a similar way. This has been exploited in Ref. [138] where efficient symplectic integrators are identified for cubic and quartic potentials. 
+
+6.1.4 Force-gradient integrators Again assuming a quadratic kinetic energy, i.e. constant 
+
+T ′′ ≡ T ′′ (p), we can also explicitly derive the so-called force-gradient term 
+
+DF := [ DV , [DT , D V ]] = 2 V ′(x) · T ′′ · V ′′ (x) · ∂p (69) 
+
+⇒ eh3DF
+
+xp
+
+
+
+=
+
+xp
+
+
+
++ h3
+
+ 02V ′′ (x) · T ′′ · V ′(x)
+
+
+
+. (70) This 3rd order update commutes with the 1st order momentum update DV and both updates can be applied simultaneously. A full order n update step 
+
+ehD H+O(hn+1 ) = e a1hD T eb1hD V +c1h3DF ea2hD T · · · ebq hD V +cq h3DF eaq+1 hD T (71) is defined by the coefficients ai, bi, ci where the ai and bi correspond to position DT and momentum DV updates, respectively, and the ci are used for the force-gradient DF . The catalogue in Ref. [34] includes highly efficient force-gradient methods. Updates are abbreviated by 
+
+A = e aihD T , B = e bihD V and C = e bihD V +cih3DF therein. Note that the second derivatives T ′′ and V ′′ are Hessian matrices, so their exact evaluation and subsequent matrix-vector multiplications can be computationally very expensive. The application of T ′′ cannot be avoided and is very rarely the bottleneck of a simulation. The Hessian of the potential V ′′ , on the other hand, does not have to be calculated explicitly. Instead, the force-gradient update can be replaced by a two-step procedure [139, 140] 
+
+ebihD V +cih3DF
+
+xp
+
+
+
+=
+
+xp
+
+
+
++ h
+
+ 0
+
+−biV ′(˜ x)
+
+
+
++ O  h5 , (72) 
+
+˜x = x − 2h2 ci
+
+bi
+
+T ′′ · V ′(x) . (73) That is, the momentum update is simply performed using the gradient V ′(˜ x) at a slightly modified position ˜x. The position itself remains unchanged, i.e. the next position update starts at x (not ˜x). Since the two-step procedure is only equivalent to the true force-gradient update up to O  h5,it requires different coefficients ai, bi, ci for valid higher order schemes and maximal efficiency. Schäfers et al. [140] have derived and catalogued these coefficients for all Hessian-free force-gradient methods up to q ≤ 5 cycles in a very similar style to Ref. [34]. Their table 1 includes all 2nd, most 4th and several 6th order symplectic integrators with the abbreviations A,B,C as in Ref. [34] and 
+
+D denoting the two-step procedure. In a subsequent study [141] the same authors have verified that the stability of two-step Hessian-free methods coincides with their full force-gradient counterparts. Moreover, symplectic integrators with reduced efficiency but improved stability are presented in Ref. [141]. 
+
+6.2 Zassenhaus formula 
+
+The idea behind the force-gradient integrator con be generalised beyond symplectic integration. It boils down to including higher orders terms in the Zassenhaus formula (the dual of the BCH formula (8)) 
+
+eA+B = e AeB e− 12 [A,B ]e 16 (2[ B, [A,B ]]+[ A, [A,B ]]) · · · (74) 23 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer explicitly into the time evolution. For instance, the force-gradient term (69) corresponds to the third order nested commutator [B, [A, B ]] .While the coefficients within the Zassenhaus formula can be computed efficiently using a recursive procedure [142], the commutators themselves are often very hard to derive and exponentiate. This is why the Zassenhaus formula is rarely used for time evolution in practice. In some special cases, however, the higher order nested commutators and their exponentials can be constructed explicitly. This additional analytic insight can then be exploited to increase the efficiency of the splitting method. More specifically, Zassenhaus-based formulae up to 11th order have been derived for the transverse-field Ising model [143]. Broader classes of spin-type models are tackled in Ref. [144], be it only to second order, based on a Cartan decomposition of the underlying Lie algebra [145]. The applicability of the Zassenhaus formula has been generalised considerably by Jourdan and Cassam-Chenaï [146]. They have shown that assuming the so-called no-mixed adjoint property 
+
+∀k ∈ N : ad B ad kA B = 0 , (75) with the l-th adjoint as in equation (33), the Zassenhaus formula simplifies to 
+
+eA+B = e A exp 
+
+> ∞
+
+X
+
+> k=0
+
+(−1) k
+
+(k + 1)! ad kA B
+
+!
+
+. (76) In particular, this decomposition allows highly efficient unitary coupled cluster simulations for some strongly correlated electron systems. As demonstrated in Ref. [147], some open systems governed by the Lindblad equation can also be time evolved efficiently under the condition 
+
+[A, B ] = ξ1B + ξ2 with ξ1,2 ≥ 0 which implies the no-mixed adjoint property. In this case an expansion in Kraus operators is advocated as an alternative to Trotterization. Applications of the Zassenhaus formula are an extreme case of model-dependent optimisation. The necessary higher order commutators can rarely be derived with reasonable effort. But when they are available, their knowledge can and should be used to accelerate simulations. 
+
+6.3 Polynomial expansions 
+
+As a rule, the most efficient way to approximate the exponential of a sparse matrix on a classical computer is to use a polynomial expansion. This is not always possible and comes at the price of exact unitarity. Note that the latter obstacle is primarily conceptual since polynomial expansions readily allow to reach machine precision and thus restore unitarity for any practical purpose. The most natural choices are the Taylor series 
+
+eHh =
+
+> n
+
+X
+
+> k=0
+
+(Hh )k
+
+k! + O  hn+1  , (77) and the Chebyshev polynomials 
+
+T0(H) = 1 , T1(H) = H , Tk+1 (H) = 2 H · Tk(H) − Tk−1(H) (78) 
+
+⇒ eHh = I0 (Γ h) + 2 
+
+> n
+
+X
+
+> k=1
+
+Ik (Γ h) Tk
+
+ H
+
+Γ
+
+
+
++ O  hn+1  (79) with a cut-off scale Γ ≥ ∥ H∥2. The Ik denote the modified Bessel functions of first kind. For real time evolution using the optimal Chebyshev expansion (79) the polynomial order n and thus cost per time step h scales as 
+
+n = Γ h + O
+
+
+
+log 
+
+ 1
+
+ε
+
+ 
+
+(80) with the global error ε. The minimal total cost is achieved using Γ = ∥H∥2 and performing just a single time step h = i t for the entire real time t. Multiple shorter time steps Nt might be easier to realise, but they also come with the overhead O (Nt log ( 1/ε)) . In either case the cost stays linear in 
+
+∥H∥2t and logarithmic in ε which is in stark contrast to the O
+
+
+
+(∥H∥2t)1+ 1/n
+
+ε−1/n
+
+
+
+cost of Trotterization. Taylor should be used whenever an approximation in the entire complex plane is required, while Chebyshev expansions provide the most accurate approximations on purely real (or imaginary 24 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer -100 -50 50 100 150 200 250 Re (z)-100           
+
+> -50 50 100 Im (z)z(52 )
+> z(304 )
+> zc (152 )(100i )
+> zc (152 )(100 )
+> 10 −12
+> 10 −10
+> 10 −8
+> 10 −6
+> 10 −4
+> 10 −2
+> 10 0
+> 10 100
+> Strang (11) Taylor (n= 304 ,P)
+> Taylor (n= 304 ,Q)
+> Chebyshev (n= 152)
+> error
+> n/h
+
+Figure 6: Time evolution methods based on polynomial expansions to order n. Left: zeros z(n) of the truncated Taylor series (77) and zeros z(n) 
+
+> c
+
+(Γ h) of the Chebyshev polynomial (79) best describing the interval 
+
+[−Γh, Γh], respectively. Right: error Sn(− i t) − e− i Ht  
+
+> F
+
+for different step sizes h after the fixed time t as a function of the approximate computational cost n/h (we chose n = 4 for the Strang splitting, certainly underestimating the cost). The Taylor expansion either uses the naïve sum ‘ P’ as in eq. (77) or the product ‘Q’ as in eq. (81). Adapted figure from [148]. 
+
+intervals) [148]. Of course, in either case the matrix exponential should never be calculated explicitly. Instead, higher order polynomials should be constructed by repeated application of the sparse (Hamiltonian) matrix onto a vector (sec. 2.2.1). In the literature (e.g. [149, 150]) Taylor polynomials are often chosen for Hamiltonian simulations due to their simplicity. However, some additional care is advised for this choice. As opposed to the recursively constructed Chebyshev polynomials, a naïve construction of the Taylor series is numerically highly unstable. This can be clearly observed in the right panel of figure 6 where the direct evaluation of the sum ‘ P’ requires substantially smaller steps h to reach the same precision as the factorised version ‘ Q’
+
+eHh =
+
+> n
+
+Y
+
+> i=1
+
+1 − hz(n)
+
+> i
+
+H
+
+!
+
++ O  hn+1  (81) of the very same polynomial. The roots z(n) of the truncated Taylor series are very well behaved and follow the Szegő curve [151] asymptotically for large n. They rather intuitively enclose the region of the complex plain for with the polynomial approximation is valid (see fig. 6, left) since the exponential function does not have any zeros. We assume that the cost of the polynomials in figure 6 for each time step is dominated by the number of Hamiltonian applications n. The Strang splitting is provided primarily to demonstrate the vastly superior accuracy of the polynomial methods. For its cost estimation n = 4 has been used as a very conservative estimate. In realistic classical computations Trotter formulae are typically even less favourable. An alternative method to ensure numerical stability of the Taylor expansion (or, in fact, any polynomial) is Horner’s scheme. For instance, the n-th order Taylor approximation of the time evolution operator would be applied to a state |ψ⟩ as follows 
+
+ehH |ψ⟩ = |ψ⟩ +
+
+
+
+hH 
+
+
+
+|ψ⟩ + · · · + hn − 1 H
+
+
+
+|ψ⟩ + hn H |ψ⟩
+
+
+
+· · · 
+
+ 
+
++ O  hn+1  . (82) It is also worth noting that Chebyshev expansions suffer from rapid oscillations. They can be smoothened with the help of a so-called kernel gk that interpolates smoothly between g0 = 1 and 
+
+gn+1 = 0 . Ref. [152] (especially Tab. 1 therein) provides a great overview over useful kernels. In a nutshell, the Chebyshev expansion (79) should be the first choice for classical time evolution or, more generally, the application of a sparse matrix exponential with purely real (or imaginary) eigenvalues to a vector. For sparse matrices with eigenvalues spread out in the complex plane, one should use the factorised Taylor series (81) or Horner’s method (82). Only if these polynomial approximations are ruled out, for instance because exact unitarity is required, Trotterization becomes a viable alternative. 25 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+6.4 Quantum signal processing 
+
+In the context of quantum computing (sec. 7) polynomial expansions cannot be used directly for time evolution since they do not preserve exact unitarity. They can, however, be encoded in the so-called quantum signal processing (QSP) framework [153, 154]. QSP promises to inherit the superior convergence properties of polynomial expansions (total cost scaling as 
+
+O (∥H∥2t) + O (log ( 1/ε)) ). For a detailed explanation of all the steps leading up to Hamiltonian time evolution with QSP we refer once more to the lecture notes [9]. A concise summary of different time evolution algorithms including QSP can be found in Ref. [155], with their respective computational complexities listed explicitly. Ref. [156], on the other hand, provides a more practical guide line for simulations of lattice field theories approaching continuous time. Time evolution with QSP is typically realised via block encoding (BE) 
+
+UA =
+
+A ∗∗ ∗
+
+
+
+(83) of the target matrix A as part of the unitary UA. For a physical volume V the BE will typically come at the cost of an additional factor O (V ) in runtime or gate count (see e.g. Ref. [155], Tab. V). The derivation of BEs is not straight forward, but some realisations are known for selected physical systems including lattice gauge theories [157, 158]. Qubitization [159] and quantum singular value transformation [160] then allow unitary representations of polynomials, e.g. the Chebyshev expansion of the Hamiltonian. Alternatively, QSP can be related to non-linear Fourier transform [161]. The BE causes a significant overhead in the dimension of the Hamiltonian so that Trotterization can be preferable for large systems even though QSP features favourable long-time scaling. Moreover, at the time of writing we could not identify a full and concise ‘recipe-style‘ description of QSP that would allow to implement time evolution with reasonable effort. For these reasons we believe that QSP is not yet useful in practice despite its great theoretical potential. It remains an open question whether QSP, Trotterization or something else entirely will prove the best alternative for quantum computing in the long run. 
+
+6.4.1 Circuit optimisation While exact QSP can still be prohibitively expensive and complicated, some empirical approximations are feasible. There has been a great effort in the last few years to construct quantum circuits for time evolution using variational optimisation. The general idea is that asymptotic convergence is not essential as long as the approximation is more accurate than the hardware noise. Thus, in the noisy intermediate-scale quantum (NISQ) era (sec. 7.2) deep circuits based on Trotterization or QSP are sometimes replaced by shallower circuits tailored directly for the problem at hand. Initially, variational quantum simulations have been introduced for the evolution of specific states [162], but their development has largely been abandoned in favour of direct approximations of the full time evolution operator [163, 164] The first operator-based ansatz was the so-called “brickwall circuit” formed by quantum gates for a fixed short evolution time [165, 166]. A number of variational parameters needs to be optimised classically, fixing the number of layers and the Hamiltonian up front. The optimisation of the resulting time evolution approximation in Frobenius norm leads to very accurate results, but it comes at a high classical optimisation cost. Subsequently, a multitude of related approaches has been developed with the goal to improve the circuit compression and the classical scalability. In Refs. [165, 167] a matrix product operator (MPO) ansatz has been utilised. Ref. [168], in contrast, starts with the Trotter circuit as an initial guess and subsequently optimises the circuit to reduce depth. An alternative ansatz has been pursued in Ref. [169] for translationally invariant systems. Therein scalability is achieved through optimisation on small subsystems which are extrapolated to the full circuit. The very opposite approach has been followed in Ref. [170] where symmetries were excluded from the parametrisation deliberately and scalability is expected from a tensor network representation. Perhaps surprisingly, variational quantum circuits have also been used for imaginary time evolution and ground state search [171, 172]. There appears to be a very smooth transition from circuit optimisation for time evolution to variational quantum algorithms. Overall quantum circuit optimisation has emerged as a promising alternative to Suzuki-Trotter methods on noisy quantum devices since their shallower circuits allow to minimise hardware noise. They do, however, require substantial case-by-case tuning and it is expected that they will not scale well beyond the NISQ era. 26 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+6.5 Time-dependent variational principle Tensor networks (TNs) are the standard way to represent quantum systems on a classical computer nowadays. The idea is to approximate the exponentially many degrees of freedom by polynomially many states with a structure inspired by the geometry of the underlying problem. Typically, systems with low levels of entanglement can be represented well with this ansatz. In particular, the ground state of a gapped local Hamiltonian has an accurate TN approximation [173]. Initially, the so-called matrix product states (MPS) have been introduced for systems in 1 spatial dimension [174, 175]. MPS and their relation to the density-matrix renormalization group method (DMRG) are explained in Ref. [176] in great detail. In higher dimensions there is a large variety of different TNs and we deliberately restrain here from naming any representatives or reviewing them. Instead, Orús’s introduction [177] and concise review [178] are highly recommended. The particularly beginner-friendly lecture notes [179] introduce quantum spin chains, exact diagonalisation and TNs, those by Misguich [180] go into more details about MPS algorithms, while the notes [181] focus on a comparison with quantum computing. Finally, time evolution is ubiquitous in TN simulations. It is performed in real (see e.g. [182] for a concise overview), imaginary (e.g. for ground state search [183]) and, recently, even complex tilted time (e.g. for Lindbladian spectra [184]). Paeckel et al. [12] have reviewed the time evolution of MPS in much greater detail than we could cover here. Nevertheless, let us provide an overview of the two predominant methods. In the context of TNs, time evolution using Suzuki-Trotter methods is referred to as time-evolving block decimation 
+
+(TEBD). The main alternative algorithm is called time-dependent variational principle (TDVP) and based on the eponymous concept in quantum mechanics [185, 186]. The TDVP for MPS was introduced [187] and refined [188] by Haegeman et al. in order to overcome the main shortcomings of TEBD. In addition to the usual time discretisation errors, classical splitting methods suffer from large truncation effects through the polynomial-size constraint of TNs. Trotterized time evolution tends to leave the manifold currently parametrising the MPS. The necessary subsequent truncation does not even conserve constants like the energy in general. These problems are almost entirely eliminated in TDVP at the cost of a considerably more complex algorithm. The central idea in the TDVP is to time evolve the variables X in the TN (more generally, some parametrised state [189]) directly 
+
+|∇ X ψ(X)⟩ · ˙X = − i H |ψ(X)⟩ , (84) rather than approximately evolving the quantum state |ψ(X)⟩ parametrised by said variables with the gradient ∇X . This is achieved through a projection 
+
+∇ ¯X ψ( ¯X) ∇X ψ(X) · ˙X = − i ∇ ¯X ψ( ¯X) H ψ(X) (85) onto the tangent space TX MV of the manifold MV = {| ψ(X)⟩ | X ∈ V } at position X. Here, MV
+
+is defined by all the states parametrisable via X with the complex vector space V that encodes the structure of the given TN (including the current bond dimension) and ¯X denotes the complex conjugate. Note that ⟨∇ ¯X ψ( ¯X)|∇ X ψ(X)⟩ is the so-called Gram matrix acting on V → V that formally needs to be inverted. In practice, the inversion of the full matrix can be avoided and replaced by approximations based on local operations, see e.g. Algorithms 5 and 6 in Ref. [12]. In short, the TDVP is a powerful and accurate algorithm for the time evolution of TN states, in particular MPS. It should always be considered as a more than viable alternative to the more straight forward Trotterized TEBD. 
+
+6.6 Numerical integration on manifolds 
+
+The numerical integration on manifolds can be viewed as a further generalisation of the Schrödinger equation 
+
+˙ψ = H(τ, ψ ) · ψ . (86) Not only is the Hamiltonian H(τ, ψ ) time-dependent (sec. 5.1), it can also depend on the state ψ
+
+itself. Moreover, one can drop the normalisation condition in favour of ψ living on a manifold whose structure is preserved by the time evolution. These are the premises Crouch and Grossman set out to derive numerical solutions for [190]. 
+
+6.6.1 Crouch-Grossman methods As opposed to Suzuki-Trotter decompositions, the key assumption of Crouch-Grossman methods is that the “frozen” solution ehH (τ,ψ 1) · ψ2 can be 27 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer calculated without difficulties for any τ and ψ1,2. In addition, this solution is required to remain on the manifold exactly, even at a finite step size h. Of course, a standard RK update 
+
+(1 + hH (τ, ψ )) · ψ does not stay on the manifold. Higher order Crouch-Grossman methods are conceptually very similar to RK integrators with the linear update replaced by an exponential map. The specific coefficients, however, need to be modified as the order conditions differ slightly [191]. 
+
+6.6.2 Munthe-Kaas methods These deviations can be corrected for by a small modification introduced by Munthe-Kaas [192]. Rather than using the ki = H(τ + h˜ci, . . . ) defined by an order 
+
+n RK method (63) directly, Munthe-Kaas proposed to use 
+
+˜ki := 
+
+> n−1
+
+X
+
+> l=1
+
+Bl
+
+l! ad lui ki , (87) where Bl denotes the l-th Bernoulli number, equation (33) defines the l-th adjoint action, and the 
+
+ui are given below. Given the Butcher tableau (61) coefficients for an s-stage RK method, the full 
+
+Runge-Kutta-Munthe-Kaas (RKMK) method then reads 
+
+ψ(τ + h) = e h Psi=1 ˜bi ˜ki · ψ(τ ) + O  hn+1  , (88) 
+
+ui = h
+
+> s
+
+X
+
+> j=1
+
+˜aij ˜kj , (89) 
+
+ki = H (τ + ˜ cih, eui · ψ(τ )) . (90) Such an RKMK update is of the same order n as the underlying RK method and guarantees that ψ
+
+stays on the desired manifold. Note that Algorithm 1 in Ref. [192] covers an even more general case and the procedure described here specifically tackles equation (86). 
+
+7 Quantum computing for time evolution 
+
+At the time of writing, the development of improved time evolution methods like Trotterization is mainly driven by their potential use in quantum computing. Let us, therefore, briefly discuss the goals and requirements that differ between quantum and classical hardware. We emphasise that this is not a review on quantum computing. Recent reviews on the topic are, however, readily available. For instance, Ref. [193] also cover aspects of quantum time evolution in the context of many-body physics. A reader not yet familiar with quantum computing will find that the book by Nielsen and Chuang [8] is a great starting point. More recent algorithms for scientific quantum computing are covered by Ref. [9] in a beginner-friendly way. Simply speaking, quantum computers are naturally appealing for real time evolution because they rely exclusively on unitary operations. These unitary operations need to be encoded in local gates, very reminiscent of the task phased by splitting methods. Of course, there is also the analogy argument that “quantum systems are best simulated on quantum hardware”. For these reasons the first quantum advantage in physics applications is often expected to be demonstrated in simulations involving time evolution (see e.g. [194–196]). 
+
+7.1 Theoretical potential and limitations 
+
+Besides the obvious use for Hamiltonian dynamics, time evolution is also a building block for quantum phase estimation [197–199], adiabatic quantum computing [200, 201] and other algorithms [202, 203]. In fact, quantum signal processing (QSP) [153] relying only on real-time evolution ei tH oracles can be used to approximate any function on a quantum computer [154, 204]. 
+
+7.1.1 Computational complexities That said, quantum computers certainly have their limitations as well. Any problem in the classical polynomial complexity class P is also in BQP , that is easily solvable on a quantum computer. It is, however, unknown how much larger BQP is than P (they might even be equal) and what the relationship is between BQP and NP . It is generally assumed that 
+
+NP -hard problems are not within BQP [8]. This implies that for instance the fermionic sign problem [205] is likely not solvable on quantum computer with polynomial resources either. It might well be though that the hardness of the problem will be less obvious. Rather than having non-positive sampling weight, the simulation might suffer from prohibitively expensive state preparation, noisy measurements resulting in the need of exponentially many repetitions (shots), an exponential grows of the circuit depth, or some other obstacle. 28 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+7.1.2 No fast-forward theorem For time evolution such limitations become very explicit in the so-called “no fast-forward theorem” [206, 207]. It states 2 that the real time evolution of a generic Hamiltonian requires a quantum circuit depth at least proportional to the evolution time t. To resolve exponentially small features in the spectrum one would need an exponentially long evolution time and, in consequence, exponentially long circuits. This means that exponential runtime cannot be avoided in general, even on quantum computers, because the spectra of generic Hamiltonians become exponentially dense in system size. 
+
+7.1.3 Tackling physical systems On the other hand, some more specific problems in physics might be more amenable to quantum simulations. In quantum field theory (QFT) quantum algorithms (relying on time evolution) have been derived [194] that achieve exponential speed up over their known classical counterparts. Even without explicitly aiming for quantum advantage, it is still a non-trivial task to saturate the bounds dictated by the no-fast-forward theorem. The QSP method (sec. 6.4) is one of the general ansätze promising optimal asymptotic runtime. For some specific physical problems specialised algorithms have been developed. For instance sparse, non-local fermionic models can be simulated on quantum hardware with asymptotically linear runtime using Trotterization [208]. Mayhap surprisingly, Trotter schemes can not only be used to evolve a state but also to stabilise it. If a state is measured often enough, then it is effectively frozen and can only change with a probability decreasing with the inverse number of measurements O  N −1
+
+> meas
+
+. This phenomenon and some generalisation thereof are called Zeno effect [209, 210]. It has now been shown in Ref. [211] that any order n Trotterization can be used to define an improved projective measurement sequence with a Zeno error scaling as O (N −n
+
+> meas
+
+).
+
+7.1.4 Ground state search Another important application of time evolution is the ground state search. On a quantum computer the probably most natural way to approach a ground state is via adiabatic quantum computing, smoothly evolving a simple ground state into the desired one. By the adiabatic theorem the evolution speed and correspondingly computational cost are limited by the minimal gap to the first excited state. In Ref. [212] the discrete version of the same theorem has been used to show that Trotter time steps of O (1) can be chosen independently of the target error for bounded Hamiltonians. The convergence is then exponential in the evolution time. On classical computers, ground states are often determined through imaginary time evolution. While not natural, these updates can also be realised on a quantum device by embedding (block encoding) the non-unitary operator into a larger unitary one [171]. It is observed in Ref. [213] that imaginary time evolution can be written as 
+
+ddτ |ψ(τ )⟩ = [ |ψ(τ )⟩ ⟨ ψ(τ )| , H ] |ψ(τ )⟩ . (91) The commutator of the density matrix and the Hamiltonian is anti-hermitian by construction, so equation (91) defines a unitary time evolution. This gives rise to efficient ground state search algorithms [213, 214] via imaginary time evolution that can potentially be realised on quantum computers. As a side note, we remark that there is yet another well-known quantum minimisation algorithm containing the term Trotter. However, the Adaptive Derivative-Assembled Pseudo Trotter Variational Quantum Eigensolver (ADAPT-VQE) [215] does not use time evolution. Although initially motivated by Trotterization, it is a purely variational method. For more details on the theoretical and current potential of quantum computers for physics applications we refer to Refs. [196, 216]. Ref. [196] lists multiple algorithms and physical systems on the road to quantum advantage which is also sketched. A more approachable overview is provided in Ref. [216] featuring a collection of myths surrounding quantum computing, mostly focused on the NISQ era. 
+
+7.2 The NISQ era 
+
+The year 2026 is clearly part of the noisy intermediate-scale quantum (NISQ) era [217, 218]. This means that the main problem in quantum computations is hardware noise. Since noise accumulates with the number of gates, the reliable (high-fidelity) circuit depth is very limited. As long as deep            
+
+> 2The no fast-forward theorem relies on the very plausible assumption that BQP is strictly contained in PSPACE (recall that both BQP ⊂PSPACE and NP ⊂PSPACE ).
+
+29 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer quantum circuits cannot be realised due to noise, there is little hope for useful quantum simulations of physical systems. However, the noise level does not have to drop to zero to permit quantum advantage. Noise-resilient quantum algorithms are steadily being improved in order to reduce hardware requirements and utilise near-term quantum computers to their full potential. See Ref. [219] for a review on error mitigation techniques and quantum-classical hybrid algorithms in the NISQ era. Specifically for time evolution, it has been found that Trotterized simulations on NISQ devices are often more robust against noise than one might expect. In Ref. [220] this has been demonstrated for systems near thermal equilibrium. A similar effect has been observed for adiabatic evolution where the total 1st order Trotter error is identified to scale with O  t−1h = O  N −1
+
+> t
+
+
+
+instead of O (th ) = O  t2N −1
+
+> t
+
+ (Ref. [221] quotes the squares of these results because they refer to the infidelity which is a quadratic quantity). That is, the duration t of the auxiliary time introduced to interpolate between the initial and target Hamiltonians is irrelevant for the final state fidelity. This so-called self-healing has even been found to persist in some non-adiabatic cases [222]. 
+
+7.2.1 Circuit depth reduction Of course, there are limits to the robustness acclaimed above and the best way to avoid irrecoverable hardware noise is to reduce the circuit depth in the first place. All the methods presented throughout this review have the goal to reduce the computational cost in one way or another. Hence, the starting point on the quest for the shortest circuit should be the practical guidelines in section 2. Noisy quantum computing does not introduce an entirely new hierarchy of algorithm efficiencies (e.g. contrary to some claims, 1st order Trotter should still never be used). Quite the opposite, most of the hierarchies are strengthened. What might be a negligible speed up on a classical computer might be the crucial reduction in circuit length that allows to extract a signal. A notable exception is the use of multi-product formulae or linear combinations of unitaries (sec. 5.5) as they allow to split a single long run into multiple short ones. There are some additional techniques, though, that are unique to quantum computers and might reduce circuit depths beyond those obtained from classical methods. For instance, according to Ref. [223] the circuit depth can often be reduced considerably at the cost of introducing sufficiently many ancillary qubits. Sometimes neighbouring gates can be combined in a more efficient circuit compilation. To facilitate such synergies, it might pay off to consider different orderings of the operators in the Hamiltonian [224]. This introduces an additional complexity on top of the Trotter error dependence on the ordering (sec. 2.2.3). An even more extreme ansatz, the so-called partial Trotterization [225], is to group several operators together into a single one that is exponentiated completely. 
+
+7.2.2 Error mitigation Having decided on the best possible noisy quantum simulation, one can apply error mitigation techniques in order to enhance the signal [226, 227]. While full error correction certainly remains the long-term goal on the way to fault-tolerant quantum computing, error mitigation will likely remain useful in the NISQ era [228]. Rahman et al. [229] have introduced a simple yet powerful error mitigation technique for time evolution with symmetric Trotter schemes. In addition to the main simulation for the physical measurement, the same evolution is repeated, first going forward for half the time then backward. Without noise this second mitigation run should return to exactly the initial state. In the presence of noise, however, part of the signal is lost as an effect of decoherence. Since the circuits for the physical and the mitigation evolutions are identical up to (half) the time direction, the signal strength is expected to deteriorate equally in both runs. The physical signal can now be restored to good approximation by rescaling with the decoherence factor obtained from the mitigation run. 
+
+7.2.3 Quantum-classical hybrid methods So far we have only mentioned classical post-processing methods to reduce quantum noise. The last few years have seen an alternative paradigm emerging that tries to prevent the hardware noise in the first place by performing only the most complicated tasks on the quantum device. As much computational effort as possible is performed by a classical computer instead. Such quantum-classical hybrids can for instance incorporate tensor networks (TNs) (sec. 6.5) on the classical side. Multiple algorithms developed for TNs can be adapted for quantum computing [230]. Moreover, in hybrid TN [231, 232] simulations the bulk of a highly entangled state can be time evolved using a quantum computer while boundaries are encoded with classical TNs [233]. Yet another method has been presented in Ref. [234] where a quantum computer evolves a simplified Hamiltonian using Trotterization while the classical computer corrects for the mistakes. 30 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer Only time will tell which if any of the algorithms developed specifically for time evolution on NISQ era quantum devices will prove useful in the long run. It is clear, however, that the current unreliable state of quantum hardware has spurred the development of efficient time evolution methods in general. 
+
+8 Conclusion 
+
+In this review on quantum time evolution methods we pursue two main directions. The introduction to Suzuki-Trotter decompositions in section 1 and practical guidelines for their usage in section 2 as well as the collections of generalisations (sec. 5) and alternatives (sec. 6) to Trotterization can be understood as a handbook. Conversely, sections 3, 4 and 7 summarise the recent development on the construction of efficient splitting methods, their error estimation and the relevance of time evolution in the context of quantum computing. A historial approach is avoided deliberately in favour of a strong focus on the current state of the art. If you are primarily interested in the hands-on implementation of an efficient method for the time evolution of a quantum system, section 2 is just what you have been looking for. The currently best Trotter schemes of orders n = 4 , 6 by Maležič et al. [7] (tabs. 1,2) and n = 8 , 10 by Morales et al. [13] are highlighted. Besides augmenting these methods with a number of tips and tricks in section 2.2, we list several generalisations and alternatives to consider instead of Trotterization. The detailed explanations of the corresponding algorithms are postponed to sections 5 and 6, respectively, and can be looked up as needed. The potentially most important generalisation of Suzuki-Trotter decompositions is their extension to time-dependent Hamiltonians condensed into theorem 3 within section 5.1. Specialised approaches are called for when dealing with either of the following: classical equations of motion (EOM) should be solved with symplectic integrators (sec. 6.1), a specialised subset of splitting methods; tensor networks might be evolved in time more efficiently by means of the time-dependent variational principle (TDVP, sec. 6.5); quantum computers achieve optimal theoretical complexity scaling using quantum signal processing (QSP, sec. 6.4), while their circuit depth can be reduced with randomised methods (sec. 5.6) at the cost of more shots. Moreover, operator hierarchies, i.e. if one term in the Hamiltonian is much larger than another, can often be exploited as laid out in section 5.2. Another common scenario is that strict unitarity of the time evolution operator is not required. In such a case polynomial expansion (sec. 6.3) or multi-product formulae (sec. 5.5) lead to greatly superior approximations. Over the last few years the reliable estimation of maximally tight error bounds has been of particular interest to the community. After reiterating the construction of higher order Trotter schemes in section 3 and introducing the framework required for their in-depth understanding (sec. 3.1), we report on the progress regarding error estimation in section 4. The most generally applicable upper Trotter error bounds are quoted in theorem 2 (sec. 4.1). Last but not least, quantum computing has been a central motivating factor behind the development of improved time evolution methods as well as their error estimation. The scope of quantum computing for time evolution is discussed in section 7.1. While they are a promising tool in the long run, there are still many challenges to overcome in the current NISQ era (sec. 7.2). 
+
+8.1 Open problems 
+
+The research of quantum time evolution methods in general and Suzuki-Trotter decompositions in particular is anything but concluded. Hopefully, this review has conveyed a feeling for the ongoing research activity and the areas of particular interest. In addition, a certainly incomplete list of prominent challenges and open questions is outlined below. The search for better Trotter schemes, especially in higher orders, continues. At the same time, the understanding of what even makes a good scheme still has significant holes. How can the performance in practice be anticipated beyond the theoretical efficiency introduced in section 3.1? Is there a way to predict the error accumulation over time beyond the observation that more uniform coefficients appear to be preferable? Of course, these questions go hand in hand with the quest for ever tighter error bounds. In particular, the derivation of lower error bounds applicable to order n > 1 Trotterizations is still an open problem. Given a Hamiltonian, it is often unclear how best to decompose it into a sum of operators 
+
+H = P 
+
+> k
+
+Ak. Other than the rule of thumb that fewer operators are typically better (sec. 2.2.3), we have little insight to guide us. We have learned that in many cases there are specialised methods that outperform product formulae by a wide margin. Are there any more cases that offer a similar potential? 31 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer Let me conclude this review with an appeal to the community. Yes, this includes you. It is my firm belief that we should make the vast font of knowledge we collectively posses more easily accessible. To name an example, someone better qualified than me is called for to write a complete recipe-style summary of the QSP time evolution algorithm so that it can be implemented easily. Also, why is there still no Wikipedia article on Suzuki-Trotter decompositions? 
+
+Acknowledgments 
+
+Great thanks to Marko Maležič for the highly fruitful and enjoyable ongoing collaboration on Trotterization as well as for carefully proof-reading this review. Christopher Kane also deserves special credit for educating me on the topic of QSP. Moreover, I would like to thank Christian Bauer, Evan Berkowitz, Luca Dellantonio, Bartosz Kostrzewa, Paul Ludwig, Tom Luu, Emanuele Mendicelli, Pranay Naredi, Enrico Rinaldi, Alessandro Roggero, Hersh Singh, and Jinzhao Sun for insightful discussions and literature recommendations. I am deeply grateful to the authors of Refs. [54, 55] and those of Ref. [22] for kindly granting me permission to reuse their figures. This work was funded in part by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) as part of the CRC 1639 NuMeriQS – project no. 511713970. 
+
+References 
+
+> 1
+
+S. Lie, Theorie der Transformationsgruppen , Vol. 1 (BG Teubner, 1888), English version, isbn :978-3-662-46211-9. 
+
+> 2
+
+H. F. Trotter, “On the Product of Semi-Groups of Operators”, Proceedings of the American Mathematical Society 10 , 545–551, issn : 00029939, 10886826 (1959). 
+
+> 3
+
+L. Verlet, “Computer "Experiments" on Classical Fluids. I. Thermodynamical Properties of Lennard-Jones Molecules”, Phys. Rev. 159 , 98–103 (1967). 
+
+> 4
+
+W. H. Press, S. A. Teukolsky, W. T. Vetterling and B. P. Flannery, Numerical Recipes 3rd Edition: The Art of Scientific Computing , 3rd ed., https://numerical.recipes/ (Cambridge University Press, USA, 2007), isbn : 0521880688, see esp. chap. 17. 
+
+> 5
+
+G. Strang, “On the construction and comparison of difference schemes”, SIAM Journal on Numerical Analysis 5, 506–517 (1968), eprint: https://doi.org/10.1137/0705041 .
+
+> 6
+
+J. Ostmeyer, “Optimised Trotter decompositions for classical and quantum computing”, J. Phys. A 56 , 285303 (2023), arXiv: 2211.02691 [quant-ph] .
+
+> 7
+
+M. Maležič and J. Ostmeyer, “Efficient Trotter-Suzuki Schemes for Long-time Quantum Dynamics”, J. Phys. A 59 , 345301 (2026), arXiv: 2601.18756 [quant-ph] .
+
+> 8
+
+M. A. Nielsen and I. L. Chuang, Quantum Computation and Quantum Information: 10th Anniversary Edition (Cambridge University Press, 2010), isbn : 9780511976667. 
+
+> 9
+
+L. Lin and N. Wiebe, “Lecture Notes on Quantum Algorithms for Scientific Computation”, continuously updated version: https://math.berkeley.edu/~linlin/qasc/ (2026), arXiv: 2201.08309 [quant-ph] .
+
+> 10
+
+S. Blanes, F. Casas and A. Murua, “Splitting methods for differential equations”, Acta Numerica 
+
+33 , 1–161 (2024), arXiv: 2401.01722 [math.NA] .
+
+> 11
+
+E. Hairer, C. Lubich and G. Wanner, Geometric numerical integration , Second, Vol. 31, Springer Series in Computational Mathematics, Structure-preserving algorithms for ordinary differential equations (Springer-Verlag, Berlin, 2006), pp. xviii+644, isbn : 3-540-30663-3; 978-3-540-30663-4. 
+
+> 12
+
+S. Paeckel, T. Köhler, A. Swoboda, S. R. Manmana, U. Schollwöck and C. Hubig, “Time-evolution methods for matrix-product states”, Annals Phys. 411 , 167998 (2019), arXiv: 1901.05824 [cond-mat.str-el] .
+
+> 13
+
+M. E. S. Morales, P. C. S. Costa, G. Pantaleoni, D. K. Burgarth, Y. R. Sanders and D. W. Berry, “Selection and Improvement of Product Formulae for Best Performance of Quantum Simulation”, Quant. Inf. Comput. 25 , 1–35 (2025), arXiv: 2210.15817 [quant-ph] .
+
+> 14
+
+E. Forest and R. D. Ruth, “Fourth-order symplectic integration”, Physica D: Nonlinear Phenomena 43 , 105–117, issn : 0167-2789 (1990). 
+
+> 15
+
+H. Yoshida, “Construction of higher order symplectic integrators”, Physics Letters A 150 ,262–268, issn : 0375-9601 (1990). 
+
+> 16
+
+S. Blanes and P. Moan, “Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods”, Journal of Computational and Applied Mathematics 142 ,313–330, issn : 0377-0427 (2002). 32 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 17
+
+M. Maležič and J. Ostmeyer, “Reducing the Gate Count with Efficient Trotter-Suzuki Schemes”, in 42th International Symposium on Lattice Field Theory (Feb. 2026), arXiv: 2602.21145 [hep-lat] .
+
+> 18
+
+M. Maležič, “qiskit-omelyan”, version v0.2.1, GitHub repository, 
+
+https://github.com/MarkoMalezic/qiskit-omelyan (2026), part of the Qiskit Ecosystem. 
+
+> 19
+
+A. Javadi-Abhari, M. Treinish, K. Krsulich, C. J. Wood, J. Lishman, J. Gacon, S. Martiel, P. D. Nation, L. S. Bishop, A. W. Cross, B. R. Johnson and J. M. Gambetta, “Quantum computing with Qiskit”, (2024), arXiv: 2405.08810 [quant-ph] ,
+
+https://github.com/Qiskit/qiskit .
+
+> 20
+
+M. Maležič, “MarkoMalezic/efficient-trotterizations: Efficient Trotterizations”, version v1.0, 
+
+10.5281/zenodo.18347430 (2026), 
+
+https://github.com/MarkoMalezic/efficient-trotterizations .
+
+> 21
+
+E. T. Campbell, “Early fault-tolerant simulations of the Hubbard model”, Quantum Sci. Technol. 7, 015007 (2022), arXiv: 2012.09238 [quant-ph] .
+
+> 22
+
+A. Schubert and C. B. Mendl, “Trotter error with commutator scaling for the Fermi-Hubbard model”, Phys. Rev. B 108 , 195105 (2023), arXiv: 2306.10603 [quant-ph] .
+
+> 23
+
+R. P. A. Simon, M. Meth, F. Martini, P. Tirler, A. Jena, M. Ringbauer and L. Dellantonio, “An Error-aware and Adaptive Method for the Estimation of Quantum Observables on Qudit-Based Quantum Computers”, (2026), arXiv: 2605.00682 [quant-ph] .
+
+> 24
+
+R. Tate, S. Aktar and S. Eidenbenz, “An Analysis of Commutation-Based Trotter Ordering Strategies on Heisenberg-Style Hamiltonians”, (2026), arXiv: 2604.23138 [quant-ph] .
+
+> 25
+
+W. Yan, “Physics Guided Generative Optimization for Trotter Suzuki Decomposition”, (2026), arXiv: 2605.13268 [quant-ph] .
+
+> 26
+
+N. Negishi and B. Yang, “Beyond Commutativity: Redesigning Trotter Decomposition via Local Symmetry”, (2026), arXiv: 2605.16016 [quant-ph] .
+
+> 27
+
+I. Omelyan, I. Mryglod and R. Folk, “Optimized Forest–Ruth- and Suzuki-like algorithms for integration of motion in many-body systems”, Computer Physics Communications 146 , 188–202 (2002). 
+
+> 28
+
+W. Auzinger, H. Hofstätter, D. Ketcheson and O. Koch, “Practical splitting methods for the adaptive integration of nonlinear evolution equations. part i: construction of optimized schemes and pairs of schemes”, BIT 57 , 55–74, issn : 0006-3835 (2017). 
+
+> 29
+
+R. I. McLachlan, “On the Numerical Integration of Ordinary Differential Equations by Symmetric Composition Methods”, SIAM Journal on Scientific Computing 16 , 151–168 (1995), eprint: https://doi.org/10.1137/0916010 .
+
+> 30
+
+A. Arnal, F. Casas and C. Chiralt, “A Note on the Baker–Campbell–Hausdorff Series in Terms of Right-Nested Commutators”, Mediterranean J. Math. 18 , 53 (2021), arXiv: 2006.15869 [math-ph] .
+
+> 31
+
+P. Hall, “A Contribution to the Theory of Groups of Prime-Power Order”, Proceedings of the London Mathematical Society s2-36 , 29–95 (1934), eprint: 
+
+https://londmathsoc.onlinelibrary.wiley.com/doi/pdf/10.1112/plms/s2-36.1.29 .
+
+> 32
+
+K. T. Chen, R. H. Fox and R. C. Lyndon, “Free Differential Calculus, IV. The Quotient Groups of the Lower Central Series”, Annals of Mathematics 68 , 81–95, issn : 0003486X, 19398980 (1958). 
+
+> 33
+
+F. Casas and A. Murua, “An efficient algorithm for computing the Baker–Campbell–Hausdorff series and some of its applications”, Journal of Mathematical Physics 50 , 033513, issn :0022-2488 (2009), eprint: https://pubs.aip.org/aip/jmp/article-pdf/doi/10.1063/1.3078418/16002991/033513_1_online.pdf .
+
+> 34
+
+I. Omelyan, I. Mryglod and R. Folk, “Symplectic analytically integrable decomposition algorithms: classification, derivation, and application to molecular dynamics, quantum and celestial mechanics simulations”, Computer Physics Communications 151 , 272–314, issn :0010-4655 (2003). 
+
+> 35
+
+K. Levenberg, “A method for the solution of certain non-linear problems in least squares”, Quarterly of Applied Mathematics 2, 164–168, issn : 0033569X, 15524485 (1944). 33 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 36
+
+D. W. Marquardt, “An algorithm for least-squares estimation of nonlinear parameters”, Journal of the Society for Industrial and Applied Mathematics 11 , 431–441 (1963), eprint: 
+
+https://doi.org/10.1137/0111030 .
+
+> 37
+
+M. Suzuki, “Generalized Trotter’s Formula and Systematic Approximants of Exponential Operators and Inner Derivations with Applications to Many Body Problems”, Commun. Math. Phys. 51 , 183–190 (1976). 
+
+> 38
+
+M. Suzuki, “Decomposition formulas of exponential operators and Lie exponentials with some applications to quantum mechanics and statistical physics”, Journal of Mathematical Physics 26 ,601–612 (1985). 
+
+> 39
+
+N. Hatano and M. Suzuki, “Finding Exponential Product Formulas of Higher Orders”, in 
+
+Quantum annealing and other optimization methods (Springer Berlin Heidelberg, 2005), pp. 37–68, arXiv: math-ph/0506007 .
+
+> 40
+
+A. M. Childs, Y. Su, M. C. Tran, N. Wiebe and S. Zhu, “Theory of Trotter Error with Commutator Scaling”, Phys. Rev. X 11 , 011020 (2021), arXiv: 1912.08854 [quant-ph] .
+
+> 41
+
+M. Heyl, P. Hauke and P. Zoller, “Quantum localization bounds Trotter errors in digital quantum simulation”, Science Advances 5, 10.1126/sciadv.aau8342 (2019). 
+
+> 42
+
+S. Blanes, F. Casas and M. Thalhammer, “Splitting and composition methods with embedded error estimators”, Applied Numerical Mathematics 146 , 400–415 (2019). 
+
+> 43
+
+A. M. Childs, D. Maslov, Y. Nam, N. J. Ross and Y. Su, “Toward the first quantum simulation with quantum speedup”, Proceedings of the National Academy of Science 115 , 9456–9461 (2018), arXiv: 1711.10980 [quant-ph] .
+
+> 44
+
+A. M. Childs and Y. Su, “Nearly Optimal Lattice Simulation by Product Formulas”, Phys. Rev. Lett. 123 , 050503, 050503 (2019), arXiv: 1901.00564 [quant-ph] .
+
+> 45
+
+D. An, D. Fang and L. Lin, “Time-dependent unbounded Hamiltonian simulation with vector norm scaling”, Quantum 5, 459, issn : 2521-327X (2021). 
+
+> 46
+
+X. Wang, S. Zhou, X. Wang, Y.-C. Zheng, S. Zhang and T. Li, “Lindbladian Simulation with Commutator Bounds”, (2026), arXiv: 2603.28602 [quant-ph] .
+
+> 47
+
+S. M. Pillay, I. J. David, I. Sinayskiy and F. Petruccione, “Optimising Trotter-Suzuki Simulations of Markovian Open Quantum Systems via Classical Search”, Quant. Inf. Comput. 
+
+25 , 267 (2026), arXiv: 2607.27060 [quant-ph] .
+
+> 48
+
+C. B. Mendl and A. Schubert, “Trotter error with commutator scaling for the Fermi-Hubbard model”, GitHub repository, https://github.com/qc-tum/fermi_hubbard_commutators.git 
+
+(2023). 
+
+> 49
+
+N. S. Blunt, A. V. Ivanov and A. J. Bay-Smidt, “A Monte Carlo approach to bound Trotter error”, (2025), arXiv: 2510.11621 [quant-ph] .
+
+> 50
+
+W. Maxwell, P. A. M. Casares, R. A. Lang, S. Fomichev, J. M. Arrazola, S. Jahangiri, A. Asadi, L. A. N. Meneses, T. Germain and D. Motlagh, “Practical Estimation of Trotter Error for Hamiltonian Simulation”, (2026), arXiv: 2606.30738 [quant-ph] .
+
+> 51
+
+Y.-H. Chen, “Trotter error timescaling separation via commutant decomposition”, Phys. Rev. A 
+
+111 , 022612 (2025), arXiv: 2409.16634 [quant-ph] .
+
+> 52
+
+B. Chen, J. Xu, Q. Zhao and X. Yuan, “Error Interference in Quantum Simulation”, Phys. Rev. Lett., – (2026), arXiv: 2411.03255 [quant-ph] .
+
+> 53
+
+A. D. Kennedy, P. J. Silva and M. A. Clark, “Shadow Hamiltonians, Poisson Brackets, and Gauge Theories”, Phys. Rev. D 87 , 034511 (2013), arXiv: 1210.6600 [hep-lat] .
+
+> 54
+
+A. Hahn, P. Hartung, D. Burgarth, P. Facchi and K. Yuasa, “Lower bounds for the Trotter error”, Phys. Rev. A 111 , 022417 (2025), arXiv: 2410.03059 [quant-ph] .
+
+> 55
+
+D. Burgarth, P. Facchi, A. Hahn, M. Johnsson and K. Yuasa, “Strong error bounds for Trotter and strang-splittings and their implications for quantum chemistry”, Phys. Rev. Res. 6, 043155 (2024), arXiv: 2312.08044 [quant-ph] .
+
+> 56
+
+N. Wiebe, D. Berry, P. Høyer and B. C. Sanders, “Higher order decompositions of ordered operator exponentials”, Journal of Physics A: Mathematical and Theoretical 43 , 065203 (2010), arXiv: 0812.0562 [math-ph] .
+
+> 57
+
+D. Burgarth, N. Galke, A. Hahn and L. van Luijk, “State-dependent Trotter limits and their approximations”, Phys. Rev. A 107 , L040201 (2023), arXiv: 2209.14787 [quant-ph] .34 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 58
+
+J. Zylberman, T. Fredon, N. F. Loureiro and F. Debbasch, “Trotter-based quantum algorithm for solving transport equations with exponentially fewer time-steps”, Quantum Sci. Technol. 11 ,025015 (2026), arXiv: 2508.15691 [quant-ph] .
+
+> 59
+
+A. Hahn, D. Burgarth and D. Lonigro, “Efficiency of dynamical decoupling for (almost) any spin–boson model”, SciPost Phys. 19 , 035 (2025), arXiv: 2409.15743 [quant-ph] .
+
+> 60
+
+S. Becker, N. Galke, L. van Luijk and R. Salzmann, “Convergence Rates for the Trotter Splitting for Unbounded Operators”, Foundations of Computational Mathematics, 
+
+10.1007/s10208-025-09730-w , issn : 1615-3383 (2025), arXiv: 2407.04045 [math-ph] .
+
+> 61
+
+P. Facchi, F. Perrini and V. Viesti, “Slow convergence of Trotter decomposition for rotations”, Annals Phys. 491 , 170539 (2026), arXiv: 2507.15421 [quant-ph] .
+
+> 62
+
+K. Mizuta and T. Kuwahara, “Trotterization is Substantially Efficient for Low-Energy States”, Phys. Rev. Lett. 135 , 130602 (2025), arXiv: 2504.20746 [quant-ph] .
+
+> 63
+
+A. J. Bay-Smidt, N. Glaser, M. D. Fabian, E. T. Campbell, N. S. Blunt and G. C. Solomon, “Quantum simulation of nanographenes and Trotter error cancellation”, (2026), arXiv: 2605.00745 [quant-ph] .
+
+> 64
+
+S. Zhou, Z. Pan, W. Gong and T. Li, “Time-Dependent Hamiltonian Simulation in the Low-Energy Subspace”, (2026), arXiv: 2601.01550 [quant-ph] .
+
+> 65
+
+S. G. Mehendale, L. A. Martínez-Martínez, P. D. Kamath and A. F. Izmaylov, “Estimating Trotter Approximation Errors to Optimize Hamiltonian Partitioning for Lower Eigenvalue Errors”, Digital Discovery 4, 3540–3551 (2025), arXiv: 2312.13282 [physics.chem-ph] .
+
+> 66
+
+P. P. Kulkarni, “Entanglement-Dependent Error Bounds for Hamiltonian Simulation”, (2026), arXiv: 2602.00555 [quant-ph] .
+
+> 67
+
+T. Feng, Y. Cao and Q. Zhao, “Trotterization, Operator Scrambling, and Entanglement”, (2025), arXiv: 2506.23345 [quant-ph] .
+
+> 68
+
+X. Zhang, J. Xu, Q. Zhao and Y. Zhou, “Taming Trotter Errors with Quantum Resources”, (2026), arXiv: 2604.13486 [quant-ph] .
+
+> 69
+
+B. Zhou, Q. Zhao and P. Zhang, “Trotter Scars: Trotter Error Suppression in Quantum Simulation”, (2026), arXiv: 2603.29857 [quant-ph] .
+
+> 70
+
+D. Fang, X. Wu and A. Soffer, “On the Trotter Error in Many-body Quantum Dynamics with Coulomb Potentials”, Commun. Math. Phys. 407 , 83 (2026), arXiv: 2507.22707 [quant-ph] .
+
+> 71
+
+D. Fang and X. Wu, “Trotterization with Many-body Coulomb Interactions: Convergence for General Initial Conditions and State-Dependent Improvements”, (2026), arXiv: 2604.07704 [quant-ph] .
+
+> 72
+
+N. M. Myers, R. Scott, K. Park and V. W. Scarola, “Quantum simulation costs for Suzuki-Trotter decomposition of quantum many-body lattice models”, Phys. Rev. Res. 5, 023199 (2023), arXiv: 2302.04698 [quant-ph] .
+
+> 73
+
+Y. Chen, J. Helsen and M. Ozols, “Trotter error and gate complexity of the SYK and sparse SYK models”, Quantum 10 , 1999 (2026), arXiv: 2502.18420 [quant-ph] .
+
+> 74
+
+A. Sinha, P. Padmanabhan and V. Korepin, “Non-invertible Kramers-Wannier duality-symmetry in the trotterized critical Ising chain”, (2025), arXiv: 2511.03947 [quant-ph] .
+
+> 75
+
+M. E. Shirokov, “On the Energy-Constrained Diamond Norm and Its Application in Quantum Information Theory”, Probl. Info. Transm. 54 , 20–33 (2018), arXiv: 1706.00361 [quant-ph] .
+
+> 76
+
+S. Becker, N. Datta, L. Lami and C. Rouzé, “Energy-constrained discrimination of unitaries, quantum speed limits and a Gaussian Solovay-Kitaev theorem”, Phys. Rev. Lett. 126 , 190504 (2021), arXiv: 2006.06659 [quant-ph] .
+
+> 77
+
+L. van Luijk, N. Galke, A. Hahn and D. Burgarth, “Error bounds for Lie group representations in quantum mechanics”, J. Phys. A 57 , 105301 (2024), arXiv: 2211.08582 [quant-ph] .
+
+> 78
+
+H. Zhao, M. Bukov, M. Heyl and R. Moessner, “Making Trotterization Adaptive and Energy-Self-Correcting for NISQ Devices and Beyond”, PRX Quantum 4, 030319 (2023), arXiv: 2209.12653 [quant-ph] .
+
+> 79
+
+L. Li, “Principal Trotter observation error with truncated commutators”, Phys. Rev. A 110 ,062614 (2024), arXiv: 2408.03891 [quant-ph] .
+
+> 80
+
+C. Ronfaut, R. Ollive and S. Louise, “Numerical Error Extraction by Quantum Measurement Algorithm”, (2026), arXiv: 2602.01927 [quant-ph] .35 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 81
+
+M. Suzuki, “General Decomposition Theory of Ordered Exponentials”, Proceedings of the Japan Academy, Series B 69 , 161–166 (1993). 
+
+> 82
+
+T. N. Ikeda, A. Abrar, I. L. Chuang and S. Sugiura, “Minimum Trotterization Formulas for a Time-Dependent Hamiltonian”, Quantum 7, 1168 (2023), arXiv: 2212.06788 [quant-ph] .
+
+> 83
+
+J. L. Bosse, A. M. Childs, C. Derby, F. M. Gambetta, A. Montanaro and R. A. Santos, “Efficient and practical Hamiltonian simulation from time-dependent product formulas”, Nature Commun. 16 , 2673 (2025), arXiv: 2403.08729 [quant-ph] .
+
+> 84
+
+P. A. M. Casares, W. Maxwell, D. Motlagh, H. Choubisa, Z. Niu, I. Loaiza, J. E. Mueller, A.-C. Voigt, J. M. Arrazola and S. Fomichev, “Theory and practice of Trotter product formulas for quantum chemistry”, (2026), arXiv: 2606.30741 [quant-ph] .
+
+> 85
+
+G. H. Low and N. Wiebe, “Hamiltonian Simulation in the Interaction Picture”, (2018), arXiv: 1805.00675 [quant-ph] .
+
+> 86
+
+A. Rajput, A. Roggero and N. Wiebe, “Hybridized Methods for Quantum Simulation in the Interaction Picture”, Quantum 6, 780 (2022), arXiv: 2109.03308 [quant-ph] .
+
+> 87
+
+A. N. Ciavarella and C. W. Bauer, “Quantum Simulation of SU(3) Lattice Yang-Mills Theory at Leading Order in Large-Nc Expansion”, Phys. Rev. Lett. 133 , 111901 (2024), arXiv: 2402.10265 [hep-ph] .
+
+> 88
+
+L. Kim and L. P. García-Pintos, “Randomized product formulas beyond optimal deterministic scaling”, (2026), arXiv: 2608.07720 [quant-ph] .
+
+> 89
+
+J. E. Chambers, “Symplectic integrators with complex time steps”, The Astronomical Journal 
+
+126 , 1119 (2003). 
+
+> 90
+
+F. Casas and A. Escorihuela-Tomàs, “High order integrators obtained by linear combinations of symmetric-conjugate compositions”, Applied Mathematics and Computation 414 , 126700, issn :0096-3003 (2022), arXiv: 2106.06503 [math.NA] .
+
+> 91
+
+S. Blanes, F. Casas, P. Chartier and A. Escorihuela-Tomàs, “On symmetric-conjugate composition methods in the numerical integration of differential equations”, Mathematics of Computation 91 , 1739–1761 (2022), arXiv: 2101.04100 [math.NA] .
+
+> 92
+
+S. Blanes, F. Casas and A. Escorihuela-Tomàs, “Applying splitting methods with complex coefficients to the numerical integration of unitary problems”, Journal of Computational Dynamics 9, 85–101, issn : 2158-2491 (2022), arXiv: 2104.02412 [math.NA] .
+
+> 93
+
+J. Bernier, S. Blanes, F. Casas and A. Escorihuela-Tomàs, “On alternating-conjugate splitting methods”, (2025), arXiv: 2503.08453 [cs.NA] .
+
+> 94
+
+S. Blanes, F. Casas and A. Escorihuela-Tomàs, “Families of efficient low order processed composition methods”, Applied Numerical Mathematics 204 , 86–100, issn : 0168-9274 (2024), arXiv: 2404.04340 [math.NA] .
+
+> 95
+
+S. Blanes, F. Casas and A. Murua, “Symplectic splitting operator methods for the time-dependent Schrödinger equation”, The Journal of Chemical Physics 124 , 234105, issn :0021-9606 (2006). 
+
+> 96
+
+J. C. Butcher, “The effective order of Runge-Kutta methods”, in Conference on the Numerical Solution of Differential Equations, edited by J. L. Morris (1969), pp. 133–139, isbn :978-3-540-36158-9. 
+
+> 97
+
+S. Blanes, F. Casas and A. Murua, “Composition methods for differential equations with processing”, SIAM Journal on Scientific Computing 27 , 1817–1843 (2006), eprint: 
+
+https://doi.org/10.1137/030601223 .
+
+> 98
+
+S. Blanes, F. Casas and J. Ros, “Extrapolation of Symplectic Integrators”, Celestial Mechanics and Dynamical Astronomy 75 , 149–161 (1999). 
+
+> 99
+
+A. Carrera Vazquez, D. J. Egger, D. Ochsner and S. Woerner, “Well-conditioned multi-product formulas for hardware-friendly Hamiltonian simulation”, Quantum 7, 1067, issn : 2521-327X (2023), arXiv: 2207.11268 [quant-ph] .
+
+> 100
+
+S. Park, S. Lee and K. Baek, “Dual channel multi-product formulas”, (2026), arXiv: 2602.01713 [quant-ph] .
+
+> 101
+
+A. M. Childs and N. Wiebe, “Hamiltonian Simulation Using Linear Combinations of Unitary Operations”, Quant. Inf. Comput. 12 , 0901–0924 (2012), arXiv: 1202.5822 [quant-ph] .36 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 102
+
+S. Chin, “Multi-product splitting and Runge-Kutta-Nyström integrators”, Celestial Mechanics and Dynamical Astronomy 106 , 391–406 (2008), arXiv: 0809.0914 [cs.NA] .
+
+> 103
+
+G. H. Low, V. Kliuchnikov and N. Wiebe, “Well-conditioned multiproduct Hamiltonian simulation”, (2019), arXiv: 1907.11679 [quant-ph] .
+
+> 104
+
+J. D. Watson and J. Watkins, “Exponentially Reduced Circuit Depths Using Trotter Error Mitigation”, PRX Quantum 6, 030325 (2025), arXiv: 2408.14385 [quant-ph] .
+
+> 105
+
+S. Zhuk, N. F. Robertson and S. Bravyi, “Trotter error bounds and dynamic multi-product formulas for Hamiltonian simulation”, Phys. Rev. Res. 6, 033309 (2024), arXiv: 2306.12569 [quant-ph] .
+
+> 106
+
+J. Aftab, D. An and K. Trivisa, “Multi-product Hamiltonian simulation with explicit commutator scaling”, (2024), arXiv: 2403.08922 [quant-ph] .
+
+> 107
+
+K. Mizuta, “On the commutator scaling in Hamiltonian simulation with multi-product formulas”, Quantum 10 , 1974 (2026), arXiv: 2507.06557 [quant-ph] .
+
+> 108
+
+C. B. Bark, S. Lee, K. J. Ahn, S. Cheon, M. J. Park and Y. Kim, “Constant-Depth Multi-Product Formula for Trotter Error Mitigation in Near-Term Digital Quantum Simulation”, (2026), arXiv: 2607.12225 [quant-ph] .
+
+> 109
+
+A. M. Childs, A. Ostrander and Y. Su, “Faster quantum simulation by randomization”, Quantum 3, 182 (2019), arXiv: 1805.08385 [quant-ph] .
+
+> 110
+
+I. J. David, I. Sinayskiy and F. Petruccione, “Faster Quantum Simulation Of Markovian Open Quantum Systems Via Randomisation”, (2024), arXiv: 2408.11683 [quant-ph] .
+
+> 111
+
+S. Lee and S. Choi, “Mitigating Trotter Errors via Post-Processed Symmetry Restoration”, (2026), arXiv: 2606.20242 [quant-ph] .
+
+> 112
+
+C. Kiumi and B. Koczor, “TE-PAI: Exact Time Evolution by Sampling Random Circuits”, Quantum Sci. Technol. 10 , 045071 (2025), arXiv: 2410.16850 [quant-ph] .
+
+> 113
+
+F. Hasselgren and B. Koczor, “Quantum-inspired classical simulation through randomized time evolution”, (2026), arXiv: 2604.13144 [quant-ph] .
+
+> 114
+
+E. Campbell, “Random Compiler for Fast Hamiltonian Simulation”, Phys. Rev. Lett. 123 ,070503 (2019), arXiv: 1811.08017 [quant-ph] .
+
+> 115
+
+O. Kiss, M. Grossi and A. Roggero, “Importance sampling for stochastic quantum simulations”, Quantum 7, 977 (2023), arXiv: 2212.05952 [quant-ph] .
+
+> 116
+
+B. Koczor, J. J. L. Morton and S. C. Benjamin, “Probabilistic Interpolation of Quantum Rotation Angles”, Phys. Rev. Lett. 132 , 130602 (2024), arXiv: 2305.19881 [quant-ph] .
+
+> 117
+
+S. Lee and S. Cho, “qSHIFT: An Adaptive Sampling Protocol for Higher-Order Quantum Simulation”, (2026), arXiv: 2604.26263 [quant-ph] .
+
+> 118
+
+D. Cugini, “Pathwise Random Hamiltonian Simulation”, (2026), arXiv: 2608.29756 [quant-ph] .
+
+> 119
+
+M. Pocrnic, M. Hagan, J. Carrasquilla, D. Segal and N. Wiebe, “Composite Qdrift-product formulas for quantum and classical simulations in real and imaginary time”, Phys. Rev. Res. 6,013224 (2024), arXiv: 2306.16572 [quant-ph] .
+
+> 120
+
+J. M. Martyn, J. Lin, N. C. Warrington, I. L. Chuang and A. J. Daley, “Faster Quantum Monte Carlo Simulation by Random Compilation”, (2026), arXiv: 2609.10486 [quant-ph] .
+
+> 121
+
+P. K. Faehrmann, M. Steudtner, R. Kueng, M. Kieferova and J. Eisert, “Randomizing multi-product formulas for Hamiltonian simulation”, Quantum 6, 806 (2022), arXiv: 2101.07808 [quant-ph] .
+
+> 122
+
+C. H. Cho, D. W. Berry and M.-H. Hsieh, “Doubling the order of approximation via the randomized product formula”, Phys. Rev. A 109 , 062431 (2024), arXiv: 2210.11281 [quant-ph] .
+
+> 123
+
+X. Wang, S. Zhou, Z. Wang, P. Zeng, J. Sun, Q. Zhao, T. Gur and T. Li, “Trotter error compensation with polylogarithmic precision and nested-commutator scaling without ancillas”, (2026), arXiv: 2607.11856 [quant-ph] .
+
+> 124
+
+P. Zeng, J. Sun, L. Jiang and Q. Zhao, “Simple and High-Precision Hamiltonian Simulation by Compensating Trotter Error with Linear Combination of Unitary Operations”, PRX Quantum 
+
+6, 010359 (2025), arXiv: 2212.04566 [quant-ph] .
+
+> 125
+
+E. Granet and H. Dreyer, “Hamiltonian dynamics on digital quantum computers without discretization error”, npj Quantum Inf. 10 , 82 (2024), arXiv: 2308.03694 [quant-ph] .37 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 126
+
+T. Hayata and Y. Kikuchi, “Continuous-time evolution via probabilistic angle interpolation and its applications”, (2026), arXiv: 2604.02854 [quant-ph] .
+
+> 127
+
+J. W. Dai, F. Hasselgren and C. Kiumi, “Structure-Aware Variance Reduction for Unbiased Randomized Hamiltonian Simulation”, (2026), arXiv: 2606.23544 [quant-ph] .
+
+> 128
+
+K. Murota, Y. Kikuchi, E. Rinaldi, F. Sauvage and S. Todo, “Unbiased Hamiltonian Simulation by Reversing Trotter Error Dynamics”, (2026), arXiv: 2606.29741 [quant-ph] .
+
+> 129
+
+E. Hairer, S. Norsett and G. Wanner, Solving Ordinary Differential Equations I: Nonstiff Problems , Vol. 8 (Jan. 1993), isbn : 978-3-540-56670-0, see esp. sec. II.16. 
+
+> 130
+
+S. Duane, A. D. Kennedy, B. J. Pendleton and D. Roweth, “Hybrid Monte Carlo”, Phys. Lett. 
+
+B195 , 216–222 (1987). 
+
+> 131
+
+C. Runge, “Ueber die numerische Auflösung von Differentialgleichungen”, Math. Ann. 46 ,167–178 (1895). 
+
+> 132
+
+W. Kutta, “Beitrag zur näherungsweisen Integration totaler Differentialgleichungen”, Zeit. Math. Phys. 46 , 435–53 (1901). 
+
+> 133
+
+M. A. Clark, A. D. Kennedy and P. J. Silva, “Tuning HMC using Poisson brackets”, PoS 
+
+LATTICE2008 , 041 (2008), arXiv: 0810.1315 [hep-lat] .
+
+> 134
+
+J. C. Butcher, “On Runge-Kutta processes of high order”, Journal of the Australian Mathematical Society 4, 179–194 (1964). 
+
+> 135
+
+E. Hairer and G. Wanner, Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems (Springer, Berlin, 1996), isbn : 978-3-540-60452-5. 
+
+> 136
+
+J. Dormand and P. Prince, “A family of embedded Runge-Kutta formulae”, Journal of Computational and Applied Mathematics 6, 19 –26, issn : 0377-0427 (1980). 
+
+> 137
+
+R. Ashino, M. Nagase and R. Vaillancourt, “Behind and beyond the Matlab ODE suite”, Computers & Mathematics with Applications 40 , 491 –512, issn : 0898-1221 (2000). 
+
+> 138
+
+A. Escorihuela-Tomàs, “Efficient symplectic integrators for cubic and quartic potentials”, (2026), arXiv: 2605.06975 [math.NA] .
+
+> 139
+
+H. Yin and R. D. Mawhinney, “Improving DWF Simulations: the Force Gradient Integrator and the Möbius Accelerated DWF Solver”, PoS LATTICE2011 , edited by P. Vranas, 051 (2011), arXiv: 1111.5059 [hep-lat] .
+
+> 140
+
+K. Schäfers, J. Finkenrath, M. Günther and F. Knechtli, “Hessian-free force-gradient integrators”, Comput. Phys. Commun. 309 , 109478 (2025), arXiv: 2403.10370 [math.NA] .
+
+> 141
+
+K. Schäfers, J. Finkenrath, M. Günther and F. Knechtli, “Numerical stability of force-gradient integrators and their Hessian-free variants in lattice QCD simulations”, Comput. Phys. Commun. 321 , 110034 (2026), arXiv: 2506.08813 [hep-lat] .
+
+> 142
+
+F. Casas, A. Murua and M. Nadinic, “Efficient computation of the Zassenhaus formula”, Comput. Phys. Commun. 183 , 2386–2391 (2012), arXiv: 1204.0389 [math-ph] .
+
+> 143
+
+J. Peetz and P. Narang, “Hamiltonian Simulation via Stochastic Zassenhaus Expansions”, (2025), arXiv: 2501.13922 [quant-ph] .
+
+> 144
+
+M. Nguyen and N. Jing, “Zassenhaus Expansion in Solving the Schrödinger Equation”, (2025), arXiv: 2505.09441 [quant-ph] .
+
+> 145
+
+E. Kökcü, T. Steckmann, Y. Wang, J. K. Freericks, E. F. Dumitrescu and A. F. Kemper, “Fixed Depth Hamiltonian Simulation via Cartan Decomposition”, Phys. Rev. Lett. 129 , 070501 (2022), arXiv: 2104.00728 [quant-ph] .
+
+> 146
+
+L. Jourdan and P. Cassam-Chenaï, “A Remarkable Application of Zassenhaus Formula to Strongly Correlated Electron Systems”, Quantum 10 , 2057 (2026), arXiv: 2510.24364 [math-ph] .
+
+> 147
+
+C. Burdine and E. P. Blair, “Trotterless Simulation of Open Quantum Systems for NISQ Quantum Devices”, Adv. Quantum Technol. 8, 2400240 (2025), arXiv: 2410.03854 [quant-ph] .
+
+> 148
+
+J. Ostmeyer, “Simple Ways to improve Discrete Time Evolution”, in 40th International Symposium on Lattice Field Theory — PoS(LATTICE2023) (2024), p. 025, arXiv: 2309.03389 [quant-ph] .
+
+> 149
+
+D. W. Berry, A. M. Childs, R. Cleve, R. Kothari and R. D. Somma, “Simulating Hamiltonian Dynamics with a Truncated Taylor Series”, Phys. Rev. Lett. 114 , 090502 (2015), arXiv: 1412.4687 [quant-ph] .38 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 150
+
+S. Chundury, B. Burgstahler, J. Li, I.-S. Suh and F. Mueller, “Diagonal-Budgeted Trotterization for Efficient Quantum Hamiltonian Simulation”, (2026), arXiv: 2606.16959 [quant-ph] .
+
+> 151
+
+R. S. Varga and A. J. Carpenter, “Zeros of the partial sums of cos(z) and sin(z). III”, Applied Numerical Mathematics 60 , Special Issue: NUMAN 2008, 298–313, issn : 0168-9274 (2010). 
+
+> 152
+
+A. Weiße, G. Wellein, A. Alvermann and H. Fehske, “The kernel polynomial method”, Rev. Mod. Phys. 78 , 275–306 (2006), arXiv: cond-mat/0504627 [cond-mat.other] .
+
+> 153
+
+G. H. Low and I. L. Chuang, “Optimal Hamiltonian Simulation by Quantum Signal Processing”, Phys. Rev. Lett. 118 , 010501 (2017), arXiv: 1606.02685 [quant-ph] .
+
+> 154
+
+D. Motlagh and N. Wiebe, “Generalized Quantum Signal Processing”, PRX Quantum 5, 020368 (2024), arXiv: 2308.01501 [quant-ph] .
+
+> 155
+
+S. Hariprakash, N. S. Modi, M. Kreshchuk, C. F. Kane and C. W. Bauer, “Strategies for simulating the time evolution of Hamiltonian lattice field theories”, Phys. Rev. A 111 , 022419 (2025), arXiv: 2312.11637 [quant-ph] .
+
+> 156
+
+C. F. Kane, S. Hariprakash and C. W. Bauer, “Obtaining continuum physics from dynamical simulations of Hamiltonian lattice gauge theories”, (2025), arXiv: 2506.16559 [hep-lat] .
+
+> 157
+
+P. Draper, “Block Encoding Non-Abelian Lattice Gauge Theory”, (2026), arXiv: 2608.17115 [quant-ph] .
+
+> 158
+
+M. L. Rhodes, M. Kreshchuk and S. Pathak, “Exponential Improvements in the Simulation of Lattice Gauge Theories Using Near-Optimal Techniques”, PRX Quantum 5, 040347 (2024), arXiv: 2405.10416 [quant-ph] .
+
+> 159
+
+G. H. Low and I. L. Chuang, “Hamiltonian Simulation by Qubitization”, Quantum 3, 163 (2019), arXiv: 1610.06546 [quant-ph] .
+
+> 160
+
+A. Gilyén, Y. Su, G. H. Low and N. Wiebe, “Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics”, in 51st Annual ACM SIGACT Symposium on Theory of Computing (June 2018), arXiv: 1806.01838 [quant-ph] .
+
+> 161
+
+L. Laneve, “Generalized Quantum Signal Processing and Non-Linear Fourier Transform are equivalent”, (2025), arXiv: 2503.03026 [quant-ph] .
+
+> 162
+
+Y. Li and S. C. Benjamin, “Efficient Variational Quantum Simulator Incorporating Active Error Minimization”, Phys. Rev. X 7, 021050 (2017), arXiv: 1611.09301 [quant-ph] .
+
+> 163
+
+I. Assi, M. Vogl, M. Kumari and J. P. F. LeBlanc, “Beyond Trotterization: Variational Product Formulas for Quantum Simulation”, (2025), arXiv: 2511.15124 [quant-ph] .
+
+> 164
+
+S. Shoji, K. Ito, Y. Shimizu and K. Fujii, “Variational Quantum Operator Simulation”, (2026), arXiv: 2603.06013 [quant-ph] .
+
+> 165
+
+C. M. Keever and M. Lubasch, “Classically optimized Hamiltonian simulation”, Phys. Rev. Res. 
+
+5, 023146 (2023), arXiv: 2205.11427 [quant-ph] .
+
+> 166
+
+M. S. J. Tepaske, D. Hahn and D. J. Luitz, “Optimal compression of quantum many-body time evolution operators into brickwall circuits”, SciPost Phys. 14 , 073 (2023), arXiv: 2205.03445 [cond-mat.str-el] .
+
+> 167
+
+J. Gibbs and L. Cincio, “Deep Circuit Compression for Quantum Dynamics via Tensor Networks”, Quantum 9, 1789 (2025), arXiv: 2409.16361 [quant-ph] .
+
+> 168
+
+F. S. Luiz, P. N. Ferreira and M. C. de Oliveira, “Hardware-Efficient Hamiltonian Simulation via Trotter-Initialized Variational Optimization with Native Placement”, (2026), arXiv: 2604.26663 [quant-ph] .
+
+> 169
+
+R. Mansuroglu, T. Eckstein, L. Nützel, S. A. Wilkinson and M. J. Hartmann, “Variational Hamiltonian simulation for translational invariant systems via classical pre-processing”, Quantum Science and Technology 8, 025006 (2023), arXiv: 2106.03680 [quant-ph] .
+
+> 170
+
+I. N. M. Le, S. Sun and C. B. Mendl, “Riemannian quantum circuit optimization based on matrix product operators”, Quantum 9, 1833 (2025), arXiv: 2501.08872 [quant-ph] .
+
+> 171
+
+S.-H. Lin, R. Dilip, A. G. Green, A. Smith and F. Pollmann, “Real- and Imaginary-Time Evolution with Compressed Quantum Circuits”, PRX Quantum 2, 010342 (2021), arXiv: 2008.10322 [quant-ph] .
+
+> 172
+
+S. Wolf, M. Eckstein and M. J. Hartmann, “Variational Time Evolution Compression for Solving Impurity Models on Quantum Hardware”, (2025), arXiv: 2508.10526 [quant-ph] .39 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 173
+
+M. B. Hastings, “Solving gapped Hamiltonians locally”, Physical Review B 73 ,
+
+10.1103/physrevb.73.085115 , issn : 1550-235X (2006), arXiv: cond-mat/0508554 .
+
+> 174
+
+F. Verstraete, J. J. García-Ripoll and J. I. Cirac, “Matrix Product Density Operators: Simulation of Finite-Temperature and Dissipative Systems”, Phys. Rev. Lett. 93 , 207204 (2004), arXiv: cond-mat/0406426 .
+
+> 175
+
+D. Perez-Garcia, F. Verstraete, M. M. Wolf and J. I. Cirac, “Matrix product state representations”, Quant. Inf. Comput. 7, 401–430 (2007), arXiv: quant-ph/0608197 .
+
+> 176
+
+U. Schollwoeck, “The density-matrix renormalization group in the age of matrix product states”, Annals Phys. 326 , 96–192 (2011), arXiv: 1008.3477 [cond-mat.str-el] .
+
+> 177
+
+R. Orus, “A Practical Introduction to Tensor Networks: Matrix Product States and Projected Entangled Pair States”, Annals Phys. 349 , 117–158 (2014), arXiv: 1306.2164 [cond-mat.str-el] .
+
+> 178
+
+R. Orús, “Tensor networks for complex quantum systems”, Nature Rev. Phys. 1, 538–550 (2019), arXiv: 1812.04011 [cond-mat.str-el] .
+
+> 179
+
+G. Lami, M. Collura and N. Ranabhat, “Beginner’s Lecture Notes on Quantum Spin Chains, Exact Diagonalization and Tensor Networks”, (2025), arXiv: 2503.03564 [cond-mat.str-el] .
+
+> 180
+
+G. Misguich, “Introduction to matrix-product states and tensor networks”, (2026), arXiv: 2606.24803 [cond-mat.str-el] .
+
+> 181
+
+X. Waintal, C.-H. Huang and C. W. Groth, “Who can compete with quantum computers? Lecture notes on quantum inspired tensor networks computational techniques”, in (Jan. 2026), arXiv: 2601.03035 [quant-ph] .
+
+> 182
+
+K. Hémery, F. Pollmann and D. J. Luitz, “Matrix product states approaches to operator spreading in ergodic quantum systems”, Phys. Rev. B 100 , 104303 (2019), arXiv: 1901.05793 [cond-mat.str-el] .
+
+> 183
+
+M. Schneider, J. Ostmeyer, K. Jansen, T. Luu and C. Urbach, “Simulating both parity sectors of the Hubbard Model with Tensor Networks”, Phys. Rev. B 104 , 155118 (2021), arXiv: 2106.13583 [physics.comp-ph] .
+
+> 184
+
+P. Westhoff, M. Moroder, U. Schollwöck and S. Paeckel, “A Tensor Network Framework for Lindbladian Spectra and Steady States”, (2025), arXiv: 2509.07709 [quant-ph] .
+
+> 185
+
+P. W. Langhoff, S. T. Epstein and M. Karplus, “Aspects of Time-Dependent Perturbation Theory”, Rev. Mod. Phys. 44 , 602–644 (1972). 
+
+> 186
+
+P. Kramer and M. Saraceno, Geometry of the time-dependent variational principle in quantum mechanics , eng, Lecture notes in physics ; 140. (Springer-Verlag, Berlin ; 1981), isbn :9783540105794. 
+
+> 187
+
+J. Haegeman, J. I. Cirac, T. J. Osborne, I. Pizorn, H. Verschelde and F. Verstraete, “Time-Dependent Variational Principle for Quantum Lattices”, Phys. Rev. Lett. 107 , 070601 (2011), arXiv: 1103.0936 [cond-mat.str-el] .
+
+> 188
+
+J. Haegeman, C. Lubich, I. Oseledets, B. Vandereycken and F. Verstraete, “Unifying time evolution and optimization with matrix product states”, Phys. Rev. B 94 , 165116 (2016), arXiv: 1408.5056 [quant-ph] .
+
+> 189
+
+L. Hackl, T. Guaita, T. Shi, J. Haegeman, E. Demler and I. Cirac, “Geometry of variational methods: dynamics of closed quantum systems”, SciPost Phys. 9, 048 (2020), arXiv: 2004.01015 [quant-ph] .
+
+> 190
+
+P. E. Crouch and R. Grossman, “Numerical integration of ordinary differential equations on manifolds”, Journal of NonLinear Science 3, 1–33 (1993). 
+
+> 191
+
+B. Owren and A. Marthinsen, “Runge-Kutta Methods Adapted to Manifolds and Based on Rigid Frames”, BIT 39 , 116–142, issn : 0006-3835 (1999). 
+
+> 192
+
+H. Munthe-Kaas, “High order Runge-Kutta methods on manifolds”, Applied Numerical Mathematics 29 , Proceedings of the NSF/CBMS Regional Conference on Numerical Analysis of Hamiltonian Differential Equations, 115–127, issn : 0168-9274 (1999). 
+
+> 193
+
+T. Ayral, P. Besserve, D. Lacroix and E. A. Ruiz Guzman, “Quantum computing with and for many-body physics”, Eur. Phys. J. A 59 , 227 (2023), arXiv: 2303.04850 [quant-ph] .
+
+> 194
+
+S. P. Jordan, K. S. M. Lee and J. Preskill, “Quantum Algorithms for Quantum Field Theories”, Science 336 , 1130–1133 (2012), arXiv: 1111.3633 [quant-ph] .40 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 195
+
+W. A. Simon and P. J. Love, “Quantum Advantage in Resource Estimation”, (2025), arXiv: 2512.02131 [quant-ph] .
+
+> 196
+
+R. Babbush, R. King, S. Boixo, W. Huggins, T. Khattar, G. H. Low, J. R. McClean, T. O’Brien and N. C. Rubin, “Grand Challenge of Quantum Applications”, PRX Quantum 7, 020101 (2026), arXiv: 2511.09124 [quant-ph] .
+
+> 197
+
+A. Y. Kitaev, “Quantum measurements and the Abelian stabilizer problem”, (1995), arXiv: quant-ph/9511026 .
+
+> 198
+
+R. Cleve, A. Ekert, C. Macchiavello and M. Mosca, “Quantum algorithms revisited”, Proc. Roy. Soc. Lond. A 454 , 339 (1998), arXiv: quant-ph/9708016 .
+
+> 199
+
+E. Pelofske and S. Eidenbenz, “Numerical Experiments with Parameter Setting of Trotterized Quantum Phase Estimation for Quantum Hamiltonian Ground State Computation”, (2026), arXiv: 2602.22349 [quant-ph] .
+
+> 200
+
+E. Farhi, J. Goldstone, S. Gutmann and M. Sipser, “Quantum Computation by Adiabatic Evolution”, (2000), arXiv: quant-ph/0001106 .
+
+> 201
+
+J. Cunningham and J. Roland, “Alternative adiabatic quantum dynamics with algorithmic applications”, (2026), arXiv: 2605.30110 [quant-ph] .
+
+> 202
+
+E. N. Epperly, L. Lin and Y. Nakatsukasa, “A Theory of Quantum Subspace Diagonalization”, SIAM J. Matrix Anal. Appl. 43 , 1263–1290 (2022), arXiv: 2110.07492 [quant-ph] .
+
+> 203
+
+Y. Shen, K. Klymko, J. Sud, D. B. Williams-Young, W. A. de Jong and N. M. Tubman, “Real-Time Krylov Theory for Quantum Computing Algorithms”, Quantum 7, 1066 (2023), arXiv: 2208.01063 [quant-ph] .
+
+> 204
+
+T. de Lima Silva, L. Borges and L. Aolita, “Fourier-based quantum signal processing”, (2022), arXiv: 2206.02826 [quant-ph] .
+
+> 205
+
+M. Troyer and U.-J. Wiese, “Computational complexity and fundamental limitations to fermionic quantum Monte Carlo simulations”, Phys. Rev. Lett. 94 , 170201 (2005), arXiv: cond-mat/0408370 .
+
+> 206
+
+D. W. Berry, G. Ahokas, R. Cleve and B. C. Sanders, “Efficient Quantum Algorithms for Simulating Sparse Hamiltonians”, Commun. Math. Phys. 270 , 359–371 (2007), arXiv: quant-ph/0508139 .
+
+> 207
+
+Y. Atia and D. Aharonov, “Fast-forwarding of Hamiltonians and Exponentially Precise Measurements”, Nature Commun. 8, 1572 (2017), arXiv: 1610.09619 [quant-ph] .
+
+> 208
+
+R. Irmejs and J. I. Cirac, “Efficient Simulation of Sparse, Non-Local Fermion Models”, (2025), arXiv: 2512.15843 [quant-ph] .
+
+> 209
+
+B. Misra and E. C. G. Sudarshan, “The Zeno’s Paradox in Quantum Theory”, J. Math. Phys. 
+
+18 , 756 (1977). 
+
+> 210
+
+P. Facchi and S. Pascazio, “Quantum Zeno Subspaces”, Phys. Rev. Lett. 89 , 080401 (2002), arXiv: quant-ph/0201115 .
+
+> 211
+
+K. R. Dizaji, L. Kim, M. Marvian and C. Arenz, “Higher-order Zeno sequences”, (2025), arXiv: 2511.20792 [quant-ph] .
+
+> 212
+
+D. An, P. C. S. Costa and D. W. Berry, “Large time-step discretisation of adiabatic quantum dynamics”, (2025), arXiv: 2509.00171 [quant-ph] .
+
+> 213
+
+M. Gluza, J. Son, B. H. Tiang, R. Zander, R. Seidel, Y. Suzuki, Z. Holmes and N. H. Y. Ng, “Double-Bracket Quantum Algorithms for Quantum Imaginary-Time Evolution”, Phys. Rev. Lett. 136 , 020601 (2026), arXiv: 2412.04554 [quant-ph] .
+
+> 214
+
+C. L. Benavides-Riveros, P. Sharma and F. Šimkovic, “Augmenting Imaginary-Time Evolution with Local Geometric Information”, (2026), arXiv: 2606.23934 [quant-ph] .
+
+> 215
+
+H. R. Grimsley, S. E. Economou, E. Barnes and N. J. Mayhall, “An adaptive variational algorithm for exact molecular simulations on a quantum computer”, Nature Commun. 10 , 3007 (2019), arXiv: 1812.11173 [quant-ph] .
+
+> 216
+
+Z. Zimborás et al., “Myths around quantum computation before full fault tolerance: What no-go theorems rule out and what they don’t”, (2025), arXiv: 2501.05694 [quant-ph] .
+
+> 217
+
+J.-W. Yin, Z.-R. Chen, S. Peng, H.-C. Luo, C.-N. Tao, S.-W. Tan and L.-Q. Lu, “A Review of Quantum Computing Systems and Software”, Journal of Computer Science and Technology 41 ,147–169 (2026). 41 IOP Publishing J. Phys. A: Math. Theor. (2026) Johann Ostmeyer 
+
+> 218
+
+L. Doyle, F. Seifollahi and C. Singh, “Do we have a quantum computer? Expert perspectives on current state and future prospects”, Phys. Rev. Phys. Educ. Res. 22 , 010101 (2026), arXiv: 2602.15217 [physics.ed-ph] .
+
+> 219
+
+S. Endo, Z. Cai, S. C. Benjamin and X. Yuan, “Hybrid Quantum-Classical Algorithms and Quantum Error Mitigation”, J. Phys. Soc. Jap. 90 , 032001 (2021), arXiv: 2011.01382 [quant-ph] .
+
+> 220
+
+E. Chertkov, Y.-H. Chen, M. Lubasch, D. Hayes and M. Foss-Feig, “Robustness of near-thermal dynamics on digital quantum computers”, Phys. Rev. Res. 8, 013255 (2026), arXiv: 2410.10794 [quant-ph] .
+
+> 221
+
+L. K. Kovalsky, F. A. Calderon-Vargas, M. D. Grace, A. B. Magann, J. B. Larsen, A. D. Baczewski and M. Sarovar, “Self-healing of trotter error in digital adiabatic state preparation”, Phys. Rev. Lett. 131 , 060602 (2023), arXiv: 2209.06242 [quant-ph] .
+
+> 222
+
+M. Vizzuso, G. Passarelli, G. Cantele, P. Lucignano, X. Chen and K. Paul, “Nonadiabatic Self-Healing of Trotter Errors in Digitized Counterdiabatic Dynamics”, (2025), arXiv: 2512.22636 [quant-ph] .
+
+> 223
+
+B. Arseniev, “Distributed quantum logic algorithm”, (2024), arXiv: 2411.11979 [quant-ph] .
+
+> 224
+
+C. H. Thanh, “Hamiltonian Reordering for Shallower Trotterization Circuits”, (2025), arXiv: 2503.11153 [quant-ph] .
+
+> 225
+
+E. Decker, L. Goetz, E. McKinney, E. Gustafson, J. Zhou, Y. Liu, A. K. Jones, A. Li, A. Schuckert, S. Stein, E. Crane and G. Li, “Kernpiler: Compiler Optimization for Quantum Hamiltonian Simulation with Partial Trotterization”, in 2026 ACM/IEEE 53rd Annual International Symposium on Computer Architecture (ISCA) (2026), pp. 905–920, arXiv: 2504.07214 [quant-ph] .
+
+> 226
+
+J. Vovrosh, K. E. Khosla, S. Greenaway, C. Self, M. Kim and J. Knolle, “Simple mitigation of global depolarizing errors in quantum simulations”, Phys. Rev. E 104 , 035309 (2021), arXiv: 2101.01690 [quant-ph] .
+
+> 227
+
+M. Urbanek, B. Nachman, V. R. Pascuzzi, A. He, C. W. Bauer and W. A. de Jong, “Mitigating depolarizing noise on quantum computers with noise-estimation circuits”, Phys. Rev. Lett. 127 ,270502 (2021), arXiv: 2103.08591 [quant-ph] .
+
+> 228
+
+D. Aharonov, O. Alberton, I. Arad, Y. Atia, E. Bairey, Z. Brakerski, I. Cohen, O. Golan, I. Gurwich, O. Kenneth, E. Leviatan, N. H. Lindner, R. A. Melcer, A. Meyer, G. Schul and M. Shutman, “On the Importance of Error Mitigation for Quantum Computation”, (2025), arXiv: 2503.17243 [quant-ph] .
+
+> 229
+
+S. A. Rahman, R. Lewis, E. Mendicelli and S. Powell, “Self-mitigating Trotter circuits for SU(2) lattice gauge theory on a quantum computer”, Phys. Rev. D 106 , 074502 (2022), arXiv: 2205.09247 [hep-lat] .
+
+> 230
+
+F. Barratt, J. Dborin, M. Bal, V. Stojevic, F. Pollmann and A. G. Green, “Parallel quantum simulation of large systems on small NISQ computers”, npj Quantum Inf. 7, 79 (2021), arXiv: 2003.12087 [quant-ph] .
+
+> 231
+
+X. Yuan, J. Sun, J. Liu, Q. Zhao and Y. Zhou, “Quantum Simulation with Hybrid Tensor Networks”, Phys. Rev. Lett. 127 , 040501 (2021), arXiv: 2007.00958 [quant-ph] .
+
+> 232
+
+J. Schuhmacher, M. Ballarin, A. Baiardi, G. Magnifico, F. Tacchino, S. Montangero and I. Tavernelli, “Hybrid Tree Tensor Networks for Quantum Simulation”, PRX Quantum 6, 010320 (2025), arXiv: 2404.05784 [quant-ph] .
+
+> 233
+
+T. V. Bauer, R. M. Milbradt and C. B. Mendl, “Time Evolution on Hybrid Tensor Networks – A Novel and Parallelizable Algorithm”, (2026), arXiv: 2606.28169 [quant-ph] .
+
+> 234
+
+G. Gentinetta, F. Metz and G. Carleo, “Correcting and extending Trotterized quantum many-body dynamics”, PRX Quantum 6, 030361 (2025), arXiv: 2502.13784 [quant-ph] .42

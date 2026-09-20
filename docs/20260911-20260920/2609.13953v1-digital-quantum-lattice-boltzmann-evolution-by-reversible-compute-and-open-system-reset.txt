@@ -1,0 +1,1147 @@
+Title: Digital quantum lattice Boltzmann evolution by reversible compute and open-system reset
+
+URL Source: https://arxiv.org/pdf/2609.13953v1
+
+Published Time: Tue, 15 Sep 2026 00:45:27 GMT
+
+Number of Pages: 32
+
+Markdown Content:
+# Digital quantum lattice Boltzmann evolution by reversible compute and open-system reset 
+
+Muhammad Idrees Khan 
+
+Independent researcher 
+
+ORCID: 0009-0003-0046-821X 
+
+ABSTRACT 
+
+Turbulent fluid simulation is computationally demanding because nonlinear interactions couple a wide range of scales. Quantum computing offers another computational model, but fluid evolution is nonlinear and dissipative whereas closed gate-based dynamics is linear and reversible. The lattice Boltzmann method (LBM) is an attractive discrete target because streaming is a local permutation, yet conventional collision reconstructs a nonlinear equilibrium and applies dissipative relaxation. We present a digital quantum lattice Boltzmann (QLBM) algorithm that keeps that nonlinear timestep in computational-basis registers. Each step writes the updated populations into a clean destination bank, uncomputes the workspace, and resets the obsolete source. The resulting channel is completely positive and trace preserving (CPTP), composes without intermediate measurement, and applies to any lattice Boltzmann stencil that can be evaluated reversibly into a clean bank. Forced D3Q19 homogeneous isotropic turbulence, in direct numerical simulation (DNS) and Smagorinsky large-eddy simulation (LES) at Reynolds number 15000 over one million lattice steps, shows statistical agreement in mass, energy budgets, spectra, and intermittency. The three-dimensional calculations use a digital-register emulator of the circuit. A separate D2Q9 implementation compiles the same contract to reversible gates and agrees bit-exactly with its integer twin. Two-bank storage and serial lattice depth limit near-term feasibility. 
+
+I. INTRODUCTION 
+
+Fluid simulation is computationally demanding in turbulence, where nonlinear interactions couple a broad range of scales [1]. Direct numerical simulation (DNS) resolves those scales explicitly, at a cost that grows rapidly with Reynolds number. Large-eddy simulation (LES) reduces that cost by modelling unresolved motion with a state-dependent subgrid closure. Quantum computing offers a different computational model and has motivated algorithms for fluid dynamics. Closed gate-based evolution is linear and reversible, whereas fluid evolution is nonlinear and dissipative. A quantum fluid algorithm must therefore represent irreversible relaxation over repeated timesteps. The lattice Boltzmann method (LBM) replaces a direct Navier–Stokes discretization by the evolution of discrete particle populations through site-local collision and nearest-neighbour streaming [2, 3]. Streaming is a reversible permutation, and macroscopic density and momentum are local moments of the populations. The obstacle for a quantum implementation is collision. Conventional hydrodynamic LBM reconstructs a nonlinear equilibrium and applies dissipative relaxation. Practical solvers add body forcing, a choice of relaxation rates, and, for turbulent LES, locally state-dependent dissipation. Quantum lattice Boltzmann methods (QLBMs) treat that mismatch by simplifying the collision model, lifting it into a larger linear system, or changing the representation of collision [4–11]. Sec. II compares encodings and measurement contracts in detail. 1arXiv:2609.13953v1 [physics.comp-ph] 12 Sep 2026 Here a conventional nonlinear LBM timestep is written as a deterministic quantum channel and iterated without decoding and rebuilding the fluid after every step. Any deterministic digital map Φ that can be reversibly evaluated into a clean destination bank defines a two-bank compute–reset timestep. The circuit computes Φ, uncomputes the workspace, and unconditionally resets the obsolete source bank. The resulting channel is completely positive and trace preserving (CPTP), reproduces Φ on computational-basis inputs, and composes without intermediate readout (proposition 1). Bhatnagar–Gross–Krook (BGK), two-relaxation-time (TRT), and multiple-relaxation-time (MRT) collision all use that contract, with one rate, two rates, or a full diagonal of rates. Bank reset dephases in the computational basis, so the algorithm is a digital computational-basis method rather than an amplitude-encoded or coherent QLBM. The test problem is forced homogeneous isotropic turbulence (HIT), run as DNS and as LES. Forced D3Q19 HIT is the three-dimensional application, on a 320 3 DNS grid and on a 64 3 Smagorinsky LES grid with a locally state-dependent closure evaluated from the evolving register [12–15]. A separate D2Q9 implementation compiles the same compute–reset timestep to reversible gates and executes those circuits exactly (Appendix C). The ideal arithmetic map agrees with classical forced MRT evolution (eq. (19)), and one finite-width step obeys the truncation bound (eq. (20)). The D3Q19 HIT calculations cover 10 6 steps on the register emulator of the digital circuit. The D2Q9 circuits agree bit-exactly with their integer twin under final-only measurement. 
+
+II. RELATION TO EXISTING QUANTUM LBM AND LINDBLAD-SIMULATION METHODS 
+
+Recent QLBM formulations differ in encoding, collision nonlinearity, dissipation mechanism, and the measurement contract required for multistep evolution. Linear advection–diffusion QLBMs have moved from single-step or reinitialized formulations to multistep schemes that avoid intermediate state extraction and reinitialization [4, 6]. Dynamic circuits extend the same linear ADE class [5]. Those algorithms remain linear ADE solvers. Georgescu et al. describe a QLBM software framework [16]. Schalkers and Möller showed that common amplitude and computational-basis encodings cannot make both collision and streaming unitary, forcing careful encoding choices or repeated measurement/reinitialization [17]. Carleman lifts embed nonlinear collision in a larger linear system [7–10, 18]. Unitary quantum linear systems algorithm (QLSA) block-encoding realizations can additionally incur a recovery probability below unity. Khan realizes an invertible finite Carleman endpoint by autonomous GKSL dynamics [19]. The present algorithm acts on the nonlinear digital map Φ𝑏 by compute-and-reset. Wang et al. use a nonlinear lattice-gas ensemble with an entropy-restoring H-step and report large-scale demonstrations [11]. Tiwari et al. describe hardware-realizable advection–diffusion QLBM pipelines [20]. Duong et al. replace tomography-heavy updates by denoising/projection collisions [21]. Liu et al. simulate Lindblad dynamics by trajectory averaging without postselection [22]. Signed-rail amplitude damping is a CPTP treatment of isolated diagonal MRT dissipation [23]. The D3Q19 backend evaluates the timestep as register operations. A classical Markov map admits a Kraus embedding [24, 25]. The nonlinear digital LBM map is that channel. Forced MRT D3Q19 DNS and LES are the nonlinear test. D2Q9 circuits show that the same contract compiles on a second stencil (Appendix C). Table I summarizes the comparison. 
+
+III. CLASSICAL MRT-LBM, DNS AND LES 
+
+The D3Q19 populations f = ( 𝑓 𝑖 )18  
+
+> 𝑖 =0
+
+satisfy the lattice Boltzmann equation 
+
+𝑓 𝑖 (x + c𝑖 Δ𝑡, 𝑡 + Δ𝑡 ) = 𝑓 𝑖 (x, 𝑡 ) + Ω𝑖 (x, 𝑡 ) + Δ𝑡 Ψ𝑖 (x, 𝑡 ). (1) 2TABLE I. Comparison with the most directly comparable QLBM lines. Related methods appear in Sec. II. Measurement contract means the intermediate measurement and reinitialization policy. Forced HIT is forced homogeneous isotropic turbulence at the production horizons of this paper. Method Encoding / collision Dissipation Meas. contract Forced HIT Signed-rail CPTP MRT [23] digital rails; prescribed Λ CPTP amplitude damping local decode a no Schalkers–Möller [17] space-time / basis encodings unitary focus encoding-dependent no Carleman QLBM [9, 10, 18] Carleman / QLSA lift lifted linear recovery b no Autonomous GKSL Carleman [19] vacuum coherences; Carleman 𝐴 𝐾 
+
+autonomous GKSL encode/decode f no Wang et al. ensemble [11] amplitude ensemble; lattice-gas + H-step ensemble collision end-of-run c decaying e
+
+Tiwari et al. ADE [20] tensor-network ADE unitary ADE hardware pipeline no Nagel and Löwe ADE [6] amplitude ADE linear ADE none mid-run g no 
+
+This work digital register; compute–reset ( 𝐷𝑑𝑄𝑞 ;D3Q19 + D2Q9) fixed-point multiply + bank reset final only d emulator d       
+
+> aUnit success for the exposed diagonal dissipative block. bTypical linear-combination-of-unitaries (LCU) / block-encoding or QLSA recovery overhead. cIntermediate reinitialization avoided by ensemble design. dForced HIT on the computational-basis register emulator. D2Q9 is the gate-level cross-stencil check (Appendix C). eWang et al. report decaying HIT. fInitial encode and final decode. Invertible linear endpoint. gLinear ADE; no intermediate extraction or reinitialization.
+
+Here c𝑖 are the D3Q19 discrete velocities, Δ𝑡 is the lattice timestep, Ω𝑖 is the MRT collision increment, and Ψ𝑖 is the Guo force increment in population space. Let 𝑀 be the D3Q19 moment basis [26], with inverse 𝑀 −1, and let 𝐼 be the 19 × 19 identity on moment space. The discrete velocities, weights, the numerical matrix 𝑀 , and the ghost rates are those tabulated by Khan et al. [27]. The diagonal relaxation matrix is S = diag (𝑠 0, . . . , 𝑠 18 ) and the multiplier matrix is Λ = 𝐼 − S = diag (𝜆 0, . . . , 𝜆 18 ) with 𝜆 𝑟 = 1 − 𝑠 𝑟 .Moments are m = 𝑀 f . The raw Guo force source is 𝚽 , written in registers in eq. (23). The MRT-corrected population source is 
+
+𝚿 = 𝑀 −1 
+
+𝐼 − S
+
+> 2
+
+
+
+𝑀 𝚽 . (2) The post-collision forced moments are 
+
+m+ = meq + Λ(m − meq ) + Δ𝑡 
+
+
+
+𝐼 − S
+
+> 2
+
+
+
+𝑀 𝚽 . (3) The complete classical timestep is 
+
+CΛ ( 𝑓 ) = S
+
+"
+
+𝑀 −1 
+
+meq + Λ(m − meq ) + Δ𝑡  𝐼 − S
+
+> 2
+
+ 𝑀 𝚽 
+
+#
+
+, (4) where S is periodic streaming. External body forcing uses the discrete source of Guo et al. [28]. The density and half-force velocity are 
+
+𝜌 =∑︁ 
+
+> 𝑖
+
+𝑓 𝑖 , 𝜌 u =∑︁ 
+
+> 𝑖
+
+𝑓 𝑖 c𝑖 + Δ𝑡  
+
+> 2
+
+F , (5) 3TABLE II. D3Q19 MRT diagonal collision used throughout this work (moment-row ordering of [26], as tabulated in [27]). Multipliers are 𝜆 𝑟 = 1 − 𝑠 𝑟 . The fifteen nonconserved modes enter the signed fixed-point collision; conserved moments are left unchanged. Open-system irreversibility enters through the subsequent bank-reset channel. 
+
+Role Indices 𝑟 Rates 𝑠 𝑟 
+
+Conserved ( 𝜌, j) 0, 3, 5, 7 𝑠 𝑟 = 0 (conserved moments unchanged) Shear (viscous stress) 9, 11 , 13 , 14 , 15 𝑠 𝜈 = Δ 𝑡 /𝜏 0 (DNS: fixed molecular; LES: local 
+
+𝑠 𝜈 (x, 𝑡 ))Other nonconserved 1, 2, 4, 6, 8, 10 , 12 , 16 , 17 , 18 fixed set: 𝑠 1 = 1.19, 𝑠 2 = 𝑠 10 = 𝑠 12 = 1.4, 𝑠 4 =
+
+𝑠 6 = 𝑠 8 = 1.2, 𝑠 16 = 𝑠 17 = 𝑠 18 = 1.98 with F the body-force density, and the low-Mach equilibrium form 
+
+𝑓 eq  
+
+> 𝑖
+
+= 𝑤 𝑖 𝜌 
+
+"
+
+1 + c𝑖 · u
+
+𝑐 2
+
+> 𝑠
+
++ (c𝑖 · u)2
+
+2𝑐 4
+
+> 𝑠
+
+− u2
+
+2𝑐 2
+
+> 𝑠
+
+#
+
+(6) uses the D3Q19 weights 𝑤 𝑖 and lattice sound speed 𝑐 𝑠 = 1/√3. The same equilibrium is written in that moment basis. Table II defines the conserved, shear, and remaining nonconserved mode groups used below, together with the diagonal rates 𝑠 𝑟 and multipliers 𝜆 𝑟 = 1 − 𝑠 𝑟 . The D2Q9 circuits of Appendix C use the moment basis of [29]. 
+
+A. DNS and LES roles 
+
+Both calculations use the forced MRT map eq. (4). That map is the MRT-Smagorinsky FHIT construction of [27], now evaluated as a digital-register timestep. They differ in the shear multiplier 𝜆 𝜈 . For DNS that multiplier is fixed by the molecular viscosity, 
+
+𝜏 0 = 𝜈 0
+
+𝑐 2
+
+> 𝑠
+
++ Δ𝑡 
+
+2 , 𝑠 𝜈 = Δ𝑡 𝜏 0
+
+, 𝜆 𝜈 = 1 − 𝑠 𝜈 . (7) LES uses the same collide–stream step on a coarser grid. An eddy viscosity 𝜈 𝑡 = (𝐶 𝑠 Δ)2 |𝑆 | is added to 
+
+𝜈 0, and the five shear modes receive a local 𝜆 𝜈 (x, 𝑡 ) from eq. (7) with 𝜈 0 + 𝜈 𝑡 in place of 𝜈 0. That discrete Smagorinsky rule is the lattice form of the filtered momentum equation 
+
+𝜕 ¯𝑢 𝑖 
+
+𝜕𝑡 + ¯𝑢 𝑗 
+
+𝜕 ¯𝑢 𝑖 
+
+𝜕𝑥 𝑗 
+
+= − 1
+
+𝜌 𝜕 ¯𝑝 𝜕𝑥 𝑖 
+
++ 𝜈 0∇2 ¯𝑢 𝑖 − 𝜕𝜏 SGS 
+
+> 𝑖 𝑗
+
+𝜕𝑥 𝑗 
+
++ ¯𝐹 𝑖 
+
+𝜌 , (8) with 𝜏 SGS ,𝑑 𝑖 𝑗 = −2𝜈 𝑡 ¯𝑆 𝑖 𝑗 the traceless subgrid stress, Smagorinsky constant 𝐶 𝑠 , filter width Δ, and |𝑆 | the strain-rate magnitude. Here F is the body-force density of eq. (5), so F /𝜌 is the acceleration. The strain |𝑆 |
+
+is reconstructed from nonequilibrium moments following Yu et al. [12], as in [27]. Sec. VI forms the digital shear multiplier from that |𝑆 |. Each quantum-register simulation has a matched classical reference with identical lattice, initialization, forcing, rates, duration, and diagnostics. 
+
+IV. DIGITAL COMPUTE–RESET ARCHITECTURE 
+
+Let R be a finite set, the alphabet of a digital register, and let Φ : R → R be any deterministic map that admits a reversible clean evaluation into a second register. At timestep 𝑡 , write 𝐴 for the source bank holding 
+
+|𝑥 ⟩, 𝐵 for a clean destination bank, and 𝑊 for arithmetic workspace. A reversible circuit implements 
+
+𝑈 Φ : |𝑥 ⟩𝐴 |0⟩𝐵 |0⟩𝑊 −→ | 𝑥 ⟩𝐴 |Φ(𝑥 )⟩ 𝐵 |0⟩𝑊 . (9) 4The map is evaluated by compute–copy–uncompute. Φ(𝑥 ) is written into workspace, copied into the destination bank, and the workspace is uncomputed to |0⟩. The obsolete source bank is then erased by Reset ( 𝐴 ), (10) giving |0⟩𝐴 |Φ(𝑥 )⟩ 𝐵 |0⟩𝑊 . For the following timestep the populated destination bank is the new source and the reset source bank is the new destination. This is a change of register roles. The complete algorithm is prepare 𝑥 0 → 
+
+> 𝑇 −1
+
+Ö
+
+> 𝑡 =0
+
+[𝑈 Φ → Reset ( 𝐴 )] → final measurement . (11) 
+
+Proposition 1 (Compute–reset CPTP channel) . Let Φ : R → R be any deterministic map on a finite set R,let H𝐴  H𝐵  C| R | be the source and destination banks, and let 
+
+𝑉 : H𝐴 → H 𝐴 ⊗ H 𝐵 , 𝑉 |𝑥 ⟩ = |𝑥 ⟩| Φ(𝑥 )⟩ , (12) 
+
+be the reversible two-bank compute step eq. (9) . Then 𝑉 is an isometry, and the physical step “apply 𝑉 , then discard bank 𝐴 ” is the channel 
+
+EΦ (𝜌 ) = Tr 𝐴 
+
+𝑉 𝜌𝑉 † =∑︁ 
+
+> 𝑥
+
+𝜌 𝑥 𝑥 |Φ(𝑥 )⟩⟨ Φ(𝑥 )| , (13) 
+
+with Kraus operators 𝐾 𝑥 = |Φ(𝑥 )⟩⟨ 𝑥 |. Consequently EΦ is CPTP, it acts as Φ on every computational-basis input, EΦ (| 𝑥 ⟩⟨ 𝑥 |) = |Φ(𝑥 )⟩⟨ Φ(𝑥 )| , and on an arbitrary input it destroys all coherences in the computational basis. Proof. 𝑉 †𝑉 = Í𝑥,𝑥 ′ ⟨𝑥 ′ |𝑥 ⟩⟨ Φ(𝑥 ′)| Φ(𝑥 )⟩| 𝑥 ′⟩⟨ 𝑥 | = Í𝑥 |𝑥 ⟩⟨ 𝑥 | = 𝐼 , so 𝑉 is an isometry and 𝜌 ↦ → 𝑉 𝜌𝑉 † is a reversible dilation. 𝑉 is an isometry that can be extended to a unitary on a sufficiently enlarged register space. No assumption of injectivity of Φ is needed, because the source register itself carries the label 𝑥 .Writing 𝜌 = Í𝑥,𝑥 ′ 𝜌 𝑥 𝑥 ′ |𝑥 ⟩⟨ 𝑥 ′ |,
+
+𝑉 𝜌𝑉 † =∑︁ 
+
+> 𝑥,𝑥 ′
+
+𝜌 𝑥 𝑥 ′ |𝑥 ⟩⟨ 𝑥 ′ | ⊗ | Φ(𝑥 )⟩⟨ Φ(𝑥 ′)| ,
+
+and tracing out bank 𝐴 retains only 𝑥 = 𝑥 ′, which gives eq. (13). Since discarding a subsystem is the partial trace, and unconditional Reset ( 𝐴 ) followed by reuse of 𝐴 is physically the same operation up to a local state preparation on 𝐴 , the reset implements exactly this channel. Identifying 𝐾 𝑥 = |Φ(𝑥 )⟩⟨ 𝑥 | gives 
+
+Í𝑥 𝐾 † 
+
+> 𝑥
+
+𝐾 𝑥 = Í𝑥 |𝑥 ⟩⟨ 𝑥 | = 𝐼 , the Kraus (operator-sum) form of a CPTP map [24, 25]. Setting 𝜌 = |𝑥 ⟩⟨ 𝑥 |
+
+yields |Φ(𝑥 )⟩⟨ Φ(𝑥 )| , while for 𝑥 ≠ 𝑥 ′ the off-diagonal terms are annihilated, so EΦ factors through complete computational-basis dephasing and is entanglement-breaking. The reset exports the discarded bank-𝐴 
+
+information into the environment. That is the dissipative part of the construction, and it is the only irreversible element of the timestep. □
+
+The Kraus form of compute-and-discard is standard [24, 25]. A complete nonlinear digital LBM timestep sits in that contract, so timesteps compose on the register state. If Φ𝑏 is any deterministic fixed-point LBM timestep map on a 𝐷𝑑𝑄𝑞 population register, and if it admits the evaluation eq. (9), then eq. (13) implements 
+
+Φ𝑏 on computational-basis inputs. Forced D3Q19 MRT DNS, D3Q19 Smagorinsky LES, and the D2Q9 circuits of Appendix C are instances of that LBM map. BGK and TRT occupy the same slot, with one or two relaxation rates. Bank reset dephases in the computational basis. The logical circuit measures at the final readout. A logical Reset may be compiled as mid-circuit measurement and a corrective 𝑋 , with the outcome discarded. From here on, R is the digital LBM population space. Let L be a periodic lattice in 𝑑 dimensions and 
+
+C = {𝑐 0, . . . , 𝑐 𝑄 −1} a 𝐷𝑑𝑄𝑞 velocity stencil. 5A. Signed MRT multiply and D3Q19 consistency 
+
+A digital-register QLBM stores one signed fixed-point population word per velocity at each site. Write a signed format (𝑤, 𝑓 ), where 𝑤 is the two’s-complement word width including the sign bit and 𝑓 is the number of fractional bits. Its representable set is 
+
+F𝑤, 𝑓 = 𝑘 2− 𝑓 : −2 𝑤 −1 ≤ 𝑘 ≤ 2 𝑤 −1 − 1, 𝑘 ∈ Z , (14) and sat 𝑤 clamps an integer to [− 2𝑤 −1, 2𝑤 −1 − 1]. Throughout, round (·) denotes round-half-away-from-zero, which is symmetric under sign reversal. In the main text 𝑏 always denotes the fractional width 𝑓 of the production registers, with integer widths fixed per register class. Symmetry of the rounding rule is required because overrelaxation drives 𝜆 negative, and a floor-based rule would bias every negative product low by one unit in the last place. The classical state space is X = (R𝑄 ) L . The register state space is the finite set R = (F 𝑄 𝑤, 𝑓 ) L of population fields whose entries lie on the fixed-point grid eq. (14). The decoding map 
+
+D : R → X , (D 𝐹 )𝑖 (x) = 𝐹 𝑖 (x),
+
+is the injective inclusion that reads each register word as the rational number it represents. The encoding map Π : X → R is the elementwise quantizer of the persistent population format (𝑤, 𝑓 ),
+
+Π(𝑥 ) = 2− 𝑓 sat 𝑤 
+
+ round (2 𝑓 𝑥 ), (15) so that Π ◦ D = id R . Work registers (moments, features, sources, reciprocals, accumulators) may use other integer widths. Their fractional widths are at least 𝑏 . The persistent state space R is the population field. Let Φ𝑏 : R → R be a deterministic fixed-point LBM timestep on this space. Given a multiplier rule 𝐺 ,write Q𝐺,𝑏 : R → R for the finite-width register update. Write Q𝐺, ∞ : X → X for the same mathematical timestep in exact real arithmetic, with exact 1 /𝜌 and √· in place of finite Newton iteration, and with quantization and saturation removed. The classical update C𝐺 : X → X is the matching exact-real discrete LBM timestep. Both evaluate their multipliers from their own state, Λ = 𝐺 (·) . The production calculations use 𝑑 = 3, 𝑄 = 19, and the forced MRT map of eq. (4). MRT mode relaxation is implemented by signed fixed-point multiplication. For each nonconserved mode, write the moment deviation 𝛿𝑚 and the multiplier 
+
+𝜆 = 1 − 𝑠 as scaled two’s-complement integers, with 𝑓 𝑚 and 𝑓 𝜆 the fractional widths of those registers, 
+
+𝐷 = round (2 𝑓 𝑚 𝛿𝑚 ), 𝐿 = round (2 𝑓 𝜆 𝜆 ), 𝜆 = 1 − 𝑠, (16) and compute 
+
+𝐷 ′ = sat 𝑤 𝑚 
+
+
+
+round 
+
+ 𝐷 𝐿 
+
+2 𝑓 𝜆 
+
+ 
+
+. (17) The quotient in eq. (17) is evaluated from the exact integer product 𝐷 𝐿 , so the rounding is that of the infinitely precise product. When 𝑠 > 1, one has 𝜆 = 1 − 𝑠 < 0, so 𝐿 is simply a negative integer. The same signed-multiply contract implements overrelaxation. For forced D3Q19 MRT the digital timestep is the composition 
+
+Φ𝑏 = stream ◦ inverse MRT ◦ forcing ◦ collision ◦ equilibrium ◦ MRT , (18) with every arithmetic stage obeying an explicit integer width, fractional width, rounding rule, saturation rule, and (for 1 /𝜌 and √·) 𝐽 r = 𝐽 s = 6 Newton iterations, sufficient to reach the register rounding. That composition is the D3Q19 instance of Q𝐺,𝑏 . The production backend evaluates it as register operations. In that instantiation C𝐺 is the exact-real discrete forced MRT map of eq. (4), and floating-point arithmetic is the numerical reference used to evaluate it. 6In exact real arithmetic Q𝐺, ∞ recovers the same macros (𝜌, u), moments m, and equilibrium meq as the classical kernels, with Λ = 𝐺 ( 𝑓 ) constant for DNS and given by the Smagorinsky closure for LES. Signed multiplication yields Λ(m − meq ), and register evaluation of the discrete force source reproduces 
+
+Δ𝑡  𝐼 − S/2 𝑀 𝚽 . The same inverse moment transform and periodic streaming follow, so the two exact-real maps coincide, 
+
+Q𝐺, ∞ = C𝐺 . (19) For a register input 𝐹 ∈ R this is Q𝐺, ∞ (D 𝐹 ) = C𝐺 (D 𝐹 ), and the identity iterates for every number of timesteps. For state-dependent LES, both algorithms evaluate Λ𝑡 = 𝐺 ( 𝑓 𝑡 ) from their current population states at every timestep. If all intermediate arithmetic quantities remain within their prescribed ranges, if every arithmetic register has fractional width at least 𝑏 , and if the constituent maps and the LES rule 𝐺 are locally Lipschitz on the states considered, one timestep of the finite-width register map satisfies 
+
+DQ 𝐺,𝑏 (𝐹 ) − Q 𝐺, ∞ (D 𝐹 ) = DQ 𝐺,𝑏 (𝐹 ) − C 𝐺 (D 𝐹 ) ≤ 𝐶 fp 2−𝑏 , (20) with 𝐶 fp independent of 𝑏 . This is a one-step arithmetic bound. Forced HIT is chaotic, so two solvers that differ by O( 2−𝑏 ) at one step separate and decorrelate pointwise regardless of 𝑏 . The width survey of Table IX shows collapse at 𝑏 = 16. Widths 𝑏 = 24, 32, and 40 remain in the sustained kinetic-energy band. Pre-chaotic kinetic-energy error falls with 𝑏 , as expected from eq. (20). Long 32 3 trajectories still mix under chaos, so pairwise final-field 𝐿 2 mixes across widths. Long-horizon fidelity is therefore assessed statistically through spectra, budgets, and the post-transient moments of Table VII. 
+
+V. FORCED D3Q19 INSTANTIATION 
+
+The persistent state is a field of signed fixed-point D3Q19 population registers 
+
+|𝐹 𝑡 ⟩ =
+
+Ì
+
+> x
+> 18
+
+Ì
+
+> 𝑖 =0
+
+| 𝑓 𝑖 (x, 𝑡 )⟩ . (21) This section instantiates the digital LBM map of Sec. IV on forced D3Q19 MRT. The production solver is that register map. It advances 𝐹 𝑡 through the stages of eq. (18) at the declared register boundaries. Finite bit-width surveys appear in Table IX and Sec. E and Appendix B. Work registers store density, momentum, reciprocal density, velocity, moments, equilibrium features, source moments, and strain quantities. Each numerical map corresponds to reversible arithmetic, unconditional reset, or a permutation. Fig. 1 summarizes the forced D3Q19 register timestep of Table III and the DNS/LES construction of its control registers. 
+
+A. Macroscopic, equilibrium, collision, forcing, and streaming 
+
+Reversible adder trees form 𝜌 and j. A fixed-point reciprocal and products form u. The fixed matrix 𝑀 is implemented by sparse signed additions. Quadratic work registers generate the D3Q19 equilibrium moments, after which 
+
+|m⟩| meq ⟩| 0⟩ ↦ → | m⟩| meq ⟩| 𝛿 m⟩. (22) The fifteen nonconserved entries enter the signed multiply eq. (17). The discrete force term is evaluated in registers as 
+
+Φ𝑖 = 𝑤 𝑖 
+
+" 𝑑 𝐹 𝑖 − 𝑑 𝑢𝐹 
+
+𝑐 2
+
+> 𝑠
+
++ 𝑑 𝑢 𝑖 𝑑 𝐹 𝑖 
+
+𝑐 4
+
+> 𝑠
+
+#
+
+, (23) 7TABLE III. Register operations in one digital QLBM timestep. Every row has a numerical basis-register implementation and a circuit-level interpretation. The logical circuit measures at the final readout. Scheduled diagnostics are emulator-only. 
+
+Stage Numerical map Circuit interpretation Macroscopic recovery 𝐹 ↦ → ( 𝜌, j, u) Reversible adder trees, fixed-point re-ciprocal, products Moment transform 𝐹 ↦ → 𝑀 𝐹 Fixed sparse linear circuits Equilibrium (𝜌, u) ↦ → 𝑚 eq Quadratic feature registers and constant multipliers Nonequilibrium mo-ments 
+
+𝛿𝑚 = 𝑚 − 𝑚 eq (+ Δ𝑡  
+
+> 2
+
+Φ𝑚 for LES strain) Signed fixed-point subtraction Digital collision 𝛿𝑚 ↦ → 𝜆 ⊙ 𝛿𝑚 Signed two’s-complement fixed-point multiply Body forcing (u, F ) ↦ → 𝚽 ↦ → Δ𝑡 (𝐼 − S/2)𝑀 𝚽 Reversible contractions and source-register addition Inverse transform 𝑚 + ↦ → 𝐹 + Fixed sparse inverse map Streaming 𝐹 + (x) ↦ → 𝐹 (x + c𝑖 ) Periodic modular permutation Clean compute (𝐹 𝑡 , 0𝐵 , 0𝑊 ) ↦ → ( 𝐹 𝑡 , Φ𝑏 (𝐹 𝑡 ), 0𝑊 ) Compute–copy–uncompute ( 𝑈 Φ)Bank erase 𝐹 𝑡 ↦ → 0 on bank 𝐴 Unconditional Reset ( 𝐴 ) (open-system CPTP) Bank reuse (0𝐴 , 𝐹 𝑡 +1,𝐵 ) Use populated bank 𝐵 as the next source and reset bank 𝐴 as the next destination with 𝑑 𝐹 𝑖 = c𝑖 ·F , 𝑑 𝑢 𝑖 = c𝑖 ·u, and 𝑑 𝑢𝐹 = u·F . The corresponding moment-space correction Δ𝑡  𝐼 −S/2 𝑀 𝚽 
+
+is added before the inverse transform. Periodic streaming is a fixed permutation of the explicit population words, 
+
+𝐹 𝑡 +1,𝑖 (x + c𝑖 Δ𝑡 ) = 𝐹 + 
+
+> 𝑖
+
+(x), (24) equivalently Ì
+
+> x,𝑖
+
+| 𝑓 + 
+
+> 𝑖
+
+(x)⟩ ↦ −→ 
+
+Ì
+
+> x,𝑖
+
+| 𝑓 + 
+
+> 𝑖
+
+(x − c𝑖 Δ𝑡 )⟩ .
+
+Reverse arithmetic clears work registers. Only the obsolete state bank is erased by Reset ( 𝐴 ).
+
+VI. STATE-DEPENDENT LES-CONTROLLED DIGITAL MULTIPLIERS 
+
+The force-corrected nonequilibrium used for strain is g𝛿 m = m − meq + Δ𝑡  
+
+> 2
+
+𝚽 𝑚 with 𝚽 𝑚 = 𝑀 𝚽 [14, 15]. The D2Q9 gate-level circuits in Appendix C use a lattice-specific reduction of the same MRT stress relation. With strain-rate tensor 𝑆 𝛼𝛽 (distinct from the MRT matrix S) and magnitude |𝑆 | =√︁ 2𝑆 𝛼𝛽 𝑆 𝛼𝛽 evaluated by fixed-point square-root iteration, 
+
+𝜈 𝑡 = (𝐶 𝑠 Δ)2 |𝑆 |, 𝜈 eff = 𝜈 0 + 𝜈 𝑡 , (25) the local shear multiplier is 
+
+𝜏 eff = 𝜈 eff 
+
+𝑐 2
+
+> 𝑠
+
++ Δ𝑡 
+
+2 , 𝑠 𝜈 (x, 𝑡 ) = Δ𝑡 𝜏 eff 
+
+, 𝜆 𝜈 (x, 𝑡 ) = 1 − 𝑠 𝜈 (x, 𝑡 ). (26) 8Algorithm 1. Forced D3Q19 instance of the two-bank compute–reset timestep. 
+
+Input: source 𝑆 𝑡 = |𝐹 𝑡 ⟩, destination 𝐷 𝑡 = |0⟩, workspace 𝑊 = |0⟩, and DNS rates or LES closure 𝐺 .
+
+Output: 𝑆 𝑡 = |0⟩, 𝐷 𝑡 = |𝐹 𝑡 +1⟩, 𝑊 = |0⟩.1. Recover (𝜌, u) and m = 𝑀 f by reversible fixed-point arithmetic, then evaluate meq and 𝛿 m.2. Form Λ = 𝐺 ( 𝑓 ) (fixed for DNS, Smagorinsky 𝜆 𝜈 (x, 𝑡 ) for LES). 3. For each nonconserved mode, compute 𝐷 ′ 
+
+> 𝑟
+
+= sat (round (𝐷 𝑟 𝐿 𝑟 /2 𝑓 𝜆 )) by signed fixed-point multiply (eq. (17)). 4. Reconstruct moments, apply body forcing and inverse 𝑀 , and stream the result into the clean destination bank 𝐷 𝑡 .5. Uncompute all arithmetic workspace ( 𝑊 → | 0⟩). 6. Apply Reset (𝑆 𝑡 ) to the obsolete source bank. 7. At the next timestep use 𝐷 𝑡 as the source and the reset 𝑆 𝑡 as the destination. For LES, recompute 
+
+𝜆 𝜈 from the new register state without classical reinjection. The five shear modes receive 𝑠 𝜈 (x, 𝑡 ). Other nonconserved rates retain their prescribed MRT values. The strain reconstruction contains 𝑠 𝜈 . The D3Q19 digital map removes that circular dependence by evaluating strain with the molecular shear rate 1 /𝜏 0 of eq. (7), then inserting the resulting 𝑠 𝜈 into the multiply. The persistent digital state remains the population field 𝐹 𝑡 , so Λ𝑡 = 𝐺 ( 𝑓 𝑡 ). The D2Q9 circuits of Appendix C instead keep a persistent shear-rate seed and one Picard step. The integer 𝐿 = round (2 𝑓 𝜆 𝜆 𝜈 ) then enters eq. (17). Since 𝜈 𝑡 ≥ 0 and 𝜏 0 > Δ𝑡 /2, one has −1 < 𝜆 𝜈 < 1, so every local multiplier remains admissible for the signed multiply (including overrelaxation when 𝜆 𝜈 < 0). The LES pipeline therefore applies a state-dependent sequence of digital multiplies, with 𝜆 𝜈 (x, 𝑡 )
+
+computed from the evolving register state at every node and timestep, without intermediate measurement or classical state reinjection. 
+
+VII. EMULATOR AND NUMERICAL SETUP 
+
+A direct statevector of the full lattice would grow exponentially with register count. The production D3Q19 solver is the register implementation of Algorithm 1. It evolves the computational-basis population words through the same arithmetic stages as the logical circuit. Scheduled turbulence diagnostics are emulator-only. The logical circuit measures at the final readout. 
+
+A. Register-level and gate-level validation 
+
+The two validation layers test the same compute–reset contract at different resolutions. The D3Q19 register backend is faithful at register boundaries. Every stage of eq. (18) writes its result through the quantizer of its register class, so stored values lie on the grid of eq. (14) with the declared integer and fractional widths. Inside a stage the accumulation is carried in double precision and quantized on output. The MRT relaxation multiply of eq. (17) is treated differently. It is evaluated in exact integer arithmetic on the scaled integers 𝐷 
+
+and 𝐿 , using a split product that remains inside 64-bit integers even at 𝑏 = 40, where the direct product would require 87 bits. That stage is treated exactly because a floor-based shift would bias every negative product low by one unit in the last place, and overrelaxation makes negative multipliers the normal case. The long-horizon D3Q19 calculations exercise that finite-width map over 10 6 steps. The 8 3 one-step test of Table VI measures the left-hand side of eq. (20) against the parent floating-point MRT kernels at production width 𝑏 = 24. Gate-level integer datapaths are demonstrated separately and bit-exactly on D2Q9, which is a different stencil of the same architecture (Appendix C). The production parameters are those of Table IV. Both the 320 3 DNS candidate and the 64 3 LES case 9a Digital-register QLBM timestep (two-bank compute–reset)           
+
+> REGISTER ARITHMETIC DIGITAL COLLISION RECONSTRUCT / FORCE STREAM SOURCE RESET
+> bank A:|Ft⟩
+> AMQeq −
+
+×                                     
+
+> δm ·λrec +M−1ΠcReset source bank A
+> |ρ, j,u⟩|m⟩|meq ⟩|δm⟩|δm′⟩|mrel ⟩|m+⟩|f+⟩
+> m−meq signed FP multiply mrel +(I−S/2)MΦ
+> bank  B: |Φb(Ft)⟩|u⟩,|F⟩
+> (I−S/2)
+> MΦ
+> work registers (uncomputed)
+> control |S⟩,|Λ⟩
+> MRT rate / multiplier
+> erase obsolete A
+> next source: bank B
+
+b DNS/LES control-register construction                       
+
+> DNS |Sbase ⟩
+> rate register |S⟩(19 words / slots)
+> ˜δm→ | S| → νt→τeff →sν
+> overwrite shear words 9,11 ,13 ,14 ,15
+> |Λ⟩=|1−S⟩
+> 15 nonconserved
+> conserved fixed MRT shear (LES-writable) control bus open-system reset
+
+FIG. 1. Digital-register forced D3Q19 QLBM timestep and DNS/LES control registers. (a) Register pipeline from source bank 𝐴 = |𝐹 𝑡 ⟩ to destination bank 𝐵 = |𝐹 𝑡 +1⟩. The stages are macroscopic recovery, moment transform, equilibrium arithmetic, nonequilibrium moments, signed fixed-point collision 𝛿𝑚 ↦ → 𝜆 ⊙ 𝛿𝑚 , reconstruction and body forcing Δ𝑡 (𝐼 − S/2)𝑀 𝚽 , inverse transform, streaming into bank 𝐵 , then Reset ( 𝐴 ). Bank 𝐵 supplies the source state for the next timestep (cf. Table III and Algorithm 1). Dashed cyan lines carry the MRT rate and multiplier registers 
+
+|S⟩ and |𝚲 ⟩. (b) DNS loads fixed |Sbase ⟩. LES overwrites shear words 9 , 11 , 13 , 14 , 15 from local strain. Fifteen nonconserved multipliers |𝚲 ⟩ = |1 − S⟩ feed the digital multiply in (a). 
+
+share 𝑅𝑒 0 = 𝑢 0 𝑁 /𝜈 0 = 15000 with 𝜈 0 = (𝜏 0 − 1/2)/ 3, Taylor–Green initialization 𝑢 0 = 0.1, and forcing amplitude 5 × 10 −6. DNS and classical LES run for 10 6 lattice steps; digital LES for 8 .78 × 10 5 (Table IV). All fields are reported in lattice units ( 𝑑𝑥 = 𝑑𝑡 = 1). Integration length and diagnostic sampling use lattice steps, while time histories are plotted in eddy turnovers 𝑡 /𝑇 eddy with 𝑇 eddy = 𝑢 2rms /𝜀 tot . On DNS, 𝜀 tot reduces to the molecular dissipation 𝜀 mol . Spectra, structure functions, and increment flatness are recorded for steps 
+
+≥ 3 × 10 5. Time averages of those diagnostics and the post-transient statistics in Tables V and VII use that common window. Turbulence diagnostics are evaluated from three-dimensional velocity spectra on the periodic box of side 
+
+𝐿 box = 𝑁 Δ𝑥 . Shell wavenumbers use the standard Fourier spacing 
+
+Δ𝑘 = 2𝜋 𝐿 box 
+
+, 𝑘 𝑛 = 𝑛 Δ𝑘, 𝑘 max = 𝜋 
+
+Δ𝑥 , (27) with 𝑛 = 0, 1, . . . , 𝑁 /2. Plotted spectra use the radial shells 𝐸 (𝑘 ). Kinetic energy is the shell sum, while 10 TABLE IV. Matched production configurations for the forced-HIT DNS and LES calculations ( 𝑑𝑥 = 𝑑𝑡 = 1, 
+
+𝑅𝑒 0 = 𝑢 0 𝑁 /𝜈 0). 𝐴 is the body-force amplitude. Δdiag is the diagnostic sampling interval in lattice steps. QLBM-register production calculations use the digital fixed-point compute–reset backend. DNS status uses 𝑘 max 𝜂 ≥ 1. 
+
+Case Grid 𝜏 0 𝜈 0 𝑢 0 𝐴 𝐶 𝑠 Steps Δdiag 
+
+Classical MRT DNS 320 3 0.5064 2.133 × 10 −3 0.1 5 × 10 −6 n/a 10 6 10 3
+
+Digital QLBM DNS 320 3 0.5064 2.133 × 10 −3 0.1 5 × 10 −6 n/a 10 6 10 3
+
+Classical MRT LES 64 3 0.50128 4.267 × 10 −4 0.1 5 × 10 −6 0.13 10 6 10 3
+
+Digital QLBM LES 64 3 0.50128 4.267 × 10 −4 0.1 5 × 10 −6 0.13 8.78 × 10 5 10 3
+
+molecular dissipation uses the unbinned three-dimensional Fourier sum, 
+
+𝐾 =∑︁ 
+
+> 𝑘> 0
+
+𝐸 (𝑘 ) Δ𝑘, 𝜀 mol = 2𝜈 0∑︁ 
+
+> modes
+
+|k|2𝑒 mode ,𝑢 rms =√︃ 23 𝐾, 𝜆 𝑇 =√︃ 15 𝜈 0 𝑢 2rms /𝜀 mol ,
+
+Re 𝜆 = 𝑢 rms 𝜆 𝑇 /𝜈 0, 𝜂 = (𝜈 30/𝜀 mol )1/4.
+
+(28) The Kolmogorov and Taylor scales use this molecular spectral dissipation. Compensated spectra are plotted as 𝐸 (𝑘 )/( 𝜀 2/3mol 𝑘 −5/3) and compared with the Kolmogorov constant 𝐶 𝐾 = 1.5. The spectral integral length used in the plotted reference is 
+
+𝐿 11 = 3𝜋 
+
+4𝐾 ∑︁ 𝑘> 0
+
+𝐸 (𝑘 )
+
+𝑘 Δ𝑘, (29) the integral scale entering the Pope shape, distinct from the box side 𝐿 box and from Pope’s large-eddy scale 
+
+𝐾 3/2/𝜀 . As a reference shape we use a Pope-form spectrum with that measured 𝐿 11 [1] 
+
+𝐸 (𝑘 ) = 𝐶 𝐾 𝜀 2/3mol 𝑘 −5/3 𝑓 𝐿 (𝑘 𝐿 11 ) 𝑓 𝜂 (𝑘𝜂 ),𝑓 𝐿 (𝑘 𝐿 11 ) = 𝑘 𝐿 11 √︁ 
+
+(𝑘 𝐿 11 )2 + 𝑐 𝐿 
+
+!11 /3
+
+,𝑓 𝜂 (𝑘𝜂 ) = exp 
+
+
+
+−𝛽 (( 𝑘𝜂 )4 + 𝑐 4 
+
+> 𝜂
+
+)1/4 − 𝑐 𝜂 
+
+ 
+
+,
+
+(30) with 𝐶 𝐾 = 1.5, 𝑐 𝐿 = 6.78, 𝑐 𝜂 = 0.40, and 𝛽 = 5.2 as in the production diagnostics. Pope comparisons are shown in Kolmogorov units 𝐸 (𝑘 )/( 𝜈 50 𝜀 mol )1/4 versus 𝑘𝜂 . The model curve in Fig. 13 is a classical DNS reference using those DNS scales. LES spectra appear on the same axes as a visual comparison. Longitudinal increment flatness is 
+
+𝐹 𝐿 (𝑟 ) = ⟨[ 𝛿 𝑟 𝑢 ∥ ]4⟩⟨[ 𝛿 𝑟 𝑢 ∥ ]2⟩2 , (31) averaged over the three Cartesian directions, with Gaussian reference 𝐹 𝐿 = 3. Longitudinal structure functions 𝑆 𝑝 (𝑟 ) = ⟨| 𝛿 𝑟 𝑢 ∥ | 𝑝 ⟩ are analyzed in extended self-similarity (ESS) form 
+
+𝑆 𝑝 (𝑟 ) ∼ 𝑆 3 (𝑟 ) 𝜉 𝑝 , (32) with scaling anomalies 𝜉 𝑝 − 𝑝 /3 compared with the She–Leveque [30] and Benzi [31] references. Both fine-grid solvers satisfy 𝑘 max 𝜂 ≥ 1 (Table V). For LES energy-budget residuals we report 𝜀 tot = 𝜀 𝜈 + 𝜀 SGS 
+
+with 𝜀 SGS = ⟨𝜈 𝑡 |𝑆 |2⟩ and 𝜀 𝜈 = 2𝜈 0 ⟨𝑆 𝛼𝛽 𝑆 𝛼𝛽 ⟩. On DNS, 𝜀 SGS = 0 and 𝜀 tot = 𝜀 𝜈 . Kinetic energy 𝐾 is per unit mass, so the forcing power is 𝑃 𝐹 = ⟨( F /𝜌 ) · u⟩. Production uses 𝜌 0 = 1, and therefore 𝑃 𝐹 = ⟨F · u⟩
+
+in lattice units. The residual is 𝑅 𝜀 = |𝜀 tot /(− 𝑑𝐾 /𝑑𝑡 + 𝑃 𝐹 ) − 1|.11 TABLE V. Post-transient DNS resolution assessment ( 𝑑𝑥 = 1, 𝜈 0 = 2.133 × 10 −3, 𝑘 max = 𝜋 ). Both fine-grid solvers satisfy 𝑘 max 𝜂 ≥ 1 and are retained as DNS. Dissipation is the molecular spectral value 𝜀 mol of eq. (28). Re 𝜆 = 𝑢 rms 𝜆 𝑇 /𝜈 0.
+
+Case 𝑢 rms 𝜀 mol 𝜆 𝑇 Re 𝜆 𝜂 𝑘 max 𝜂 
+
+Classical MRT DNS 3.27 × 10 −2 1.64 × 10 −7 14 .42 221 0.493 1.55 Digital QLBM DNS 3.20 × 10 −2 1.60 × 10 −7 14 .34 215 0.497 1.56 
+
+TABLE VI. Algorithmic verification. One-step errors are relative 𝐿 2 population errors versus the parent floating-point MRT kernels on an 8 3 lattice using the digital fixed-point backend (nominal fractional width 𝑏 = 24). Long-time pairwise diagnostics use the matched production calculations of Table IV. The TKE-history 𝐿 2 difference measures trajectory decorrelation. Statistical fidelity is judged from spectra, budgets, and Table VII. Mass drift is max 𝑡 |𝑚 (𝑡 )/ 𝑚 (0) − 1| for the QLBM-register calculations. Classical float64 drift remains O( 10 −11 ).
+
+Quantity DNS LES One-step population error (vs float parent) < 5 × 10 −4 < 5 × 10 −3
+
+Time-averaged spectrum relative difference 5.45 × 10 −2 3.05 × 10 −2
+
+TKE-history pairwise 𝐿 2 difference 2.35 × 10 −1 2.11 × 10 −1
+
+Max. relative mass drift (QLBM) 6.72 × 10 −4 1.08 × 10 −4
+
+Multiplier admissibility |𝜆 𝑟 | ≤ 1 (fixed) |𝜆 𝜈 | < 1, 𝜈 𝑡 ≥ 0, 𝜏 eff > 1/2
+
+VIII. RESULTS 
+
+A. Algorithmic verification 
+
+One complete collide–force–stream step on an 8 3 lattice agrees with the parent floating-point MRT kernels to within fixed-point truncation (Table VI). The LES test matches the strain magnitude, eddy viscosity, and the state-dependent shear multiplier to the same tolerance. Turbulent dynamics are sensitive to small perturbations [1]. Finite-width perturbations therefore cause the classical and register trajectories to decorrelate pointwise over long integrations, while the corresponding exact-real timestep maps still agree (eq. (19)). Long-horizon agreement is statistical: mass, energy budgets, spectra, dissipation, intermittency, and the post-transient means in Table VII. Final population fields show the same pointwise mix (Fig. 12). 
+
+B. Kinetic energy and dissipation 
+
+The history figures use the four matched production calculations of Table IV (classical MRT and digital QLBM, DNS 320 3 and LES 64 3). Time is lattice time in eddy turnovers 𝑇 eddy = 𝑢 2rms /𝜀 tot , one value per case. DNS and LES therefore span different 𝑡 /𝑇 eddy ranges at the production step counts of Table IV. 𝐾 is the shell sum of eq. (28). Spectral dissipation in this subsection is the molecular 𝜀 mol of that equation. 12 TABLE VII. Post-transient statistics from the production calculations ( 𝑡 ≥ 3 × 10 5). DNS and classical LES run to 10 6
+
+steps; digital LES to 8 .78 × 10 5. ⟨𝐾 ⟩ and ⟨𝜀 mol ⟩ are means of the kinetic-energy and molecular spectral-dissipation histories. 𝜎 𝐾 and 𝜎 𝜀 are the corresponding sample standard deviations. ⟨𝑅 𝜀 ⟩ is the mean residual over the same window. LES uses 𝜀 = 𝜀 𝜈 + 𝜀 SGS in that residual. Mass drift is max 𝑡 |𝑚 (𝑡 )/ 𝑚 (0) − 1| over the full integration. Classical values use 𝜌 -mean drift at constant volume. 
+
+Case ⟨𝐾 ⟩ 𝜎 𝐾 ⟨𝜀 mol ⟩ 𝜎 𝜀 ⟨𝑅 𝜀 ⟩ Mass drift Classical MRT DNS 1.602 × 10 −3 2.571 × 10 −4 1.652 × 10 −7 3.224 × 10 −8 1.041 × 10 −1 8.67 × 10 −11 
+
+Digital QLBM DNS 1.538 × 10 −3 2.455 × 10 −4 1.597 × 10 −7 2.917 × 10 −8 1.022 × 10 −1 6.72 × 10 −4
+
+Classical MRT LES 2.908 × 10 −4 5.064 × 10 −5 4.544 × 10 −8 6.418 × 10 −9 6.295 × 10 −2 8.95 × 10 −11 
+
+Digital QLBM LES 2.853 × 10 −4 4.295 × 10 −5 4.496 × 10 −8 5.535 × 10 −9 3.504 × 10 −2 1.08 × 10 −420 40 60 80 100 120 140 
+
+t=T eddy  
+
+> 0.75 1.00 1.25 1.50 1.75 2.00 2.25 2.50
+> K
+> £10 −3
+
+(a) DNS       
+
+> Classical MRT DNS Digital QLBM DNS
+> 50 100 150 200 250 300 350
+
+t=T eddy  
+
+> 234567
+> K
+> £10 −4
+
+(b) LES 
+
+> Classical MRT LES Digital QLBM LES
+
+FIG. 2. Volume-averaged turbulent kinetic energy 𝐾 . (a) DNS. (b) LES. 
+
+Both pairs occupy the same statistically stationary energy band (Fig. 2). Post-transient mean kinetic energies differ by approximately 4 .0% in DNS and 1 .9% in LES, with comparable fluctuation levels (Table VII). 13 20 40 60 80 100 120 140 
+
+t=T eddy  
+
+> 0.0 0.5 1.0 1.5 2.0 2.5 3.0
+> "
+> £10 −7
+
+(a) DNS       
+
+> Classical MRT DNS Digital QLBM DNS
+> 50 100 150 200 250 300 350
+
+t=T eddy  
+
+> 0.5 1.0 1.5 2.0 2.5
+> "
+> £10 −7
+
+(b) LES 
+
+> Classical MRT LES Digital QLBM LES
+
+FIG. 3. Spectral dissipation 𝜀 mol . (a) DNS. (b) LES (molecular 𝜈 0 only, with 𝜀 SGS entering Fig. 4). 
+
+Post-transient means of this spectral 𝜀 mol differ by approximately 3 .4% (DNS) and 1 .1% (LES), with comparable sample standard deviations (Fig. 3 and Table VII). The lower LES level is the coarser 64 3
+
+filtered field. 14 20 40 60 80 100 120 140 
+
+t=T eddy 
+
+> 0.0 0.2 0.4 0.6
+> j"= (¡dK=dt  + F ¢ u®) ¡ 1j
+
+(a) DNS       
+
+> Classical MRT DNS Digital QLBM DNS
+> 50 100 150 200 250 300 350
+
+t=T eddy 
+
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> j"= (¡dK=dt  + F ¢ u®) ¡ 1j
+
+(b) LES 
+
+> Classical MRT LES Digital QLBM LES
+
+FIG. 4. Energy-budget residual 𝑅 𝜀 = |𝜀 tot /(− 𝑑𝐾 /𝑑𝑡 + 𝑃 𝐹 ) − 1|, with 𝑃 𝐹 = ⟨( F /𝜌 ) · u⟩. Strain-based 𝜀 𝜈 =
+
+2𝜈 0 ⟨𝑆 𝛼𝛽 𝑆 𝛼𝛽 ⟩ differs from the spectral 𝜀 mol of Fig. 3. (a) DNS ( 𝜀 tot = 𝜀 𝜈 ). (b) LES ( 𝜀 tot = 𝜀 𝜈 + 𝜀 SGS ). 
+
+Post-transient mean residuals are ⟨𝑅 𝜀 ⟩ ≃ 0.104 (classical) and 0 .102 (register) for DNS, and 0 .0630 and 0.0350 for LES (Fig. 4 and Table VII). The floor is a per-sample discrete-sampling residual of the forced HIT budget. Mean LES imbalances are 3 .8 × 10 −9 (classical) and −1.1 × 10 −9 (register), against forcing powers of 7 .1 × 10 −8 and 7 .0 × 10 −8. The LES energy budgets give ⟨𝜀 𝜈 ⟩ = 3.50 × 10 −8 and ⟨𝜀 SGS ⟩ = 3.94 × 10 −8
+
+(classical) versus 3 .46 × 10 −8 and 3 .38 × 10 −8 (register), hence ⟨𝜀 tot ⟩ = 7.44 × 10 −8 versus 6 .84 × 10 −8. The register LES carries less subgrid dissipation and a comparable resolved viscous component. The dissipation column of Table VII is the molecular spectral mean ⟨𝜀 mol ⟩.15 0 50 100 150 200 250 300 350              
+
+> t/T eddy
+> 1
+> 01234567
+> 〈ρ〉 − 1
+> ×10 4
+> Classical MRT DNS Digital QLBM DNS Classical MRT LES Digital QLBM LES 050 100 150 200 250 300 350
+> t/T eddy
+> 10 12
+> 10 10
+> 10 8
+> 10 6
+> 10 4
+> Relative mass drift  |m(t)/m (0)  − 1|
+> Classical MRT DNS Digital QLBM DNS Classical MRT LES Digital QLBM LES
+
+FIG. 5. Mass conservation. Left, signed density deviation ⟨𝜌 ⟩ − 1. Right, relative mass drift |𝑚 (𝑡 )/ 𝑚 (0) − 1| (log scale). Classical float64 mass drift remains ∼ 10 −10 . Digital QLBM at production width 𝑏 = 24 reaches 6 .72 × 10 −4
+
+(DNS) and 1 .08 × 10 −4 (LES). 
+
+Maximum relative mass drifts are 8 .67 × 10 −11 (DNS) and 8 .95 × 10 −11 (LES) for the classical float64 solvers, versus 6 .72 × 10 −4 (DNS) and 1 .08 × 10 −4 (LES) for the digital fixed-point QLBM-register calculations (Fig. 5 and Table VII). The extra register drift is finite-bit-width rounding of Φ𝑏 at 𝑏 = 24. 16 C. QLBM-DNS 10 −1 10 0
+
+10 −4
+
+10 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+kE(k)/(ε2/3k−5/3) 
+
+> Classical MRT Digital QLBM
+> CK= 1 .5
+
+10 −1 10 0
+
+02468
+
+k
+
+> ∆E (k) (%)
+> ∆E
+
+10 0 10 1 10 2
+
+3456
+
+rFL(r) 
+
+> Classical MRT Digital QLBM
+> FL= 3
+
+−6 −4 −2 0 2 4 610 −5
+
+10 −4
+
+10 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+ξr = ( δr u∥ − ⟨ δr u∥⟩)/σ r
+
+> PDF
+> r=2, Classical
+> r=2, Digital QLBM
+> r=32, Classical
+> r=32, Digital QLBM Gaussian
+
+a bc d
+
+FIG. 6. Multiscale DNS fidelity of classical MRT and digital QLBM-register solvers on 320 3 (production fields). a Time-averaged Kolmogorov-compensated spectra 𝐸 (𝑘 )/( 𝜀 2/3mol 𝑘 −5/3) with sample standard-deviation band and 
+
+𝐶 𝐾 = 1.5 reference. b Scale-resolved spectral discrepancy Δ𝐸 (𝑘 ) = 100 |𝐸 reg −𝐸 cl |/ 𝐸 avg , where 𝐸 avg = (𝐸 reg +𝐸 cl )/ 2. Bins with 𝐸 avg /max 𝑘 𝐸 avg ≤ 10 −6 are omitted where the spectral energy is negligibly small. c Longitudinal increment flatness 𝐹 𝐿 (𝑟 ) (eq. (31)). Error bars show sample standard deviation. Dotted line, Gaussian 𝐹 𝐿 = 3. d Probability densities of the signed increments 𝜉 𝑟 = (𝛿 𝑟 𝑢 ∥ − ⟨ 𝛿 𝑟 𝑢 ∥ ⟩)/ 𝜎 𝑟 at 𝑟 /Δ𝑥 = 2 ( 𝑟 /𝜂 ≃ 4) and 𝑟 /Δ𝑥 = 32 ( 𝑟 /𝜂 ≃ 65). Both solvers use the same post-transient sampling times, histogram edges, and Cartesian average, with spatial stride 2. Each distribution is normalized independently to zero mean and unit variance. Histogram bins are retained, including low counts. 
+
+Classical and register DNS spectra overlap across the resolved band (time-averaged relative difference 5.45 × 10 −2, Table VI, Fig. 6 a,b). A short near-inertial interval sits near the 𝐶 𝐾 = 1.5 reference before the viscous roll-off. At Re 𝜆 ≃ 220 that interval is short. Flatness and increment PDFs agree within the observed sampling variability (Fig. 6 c,d). 𝐹 𝐿 (𝑟 ) is elevated at small 𝑟 (intermittency) and approaches the Gaussian limit at large separations. ESS scaling for the same DNS pair is shown with the LES cases in Fig. 14. 17 D. QLBM-LES 1.6 1.7 1.8 1.9 2.0 2.1 2.2       
+
+> ºt
+> ®
+> £10 −4
+> Digital QLBM LES
+> 0.50175 0.50180 0.50185 0.50190 0.50195
+> ¿eff
+> ®
+> Digital QLBM LES
+> 50 100 150 200 250 300 350
+
+t=T eddy    
+
+> −0.9950
+> −0.9925
+> −0.9900
+> −0.9875
+> −0.9850
+> −0.9825
+> ¸º
+> ® = 1  ¡ sº
+> ®
+> Digital QLBM LES molecular ¸º0=¡0:9949
+
+FIG. 7. Digital QLBM-register LES state-dependent Smagorinsky control path on 64 3. Top, domain-mean eddy viscosity ⟨𝜈 𝑡 ⟩. Middle, effective shear relaxation time ⟨𝜏 eff ⟩. Bottom, shear multiplier ⟨𝜆 𝜈 ⟩ = 1 − ⟨ 𝑠 𝜈 ⟩, zoomed about the molecular value 𝜆 𝜈 0 = 1 − 1/𝜏 0 (dashed). The shaded band is the instantaneous spatial min–max of 𝜆 𝜈 . Because 
+
+𝜏 0 ≃ 1/2, 𝜆 𝜈 remains near −1 and inside (− 1, 1), with overrelaxation through negative 𝐿 .
+
+The classical LES uses the same discrete Smagorinsky rule. Fig. 7 shows the register control path is active, with 𝜆 𝜈 inside (− 1, 1).18 10 −1 10 0 
+
+> k
+> 10 −1
+> 10 0
+> E(k)=(" 2=3k ¡5=3)
+> Classical MRT LES Digital QLBM LES
+> CK= 1 :5
+
+FIG. 8. Time-averaged compensated spectra for the matched 64 3 Smagorinsky LES calculations (classical MRT and digital QLBM-register), using the same compensation as Fig. 6 a. Shaded band, sample standard deviation of 𝐸 (𝑘 ).Dotted line, 𝐶 𝐾 = 1.5. 
+
+Classical and register LES spectra overlap across the resolved band (time-averaged relative difference 3.05 × 10 −2, Table VI and Fig. 8). Relative to the DNS compensated spectra, the LES curves sit somewhat higher and are less smooth. On the coarse 64 3 Smagorinsky grid the near-inertial interval is short. The 
+
+𝐶 𝐾 = 1.5 line is a visual reference. Classical and register DNS and LES spectra are further compared with the Pope model (eq. (30)) in Fig. 13. 10 0 10 1
+
+> r
+> 3.0 3.2 3.4 3.6
+> FL(r)
+> Classical MRT LES Digital QLBM LES Gaussian
+
+FIG. 9. LES longitudinal increment flatness 𝐹 𝐿 (𝑟 ) (eq. (31)) for classical MRT and digital QLBM-register solvers on 64 3. Error bars show sample standard deviation across snapshots. Dotted line, Gaussian 𝐹 𝐿 = 3. 
+
+Classical and register curves coincide (Fig. 9). Relative to DNS (Fig. 6 c), the small-scale elevation is 19 weaker ( 𝐹 𝐿 (1) ≃ 3.6 versus ≃ 5.8) and the Gaussian limit is reached at smaller separations, as expected for filtered Smagorinsky LES. In ESS (Fig. 14), classical and register 𝑆 𝑝 –𝑆 3 curves overlap within each regime. Low-order exponents ( 𝑝 = 1, 2, 3) stay close between DNS and LES. At 𝑝 = 4–6 the LES anomalies are weaker ( 𝜉 6 − 2 ≃ − 0.11 versus ≃ − 0.24 in DNS), again as expected for the filtered field. 0 100 200 300 
+
+x   
+
+> 050 100 150 200 250 300
+> y
+> Classical MRT DNS
+> 020 40 60
+
+x   
+
+> 010 20 30 40 50 60
+> y
+> Classical MRT LES
+> 0100 200 300
+
+x   
+
+> 050 100 150 200 250 300
+> y
+> Digital QLBM DNS
+> 020 40 60
+
+x  
+
+> 010 20 30 40 50 60
+> y
+> Digital QLBM LES 10 3
+> 10 2
+> |ω|(x, y, z mid )
+
+FIG. 10. Final-state midplane vorticity magnitude |𝜔 |( 𝑥, 𝑦, 𝑧 mid ), with a shared logarithmic colour scale. Left column, 320 3 DNS after 10 6 lattice steps. Right column, 64 3 Smagorinsky LES (classical after 10 6 steps; digital after 8 .78 ×10 5). Top row, classical MRT. Bottom row, digital QLBM-register. 
+
+The DNS panels of Fig. 10 resolve fine vortical filaments, whereas the LES panels show the coarser filtered field on the 64 3 grid. Within each regime the classical and register snapshots show similar vortical structure. Every local shear multiplier stays inside (− 1, 1) (Fig. 7). Residual differences follow from the shared discrete Smagorinsky closure at finite width. 
+
+E. Fixed-point ablation 
+
+Production turbulence uses the digital fixed-point backend of Algorithm 1 at fractional width 𝑏 = 24. Forced 32 3 DNS at 𝑏 ∈ { 16 , 24 , 32 , 40 } for 2 × 10 5 steps is compared with a matched floating-point reference (Appendix B, Table IX, and Fig. 15). Mass drift at 𝑏 = 24 is 1 .36 × 10 −3, falling to 1 .87 × 10 −6 at 𝑏 = 32 and 20 7.26 × 10 −9 at 𝑏 = 40 (Table IX and Fig. 15). At 𝑏 = 16 the flow collapses, with final 𝐾 about three orders below the reference. Widths 𝑏 = 24, 32, and 40 remain in the sustained kinetic-energy band. Pre-chaotic kinetic-energy error is 9 .24 × 10 −3 at 𝑏 = 24, 1 .45 × 10 −5 at 𝑏 = 32, and 6 .95 × 10 −8 at 𝑏 = 40. Over the full horizon, pairwise field 𝐿 2 for those three widths sits near 2 × 10 −2 and is mixed by chaos. Production HIT uses 𝑏 = 24 on the 320 3/64 3 grids of Table IV. The 32 3 survey is only the reduced-grid check of that bit width (Table IX). 
+
+IX. CIRCUIT-UPLIFT REQUIREMENTS AND RESOURCE ESTIMATES 
+
+The register intermediate representation defines a circuit-level replacement path for every numerical kernel under Algorithm 1. Fixed sparse transforms 𝑀 and 𝑀 −1 compile to reversible signed adders and constant multipliers [32, 33]. Density, momentum, equilibrium, forcing, and LES-control quantities use reversible fixed-point arithmetic. Reciprocal and square-root functions use reversible Newton iteration on the fixed-point grid [33], with each square-root step calling the reciprocal. Periodic streaming is a fixed reversible permutation of population-word locations. MRT relaxation is a reversible signed multiply. Open-system irreversibility is unconditional Reset of bank 𝐴 (proposition 1). Fig. 11 shows the logical register lifetime of one forced DNS timestep. The circuit evaluates 𝑈 Φ into bank 𝐵 , uncomputes the arithmetic workspace, and applies Reset ( 𝐴 ).Each workspace line is a register family, restored to |0⟩ after streaming into 𝐵 and therefore reusable on the next site. DNS uses prescribed MRT rates. The LES construction of local multipliers from 𝐹 𝑡 is given in Fig. 1 b. Persistent population storage is one bank 
+
+𝑊 pop = 𝑄𝑁 𝑑 𝑏 pop , (33) and two banks in the architecture, 𝑊 state = 2𝑊 pop . Temporary arithmetic workspace is reusable under serial site scheduling, with a schedule-dependent peak width of order 10 3–10 4 logical qubits. Under that schedule the full-lattice Toffoli count and serial depth per timestep scale as 𝐺 step = 𝑁 𝑑 𝐺 site and 𝐷 serial = 𝑁 𝑑 𝐷 site . For the production D3Q19 grids, 𝑄 = 19 and 𝑑 = 3. With the analytic per-site band 𝐺 site = 10 4–10 5, 𝑁 = 320 is of order 10 11 –10 12 Toffoli-equivalent operations per timestep before the 10 6-step horizon. Table VIII reports the corresponding bank widths, reset counts, and analytic leading-order arithmetic resources at 
+
+𝑏 pop = 1+2+24 = 27, using the production Newton counts 𝐽 r = 𝐽 s = 6. The 𝑇 -count uses seven 𝑇 gates per Toffoli-equivalent, so the per-site band is 7 × 10 4–7 × 10 5. The logical circuit measures at the final readout. A hardware reset may compile as measure-and-correct. Two-bank storage and serial full-lattice depth limit feasibility at production scale. Gate-level confirmation of the same compute–reset contract on D2Q9 is given in Appendix C. 21 REGISTER ARITHMETIC  FP MULTIPLY  RECONSTRUCT / FORCE  STREAM  UNCOMPUTESOURCE RESET 
+
+> |Ft⟩A
+> Wρ, u
+> Wm
+> Weq
+> Wδm
+> Wδm ′
+> Wmrel
+> WΦ
+> |0⟩B
+> |S⟩, |Λ⟩
+> Umacro
+> UM
+> (M )
+> Qeq
+> Usub
+> U×
+> |0⟩ → | δm ′⟩
+> Urec
+> Uforce (I − S/2)
+> +
+> UM −1 Πc
+> UNCOMPUTE
+> reverse
+> arith.
+> W → | 0⟩
+> Reset  A
+> control bus  |S⟩, |Λ⟩|u⟩, |F ⟩|0⟩A
+> |0⟩|0⟩|0⟩|0⟩|0⟩|0⟩|0⟩|Ft+1 ⟩B
+> prescribed FIG. 11.  Logical register lifetime of one forced D3Q19 DNS timestep (companion to Fig. 1). Horizontal lines are register families. The signed multiply  𝑈 ×
+> writes  𝛿𝑚 ′ = 𝚲  ⊙ 𝛿𝑚  into a clean word  𝑊 𝛿𝑚 ′ . 𝑈 force  is the discrete body-force source.  𝑈 Φ in eq. (9) is the full two-bank map. MRT rates  |S⟩, |𝚲 ⟩ are prescribed. Streaming writes bank  𝐵 . Uncomputation returns the workspace to  |0⟩, after which Reset ( 𝐴 ) discards the obsolete source. The same arithmetic primitives are compiled at gate level on D2Q9 (Appendix C).
+
+22 TABLE VIII. Logical-resource estimate for one forced D3Q19 digital-register timestep under the two-bank compute– reset architecture of eq. (11) and proposition 1. Persistent bank widths and reset counts follow from 𝑊 pop = 𝑄𝑁 𝑑 𝑏 pop 
+
+with 𝑄 = 19, 𝑑 = 3, and the production signed population word 𝑏 pop = 1+2+24 = 27; the second population bank has equal width, so 𝑊 state = 2𝑊 pop . Temporary workspace, Toffoli-equivalent counts, 𝑇 -counts, and depths are analytic leading-order D3Q19 estimates from reversible fixed-point arithmetic and the register-level IR. Compiled D2Q9 gate-level counts appear in Appendix C. Work-register qubits are reusable across sites in a serial schedule. Dissipation is unconditional reset of the obsolete bank, with algorithmic measurement at the final readout. Full-lattice serial cost scales as 𝑁 𝑑 times the per-site count. 
+
+Resource 𝑁 = 8 𝑁 = 32 𝑁 = 64 𝑁 = 320 one-step width survey LES DNS Persistent pop. qubits 𝑊 pop (bank 𝐴 ) 2.6 × 10 5 1.7 × 10 7 1.3 × 10 8 1.7 × 10 10 
+
+Second population bank 𝐵 𝑊 pop 
+
+Persistent state 𝑊 state = 2𝑊 pop 5.3 × 10 5 3.4 × 10 7 2.7 × 10 8 3.4 × 10 10 
+
+Temp. arithmetic workspace (serial) 𝑂 (10 3–10 4)
+
+Integer / fractional bits, excl. sign (pop. / moment) 2+24 / 6 +24 Signed word widths (pop. / moment) 27 / 31 Adder-tree / multiply ops (order, per site) 𝑂 (10 2)
+
+Newton reciprocal / sqrt ( 𝐽 r = 𝐽 s = 6) 𝑂 (𝐽 r𝑤 2) / 𝑂 (𝐽 s 𝐽 r𝑤 2)
+
+Toffoli-eq. / site / step (analytic) 10 4–10 5
+
+Serial Toffoli / step (all sites) 5 × 10 6–5 × 10 7 3 × 10 8–3 × 10 9 3 × 10 9–3 × 10 10 3 × 10 11 –3 × 10 12 
+
+Estimated 𝑇 -count / site / step (assuming 7 𝑇 per Toffoli-eq.) 7 × 10 4–7 × 10 5
+
+Serial-depth upper estimate / site / step 10 4–10 5
+
+Serial logical depth / step (all sites) 5 × 10 6–5 × 10 7 3 × 10 8–3 × 10 9 3 × 10 9–3 × 10 10 3 × 10 11 –3 × 10 12 
+
+Qubit resets / site / step (obsolete bank) 19 𝑏 pop = 513 Algorithmic intermediate measurements / step 0Final readout measurements 𝑊 pop 
+
+A full-bank reset is 𝑊 pop qubits. The square-root cost is the adopted arithmetic model: each of the 𝐽 s outer Newton steps uses a 
+
+𝐽 r-iteration reciprocal. LES local-control arithmetic sits toward the upper end of the per-site Toffoli band. Persistent two-bank width and serial 𝑁 𝑑 depth both constrain feasibility. Logical reset may compile as hardware-specific measurement and feedforward. The algorithm measures at the final readout. 
+
+23 X. DISCUSSION AND LIMITATIONS 
+
+Linear and advection–diffusion QLBMs use amplitude or linearized encodings. Wawrzyniak et al. and Tiwari et al. treat ADE with measurement and reinitialization requirements that depend on the update [4, 20]. Nagel and Löwe iterate linear ADE for multiple steps without mid-run extraction or reinitialization [6]. Carleman embeddings lift the nonlinear collision into a larger linear space [7, 10, 19]. Ensemble and denoising methods combine a different state representation with sampling or intermediate reconstruction [11, 21]. The present architecture evaluates a deterministic digital timestep by reversible arithmetic into a clean bank and an unconditional reset of the obsolete source. Signed-rail amplitude damping is a related CPTP LBM primitive, with a different encoding and a different dissipation mechanism [23]. In exact real arithmetic, eq. (19) identifies the ideal D3Q19 map with the matched classical forced MRT map, including LES when both sides evaluate the same discrete 𝐺 . The million-step calculations support that identity statistically through mass, energy budgets, spectra, dissipation, and intermittency (Table VII). Chaotic trajectories still decorrelate under truncation-scale perturbations [1]. The D3Q19 calculations use the register emulator of the circuit. D2Q9 is the compiled gate-level check on a reduced lattice (Appendix C). Persistent two-bank width 𝑊 state = 2𝑄𝑁 𝑑 𝑏 pop is prohibitive at production scale, and serial full-lattice depth is a further constraint (Table VIII). On 32 3, 𝑏 = 16 collapses, while 
+
+𝑏 = 24, 32, and 40 remain in the sustained kinetic-energy band (Sec. E and Appendix B). Production HIT uses 𝑏 = 24 on the large grids. 
+
+XI. CONCLUSION 
+
+We constructed a complete digital-register QLBM for the conventional nonlinear MRT timestep. Macroscopic recovery, nonlinear equilibrium, signed MRT collision, body forcing, streaming, and state-dependent Smagorinsky LES control are evaluated as fixed-point register operations. Reversible evaluation into an alternating destination bank, followed by unconditional source-bank reset, is a CPTP channel that composes without intermediate decoding or classical state reinjection (proposition 1 and eq. (11)). The D3Q19 calculations treat forced HIT in DNS and LES for 10 6 timesteps (Algorithm 1) on the register emulator of the circuit. A separate D2Q9 implementation compiles the same compute–reset contract to reversible gates under final measurement (Appendix C). Million-step matched calculations at Reynolds number 15000 show statistical agreement across mass, energy budgets, spectra, and intermittency. Production uses fractional width 𝑏 = 24. Practical feasibility is controlled by two-bank persistent width 𝑊 state = 2𝑄𝑁 𝑑 𝑏 pop , serial full-lattice depth, and the logical-qubit and reset costs of Table VIII. 
+
+DATA AND CODE AVAILABILITY 
+
+Data and code are available from the corresponding author upon reasonable request. 24 APPENDIX A: SUPPLEMENTARY FIGURES 0.0505 0.0510 0.0515 0.0520 0.0525 
+
+> 〈fi
+> 〉
+
+DNS  
+
+> Classical MRT DNS Digital QLBM DNS
+
+0.05230 0.05235 0.05240 0.05245 0.05250 0.05255 0.05260 0.05265 
+
+> 〈fi
+> 〉
+
+LES 
+
+> Classical MRT LES Digital QLBM LES
+
+0 5 10 15 
+
+Discrete velocity i
+
+10 1
+
+6 × 10 2
+
+> ‖f QLBM
+> i − f cl
+> i ‖2/‖f cl
+> i ‖2
+
+0 5 10 15 
+
+Discrete velocity i
+
+10 2
+
+6 × 10 3
+
+2 × 10 2
+
+3 × 10 2
+
+4 × 10 2
+
+> ‖f QLBM
+> i − f cl
+> i ‖2/‖f cl
+> i ‖2
+
+FIG. 12. Final-state D3Q19 populations after 10 6 lattice steps. Top, domain-mean ⟨ 𝑓 𝑖 ⟩ for classical MRT and digital QLBM-register solvers (left, DNS, right, LES). Vertical scales are independently zoomed for each regime. Bottom, per-component relative field difference ∥ 𝑓 QLBM  
+
+> 𝑖
+
+− 𝑓 cl  
+
+> 𝑖
+
+∥2/∥ 𝑓 cl  
+
+> 𝑖
+
+∥2. The mean profiles nearly overlap, while the final spatial fields differ from a few 10 −3 to O( 10 −1), consistent with long-time chaotic trajectory decorrelation. These final-state differences are distinct from the one-step digital-map error in Table VI. 
+
+25 10 −2 10 −1 10 0
+
+k´ 
+
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> E(k)=(º 5")1=4
+> Classical MRT DNS Digital QLBM DNS Classical MRT LES Digital QLBM LES Pope model
+
+FIG. 13. Pope-normalized spectra 𝐸 (𝑘 )/( 𝜈 50 𝜀 mol )1/4 versus 𝑘𝜂 for classical MRT and digital QLBM-register DNS and LES, compared with eq. (30) ( 𝐶 𝐾 = 1.5, 𝑐 𝐿 = 6.78, 𝑐 𝜂 = 0.40, 𝛽 = 5.2). The model curve uses the classical DNS scales (𝐿 11 , 𝜂, 𝜀 mol ) in the Pope-form spectrum of eq. (30). Shaded bands, sample standard deviation of 𝐸 (𝑘 ).10 4 10 3 10 2 10 1
+
+S3(r)                 
+
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> Sp(r)
+> p= 1
+> p= 2
+> p= 3
+> p= 4
+> p= 5
+> p= 6
+> Classical MRT DNS Digital QLBM DNS Classical MRT LES Digital QLBM LES
+> 123456
+> p
+> 0.2
+> 0.1
+> 0.0
+> ξp − p/ 3
+> SL94 B93
+
+FIG. 14. Extended self-similarity for classical MRT and digital QLBM-register DNS and LES, 𝑆 𝑝 (𝑟 ) versus 𝑆 3 (𝑟 ) for 
+
+𝑝 = 1, . . . , 6 (eq. (32)). Classical and register curves overlap within each regime. Inset, scaling anomalies 𝜉 𝑝 − 𝑝 /3versus She–Leveque [30] and Benzi [31] references. Low-order DNS and LES exponents remain close; at 𝑝 = 4–6 the LES anomalies are weaker than DNS, as expected for the filtered field. 
+
+APPENDIX B: FIXED-POINT REGISTER-WIDTH SURVEY 
+
+We evaluate the digital map Φ𝑏 on all register banks of the DNS emulator and integrate a forced 32 3 lattice for 2 × 10 5 steps at fractional widths 𝑏 = 16, 24, 32, and 40, alongside a matched floating-point reference on the same grid and forcing. Table IX summarizes the reduced-grid survey (and Fig. 15). Mass drift at 26 𝑏 = 40 is 7 .26 × 10 −9, against a floating-point reference of 1 .79 × 10 −11 . At 𝑏 = 16 the flow collapses, with final 𝐾 of 1 .8 × 10 −7 against a reference 9 .8 × 10 −5. Widths 𝑏 = 24, 32, and 40 remain in the sustained kinetic-energy band, with pre-chaotic kinetic-energy errors 9 .24 × 10 −3, 1 .45 × 10 −5, and 6 .95 × 10 −8.Production HIT uses 𝑏 = 24. Final population 𝐿 2 differences remain near 2 × 10 −2 because that column is a field-shape diagnostic after chaos has mixed the states. 0 50000 100000 150000 200000 
+
+lattice step                
+
+> 10 15
+> 10 13
+> 10 11
+> 10 9
+> 10 7
+> 10 5
+> 10 3
+> |ρ/ρ 0 − 1|
+> fp
+> b= 16
+> b= 24
+> b= 32
+> b= 40
+> 050000 100000 150000 200000
+
+lattice step        
+
+> 10 6
+> 10 5
+> 10 4
+> K
+> fp
+> b= 16
+> b= 24
+> b= 32
+> b= 40
+
+FIG. 15. Fixed-point fractional-bit survey on 32 3 forced DNS (2 × 10 5 steps) versus floating point (fp). a Relative mass drift |𝜌 /𝜌 0 − 1|. b Kinetic energy 𝐾 . At 𝑏 = 16 the flow collapses. Widths 𝑏 = 24, 32, and 40 remain in the sustained kinetic-energy band. Pre-chaotic 𝐾 tracks the floating-point reference more closely as 𝑏 increases. Production HIT uses 𝑏 = 24. 
+
+TABLE IX. Fixed-point fractional-bit survey on a 32 3 forced DNS register calculation (2 × 10 5 lattice steps). Columns 3 and 4 are relative mean kinetic-energy errors |⟨ 𝐾 ⟩𝑏 − ⟨ 𝐾 ⟩fp |/⟨ 𝐾 ⟩fp over the first 2 × 10 4 steps (pre-chaotic window) and the full horizon against the floating-point backend. Column 5 is the final population relative 𝐿 2 difference 
+
+∥ 𝑓 𝑏 − 𝑓 fp ∥2/∥ 𝑓 fp ∥2. Long-horizon pairwise fields mix under chaos, so column 5 is a field-shape diagnostic. Production HIT uses 𝑏 = 24. This table is the reduced-grid width survey of that format. 
+
+|⟨ 𝐾 ⟩𝑏 − ⟨ 𝐾 ⟩fp |/⟨ 𝐾 ⟩fp 
+
+𝑏 max |Δ𝜌 /𝜌 0 | 2 × 10 4 full ∥ 𝑓 ∥rel 
+
+16 5.55 × 10 −4 7.92 × 10 −1 9.82 × 10 −1 2.05 × 10 −2
+
+24 1.36 × 10 −3 9.24 × 10 −3 1.16 × 10 −1 2.21 × 10 −2
+
+32 1.87 × 10 −6 1.45 × 10 −5 1.20 × 10 −1 1.86 × 10 −2
+
+40 7.26 × 10 −9 6.95 × 10 −8 4.36 × 10 −2 2.87 × 10 −2
+
+fp 1.79 × 10 −11 n/a n/a n/a 
+
+27 APPENDIX C: GATE-LEVEL D2Q9 VALIDATION OF THE DIGITAL QLBM CONTRACT 
+
+D2Q9 is a second stencil of the same compute–reset architecture (proposition 1), with the moment basis of [29]. The discrete velocities and weights are 
+
+𝑖 0 1 2 3 4 5 6 7 8
+
+𝑐 𝑖𝑥 0 1 0 −1 0 1 −1 −1 1
+
+𝑐 𝑖𝑦 0 0 1 0 −1 1 1 −1 −1
+
+𝑤 𝑖 4919191919136 136 136 136 
+
+(C1) and 
+
+𝑀 =
+
+©«
+
+1 1 1 1 1 1 1 1 1
+
+−4 −1 −1 −1 −1 2 2 2 24 −2 −2 −2 −2 1 1 1 10 1 0 −1 0 1 −1 −1 10 −2 0 2 0 1 −1 −1 10 0 1 0 −1 1 1 −1 −10 0 −2 0 2 1 1 −1 −10 1 −1 1 −1 0 0 0 00 0 0 0 0 1 −1 1 −1
+
+ª®®®®®®®®®®®®®®¬
+
+, (C2) with moment order (𝜌, 𝑒, 𝜖, 𝑗 𝑥 , 𝑞 𝑥 , 𝑗 𝑦 , 𝑞 𝑦 , 𝑝 𝑥 𝑥 , 𝑝 𝑥 𝑦 ). The collide–force–stream and bank-reset map is compiled to executable logical Qiskit circuits from modular adder and multiplier blocks, on a lattice small enough that the arithmetic remains simulable. The three-dimensional HIT evidence is the D3Q19 register emulator of Algorithm 1. Verification uses exact computational-basis simulation. The basis simulator applies those adder and multiplier blocks by their integer semantics. Every gate in 𝑈 Φ is a permutation of computational-basis states, so propagating a single basis state reproduces the circuit output exactly, at a cost of megabytes. A tensor-network statevector of the same uncomputed workspace would need tens of gigabytes. That margin makes the last two checks in Table X affordable. The first is a two-timestep circuit, the shortest case that reuses a bank after reset, and therefore tests the reset itself. The second is the final state of every ancilla, the direct witness that 𝑈 Φ is reversible. In all cases the arithmetic workspace returns to |0⟩. The reset count equals one source population bank per timestep, and for LES also the obsolete shear-rate word that seeds the next Picard step. For D2Q9 LES the digital word 𝑥 includes that persistent rate, so both resets are of the form assumed by proposition 1. Populations are encoded at the initial condition only. A reversible digital 
+
+𝑈 Φ is evaluated into a clean destination bank (MRT 𝜆 -multiply, body forcing when 𝐴 ≠ 0, and the D2Q9 Chai/Zhang shear control of Sec. 1 for LES). The obsolete source bank is then unconditionally reset, and measurement occurs at the end. Figs. 1 and 11 show that logical contract. A hardware compilation of reset may use mid-circuit measurement and a corrective 𝑋 .
+
+C1. D2Q9 force-corrected LES strain 
+
+Yu et al. reconstruct strain from nonequilibrium moments on D3Q19 [12]. The gate-level D2Q9 LES uses the two-dimensional MRT stress reductions of Chai [15] and Zhang et al. [34], applied to force-corrected nonequilibrium moments. Let 𝚽 𝑚 = 𝑀 𝚽 𝑓 be the discrete force source in moment space, distinct from the Cartesian body force (𝐹 𝑥 , 𝐹 𝑦 ). The force-corrected nonequilibrium is 
+
+g𝛿 m = m − meq + Δ𝑡 
+
+2 𝚽 𝑚 . (C3) 28 The D2Q9 components are then 
+
+𝑆 𝑥 𝑥 = − 𝑠 𝑒 f𝛿𝑚 𝑒 + 3𝑠 𝜈 f𝛿𝑚 𝑝 𝑥 𝑥 
+
+4𝜌 Δ𝑡 ,𝑆 𝑦𝑦 = − 𝑠 𝑒 f𝛿𝑚 𝑒 − 3𝑠 𝜈 f𝛿𝑚 𝑝 𝑥 𝑥 
+
+4𝜌 Δ𝑡 ,𝑆 𝑥 𝑦 = − 3𝑠 𝜈 f𝛿𝑚 𝑝 𝑥 𝑦 
+
+2𝜌 Δ𝑡 ,
+
+(C4) with |𝑆 | =√︃ 2(𝑆 2 
+
+> 𝑥 𝑥
+
++ 𝑆 2 
+
+> 𝑦𝑦
+
++ 2𝑆 2 
+
+> 𝑥 𝑦
+
+) and 𝜈 𝑡 = (𝐶 𝑠 Δ)2 |𝑆 |. The unknown 𝑠 𝜈 enters the strain formulas and is also 1 /𝜏 eff after 𝜈 𝑡 is formed, so the closure is implicit in 𝑠 𝜈 . It is resolved by one Picard iteration per timestep, seeded by the previous shear rate and by 1 /𝜏 0 at 𝑡 = 0. On a Taylor–Green D2Q9 field after one DNS step the relative gap between that single Picard update and a twenty-iteration residual is O( 10 −4). The classical D2Q9 solver, the integer twin, and the Qiskit circuit implement these same equations. The D3Q19 production LES reconstructs strain with the molecular rate 1 /𝜏 0 and does not use this Picard step. 
+
+C2. Arithmetic contract of the gate-level circuits 
+
+The D2Q9 datapath follows eq. (17) in its rounding except at exact halfway cases, where the circuit rounds upward. The signed multiply forms the exact product of the sign-extended operands, adds 2 𝑓 −1 to that product, and then copies the slice [ 𝑓 , 𝑓 + 𝑤 ) into a clean output word. The added constant turns the arithmetic shift from a floor into a round, which removes the low bias of one unit in the last place that a bare truncation would apply to every product. Ties are resolved upward here, which differs from the main-text half-away-from-zero convention only on exactly representable halfway cases. The rounding constant is added to the product workspace rather than to the output word, so the multiply block remains its own inverse and can be used directly as the uncompute of an earlier multiply. Overflow uses two’s-complement wraparound. The production map of eq. (17) saturates. In-circuit clamping would cost a comparison and a controlled overwrite at every arithmetic stage. The matched integer twin carries the same wraparound and is checked against the declared word range, so a build that would have saturated is rejected. At the widths in Table X every stage stays inside the declared range, so the two conventions coincide on every circuit listed. Table X reports the gate-level suite. Every listed circuit is bit-exact against a matched fixed-point integer twin of the gate map. DNS and LES with 𝐴 = 0 validate the D2Q9 collide/reset arithmetic and the bank-reuse contract on 1 × 1 lattices, where periodic streaming is the identity permutation (LES includes the in-circuit D2Q9 Chai/Zhang strain of Sec. 1). A separate DNS circuit with nonzero force amplitude validates forcing in-circuit (Fig. 16). These results confirm that the architecture is realizable as a reversible gate-level 𝑈 Φ with unconditional reset of the obsolete bank, on a stencil other than D3Q19. The 320 3/64 3 HIT comparisons are the long-horizon register implementation of that map. 29 TABLE X. Gate-level D2Q9 validation of the same digital compute–reset contract as eq. (11) and proposition 1, with encoding at the initial condition only, a reversible digital 𝑈 Φ, an unconditional reset of the obsolete source bank, and measurement only at the end. All circuit outcomes are bit-exact against the matched fixed-point integer twin. The 𝑇 =2 row is the first case that reuses a bank after resetting it. The clean-workspace column records that every arithmetic ancilla returns to |0⟩. LES also keeps a persistent shear-rate word, reset with the obsolete source bank, which seeds the next Picard step. D2Q9 is the gate-level check on a second stencil. Long-horizon HIT remains the D3Q19 register-emulator evidence. Case (𝑛 𝑥 , 𝑛 𝑦 ) 𝑇 (𝑤, 𝑓 ) 𝐴 Qubits Resets Bit-exact Clean DNS ( 𝐹 =0) 1×1 1 (7, 4) 0 701 63 yes yes LES ( 𝐹 =0) 1×1 1 (7, 4) 0 736 70 yes yes DNS (forced) 1×1 1 (8, 5) 0.25 799 72 yes yes DNS ( 𝐹 =0, 𝑇 =2) 1×1 2 (7, 4) 0 701 126 yes yes 
+
+All cases use 𝜏 = 0.8 and a Taylor–Green initial condition with 𝑢 0 = 0.05, verified on an exact computational-basis simulator, with measurement after the final timestep. All listed circuits are 1 ×1, so periodic streaming is the identity. Forced DNS uses a uniform body force on the single cell, since the sinusoidal sample vanishes at the 1 ×1 centre. Logical depths and sizes are DNS ( 𝐹 =0) 6854/12846, LES ( 𝐹 =0) 24899/43738, DNS (forced) 19701/45360, DNS ( 𝐹 =0, 𝑇 =2) 13706/25622. The largest absolute population difference against classical float64 from the same quantized initial condition is DNS ( 𝐹 =0) 0 .030, LES ( 𝐹 =0) 0 .030, DNS (forced) 0 .022, DNS ( 𝐹 =0, 𝑇 =2) 0 .148. The forced overlay in Fig. 16 uses the same forced-DNS case. f0 f1 f2 f3 f4 f5 f6 f7 f8
+
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> Population (fixed-point decode)
+> bit-exact
+
+(a)           
+
+> Gate-level Integer twin
+> f0f1f2f3f4f5f6f7f8
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> Population
+> max |∆|= 0 .022
+
+(b) 
+
+> Gate-level (decode) Classical float (same IC)
+
+FIG. 16. Forced D2Q9 gate-level DNS one-step check (1 ×1, 𝑇 = 1, (𝑤, 𝑓 ) = (8, 5), 𝐴 = 0.25). (a) Decoded circuit populations coincide with the matched fixed-point integer twin (bit-exact). (b) Same circuit decode versus classical float64 collide–force–stream from the identical quantized initial condition. The annotated max |Δ| = 0.022 is that float64 gap. Streaming is trivial on this 1 × 1 lattice. 
+
+REFERENCES 
+
+[1] Stephen B. Pope. Turbulent Flows . Cambridge University Press, 2000. doi:10.1017/CBO9780511840531 .[2] Sauro Succi. The Lattice Boltzmann Equation: For Complex States of Flowing Matter . Oxford University Press, 2018. doi:10.1093/oso/9780199592357.001.0001 .[3] Timm Krüger, Halim Kusumaatmaja, Alexandr Kuzmin, Orest Shardt, Goncalo Silva, and Erlend Magnus Viggen. 
+
+The Lattice Boltzmann Method: Principles and Practice . Springer, 2017. doi:10.1007/978-3-319-44649-3 .
+
+30 [4] David Wawrzyniak, Josef Winter, Steffen Schmidt, Thomas Indinger, Christian F. Janßen, Uwe Schramm, and Nikolaus A. Adams. A quantum algorithm for the lattice-Boltzmann method advection-diffusion equation. 
+
+Computer Physics Communications , 306:109373, 2025. doi:10.1016/j.cpc.2024.109373 .[5] David Wawrzyniak, Josef Winter, Steffen Schmidt, Thomas Indinger, Christian F. Janßen, Uwe Schramm, and Nikolaus A. Adams. Linearized quantum lattice-Boltzmann method for the advection–diffusion equation using dynamic circuits. Computer Physics Communications , 317:109856, 2025. doi:10.1016/j.cpc.2025.109856 .[6] Aaron Nagel and Johannes Löwe. Quantum lattice boltzmann method for multiple time steps without reinitialization for linear advection-diffusion problems. Computer Physics Communications , 321:110040, 2026. 
+
+doi:10.1016/j.cpc.2026.110040 .[7] Claudio Sanavio and Sauro Succi. Lattice Boltzmann–Carleman quantum algorithm and circuit for fluid flows at moderate Reynolds number. AVS Quantum Science , 6:023802, 2024. doi:10.1116/5.0195549 .[8] Claudio Sanavio, R. Scatamacchia, C. de Falco, and Sauro Succi. Three Carleman routes to the quantum simulation of classical fluids. Physics of Fluids , 36:057143, 2024. doi:10.1063/5.0204955 .[9] Wael Itani, Katepalli R. Sreenivasan, and Sauro Succi. Quantum algorithm for lattice Boltzmann (QALB) simulation of incompressible fluids with a nonlinear collision term. Physics of Fluids , 36:017112, 2024. 
+
+doi:10.1063/5.0176569 .[10] Antonio David Bastida Zamora, Ljubomir Budinski, Valtteri Lahtinen, and Pierre Sagaut. Quantum lattice boltzmann method for several time steps: A local carleman linearization algorithm. Physical Review E , 113: 035307, 2026. doi:10.1103/kbx3-c35d .[11] Boyuan Wang, Zhaoyuan Meng, Yaomin Zhao, et al. Quantum lattice boltzmann method for simulating nonlinear fluid dynamics. npj Quantum Information , 11:196, 2025. doi:10.1038/s41534-025-01142-6 .[12] Huidan Yu, Li-Shi Luo, and Sharath S. Girimaji. LES of turbulent square jet flow using an MRT lattice Boltzmann model. Computers & Fluids , 35(8–9):957–965, 2006. doi:10.1016/j.compfluid.2005.04.009 .[13] Joseph Smagorinsky. General circulation experiments with the primitive equations. i. the basic experiment. 
+
+Monthly Weather Review , 91(3):99–164, 1963. doi:10.1175/1520-0493(1963)091<0099:GCEWTP>2.3. CO;2 .[14] Kannan N. Premnath, Martin J. Pattison, and Sanjoy Banerjee. Generalized lattice-Boltzmann equation with forcing term for computation of wall-bounded turbulent flows. Physical Review E , 79:026703, 2009. 
+
+doi:10.1103/PhysRevE.79.026703 .[15] Zhenhua Chai and T. S. Zhao. Effect of the forcing term in the multiple-relaxation-time lattice Boltzmann equation on the shear stress or the strain rate tensor. Physical Review E , 86(1):016705, 2012. doi:10.1103/ PhysRevE.86.016705 .[16] Călin A. Georgescu, Merel A. Schalkers, and Matthias Möller. qlbm – a quantum lattice Boltzmann software framework. Computer Physics Communications , 315:109699, 2025. doi:10.1016/j.cpc.2025.109699 .[17] Merel A. Schalkers and Matthias Möller. On the importance of data encoding in quantum Boltzmann methods. 
+
+Quantum Information Processing , 23:20, 2024. doi:10.1007/s11128-023-04216-6 .[18] Xiangyu Li, Xiaolong Yin, Nathan Wiebe, Jaehun Chun, Gregory K. Schenter, Margaret S. Cheung, and Johannes Mülmenstädt. Potential quantum advantage for simulation of fluid dynamics. Physical Review Research , 7: 013036, 2025. doi:10.1103/PhysRevResearch.7.013036 .[19] Muhammad Idrees Khan. Autonomous Lindblad realizability of nonunitary linear dynamics with a Carleman lattice Boltzmann application. arXiv preprint arXiv:2608.09808 , 2026. doi:10.48550/arXiv.2608.09808 .[20] Apurva Tiwari, Jason Iaconis, Jezer Jojo, Sayonee Ray, Martin Roetteler, Chris Hill, and Jay Pathak. Algorithmic advances towards a realizable quantum lattice Boltzmann method. 2025 IEEE International Conference on Quantum Computing and Engineering (QCE) , pages 2441–2451, 2025. doi:10.1109/QCE65121.2025.00265 .[21] Trong Duong, Matthias Möller, and Norbert Hosters. Quantum lattice Boltzmann with denoising collision operators. arXiv preprint arXiv:2604.09997 , 2026. doi:10.48550/arXiv.2604.09997 .
+
+31 [22] Yu-Guo Liu, Heng Fan, and Shu Chen. Digital quantum simulation of the Lindblad master equation and its nonlinear extensions via quantum trajectory averaging. Physical Review A , 114:012436, 2026. doi: 10.1103/q33r-j5tl .[23] Muhammad Idrees Khan, Sauro Succi, and Hua-Dong Yao. Deterministic realization of classical dissipation on quantum computers. arXiv preprint arXiv:2604.25429 , 2026. doi:10.48550/arXiv.2604.25429 .[24] Michael A. Nielsen and Isaac L. Chuang. Quantum Computation and Quantum Information . Cambridge University Press, 10th anniversary edition, 2010. doi:10.1017/CBO9780511976667 .[25] John Watrous. The Theory of Quantum Information . Cambridge University Press, 2018. doi:10.1017/ 9781316848142 .[26] Dominique d’Humières, Irina Ginzburg, Manfred Krafczyk, Pierre Lallemand, and Li-Shi Luo. Multiple-relaxation-time lattice Boltzmann models in three dimensions. Philosophical Transactions of the Royal Society A, 360:437–451, 2002. doi:10.1098/rsta.2001.0955 .[27] Muhammad Idrees Khan, Sauro Succi, and Giacomo Falcucci. Validating the Boltzmann approach to the large-eddy simulations of forced homogeneous incompressible turbulence. International Journal of Modern Physics C , 2026. doi:10.1142/S0129183127500641 .[28] Zhaoli Guo, Chuguang Zheng, and Baochang Shi. Discrete lattice effects on the forcing term in the lattice boltzmann method. Physical Review E , 65:046308, 2002. doi:10.1103/PhysRevE.65.046308 .[29] Pierre Lallemand and Li-Shi Luo. Theory of the lattice boltzmann method: Dispersion, dissipation, isotropy, galilean invariance, and stability. Physical Review E , 61(6):6546–6562, 2000. doi:10.1103/PhysRevE.61. 6546 .[30] Zhen-Su She and Emmanuel Leveque. Universal scaling laws in fully developed turbulence. Physical Review Letters , 72:336–339, 1994. doi:10.1103/PhysRevLett.72.336 .[31] R. Benzi, S. Ciliberto, R. Tripiccione, C. Baudet, F. Massaioli, and S. Succi. Extended self-similarity in turbulent flows. Physical Review E , 48:R29–R32, 1993. doi:10.1103/PhysRevE.48.R29 .[32] Vlatko Vedral, Adriano Barenco, and Artur Ekert. Quantum networks for elementary arithmetic operations. 
+
+Physical Review A , 54(1):147–153, 1996. doi:10.1103/PhysRevA.54.147 .[33] Thomas Häner, Martin Roetteler, and Krysta M. Svore. Optimizing quantum circuits for arithmetic. arXiv preprint arXiv:1805.12445 , 2018. doi:10.48550/arXiv.1805.12445 .[34] Wenhuan Zhang, Changsheng Huang, Yihang Wang, Baochang Shi, Shibo Kuang, and Zhenhua Chai. The computation of strain rate tensor in multiple-relaxation-time lattice Boltzmann model. Computers & Mathematics with Applications , 75(8):2888–2902, 2018. doi:10.1016/j.camwa.2018.01.019 .
+
+32
