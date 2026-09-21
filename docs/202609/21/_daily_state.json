@@ -1,0 +1,41 @@
+{
+  "date": "20260921",
+  "date_label": "",
+  "generated_at": "2026-09-21 23:04:59 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.16108v1",
+      "route": "202609/21/2609.16108v1-large-scale-quantum-simulations-of-dissipative-spin-12-heisenberg-chains",
+      "title": "Large-scale quantum simulations of dissipative spin-1/2 Heisenberg chains",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "在超导处理器上模拟耗散自旋链的Lindblad动力学",
+      "first_seen_at": "2026-09-21 23:04:59 UTC",
+      "updated_at": "2026-09-21 23:04:59 UTC"
+    },
+    {
+      "paper_id": "2609.21567v1",
+      "route": "202609/21/2609.21567v1-weighted-quantum-signal-processing-low-depth-polynomial-approximation-with-applications-to-kolmogorov-arnold-networks",
+      "title": "Weighted Quantum Signal Processing: Low-Depth Polynomial Approximation with Applications to Kolmogorov-Arnold Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "量子信号处理扩展，实现低深度多项式逼近",
+      "first_seen_at": "2026-09-21 23:04:59 UTC",
+      "updated_at": "2026-09-21 23:04:59 UTC"
+    }
+  ]
+}

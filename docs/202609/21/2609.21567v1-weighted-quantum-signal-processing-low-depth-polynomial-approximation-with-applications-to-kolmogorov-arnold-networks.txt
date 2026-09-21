@@ -1,0 +1,2070 @@
+Title: Weighted Quantum Signal Processing: Low-Depth Polynomial Approximation with Applications to Kolmogorov-Arnold Networks
+
+URL Source: https://arxiv.org/pdf/2609.21567v1
+
+Published Time: Mon, 21 Sep 2026 00:51:29 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+## Weighted Quantum Signal Processing: Low-Depth Polynomial Approximation with Applications to Kolmogorov–Arnold Networks 
+
+Rohit Sarma Sarkar, 1, ∗ Rupayan Bhattacharjee, 1 Elias F. Combarro, 2 Michele Grossi, 3 Lirand¨ e Pira, 4 Carmen G. Almud´ ever, 5 Sergi Abadal, 1 and Eduard Alarcon 1
+
+> 1
+
+Universitat Polit` ecnica de Catalunya, Barcelona, Spain 
+
+> 2
+
+Universidad de Oviedo, Spain 
+
+> 3
+
+Quantum Computing Infrastructures and Algorithms Competence Centre, CERN, Switzerland 
+
+> 4
+
+Centre for Quantum Technologies (CQT), National University of Singapore, Singapore 
+
+> 5
+
+Universitat Polit` ecnica de Val` encia, Spain 
+
+Quantum Signal Processing (QSP) is a powerful quantum framework for generating and approx-imating univariate polynomials. However, QSP is often limited by circuit-depth bottlenecks and parity constraints on the class of realizable polynomials. In this work, we introduce Weighted Quantum Signal Processing (WQSP), an extension of QSP in which a weight function is assigned to the central rotation operator. This formulation provides a deeper understanding of QSP, which emerges as the special case of WQSP with unit weights. The choice of weights fundamentally de-termines the structure and expressive capabilities of WQSP circuits. When the weights are natural numbers greater than one, WQSP reduces to a pruned version of QSP, revealing parameter redun-dancies in the standard framework. Through an appropriate selection of integer weights, WQSP achieves linear-to-exponential reductions in the number of parameters required to realize arbitrary bounded univariate polynomials while preserving approximation quality. For generic weights, we es-tablish corresponding approximation error bounds and show that, in many cases, the approximation is exact. We analyze WQSP from both a deterministic perspective, where polynomial generation is formulated as the solution of a linear system, and a quantum machine learning perspective, where WQSP serves as a structured and expressive quantum learning model. We further employ this learning framework to parameterize learnable activation functions in Kolmogorov–Arnold Net-works for multivariate function approximation. Our results show that WQSP provides a compact, flexible, and theoretically grounded framework for realizing arbitrary univariate polynomials while requiring significantly fewer trainable parameters than conventional QSP. This yields expressive and parameter-efficient neural architectures, highlighting the potential of WQSP as a scalable primitive for quantum-enhanced machine learning. 
+
+Keywords. Quantum Signal Processing, Weighted Quantum Signal Processing, Chebyshev Polynomials, Kolmogorov-Arnold Networks, Quantum circuit. 
+
+CONTENTS 
+
+I. Introduction 2II. Weighted Quantum Signal Processing 4A. Preliminaries on Quantum Signal Processing 4B. Fundamentals of Weighted Quantum Signal Processing 6III. Weighted Quantum Signal Processing: Function Generation 6 
+
+> ∗rohit15sarkar@yahoo.com
+
+IV. Weighted Quantum Signal Processing: Polynomial Fitting 11 1. Weighted Quantum Signal Processing: Polynomial fitting Algorithm 11 2. WQSP Error Bounds for Polynomial Fitting Algorithm 13 3. WQSP in a quantum neural network framework 17 V. Polynomial extraction from WQSP circuit 21 VI. Application of WQSP in Kolmogorov-Arnold Networks 23 VII. Conclusion 26 VIII. Acknowledgment 28 References 28 arXiv:2609.21567v1 [quant-ph] 18 Sep 2026 2 
+
+> I. INTRODUCTION
+
+In recent years, developments in quantum algo-rithm theory have revealed a unifying perspective i.e. many of the most influential quantum algo-rithms can be understood as instances of implement-ing a function of a matrix or Hamiltonian, denoted by f (H)[1, 2]. This perspective encompasses a broad class of algorithms including Hamiltonian simulation, quantum search, factoring, quantum walks, quantum linear system solvers, and several modern optimiza-tion and machine learning routines. Consequently, the ability to efficiently realize spectral transforma-tions of operators has emerged as one of the central objectives in quantum algorithm design. Over time, several frameworks have been developed for con-structing such Hamiltonian transformations. Early approaches relied on phase estimation techniques, which formed the basis of algorithms such as HHL for quantum linear systems. Later developments introduced methods based on linear combinations of unitaries (LCU)[3, 4], enabling improved asymp-totic scaling for Hamiltonian simulation and matrix function implementation. Among these approaches, Quantum Signal Processing (QSP) has emerged as one of the most versatile and powerful techniques. The central idea behind QSP is to approximate a target continuous function through polynomial trans-formations of the eigenvalues of a unitary operator U
+
+that encodes the underlying Hamiltonian or matrix. QSP realizes high-degree polynomial transformations using remarkably simple quantum circuits and requir-ing only a minimal number of ancilla qubits by inter-leaving signal operators with carefully chosen phase rotations. This framework has led to asymptotically optimal algorithms for Hamiltonian simulation and has become a central primitive in modern quantum algorithm design. QSP was later generalized through Quantum Sin-gular Value Transformation (QSVT)[1], where QSP appears as a special case corresponding to polynomial transformations of eigenvalues encoded within sin-gular value transformations. While QSVT consider-ably broadens the class of realizable matrix transfor-mations, practical implementations typically require larger fault-tolerant quantum circuits and additional encoding overhead. In contrast, QSP operates within a significantly simpler single-qubit signal-processing framework, making it particularly attractive for con-structing resource-efficient quantum algorithms. In fact, QSP has already been experimentally demon-strated on trapped-ion and noisy quantum devices [5, 6], and has been explored in applications includ-ing Hamiltonian simulation, proportional sampling, and related quantum algorithmic tasks [2, 7–9]. Despite its success, QSP still suffers from sev-eral practical limitations. Most notably, standard QSP imposes structural constraints on the family of realizable polynomials. To approximate arbi-trary polynomial transformations, one typically de-composes the target polynomial into parity sectors and, for complex-valued functions, further separates real and imaginary components before recombining them through procedures such as linear combination of unitaries and amplitude amplification. This pro-cess increases circuit depth and implementation over-head. Hence, Generalized Quantum Signal Process-ing (GQSP)[10] was introduced in the literature [10], which alleviates these parity constraints by incorpo-rating generic SU(2) rotations together with an an-cillary qubit register. However, the use of generic SU(2) rotations in-stead of optimized, hardware-native gates forces the compiler to decompose each rotation into a longer sequence of elementary operations (such as CNOT gates and single-qubit pulses). This decomposition significantly increases the circuit depth for a fixed polynomial degree d, thereby accelerating fidelity loss due to cumulative gate noise and decoherence before the transformation is completed. In addition, incorporating additional ancilla-based control for these rotations introduces substantial hardware overhead through increased ancilla require-ments and controlled operations. In NISQ architec-tures, every additional controlled interaction between the ancilla and the target qubit increases implemen-tation complexity and error accumulation, reducing the precision with which the target polynomial P (x)can be realized. A central problem in QSP is the recovery of phase parameters required to realize a target polynomial transformation, and there exists a large body of lit-erature devoted to this problem. For a detailed intro-duction to QSP, we refer the reader to [11]. Construc-tive phase synthesis algorithms have been developed for both complex and real polynomial settings. In particular, [1, 2] proposed an O(d2) algorithm for re-covering the phase vector corresponding to a degree-d
+
+polynomial through repeated matrix operations and phase reconstruction. Subsequent works improved optimization-based phase recovery [12, 13], charac-terized the optimization landscape of QSP [14], and introduced iterative approaches including fixed-point methods [15, 16]. Alternative approaches focused on complementary polynomial construction for real-valued QSP, includ-ing root-finding methods over Laurent polynomi-als [1, 17], contour-integral formulations such as the Prony method [18], linear-system-based meth-ods such as the halving algorithm [13], and nonlinear Fourier analysis techniques [14, 19]. Extensions to 3infinite QSP were later introduced for large-degree polynomial and continuous function approximation [16]. More recently, [20] proposed a provably stable numerical algorithm based on Riemann–Hilbert fac-torization, referred to as the Riemann–Hilbert Weiss algorithm, for computing QSP phase factors. The authors showed existence and uniqueness of solutions for almost all admissible QSP representations. How-ever, computing each phase factor requires solving a Riemann–Hilbert factorization problem via linear systems, resulting in an O(d3) cost per phase factor for a d-degree polynomial. Despite substantial progress in phase synthesis, practical implementations of QSP for high-degree polynomial approximation still require circuits of in-creasing depth together with a growing number of trainable phase parameters which is suitable for fault-tolerant circuits. Consequently, although existence of phase solutions is guaranteed [2] for admissible poly-nomial transformations, recovering and optimizing these parameters remains a nontrivial computational task in practice, particularly for resource-constrained and near-term quantum architectures. 
+
+Contributions. In this work, we introduce Weighted Quantum Signal Processing (WQSP), a natural extension of the standard QSP framework that addresses a key limitation of existing QSP-based approaches: the increasing circuit depth and parameter count required for high-degree polyno-mial approximation. WQSP provides a low-depth, parameter-efficient framework for constructing poly-nomial transformations and extends naturally to the approximation of general continuous functions through a learning-based formulation. A key feature of WQSP is the incorporation of classical weight encoding directly into the quantum signal-processing circuit (Section II). This additional structure enables the contribution of each layer to be modulated while preserving the overall circuit ar-chitecture, providing greater flexibility in construct-ing polynomial transformations. When the weights are restricted to integers, WQSP reduces to a pruned variant of QSP in which repeated or aggregated signal operations effectively lower circuit depth while pre-serving expressive power. In this regime, WQSP re-tains the structure of QSP but removes redundant ro-tations, resulting in more compact implementations. Overall, the strength of WQSP lies in its ability to trade classical weight design for quantum circuit ef-ficiency, thereby enabling flexible control over cir-cuit depth, parameter count, and parity structure while maintaining strong approximation capabilities for polynomial and continuous functions. In this work, we first show that, under appro-priate choices of integer weight vectors, WQSP can match the approximation performance of standard QSP while requiring significantly fewer parameters and reduced circuit depth. This demonstrates that QSP contains a substantial degree of redundancy that can be eliminated through structured weight design without sacrificing expressive power. For more gen-eral weight choices, we derive explicit approximation bounds that characterize the trade-off between circuit depth and approximation accuracy. In particular, in-creasing compression in the weight structure leads to reduced circuit depth at the cost of a controlled in-crease in approximation error. This provides a quan-titative mechanism for balancing expressivity and re-source efficiency within the WQSP framework. In particular, the learning-based formulation, which we also incorporate for WQSP, naturally extends beyond polynomial approximation and can be applied to the broader task of approximating continuous functions (Section IV). We also employ Weighted QSP to realize the learn-able activation functions of classical Kolmogorov-Arnold Networks (KANs) for multivariate function approximation. Artificial neural networks form the foundation of modern machine learning owing to their ability to approximate highly nonlinear functions. Classical multilayer perceptrons (MLPs) achieve this through compositions of affine transformations and point-wise nonlinear activation functions, with their expressive power guaranteed by universal approxima-tion theorems. However, standard MLPs often suffer from the curse of dimensionality, motivating alter-native representations that exploit structure in tar-get functions to reduce parameter complexity (Sec-tion V, Section VI). KANs [21] have recently emerged as a compelling alternative architecture in this con-text. They are inspired by the Kolmogorov–Arnold Representation Theorem (KART) [22], also known as the Kolmogorov Superposition Theorem, which originated from Hilbert’s thirteenth problem. KART states that every continuous function f defined on a compact subset of Rn admits the representation 
+
+f (x1, . . . , x n) = 
+
+> 2n
+
+X
+
+> q=0
+
+ϕq
+
+> n
+
+X
+
+> p=1
+
+ψpq (xp)
+
+!
+
+, (1) where ϕq and ψpq are continuous univariate func-tions, with ψpq independent of the target function 
+
+f . Motivated by this representation, KANs replace fixed activation functions with learnable univariate functions defined on network edges, while aggrega-tion is performed at the nodes. This architectural shift improves expressivity, parameter efficiency, and interpretability, particularly for functions exhibiting compositional structure. Consequently, KANs have found applications in computer vision, time-series analysis, physics-informed learning, and graph rep-resentation learning [23–30]. 4In this work, we employ Weighted Quantum Sig-nal Processing (WQSP) to parameterize the learn-able edge activation functions of KANs, yielding a quantum-native architecture for multivariate func-tion approximation. Each activation is represented by a WQSP-generated polynomial, allowing expres-sive univariate functions to be realized using com-pact, low-depth variational quantum circuits. The resulting WQSP-KAN framework inherits the com-pression properties of WQSP, significantly reducing the number of trainable parameters and circuit depth required to represent the activation functions, while avoiding the block-encoding overheads present in ex-isting quantum KAN architectures[31]. Rather than treating variational quantum circuits as standalone predictive models, our approach harnesses their ex-pressive power at the level of univariate function approximation, closely aligning with the underly-ing Kolmogorov–Arnold decomposition. This hybrid framework combines the interpretability and compo-sitional structure of KANs with the expressive poly-nomial representations of WQSP, providing a com-pact, parameter-efficient, and quantum-native ap-proach to multivariate function approximation. A key advantage of WQSP is its hardware-native gate mapping. While GQSP uses general SU(2) ro-tations that typically require 2 to 3 physical pulses via Euler decomposition, WQSP employs Rx(θ) ro-tations that can be implemented with a single modu-lated pulse. Consequently, this reduces physical gate depth and error accumulation on NISQ hardware. Overall, WQSP provides a structured, low-parameter compression of QSP while extending its capabilities to flexible function approximation through weighted signal transformations. The result-ing framework offers enhanced control over approxi-mation behavior and has the potential to serve as a scalable primitive for quantum machine learning and other quantum algorithmic frameworks. 
+
+Organization. The paper is organized as follows. In Section II, we review the basics of QSP and WQSP. In Section III, we analyze the class of functions gen-erated by WQSP and studying their structures in de-tail. In Section IV, we investigate how WQSP with integer weights can be used to approximate univari-ate polynomials and continuous functions with signif-icantly fewer parameters and reduced circuit depth compared to QSP. We also present both determinis-tic and learning-based methods for recovering phase angles corresponding to a target function. For inte-ger weights, we further derive explicit bounds char-acterizing the effect of generic weight choices on ap-proximation accuracy. In Section V, we describe how functions and polynomials generated by WQSP can be extracted from the corresponding quantum circuits. Subsequently, in Section VI, we integrate WQSP into Kolmogorov–Arnold Network (KAN) ar-chitectures for multivariate function approximation, where WQSP serves as a primitive for constructing expressive nonlinear activation functions. Finally, we conclude the paper with a summary of results and directions for future work.  
+
+> II. WEIGHTED QUANTUM SIGNAL PROCESSING
+
+In this section, we provide a mathematical overview of Quantum Signal Processing (QSP) and its extension, Weighted Quantum Signal Processing (WQSP). We highlight the fundamental differences between QSP and WQSP and demonstrate how the additional flexibility introduced by WQSP can be ex-ploited to realize polynomial transformations with substantially fewer resources than standard QSP.  
+
+> A. Preliminaries on Quantum Signal Processing
+
+Quantum Signal Processing (QSP) [1] is a quantum framework for realizing polynomials over the interval [−1, 1], originally introduced in [2]. More generally, the expressive power of QSP extends beyond polyno-mial generation. Through polynomial approximation theory, QSP can be used to approximate arbitrary continuous functions in the space C[−1, 1]. In par-ticular, by the Stone–Weierstrass theorem [32], every continuous function defined on a closed interval can be uniformly approximated to arbitrary accuracy by polynomial functions. Consequently, QSP provides a general mechanism for implementing continuous function transformations and has emerged as a fun-damental primitive in quantum algorithms, Hamil-tonian simulation, singular value transformations [1] and quantum neural networks[33]. In quantum circuit model of computation, Quan-tum signal processing[1, 10, 34] is a quantum circuit with a corresponding unitary operator U QSP  
+
+> Φ
+
+(x). The circuit U QSP  
+
+> Φ
+
+(x) is constructed using a sequence of phase parameters Φ = ( ϕ0, ϕ 1, . . . , ϕ d)T ∈ Rd+1 and takes the following form. 
+
+U QSP  
+
+> Φ
+
+(x) = 
+
+
+
+> d
+
+Y
+
+> j=1
+
+Rz (ϕd−j+1 )U (x)
+
+ Rz (ϕ0) (2) where Rz (θ) = exp {(iθσ z )} =exp {(iθ )} 00 exp {(−iθ )}
+
+
+
+and U (x) is a rotation 5operator [1] with the following form. 
+
+U (x) = 
+
+ x i√1 − x2
+
+i√1 − x2 x
+
+
+
+= exp( i arccos( x) σx) ,
+
+where x ∈ [−1, 1]. The resulting circuit generates a complex polynomial P (x) ∈ C[x] which yields the following form. 
+
+U QSP  
+
+> Φ
+
+(x) = 
+
+ P (x) iQ (x)√1 − x2
+
+iQ (x)∗√1 − x2 P (x)∗
+
+
+
+(3) where ∗ is the Hermitian operator. Clearly, U QSP  
+
+> Φ
+
+(x)acts as a block-encoding [35] of a polynomial P (x) ∈
+
+C[x]. In other words ∥P (x) − ⟨ 0| U QSP  
+
+> Φ
+
+(x) |0⟩ ∥ = 0. Further, the polynomials P, Q ∈ C[x] holds the fol-lowing properties. (i) |P (x)| ≤ 1∀x ∈ [−1, 1]. (ii) P (x) is a polynomial with degree at most d with deg( Q) ≤ d − 1. (iii) P and Q have fixed but opposite parity. (iv) |P (x)|2 + (1 − x2)|Q(x)|2 = 1 ∀x ∈ [−1, 1] Indeed, the coefficients of P and Q vary as compo-nents of Φ are changed. An alternative formulation[1] also employs 
+
+U (x) =
+
+ cos θ i sin θi sin θ cos θ
+
+
+
+(4) =
+
+ x i√1 − x2
+
+i√1 − x2 x
+
+
+
+= exp( iθ σ x) = Rx(θ)which is valid for real-valued θ and leads to a lin-ear combination of trigonometric polynomials in x
+
+where x = cos θ. In both cases, U (x) can be im-plemented using a single-qubit rotations about the 
+
+x axis. Without loss of generality, we shall consider this formulation mentioned in Equation 4 throughout the paper. The quantum circuit corresponding to a 
+
+d-degree polynomial represented by QSP is as follows 
+
+Rz (ϕ0) Rx(θ) Rz (ϕ1) . . .. . . Rx(θ) Rz (ϕd)(5) .Given a fixed-parity polynomial P (x) of degree d
+
+satisfying the conditions discussed above, the objec-tive of QSP is to determine the components of the phase vector Φ ∈ Rd+1 . In the literature, there exists an algorithm with complexity O(d2) for computing the corresponding phase angles, based on the leading coefficient of the polynomial and successive polyno-mial reductions [1]. Alternatively, one may determine the phase vector through optimization. In practice, many implemen-tations [7, 14] adopt a heuristic or optimization-based approach to search for a suitable phase vector Φ by solving min  
+
+> Φ
+
+∥P (x) − Re( ⟨0| U QSP Φ( x) |0⟩)∥L2
+
+= min 
+
+> Φ
+
+sZ 1
+
+> −1
+
+
+
+P (x) − Re( ⟨0| U QSP Φ (x) |0⟩)
+
+2
+
+dx. 
+
+This approach avoids repeatedly performing ex-plicit phase constructions based on leading coeffi-cients and recursive matrix operations by instead presenting the determination of Φ as an optimiza-tion problem. Standard optimization techniques such as Nelder–Mead, gradient descent, and Levenberg– Marquardt [36, 37] can then be employed to obtain suitable phase parameters. Such a formulation establishes a learning-based framework in which the underlying polynomial trans-formation is obtained through optimization rather than constructed solely through deterministic proce-dures. This perspective is particularly useful when the polynomial representation of a target continuous function is unknown, while still allowing the fitting of predefined polynomial functions. Consequently, the framework is well suited for constructing activation functions, which play a central role in machine learn-ing frameworks like quantum assisted Kolmogorov-Arnold Networks[21, 31]. A fundamental limitation of QSP is its inherent parity structure. Standard QSP generates polyno-mials of fixed parity, implying that approximating general functions containing both even and odd com-ponents often requires decomposing the target into separate parity contributions and implementing mul-tiple QSP constructions. For high-degree polynomial approximations and continuous function representa-tions, this separation can significantly increase cir-cuit complexity and further aggravate error accumu-lation. In this regard, research has been carried out on Generalized Quantum Signal Processing (GQSP) [10], where the parity constraints on polynomial real-ization are alleviated by employing a quantum circuit based on general SU(2) rotations as signal process-ing operators, rather than restricting to rotations in a single basis. This construction also utilizes addi-tional ancilla qubits and is useful for approximating functions of a Hamiltonian H without requiring the Linear Combination of Unitaries (LCU) framework that appears in certain applications of QSP[2]. Another significant limitation of standard QSP is that the number of trainable parameters scales lin-early with the degree of the target polynomial. In particular, it has been shown in [1] that realizing a 6polynomial of degree d requires at least d + 1 phase parameters. As the polynomial degree increases, this directly translates into deeper quantum circuits and greater resource requirements. Increased circuit depth not only raises execution time but also am-plifies the accumulation of hardware noise and gate imperfections, making implementations more suscep-tible to errors and reducing overall reliability on near-term quantum devices[5, 38]. These observations nat-urally motivate the question of whether QSP admits a more compact representation. In particular, one may ask whether QSP circuits contain structural re-dundancies that can be pruned to produce shallower circuits with fewer parameters while preserving the same expressive power. The pursuit of this percep-tible goal motivates the formulation of the extension introduced in this work.  
+
+> B. Fundamentals of Weighted Quantum Signal Processing
+
+We consider an extension of QSP, coined as Weighted Quantum Signal Processing by integrating weight parameters into the former framework. Let us consider w = ( w1, . . . , w k)T ∈ Rk. Then we define WQSP as 
+
+U WQSP  
+
+> Φw
+
+(x) = 
+
+
+
+> k
+
+Y
+
+> j=1
+
+Rz (ϕj )U (x)wj
+
+ Rz (ϕ0) (6) . WQSP as formalized here operates in the classical-input, function-generation regime where x is a clas-sical scalar. This allows the weight w to be absorbed directly into a single gate rotation. The problem of extending this framework to a weighted black-box oracle access inside full QSVT remains an open. Clearly, when all weights satisfy w = 1, that is, when each weight equals 1, the formulation reduces to stan-dard Quantum Signal Processing as defined in Equa-tion 2. A simple observation further shows that re-stricting w to Nk leads to an interesting interpreta-tion of WQSP as a structured and pruned variant of QSP. Specifically, from Equation 2, setting selected phase angles ϕj to zero causes adjacent applications of the operator U (x) to combine, effectively produc-ing powers of the form U (x)wj for some wj ∈ N.Consequently, the corresponding QSP circuit can be viewed as undergoing a pruning procedure in which certain intermediate Rz rotations, and in turn, the phase angles ϕj ∈ Φ are removed, yielding an equiv-alent WQSP circuit with natural-valued weights. It may initially appear that eliminating Rz rotation gates has a significant consequence viz. a reduction in the available degrees of freedom required to realize arbitrary polynomials. In other words, this restric-tion suggests that certain polynomials may no longer be representable within this regime due to the loss of intermediate rotation parameters. However, we show that this perspective reveals a more nuanced and structurally rich phenomenon. First, we demonstrate using WQSP that standard QSP contains a substantial amount of redundant pa-rameters, where not all phase rotations are essential for polynomial generation. By exploiting this redun-dancy, we demonstrate that the proposed framework achieves reductions in both parameter count and cir-cuit depth without compromising the approximation accuracy of the resulting polynomial transformations. Second, for sufficiently high-degree polynomials 
+
+P (x), we show that, depending on the choice of weight functions, one can construct a polynomial 
+
+P ′(x) such that P ′(x) lies close to P (x) in the 
+
+L2([ −1, 1]) norm. In particular, we quantify their separation using ∥P − P ′∥L2([ −1,1]) . Furthermore, we derive explicit upper bounds governing this norm, thereby characterizing the effective approximation accuracy achievable within the WQSP framework. We also identify classes of weight functions for which this norm converges to zero. Consequently, for large classes of high-degree polynomials, we achieve linear, quadratic, and even exponential reductions in param-eter count and circuit depth. Consequently, WQSP serves as a natural extension of standard QSP, ex-tending its expressive capability from approximating polynomials to continuous function classes. In this work, we show how, for a given polyno-mial, one can recover the phase vector Φ in WQSP regime. In particular, we present a deterministic framework as well as a learning-based framework for realizing one-dimensional polynomials and continu-ous functions.  
+
+> III. WEIGHTED QUANTUM SIGNAL PROCESSING: FUNCTION GENERATION
+
+We now proceed to analyze the structural form of functions generated within the WQSP regime. How-ever, we first establish several preliminaries required for the ensuing analysis. Without loss of generality, we consider for some k ∈
+
+N, w = ( w1, . . . , w k)T ∈ Rk such that w1 ≥ . . . ≥ wk.Let us denote the Hadamard gate H = 1√2
+
+1 11 −1
+
+
+
+and let us also consider the matrix 
+
+Mk =
+
+Mk−1 1
+
+Mk−1 −1
+
+
+
+(7) where k ∈ N, 1 is the all one vector of size 2 k−1 × 17and M1 = 1 , M 2 = √2H =
+
+1 11 −1
+
+
+
+. Thus, Mk is of size 2 k−1 × k.
+
+Definition III.1. We define the Reach of w ∈ Rk
+
+to be the set Rw = {| Pkj=1 ηj wj | : ηp ∈ { 1, −1}∀ j ∈{1, . . . , L }} .
+
+Clearly, |R w| ≤ 2k−1 and all elements of Rw have the same parity when w ∈ Nk. Then we have the following lemma. 
+
+Lemma III.2. Let k ∈ N and let w ∈ Rk be arranged as w1 ≥ · · · ≥ wk. Let Rw denote the Reach of w as defined in Definition III.1. Then the elements of Rw
+
+are given by the absolute values of the components of the vector Mkw where Mk is defined in Equation 7. 
+
+Proof: For k = 1, the proof is trivial. Let, for k =
+
+m, the hypothesis holds for w(m) ∈ Rm. Then for k =
+
+m + 1, we have Mm+1 w(m+1) =
+
+Mm 1
+
+Mm −1
+
+
+
+w(m+1).Then, Mm+1 w leads us to 
+
+Mm+1 w(m+1) =
+
+Mmw(m) + 1wm+1 
+
+Mmw(m) − 1wm+1 
+
+
+
+(8) So for all the elements of Rw(m) obtained from 
+
+Mmw(m), an additional wm+1 is added and then sub-tracted. The rest of the proof follows immediately. □
+
+Thus elements of the reach are obtained from the weights and the Mk matrix. We also define the fol-lowing 
+
+Definition III.3. Let f : F → F, F ∈ {R, C}
+
+be a real or complex analytic function and v =
+
+v1 . . . v k
+
+T ∈ Fk. Then, define fv : Fk → Fk, f v := [f (v1), . . . , f (vk)] T
+
+For example, take exp (v) =
+
+exp {(v1)} . . . exp {(vl)}T and similarly we define cos (v), sin (v), etc. Furthermore, starting from N1 = 1 = L1, let us define 
+
+Nk = 12
+
+Nk−1 Lk−1
+
+Nk−1 −Lk−1
+
+
+
+(9) 
+
+Lk = 12
+
+ Nk−1 Lk−1
+
+−Nk−1 Lk−1
+
+
+
+. In such cases N2 = 12
+
+1 11 −1
+
+
+
+, L 2 = 12
+
+ 1 1
+
+−1 1 
+
+
+
+and thus Nk and Lk are matrices of order 2 k−1 ×2k−1. We also have the following proposition about the struc-ture of Nk and Lk. For k ≥ 2, the matrices Nk and Lk
+
+are of the form ˜P ( H√2 )⊗k−1 where ˜P is a permutation matrix. This follows from simple induction by using the definition of Lk and Nk. Although, for k = 2, 
+
+Nk = 1√2 H i.e. ˜P = I, for k ≥ 3, however, ˜P can be calculated in the following way. 
+
+Proposition III.4. Let k ≥ 3 and Nk be the matrix defined in Equation 9. Let us also define a cycle for 
+
+α ∈ N, α ̸ = 1 , Cl(α, 2k−1) = {α + lβ (mod 2 k−1)|β ∈{0, 1 . . . , }} and further let for some m ∈ N, the set 
+
+{α1, α 2, ..., α m} be such that 2 = α1 < . . . < α m <
+
+2k−1 and ∀j̸ = i, j ∈ { 1, . . . , m }, α j̸ ∈ C 2i (αi, 2k−1).Then Nk = ˜P ( 1√2 H)⊗k−1 where ˜P is a permutation matrix such that ˜P = Qk−2 
+
+> j=1
+
+P(C2j (αj ,2k−1)) 
+
+Proof: Follows from simple induction and defini-tion of Nk. □.
+
+Examples: 
+
+1. When k = 3, then ˜P = P(2 ,4) .(Verify that N3 =
+
+> 14
+
+
+
+1 1 1 11 −1 −1 11 1 −1 −11 −1 1 −1
+
+)2. When k = 4, then ˜P = P(2 ,4,6,8) P(3 ,7) .3. When k = 5, then ˜P =
+
+P(2 ,4,6,8,10 ,12 ,14 ,16) P(3 ,7,11 ,15) P(5 ,13) and so on where P(a1,...,a m) denotes a permutation cycle. Now, consider S(Mkw, l ) = {j | |eTj Mkw| =
+
+l}, l ∈ R w, where ej is the standard basis vector with 1 in the j-th component and 0 elsewhere. S(Mkw, l )can be considered inducing a value-based equivalence relation on the index set 1 , . . . , 2k−1, which partitions indices according to equal entries of Mkw.We arrange the elements of Rw in decreasing or-der as {r1, r 2, . . . }. Denote Rw(m) to be the m-th element of Rw. Further, consider a matrix BMk w of size p × 2k−1, where p is the cardinality of Rw. The rows of BMk w are defined as follows: 
+
+BMk w(r, :) = X  
+
+> j∈S (Mkw,Rw(r))
+
+eTj (10) for r ∈ { 1, . . . , p }. Then the matrix BMk w, when multiplied with Nk, sums and aggregates the appro-priate rows of Nk corresponding to a specific Trj ,
+
+rj ∈ R w, collapsing them into a single row for each such rj appearing in the components of Mkw.For example, let k = 3, w = [1 , 1, 1] T . Then 
+
+M3w = [3 , 1, 1, −1] T and Rw = {3, 1} and thus, 
+
+BM3wNk is a 2 × 4 matrix where 
+
+BM3wNk =
+
+1 0 0 0 0 1 1 1 
+
+ 14
+
+
+
+1 1 1 11 −1 −1 11 1 −1 −11 −1 1 −1
+
+(11) 8= 14
+
+1 1 1 13 −1 −1 −1
+
+
+
+When all of the elements of Mkw are distinct, 
+
+BMk w = I (Identity matrix). This happens when all components of w are distinct and the proof is quite direct. We also have the following lemma. 
+
+Lemma III.5. Let BMk w be the matrix defined in Equation 10. Then BMk w has a full row rank and singular values of BMk w are S(Mkw, Rw(r)) where 
+
+1 ≤ r ≤ |S (Mkw, Rw)| with the minimum singular value equal to 1.
+
+Proof: From the definition of BMk w, it is imme-diately clear that all the rows are orthogonal to each other. Hence, it has a full row-rank. Thus, BB T
+
+yields a diagonal matrix with entries as sum of the row elements. Since Mk has only one column and row with all 1’s, the first row of BMk w, from defini-tion is always eT 
+
+> 1
+
+. Thus the minimum singular value of BMk w is 1. □
+
+Furthermore, for any α ∈ R, let 
+
+Tα(cos θ) = cos ( αθ ) (12) and similarly, 
+
+Sα(cos θ) = sin(( α + 1) θ)sin θ (13) For α ∈ N, T and S become Chebyshev polynomi-als of first and second kind respectively with degree 
+
+α. Then we have the following result. 
+
+Theorem III.6. Let k ∈ N and w =(w1, . . . , w k)T ∈ Nk such that w1 ≥ . . . ≥ wkand 
+
+U WQSP  
+
+> Φw
+
+(x) = 
+
+
+
+> k
+
+Y
+
+> j=1
+
+Rz (ϕj )U (x)wj
+
+ Rz (ϕ0)
+
+. Let P (x) = ⟨0| U WQSP  
+
+> Φw
+
+(x) |0⟩ , Q (x) =
+
+⟨0| U WQSP  
+
+> Φw
+
+(x) |1⟩. Further, let Rw = {r1 > r 2 >
+
+· · · > r p}, such that p ≤ 2k−1 and denote Rw(m) := 
+
+rm denotes the m-th largest distinct element of Rw
+
+Then 1. P (x) ∈ C[x] such that P =Ppj=1 crj exp {(iϕ 0)}Trj where rj ∈ Rw as described in Definition (III.1) and Trj is the Chebyshev polynomial of the first kind with degree rj .2. Q(x) = i√1 − x2 Ppj=1 drj exp {(−iϕ 0)}Srj −1 ∈
+
+C[x] where Srj −1 is the Chebyshev polynomial of the second kind with degree rj − 1,where crj , d rj ∈ C∀rj ∈ R w. Moreover, 1. c(R1) = ( cr1 , . . . , c rp )T ,2. d(R1) = ( dr1 , . . . , d rp )T
+
+3. Φ = ϕ1 ϕ2 . . . ϕ k−1 ϕk
+
+T ∈ Rk
+
+. Then, 
+
+c(Rw) = BMk wNk exp (Mk (iΦw )) (14) 
+
+d(Rw) = BMk wLk exp (Mk (iΦw )) 
+
+where Nk, L k is defined in Equation 9, exp (Mk (iΦw )) 
+
+is defined in Definition III.3 and BMk w is a p × 2k−1
+
+matrix is defined in Equation 10. 
+
+Proof: We start off with the case where all 
+
+wj ’s are distinct. i.e. w1 > . . . > w k and thus 
+
+BMk w = I, p = 2k−1 and Mkw possess no re-peated components. Let k = 1. Then U WQSP  
+
+> Φw
+
+(x) = 
+
+Rz (ϕ1)U (x)w1 Rz (ϕ0). U (x) = exp {(iθσ x)} =⇒
+
+U w1 (x) = exp {(iw 1θσ x)} where x = cos θ. Thus, a simple calculation gives us the following. 
+
+U (x)w1 =
+
+ cos ( w1θ) i sin ( w1θ)
+
+i sin ( w1θ) cos ( w1θ)
+
+
+
+=
+
+ Tw1 (x) i√1 − x2Sw1−1(x)
+
+i√1 − x2Sw1−1(x) Tw1 (x)
+
+
+
+where T is the Chebyshev polynomial of first kind where T and S are de-fined in Equation 12 and 13 respectively. Clearly, ⟨0| Rz (ϕ1)U (x)w1 Rz (ϕ0) |0⟩ yields 
+
+Tw1 exp {i(ϕ1 + ϕ0)} and ⟨0| Rz (ϕ1)U (x)w1 Rz (ϕ0) |1⟩
+
+yields i√1 − x2Sw1−1 exp {i(ϕ1 − ϕ0)}. cr1 =
+
+N1 exp (iM 1ϕ1), d r1 = L1 exp (iM 1ϕ1). So the all of the induction conditions are satisfied. Now let for k = m, the result holds. i.e. 
+
+P = P2m−1 
+
+> j=1
+
+crj exp {(iϕ 0)}Trj = P2m−1 
+
+> j=1
+
+crj cos ( rj θ)and Q = i√1 − x2 P2m−1 
+
+> j=1
+
+drj exp {(−iϕ 0)}Srj −1 =
+
+i P2m−1 
+
+> j=1
+
+drj sin ( rj θ) for the ordered weights (w1, . . . , w m), such that the coefficients c(Rw)and d(Rw) satisfies Equation (14). Clearly, without the right multiplication by Rz (ϕ0), we have 
+
+P =
+
+> 2m−1
+
+X
+
+> j=1
+
+crj cos ( rj θ)
+
+Q = i
+
+> 2m−1
+
+X
+
+> j=1
+
+drj sin ( rj θ)Now for w = (w1, . . . , w m+1 )T , the first row of the product 
+
+Qmj=1 Rz (ϕj )U (x)wj
+
+
+
+is 9
+
+P (x) Q(x). Multiplying this with the first column of Rz (ϕm+1 )U wm+1 Rz (ϕ0) leads to the following 
+
+⟨0|
+
+
+
+> m+1
+
+Y
+
+> j=1
+
+Rz (ϕj )U (x)wj
+
+ Rz (ϕ0) |0⟩ = P cos ( wm+1 θ) exp {(iϕ m+1 )} + iQ sin ( wm+1 θ) exp {(−iϕ m+1 )}
+
+!
+
+exp( iϕ 0)We know 
+
+P cos( wm+1 θ) exp {(iϕ m+1 )} =
+
+> 2m−1
+
+X
+
+> j=1
+
+crj exp {(iϕ m+1 )} cos( rj θ) cos ( wm+1 θ)
+
+iQ sin( wm+1 θ) exp {(−iϕ m+1 )} = −
+
+> 2m−1
+
+X
+
+> j=1
+
+drj exp {(−iϕ m+1 )} sin( rj θ) sin ( wm+1 θ).By using the simple trigonometric formula of cos ( A + B) + cos ( A − B) = 2 cos ( A) cos ( B) and cos ( A − B) − cos ( A + B) = 2 sin ( A) sin ( B), we see 
+
+Rw becomes {R w + wm+1 } ∪ {R w − wm+1 } and thus the cardinality i.e. |R w| becomes 2 m. Hence, we get 
+
+⟨0|
+
+
+
+> m+1
+
+Y
+
+> j=1
+
+Rz (ϕj )U (x)wj
+
+ Rz (ϕ0) |0⟩
+
+= 12 exp( iϕ 0)
+
+> 2m−1
+
+X
+
+> j=1
+
+crj exp {(iϕ m+1 )} + drj exp {(−iϕ m+1 )}
+
+!
+
+cos(( rj + wm+1 )θ)) + 
+
+crj exp {(iϕ m+1 )} − drj exp {(−iϕ m+1 )}
+
+!
+
+cos(( rj − wm+1 )θ)) 
+
+!
+
+= 12 exp( iϕ 0)
+
+> 2m−1
+
+X
+
+> j=1
+
+(crj exp {(iϕ m+1 )} + drj exp {(−iϕ m+1 )})Trj +wm+1 +(crj exp {(iϕ m+1 )} − drj exp {(−iϕ m+1 )})Trj −wm+1 
+
+!
+
+.We also get the following using the identities sin ( A + B) + sin ( A − B) = 2 sin ( A) cos ( B) and sin ( A + B) − sin ( A − B) = 2 cos ( A) sin ( B). 
+
+⟨0|
+
+
+
+> m+1
+
+Y
+
+> j=1
+
+Rz (ϕj )U (x)wj
+
+ Rz (ϕ0) |1⟩
+
+= i 12 exp( −iϕ 0)( 
+
+> 2m−1
+
+X
+
+> j=1
+
+(crj exp {(iϕ m+1 )} + drj exp {(−iϕ m+1 )}) sin(( rj + wm+1 )θ)) + (−crj exp {(iϕ m+1 )} + drj exp {(−iϕ m+1 )}) sin(( rj − wm+1 )θ))) .Clearly, the updated coefficients crj and drj are components of Nk exp (iM m+1 Φ) and Lk exp (iM m+1 Φ) 10 respectively and further, Trj −wm+1 and Trj +wm+1 
+
+have fixed parity. Thus using induction hypothesis, we get our proof. For the second case, if wj = wl for some j and 
+
+l then Mkw possess repeated components and the proof follows similar to the previous case. However, the terms crj Trj , c rl Trl are added up for all such j
+
+and l. Thus, coefficients crj and drj are components of BMk wNk exp (iM m+1 Φ) and BMk wLk exp (iM m+1 Φ) 
+
+since BMk w, by construction when multiplied, aggregates the rows of Nk where Mkw have same components and the rest of the proof follows imme-diately. □
+
+Remark III.7. When all components of w ∈ Rk
+
+are equal to 1, the system reduces to QSP and the reach satisfies R1 = {k, k − 2, . . . , (k (mod 2)) }. In such cases, it is easy to observe that the vector Mk1
+
+contains repeated components. Hence, from Theorem III.6, the coefficients corresponding to Trj for all re-peated values rj , i.e. components belonging to the same value class, are accumulated in QSP. For example, let k = 3 and w = (1 , 1, 1) T . Then, by Theorem III.6, we obtain 
+
+P = c3T3 + c1T1 + c1T1 + c1T1 = c3T3 + 3 c1T1.
+
+This follows because 1 + 1 + 1 = 3 , whereas all other combinations, namely |1 + 1 − 1|, |1 − 1 + 1 |,and |1 − 1 − 1|, evaluate to 1. Consequently, Mk1,and therefore R1 = {3, 1}.Further, a direct calculation yields 
+
+ c3
+
+3c1
+
+
+
+= 14
+
+1 1 1 13 −1 −1 −1
+
+
+
+exp (iM k Φ) .
+
+The matrix 14
+
+1 1 1 13 −1 −1 −1
+
+
+
+is clearly constructed by adding up the last 3 rows of N3. In particular 
+
+14
+
+1 1 1 13 −1 −1 −1
+
+
+
+=
+
+1 0 0 00 1 1 1
+
+| {z }
+
+> BM31
+
+14
+
+
+
+1 1 1 11 −1 −1 11 1 −1 −11 −1 1 −1
+
+| {z }
+
+> N3
+
+The construction of BM31 easily follows from Equation 10. First of all M31 = 3 1 1 −1T .Thus, from Lemma III.2, elements of the reach are obtained from absolute values of BM31 which gives 
+
+R1 = {3, 1}. Thus, S(M31, 3) = {1}, S(M31, 1) = 
+
+{2, 3, 4} and thus, 
+
+1 0 0 00 1 1 1
+
+
+
+= BM31 and we get our result. For another example, let w = [1 , 1, 1, 1] T . Then 
+
+Mkw = [4 , 2, 2, 0, 2, 0, 0, 2] T . Thus BMk 1NK is a 3×8
+
+matrix where the first row BMk 1NK (1 , :) = Nk(1 , :) ,second row of BMk 1NK i.e. BMk 1NK (2 , :) = Nk(2 , :) + Nk(3 , :) + Nk(5 , :) + Nk(8 , :) and BMk 1NK (3 , :) = 
+
+Nk(4 , :) + Nk(6 , :) + Nk(7 , :) . From this fact, we can find out what kind of polynomial a QSP circuit gen-erates. 
+
+Corollary III.8. Let k ∈ N such that 
+
+U QSP  
+
+> Φ
+
+(x) = 
+
+
+
+> k
+
+Y
+
+> j=1
+
+Rz (ϕj )U (x)
+
+ Rz (ϕ0)
+
+.Then, R1 = {r1 > r2 > · · · > rp} = {k, k −
+
+2, . . . }, p ≤ 2k−1. Denote R1(m) := rm denotes the 
+
+m-th largest distinct element of R1 and let P (x) = 
+
+⟨0| U QSP  
+
+> Φ
+
+(x) |0⟩ , Q (x) = ⟨0| U QSP  
+
+> Φ
+
+(x) |1⟩. Then 1. P (x) ∈ C[x] such that P =Ppj=1 crj exp {(iϕ 0)}Trj where rj ∈ R1
+
+and p is the cardinality of R1.2. Q(x) = i√1 − x2 Ppj=1 drj exp {(−iϕ 0)}Urj −1
+
+where Urj −1.where crj , d rj ∈ C∀rj ∈ R 1. Further, let 1. c(R1) = ( cr1 , . . . , c rp )T ,2. d(R1) = ( dr1 , . . . , d rp )T
+
+3. Φ = ϕ1 ϕ2 . . . ϕ k−1 ϕk
+
+T ∈ Rk
+
+. Then, 
+
+c(R1) = BMk 1Nk exp (Mk (iΦw )) (15) 
+
+d(R1) = BMk 1Lk exp (Mk (iΦw )) 
+
+where BMk 1 is defined in Equation 10 and Nk, L k are defined in Equation 9. 
+
+Proof: Follows immediately from the discussions above and Theorem III.6. □
+
+Remark III.9. Indeed, for QSP the maximum element of R1 = k. Thus, 
+
+U QSP  
+
+> Φ
+
+(x) = 
+
+
+
+> k
+
+Y
+
+> j=1
+
+Rz (ϕ1)U (x)
+
+ Rz (ϕ0)
+
+generates at most k-degree polynomials. 1. In Theorem III.6, and Corollary III.8, the coefficients crj and drj are symbolic in na-ture. In other words, one may replace crj →
+
+crj exp( −iϕ 0) and drj → drj exp( iϕ 0) without 11 
+
+altering the resulting polynomial. Hence, with-out loss of generality, one may set ϕ0 = 0 when-ever k ≥ 1.This observation is particularly interesting since it shows that, for WQSP and conse-quently QSP, one parameter is already redun-dant. Thus, for k ≥ 1,
+
+U QSP  
+
+> Φ
+
+(x) = 
+
+
+
+> k
+
+Y
+
+> j=1
+
+Rz (ϕj )U (x)
+
+ (16) 
+
+and 
+
+U WQSP  
+
+> Φw
+
+(x) = 
+
+
+
+> k
+
+Y
+
+> j=1
+
+Rz (ϕj )U (x)wj
+
+ . (17) 
+
+Therefore, only d parameters (rather than d+1 )are required for a QSP implementation of a polynomial of degree at least d > 0. However, for the trivial case d = 0 , the additional ro-tation Rz (ϕ0) remains necessary. In the later sections of this work, we show how WQSP al-lows this parameter count to be reduced further. 2. For any weight vector w, whenever Mkw or Rw
+
+don’t produce distinct elements, the main idea is to always find the rows of Nk corresponding to the similar elements crj and collapse them into a single row vector via addition. 3. It is also of note that the polynomials in Theo-rem III.6 and as a consequence polynomials in Corollary III.8 harbors some interesting prop-erties already observed in [1]. 
+
+Corollary III.10. Let w = (w1, . . . , w k) ∈ Nk
+
+be a fixed weight vector and N = Pkj=1 wj .Let P (x) = ⟨0| U WQSP  
+
+> Φ,w
+
+(x) |0⟩ and R(x) = 
+
+> 1
+> i√1−x2
+
+⟨0| U WQSP  
+
+> Φ,w
+
+(x) |1⟩. Then, 1. P (x) ∈ C[x] and |P (x)| ≤ 1 for all x ∈ [−1, 1] .2. P (x) has parity N (mod 2) and R(x) ∈ C[x]
+
+has parity N − 1 (mod 2) .3. |P (x)|2 + (1 − x2)|R(x)|2 = 1 .
+
+Proof: Follows directly from Theorem III.6 and using the fact that P and R are row elements of a unitary matrix. □
+
+So far, we have characterized the class of polyno-mials that can be generated by WQSP circuits. How-ever, a natural question arises: given a bounded poly-nomial, can one construct a suitable WQSP frame-work that realizes it? For standard QSP, the answer is affirmative as established in [1]. For WQSP, however, this question remains open. In the following, we address this question and inves-tigate the extent to which QSP admits parameter re-dundancies, demonstrating how WQSP can provide a more efficient realization framework with advantages in parameter count, and circuit depth over standard QSP.  
+
+> IV. WEIGHTED QUANTUM SIGNAL PROCESSING: POLYNOMIAL FITTING
+
+In this section, we address the following ques-tion: given a polynomial P (x) satisfying conditions of Corollary III.10, can one construct a correspond-ing WQSP circuit with suitable parameters? Equiva-lently, the objective is to recover the phase vector Φw
+
+for a given polynomial. Clearly, we have observed so far that WQSP produces parity-fixed polynomi-als. Thus, we shall analyze how WQSP can realize parity-fixed polynomials with less resources. In this regime, we present both deterministic and learning-based approaches for constructing the corresponding circuits. Particularly, we see that the learning-based approaches naturally extend beyond polynomial real-ization and can be applied to approximate univariate bounded continuous functions.  
+
+> 1. Weighted Quantum Signal Processing: Polynomial fitting Algorithm
+
+In this section, we shall deal with realizing polyno-mials with a fixed parity. This is because WQSP gen-erates fixed parity polynomials from Theorem III.6. Further, any arbitrary polynomial P can be writ-ten as P (x) = Peven (x) + Podd (x) where Peven (x) =  
+
+> 12
+
+(P (x) + P (−x)) and Podd (x) = 12 (P (x) − P (−x)) and thus, for an arbitrary continuous function or a polynomial, we need 2- quantum circuits to approxi-mate them through the WQSP regime. Let us consider a fixed-parity polynomial P (x) of maximum degree d. Without loss of generality, we as-sume that d is even. The case where d is odd follows analogously, and all subsequent constructions and re-sults remain unchanged. 1. Let, 
+
+P (x) = adxd + ad−2xd−2 + . . . + a0 ∈ C[x]such that |P (x)| ≤ 1. We would like to change the basis from {1, x, x 2, . . . } to {T0, T 1, T 2, . . . , }
+
+such that 
+
+P (x) = cdTd(x) + cd−2Td−2(x) + . . . + c0T0(x) (18) .12 2. Let, nz( c) = {j|cj̸ = 0 , j ∈ { d, d − 2, . . . , 0}} 
+
+(For odd d, nz( c) = {j|cj̸ = 0 , j ∈ { d, d −
+
+2, . . . , 1}} ). Without loss of generality let cd̸ =0. Clearly |cj | ≤ 1nz( c) ∀j since |P (x)| ≤ 1. Let us order nz( c) = {j1, . . . , j m} such that 
+
+j1 = d ≥ . . . ≥ jm. We choose a partition of 
+
+d say w = ( w1, . . . , w k)T such that w1 ≥ . . . ≥
+
+wk, Pkj=1 wj = d and Rw = nz( c). If such a partition can’t be found or it doesn’t exist, choose w such that w1 ≥ . . . ≥ wk, Pkj=1 wj =
+
+d and nz( c) ⊂ R w.3. Denote S(Mkw, l ) = {j|| eTj Mkw| = l}, l ∈
+
+nz( c)( or Rw) and construct BMk w, a p × 2k−1
+
+matrix from Equation 10, such that 
+
+BMk w(r, :) = X 
+
+> j∈S (Mkw,(nz( c)) (r))
+
+eTj (19) where r ∈ { 1, . . . , p }, p = |nz( c)|, and (nz( c)) (r)
+
+is the r-th element of the set nz( c). If no suit-able partition is found or it doesn’t exist, then 
+
+BMk w(r, :) = X  
+
+> j∈S (Mkw,Rw(r))
+
+eTj (20) where p = |R w|, and Rw(r) is the r-th element of the set Rw.4. Solve the linear system 
+
+c = BMk wNky (21) where y = exp (Mk (iΦw )) . It is of note that 
+
+BMk wNk is a matrix of size p × 2k−1. Clearly, 
+
+p ≤ 2k−1 and when all components of w are distinct, p = 2 k−1 and BMk w = I (Identity ma-trix because no rows can be collapsed into other as all elements of Mkw are distinct). (a) Case-I : BMk w = I In this case, BMk wNk = Nk and Nk =˜P ( 1√2 H)⊗k−1 =⇒ N −1 
+
+> k
+
+=(√2H)⊗k−1 ˜P T where ˜P is a permu-tation matrix defined in Proposition III.4. This follows directly from the orthogonality and symmetric property of rows of 1√2 H.(b) Case-II : BMk w̸ = I In this case, BMk wNk
+
+is an under-determined system and there are infinitely many solutions. In any case, a solution exists and let us denote it by b = exp (Mk (iΦw )) . If the polynomial is real, then b = cos (Mk (Φw )) (This follows from taking out the real parts in Theorem III.6). If the poly-nomial is purely imaginary, b = i sin (Mk (Φw )) .For the sake of simplicity, we stick to real poly-nomials since the complex case will follow sim-ilarly. 
+
+Algorithm 1 Approximating a real polynomial of degree d with WQSP 
+
+Provided: Polynomial P (x) ∈ R[x] such that P (x) sat-isfies conditions of Corollary III.10 and deg P (x) = d
+
+(WLOG, d is even), P (x) = cdTd + cd−2Td−2 + . . . + c0T0
+
+and precision parameter ϵ
+
+Input: k ∈ N, and weight vector w ∈ Nk such that 
+
+w1 ≥ . . . ≥ wk and Pkj=1 wj = d.
+
+Output: Phase vector Φ w ∈ Rk such that U WQSP  
+
+> Φw
+
+(x) = 
+
+Qkj=1 Rz (ϕj )U (x)wj
+
+ 
+
+> 1:
+
+procedure (WQSP Polynomial Fitting)  
+
+> 2:
+
+c → (cd, c d−2, . . . , c 0)T . 
+
+> 3:
+
+nz( c) → ∅  
+
+> 4:
+
+for j = d; d = d − 2; d ≥ 0 do  
+
+> 5:
+
+if cj̸ = 0 then  
+
+> 6:
+
+nz( c) → nz( c) ∪ { j} 
+
+> 7:
+
+Rw → ∅  
+
+> 8:
+
+Construct Mk , N k , L k 
+
+> 9:
+
+Calculate Mk w 
+
+> 10:
+
+for j = 1; j + +; j ≤ 2k−1 do  
+
+> 11:
+
+Rw → R w ∪ {| eTj Mk w|}  
+
+> 12:
+
+if nz( c) = Rw then  
+
+> 13:
+
+p → | nz( c)| 
+
+> 14:
+
+BMk w → O 
+
+> 15:
+
+for r = 1 , r + + , r ≤ p do  
+
+> 16:
+
+Construct S(Mk w, nz( c)(r)) 
+
+> 17:
+
+Construct BMk w (r, :) from Eq. 19  
+
+> 18:
+
+else  
+
+> 19:
+
+p → |R w | 
+
+> 20:
+
+BMk w → O 
+
+> 21:
+
+for r = 1 , r + + , r ≤ p do  
+
+> 22:
+
+Construct S(Mk w, Rw (r))  
+
+> 23:
+
+Construct BMk w (r, :) from Eq. 20  
+
+> 24:
+
+Solve for y the system c = BMk w Nk y in Eq. 21.  
+
+> 25:
+
+y → b 
+
+> 26:
+
+Solve for Φw the system Mk Φw = arccos b in Eq. 22.  
+
+> 27:
+
+if Equation 22 is not consistent then  
+
+> 28:
+
+Use Least Squares to Solve Eq. 22  
+
+> 29:
+
+Φw → Φw LS  
+
+> 30:
+
+Construct cLS from Eq. 21 and PLS (x).  
+
+> 31:
+
+if ∥P (x) − PLS (x)∥L2 ≤ ϵ then  
+
+> 32:
+
+Break  
+
+> 33:
+
+else  
+
+> 34:
+
+Choose another k, w
+
+5. From b = cos (Mk (iΦw )) we get 
+
+MkΦw = arccos b (22) which needs to be solved. 13 However, it is easy to observe that Equation 22 defines an overdetermined system since Mk has size 2k−1 × k. Consequently, an exact solution need not exist unless Equation 22 is consistent. At first glance, this may suggest that WQSP is restrictive. How-ever, one may instead solve Equation 22 in the least-squares sense to obtain an approximate solution and reconstruct a polynomial PLS (x). We illustrate this through Algorithm 1 It is worth noting that Algorithm 1 applies analo-gously for odd d, in which case the iteration termi-nates at d = 1. Further, it is interesting to notice that Equation 22 becomes consistent in the case of QSP. We show that, by appropriately choosing in-teger weights, one can recover behavior analogous to QSP while achieving the same polynomial realization using significantly shallower circuits. Further, we de-rive an upper bound on the distance between P (x)and PLS (x). 
+
+2. WQSP Error Bounds for Polynomial Fitting Algorithm 
+
+In this section, we derive error bounds for deter-ministic algorithm to extract the phase vectors in WQSP used in the realization of real-valued poly-nomials. The complex-valued case follows analo-gously. We further show that, by choosing appro-priate weight functions in WQSP, exact polynomial realization can be achieved in certain cases with fewer parameters compared to QSP. For arbitrary weights, we show that the approximation error becomes neg-ligible whenever the polynomial coefficients are suffi-ciently small. Let us consider k ≥ 2 ∈ N, and denote ν = 2 k−1.From Equation 21, consider 
+
+W = N −1 
+
+> k
+
+B†  
+
+> Mkw
+
+(23) where B†  
+
+> Mkw
+
+is the Moore-Penrose pseudo-inverse [39] of BMk w defined as 
+
+B†  
+
+> Mkw
+
+= BTMk w(BMk wBTMk w)−1
+
+Indeed, the pseudo-inverse provides a least square so-lution of the Equation 21. Further we know from Proposition III.4 that Nk = ˜P ( 1√2 H)⊗k−1. Hence, 
+
+N −1 
+
+> k
+
+= ( √2H)⊗k−1 ˜P T . Clearly, from the discussions so far ∥∥ op be the operator norm. Then 
+
+∥W ∥op ≤ ∥ (√2H⊗k−1)∥op ∥ ˜P T ∥op ∥B† 
+
+> Mkw
+
+∥op ≤ √ν
+
+Moreover, since, we are dealing with real polyno-mials, 
+
+c = BMk wNky
+
+where y = cos Mk Φw leads to 
+
+MkΦw = arccos W c (24) The phases of WQSP is given by y = MkΦw
+
+and we know from Lemma III.2 that Mk is of size 
+
+ν × k and typically k ≪ ν and Φw ∈ Rk is the un-derlying phase vector. By definition, a phase vec-tor is admissible (i.e. the system is consistent) if 
+
+∃Φw such that y = MkΦw. But the set of all vectors of the form MkΦw is precisely the column space of 
+
+Mk. Hence the admissible phase vectors are exactly lie col( Mk). Thus, given a vector y ∈ Rν , the recon-struction problem consists of finding the admissible vector closest to y in the Euclidean norm. This is done through solving the least–squares problem 
+
+min   
+
+> Φw∈Rk
+
+∥y − Mk Φw ∥22 = min   
+
+> Φw∈Rk
+
+∥ arccos Wc −Mk Φw ∥22.
+
+(25) 
+
+where the unique minimizer is 
+
+ΦLS  
+
+> w
+
+= ( M Tk Mk)−1M Tk y = M † 
+
+> K
+
+y,
+
+and the corresponding reconstructed vector is 
+
+yLS = MkΦLS  
+
+> w
+
+= PMk y, (26) where PMk = Mk(M Tk Mk)−1M Tk is the orthogonal projector onto col( Mk). This leads to the correspond-ing polynomial PLS (x). If y ∈ col( Mk), then the system becomes consistent and there exists Φw such that y = MkΦw. Hence, the least–squares resid-ual vanishes and we get PMk y = y. Consequently, 
+
+W c = cos (Mk Φw ) exactly, and therefore the error is zero. This leads to the following theorem. 
+
+Theorem IV.1. Let WLOG, P (x) ∈ R[x], P (x) = 
+
+cdTd(x) + cd−2Td2 (x) + . . . + c0T0, |P (x)| ≤ 1 be an even parity polynomial which is also a linear sum of Chebyshev polynomials with coefficients c. Let w ∈
+
+Nk be a suitable weight vector such that nz( c) ⊆ R w
+
+and ν = 2 k−1. Further, let ΦLS  
+
+> w
+
+be the least square solution to the problem defined in Equation 25 such that yLS = MkΦLS  
+
+> w
+
+and cLS = BMk wNkyLS and de-note PLS (x) = cLS  
+
+> d
+
+Td + cLS 
+
+> d−2
+
+Td−2 + . . . + cLS 0 T0 to be the constructed polynomial through the Least-Squares problem in Algorithm 1. If DP P LS be the distance between P and PLS , then 
+
+D2 
+
+> P P LS
+
+≤ 2π∥BMk w∥2
+
+> op
+
+(∥c∥22 + C(ρ)2).
+
+where, C(ρ) := sup |x|≤ ρ |r(x)| such that r(x) := arccos( x) − π 
+
+> 2
+
++ x, and ρ := ∥W c∥∞ such that W
+
+is defined in Equation 23. 
+
+Proof: From standard theory of Chebyshev poly-nomials, 
+
+D2 
+
+> P P LS
+
+= ∥P (x) − PLS (x)∥2 
+
+> L2
+> ω
+
+(27) 14 =
+
+Z 1
+
+> −1
+
+1
+
+√1 − x2 (P (x) − PLS (x)) 2dx 
+
+= π(c0 − cLS 0 )2 + π
+
+2
+
+X
+
+> j≥1
+
+(cj − cLS  
+
+> j
+
+)2
+
+= ∥c − cLS ∥2
+
+> L2
+> ω
+
+where ∥∥ L2 
+
+> ω
+
+is the weighted L2 norm[40]. Clearly, 
+
+∥c − cLS ∥2
+
+> L2
+> ω
+
+≤ π∥c − cLS ∥22 and thus 
+
+D2 
+
+> P P LS
+
+≤ π∥c − cLS ∥22. (28) . Now, from Equation 21, 
+
+c − cLS = BMk wNk(cos y − cos yLS )Now, 
+
+∥BMk wNk cos y ∥22 = ∥BMk w ˜P ( 1
+
+√2 H)⊗k−1 cos y ∥22
+
+∥BMk w∥2
+
+> op
+
+∥ ˜P ∥2
+
+> op
+
+∥( 1
+
+√2 H)⊗k−1 cos y ∥22
+
+≤ 1
+
+ν ∥BMk w∥2
+
+> op
+
+∥ cos y ∥22
+
+where ˜P is a permutation defined in Proposition III.4. Thus, 
+
+D2 
+
+> P P LS
+
+≤ π∥c − cLS ∥22 ≤ πν ∥BMk w∥2
+
+> op
+
+∥ cos y − cos yLS ∥22.
+
+. Now cosine is Lipschitz-1 continuous and therefore, 
+
+∥ cos y − cos yLS ∥22 ≤ ∥ y − yLS ∥22.
+
+Now, from definition of yLS in Equation 26, we have 
+
+y − yLS = ( I − PMk w)y (29) =⇒ D2 
+
+> P P LS
+
+≤ πν ∥BMk w∥2
+
+> op
+
+∥(I − PMk )y∥22
+
+Further, from Equation 24, 
+
+y = arccos W c = π
+
+2 1 − W c + r(W c)where W = N −1 
+
+> k
+
+B†  
+
+> Mkw
+
+as defined in Equation 23 and 1 is the all one vector. From the construction of 
+
+Mk, clearly, 1 ∈ col( Mk). Thus, ( I − PMk w)1 =0 as PMk = Mk(M Tk Mk)−1M Tk is the orthogonal projector onto the column space col( Mk). Furthe-more, Since PM is an orthogonal projection, I − PMk
+
+is also an orthogonal projection (onto col( Mk)⊥). Therefore, ∥I − PMk ∥op = 1. Hence, (I − PMk )y = −(1 − PMk )W c + ( I − PMk )r(W c)Taking norms and using the fact that ∥I − PMk ∥op =1, we get 
+
+∥(I − PMk )y∥2 = ∥W c∥2 + ∥r(W c)∥2
+
+Squaring both sides and using the fact that ∥a+b∥22 ≤
+
+2∥a∥22 + 2 ∥b∥22, we get, 
+
+∥(I − PMk )y∥22 = 2 ∥W c∥22 + 2 ∥r(W c)∥22
+
+Now, from the definition of W in Equation 23 and Lemma III.5, we see ∥W c∥22 ≤ ν∥c∥22
+
+Also, a simple check shows that |r(( W c )j )| ≤
+
+C(ρ)∀j, and thus we obtain 
+
+∥r(W c )∥22 =
+
+> n
+
+X
+
+> i=1
+
+|r(( W c )i)|2 ≤ νC (ρ)2.
+
+Hence 
+
+∥(I − PM )y∥22 ≤ 2ν∥c∥22 + 2 νC (ρ)2.
+
+Plugging this in Equation 29, the result follows im-mediately. □
+
+Remark IV.2. 1. Theorem IV.1 give the exact same result for odd parity polynomials where 
+
+Tj starts from T1 instead of T0. Further, for a complex polynomial P (x) ∈ C[x], we write 
+
+P (x) = A(x) + iB (x) where A(x), B (x) ∈ R[x].In such cases, we apply Theorem IV.1 to A and 
+
+B and using triangle inequalty, we get D2 
+
+> P P LS
+
+≤
+
+D2 
+
+> AA LS
+
++ D2 
+
+> BB LS
+
+.2. Assume that ∥c∥∞ = ν−1 = 12k−1 . ∥W c∥∞ ≤∥W c∥2 ≤ ∥ W ∥op ∥c∥2 ≤ √ν∥W ∥op ∥c∥∞ = 1 .Recall that C(ρ) = sup |x|≤ ρ arccos( x) − π 
+
+> 2
+
++ x
+
+where r(x) = arccos( x) − π 
+
+> 2
+
++ x and ρ := 
+
+∥W c∥∞. Since r′(x) = 1 − 1√1−x2 ≤ 0, the ex-trema on [−1, 1] occur at the endpoints. Thus 
+
+r(1) = 1 − π 
+
+> 2
+
+and r(−1) = π 
+
+> 2
+
+− 1, so C(1) =  
+
+> π
+> 2
+
+− 1. Therefore C(∥W c∥∞) ≤ π 
+
+> 2
+
+− 1. Thus 
+
+D2 
+
+> P P LS
+
+≤ 2π∥B∥2
+
+> op
+
+ 1
+
+n +
+
+ π
+
+2 − 1
+
+2
+
+.
+
+Assuming, all w components are unique implies 
+
+BMk = I and DP P LS ∼ O(1) .3. However, if we assume BMk = I and ∥c∥∞ =
+
+ν−1−m, for some m > 0. Then , so ∥W c∥∞ ≤
+
+ν−m.Using the expansion r(x) = arccos( x) − π 
+
+> 2
+
++
+
+x = − x3 
+
+> 6
+
++ O(x5), we have for small ρ that 
+
+C(ρ) = O(ρ3), hence C(∥W c ∥∞) = O(ν−3m)
+
+and C(∥W c ∥∞)2 = O(ν−6m).15 
+
+Also, ∥c∥22 ≤ ν∥c∥2 
+
+> ∞
+
+≤ ν · ν−2−2m = ν−1−2m.Therefore, 
+
+D2 ≤ 2π( ν−1−2m + O(ν−6m) .
+
+Hence, for any coefficient vector |c| whose com-ponents are bounded above by 21−k−m for some 
+
+m ≥ 0, and for distinct weight components in 
+
+w ∈ Nk, WQSP provides a sufficiently accurate approximation of the target polynomial. This observation becomes particularly useful for high-degree polynomials expressed as lin-ear combinations of a large number of Cheby-shev polynomials, where finding an appropri-ate weight-vector partition can become compu-tationally expensive. In such cases, one may choose the weight vector (1 , 2, 3, . . . )T for even-parity polynomials. For odd-parity polynomi-als of large degree, one may instead choose the weights (1 , 1, 2, 3, . . . )T . This construction yields a quadratic reduction in the number of parameters while maintaining relatively small approximation errors. 4. When k = 2, then Mk =
+
+1 11 −1
+
+
+
+i.e. 
+
+col( M2) = R2 i.e. the column space of M2
+
+spans entire R2. Thus for any y, PMk y = y.Hence, (I − PM2 )y = 0 and thus DP P LS = 0 .This is very significant and show cases a pri-mary advantage of WQSP to QSP. We shall demonstrate with an example. 
+
+Example: Let P (x) ∈ R[x] be a fixed parity polynomial such that P (x) = c1Tn1+n2 (x) + 
+
+c2Tn1−n2 (x) for a large n = n1 + n2. In the regime of QSP, as seen from [1], in or-der to calculate the phases, an algorithm of 
+
+O(4 n2) is required. This is because finding out angles of QSP works in normal basis unlike Chebyshev. However, for WQSP, we choose the weight w = [ n1, n 2]T because the Rw = {n1 +
+
+n2, n 1 − n2}. In such case, N2 = 12
+
+1 11 −1
+
+
+
+M2Φw =
+
+ϕ1 + ϕ2
+
+ϕ1 − ϕ2
+
+
+
+. Thus, and we solve for 
+
+N2
+
+cos ( ϕ1 + ϕ2)cos ( ϕ1 − ϕ2)
+
+
+
+=
+
+c1
+
+c2
+
+
+
+. This generates the solution ϕ1 =arccos ( c1 + c2) + arccos ( c1 − c2) and ϕ2 =arccos ( c1 + c2) − arccos ( c1 − c2) and thus WQSP produces an exact solution. The conver-sion from a standard polynomial to a Chebyshev basis can be done using Fast Chebyshev Trans-formation [41–43] with complexity O(n log n)
+
+and thus WQSP proves advantageous in such cases. If the polynomial presents itself in a Chebyshev basis from the start, this takes O(1) 
+
+operations. 5. It is of note that in Theorem IV.1, when we consider the QSP framework i.e when w = 1,the system of equations described in Equation 24, after obtaining from Equation 21 becomes consistent. This means for a polynomial fitted through QSP regime, ∃Φw such that 
+
+BMk 1Nk cos Mk Φw = c
+
+In such cases, DP P LS = 0 since the least square turns zero due to the system being consistent. This is due to the fact that the elements of Φw
+
+can be calculated from the leading terms of P (x)
+
+repeatedly using the method mentioned in [1]. 6. Since WQSP’s efficacy depends on the choice of weights, a good choice is always to choose a partition or the weight vector w, such that the resultant system 
+
+BMk 1Nk cos Mk Φw = c
+
+resembles a QSP system in order to get a per-fect fit. In other words, by choosing appro-priate weights, one can map a WQSP prob-lem of large degree polynomials into a QSP set-ting of smaller degree polynomials. We illus-trate this with an example. Example: Let us take a real polynomial of degree 8 such that 
+
+P (x) = c0T1 + c4T4 + c8T8. Then If we con-sider the weight vector to be (2 , 2, 2, 2) Then 
+
+BMk wNk
+
+| {z }
+
+> AW QSP
+
+= 18
+
+1 0 0 0 0 0 0 0 0 1 1 0 1 0 1 0 0 0 0 1 0 1 0 1 
+
+ Nk.
+
+A simple matrix calculation shows that 
+
+BMk wNk derived for this problem (denoted as AW QSP ) is permutationally similar to the matrix BMk wNk derived for the problem of fitting Q(x) = c0T0 + c2T2 + c4T4 through QSP (denote it as AQSP ) i.e. AW QSP = P1AQSP P2
+
+for some permutations P1 and P2. Thus for 
+
+w = (2 , 2, 2, 2) , P (x) can be exactly fitted using WQSP. In Figure 1, we demonstrate exactly this fact by choosing c0, c 4, c 8 from uniform distribution [−1/8, 1/8] since |P (x)| ≤ 1 must be satisfied. This shows that QSP has a lot of redundant parameters. Further, for B-splines as well, the total number of parameters= G + d
+
+where G number of internal grid intervals/knot vectors. Hence, WQSP can exactly fit poly-nomials with lesser number of parameters 16 
+
+compared to QSP and B-splines. This results in design of shallower quantum circuits with lower depth and gate complexity which is useful for modern era quantum systems. 7. It has also been observed that for other choices of w such that Mkw contains more than one repeated element (excluding the first compo-nent), an exact solution is obtained in most cases. To study this phenomenon, we con-ducted experiments on polynomials of degree d
+
+ranging from 3 to 15 . For each weight par-tition of each degree, approximately 500 sam-ples were generated, where the coefficients were drawn independently from the uniform distribu-tion U [−1/d, 1/d ].A possible explanation for this behavior lies in the effective degrees of freedom induced by the non-zero coefficients in the Chebyshev ba-sis expansion. For example, the polynomial 
+
+P (x) = c1T1 + c3T3 + c5T5 + c7T7 contains four independent coefficients and therefore requires at least four effective degrees of freedom in the 
+
+Rz parameters. The weight partition (3 , 2, 1, 1) 
+
+provides exactly this degree of freedom, result-ing in zero error (up to floating-point preci-sion). A similar phenomenon is observed for partitions such as (2 , 2, 2, 1) and (3 , 1, 1, 1, 1) ,since these also satisfy the minimum degree-of-freedom threshold. In Figure 2, we present an instance of the same phenomenon for a ran-domly generated polynomial of degree 7 with dif-ferent weight partitions. In contrast, partitions such as (4 , 2, 1) exhibit relatively larger approximation errors of order 
+
+O(10 −2)–O(10 −1), since the available degrees of freedom are insufficient. Nevertheless, the bound established in Theorem IV.1 remains sat-isfied in all such cases. Another perspective on this phenomenon is through a factorized representation of the poly-nomial. Suppose the polynomial P (x) admits a decomposition of the form P (x) = Q
+
+> j,l
+
+(cj Tj +
+
+dlTl) for suitable j, l ∈ N with same parity. In such cases, exact solutions can be obtained for each factor (cj Tj + dlTl) individually, fol-lowing the arguments developed above, and the construction can then be extended recursively across all such factors. For example, standard QSP implicitly exploits the fact that parity-constrained complex poly-nomials admit recursive constructions built from lower-order Chebyshev components such as (cj T2 + dlT0) or (cj T3 + dlT1). Since ex-act solutions can be generated for each pair of coefficients, exact realization of the overall poly-nomial follows. However, obtaining such factorizations in prac-tice is generally difficult, making it computa-tionally expensive to identify weight partitions other than those arising from standard QSP that also admit exact polynomial realization. For example, consider a polynomial of the form 
+
+P (x) = ( c50 T50 + c32 T32 )( c12 T12 + c2T2). In this case, the weight vector (41 , 9, 7, 5) yields an exact realization. By contrast, implement-ing the same polynomial using standard QSP would require deeper circuits, more parameters, and consequently longer execution times. 
+
+As stated previously, for very high-degree polyno-mials, finding a suitable weight partition becomes computationally expensive. Moreover, standard QSP itself becomes difficult to implement due to the in-creased circuit depth and the O(d2) complexity re-quired to recover the phase vector Φ. In such cases, we consider w = (1 , 2, 3, . . . ) ∈ Rk for even-parity polynomials and w = (1 , 1, 2, 3, . . . ) ∈ Rk for odd-parity polynomials. Since P 
+
+> j
+
+wj = d, it follows that 
+
+k ≈ Θ( √d). From this perspective, WQSP intro-duces a weight vector as a preprocessing step in the classical encoding stage. Alternatively, if the weights are chosen as wj = 2 j for all j ∈ 1, . . . , k and the degree of P (x) is d, then d ≤ Pkj=1 2j , which im-plies k = Θ(log 2 d). In both cases, the polynomial is converted into a linear combination of Chebyshev polynomials. Further, since d is large, the coefficients satisfy |c|∞ ≤ 12k−1 , and therefore, by Theorem IV.1, WQSP achieves quadratic to exponential reductions in the number of parameters and consequently in cir-cuit depth while incurring only bounded approxima-tion error. For smaller values of ∥c∥∞, the approxi-mation error converges rapidly to 0, making WQSP highly efficient. Table I illustrates these trade-offs. By selecting WQSP weights that reduce the num-ber of trainable parameters exponentially relative to QSP, WQSP achieves approximation errors on the order of 10 −2 while requiring exponentially fewer pa-rameters, in contrast to QSP, which attains machine-precision accuracy at a substantially higher parame-ter cost. The deterministic method described so far provides deeper theoretical insight into QSP and WQSP. How-ever, it becomes computationally infeasible for large systems, as it requires solving two linear systems. Hence, we present a learning-based approach that re-mains computationally tractable while satisfying the guarantees established in Theorem IV.1. 17      
+
+> (a) Error from WQSP based approximation with pruned circuit and weight vector (2 ,2,2,2)
+> (b) Error from QSP based approximation
+
+Figure 1. WQSP fitting of a real 8 degree target polynomial P (x) = c1T0 + c2T4 + c3T8 with weight partition (2 , 2, 2, 2) and whose coefficients are randomly generated. The WQSP fitting in 1a is compared with the standard QSP fitting as depicted 1b. Table I. Univariate polynomial approximation: Comparison of QSP and WQSP across different polynomial degrees. QSP requires d + 1 phase parameters per parity component, resulting in 2 d + 1 total phases to approximate the even and odd components using separate circuits. In contrast, WQSP uses only 2 ⌈log 2(d)⌉ + 1 trainable parameters. For each polynomial degree d, the results are averaged over 40 randomly generated polynomials with coefficients sampled independently from the uniform distribution U [−1/d, 1/d ]. For example for degree 5 polynomial, the following partitions were chosen: Odd (1,1,1,2); Even (1,1,2). For degree 9: Odd (1,1,1,2,4); Even (1,1,2,4) and so on. 
+
+Polynomial Degree ( d) QSP RMSE WQSP RMSE QSP Parameters WQSP Parameters 
+
+5 1.61 × 10 −16 3.01 × 10 −2 11 710 7.61 × 10 −6 6.91 × 10 −3 21 915 4.07 × 10 −5 7.59 × 10 −3 31 920 2.16 × 10 −7 7.03 × 10 −2 41 11 25 6.82 × 10 −9 6.61 × 10 −2 51 11 30 1.65 × 10 −7 5.65 × 10 −2 61 11 35 1.82 × 10 −7 6.09 × 10 −3 71 13 
+
+3. WQSP in a quantum neural network framework 
+
+In WQSP, so far we have seen that one can solve two linear systems to get the solutions. In QSP as well, a O(d2) algorithm is required to construct the vector Φw. Thus, most literature [11, 14, 44] involv-ing QSP, researchers while implementing the code take a heuristic/ optimization approach in searching for suitable phase vector Φ for the problem min Φw ∥P (x) − Re( ⟨0| U QSP Φ (x) |0⟩)∥L2 (30) = min Φw
+
+sZ 1
+
+> −1
+
+(P (x) − Re( ⟨0| U QSP Φ (x) |0⟩)) 2dx 
+
+i.e. calculating from Root Mean Square Error (RMSE). This alleviates the need to repeatedly per-form extensive angle constructions using leading co-efficients and matrix multiplications by instead for-mulating the determination of Φ as an optimization problem. Techniques such as Nelder-Mead, Gradient Descent[39], Levenberg-Marquardt [37] etc., can then be employed to solve it. This establishes a framework in which the underlying algorithm is learned through optimization rather than derived through a purely deterministic procedure. Such an approach is partic-ularly valuable for learning unknown polynomial rep-resentations for a given problem, while also enabling the fitting of predefined polynomials. Consequently, this framework becomes highly useful for generating 18   
+
+> (a) (b)
+> (c) (d)
+
+Figure 2. WQSP fitting of a real 7 degree target polynomial (fixed odd parity) with different weight partitions whose coefficients are randomly generated. In 2a and 2b the weight partitions are respectively (3 , 2, 1, 1) and (2 , 2, 1, 1, 1) whose weight vector lengths are greater than or equal to the coefficient vector length and thus the necessary degrees of freedom are achieved. For 2c, we have the QSP case which produces an error of a similar order compared to 2a and 2b. In 2d, we see that the weight vector length is less than the coefficient vector length and thus such a setup doesn’t cross the degrees of freedom which incurs a higher error. 
+
+activation functions, which are fundamental compo-nents of Kolmogorov-Arnold Networks[21]. We note that it is easy to check for x ∈ [−1, 1], ∥.∥2 
+
+> L2
+
+≤ ∥ .∥Lω
+
+(as defined in Theorem IV.1), so Theorem IV.1 holds. This is also illustrated in Figure 3, where WQSP ap-proximation error with in O(10 −2/10 −3) has been shown to be achievable with significantly less param-eters compared to QSP. We incorporate the same approach in the WQSP regime i.e. we find Φw for a suitable weight parti-tion w such that we solve the following minimization problem. min Φw ∥P (x) − Re( ⟨0| U WQSP  
+
+> Φw
+
+(x) |0⟩)∥L2 (31) This constructs a quantum neural network frame-work where the parameter vector Φw, whose com-ponents lie interleaved with U (wj x) or Rx(wj θ) in a quantum circuit (see Equation 32) is optimized repeatedly each round until we achieve a suitable residue or error. In Figure 19 1.00 0.75 0.50 0.25 0.00 0.25 0.50 0.75 1.00     
+
+> x
+> 0.2
+> 0.1
+> 0.0 0.1 0.2
+> P(x)
+> Target QSP phases=21 RMSE=7.61e-06 WQSP phases=9 RMSE=6.91e-03
+
+(a) Degree 10 (b) Degree 15 
+
+(c) Degree 35 
+
+Figure 3. WQSP fitting results for random real polynomials of degrees 10 , 15 and 35 whose Chebyshev coefficients were independently sampled respectively from the uniform distribution U [−1/11 , 1/11] , U [−1/16 , 1/16] and U [−1/36 , 1/36]. For both QSP and WQSP, the polynomial was first broken into odd and even components and the corresponding approx-imation errors were added up. The weight vectors for WQSP are chosen for degree 10 : [2 , 2, 2, 4](even part),[1 , 2, 2, 4] (odd part). For degree 15 : [1 , 2, 4, 8](odd part), [1 , 1, 4, 8] (even part). For degree 35 : [1 , 2, 2, 2, 4, 8, 16](odd part), [2 , 2, 2, 4, 8, 16](even part). 
+
+U (wkx) Rz (ϕk) . . .. . . U (w1x) Rz (ϕ1)(32) For complex polynomials, the problem is modified to min Φw ∥P (x) − (⟨0| U WQSP  
+
+> Φw
+
+(x) |0⟩)∥Lω = (33) min Φw
+
+sZ 1
+
+> −1
+
+1
+
+√1 − x2 |P (x) − ⟨ 0| U WQSP  
+
+> Φw
+
+(x) |0⟩ | 2dx 
+
+.In Figure 4, we employed the method using Levenberg–Marquardt optimization on the parame-ters for 14-degree and 10-degree polynomials whose coefficients were sampled uniformly from [ −1/8, 1/8] and [ −1/6, 1/6], respectively, in order to satisfy the boundedness property of the polynomials. We then applied the proposed framework, incorporating the Levenberg–Marquardt method, to approximate these polynomials through WQSP. For each optimization run, 20 random restarts were performed from dif-ferent initial points, and the run achieving the least error was selected. The resulting errors were then averaged over each partition. The figure illustrates that WQSP can efficiently approximate polynomials using significantly fewer parameters than standard QSP, indicating that QSP contains substantial pa-rameter redundancy that can be pruned without no-ticeably affecting the approximation performance of the resulting circuit. We validate the WQSP framework through numeri-cal simulations by training WQSP circuits to approxi-mate univariate polynomial target functions. To eval-uate approximation performance across a broad func-tion class, we generate 100 random target polynomi-20    
+
+> (a) (b)
+> Figure 4. WQSP fitting error across all partitions for a real degree-14 (4a) and degree-10 (4b) polynomial. Polynomial coefficients were generated by uniformly sampling from [ −1/8,1/8] and [ −1/6,1/6], respectively, and approximated using WQSP. Phase parameters were optimized using the Levenberg–Marquardt method with 20 random restarts, and the solution achieving the lowest approximation error was reported.
+
+als and train each circuit using 100 equally spaced samples over x ∈ [−1, 1]. For degree-10 polyno-mials, the results in Figure 5 show the approxima-tion error obtained under different weight partitions. We observe that partitions whose lengths exceed the number of nonzero Chebyshev coefficients generally achieve lower approximation error, supporting the theoretical intuition that increased effective degrees of freedom improve approximation quality. Using the partition labels defined in Table II, we report the mean, median, and minimum approxima-tion errors across all 100 randomly generated degree-10 polynomials for each partition of 10 in Figure 6. We employ the least-squares solver from scipy 
+
+with the Levenberg-Marquardt optimizer, minimiz-ing the root mean square error (RMSE) between the target and approximated functions at the train-ing points as the cost function. The Levenberg-Marquardt [37] algorithm is specifically suited to nonlinear least-squares and curve-fitting tasks, and does not generalize to arbitrary machine learning ob-jectives. It switches between gradient descent and the Gauss-Newton method via an adaptive damping term, i.e. when far from a minimum, the damping term is large and the update resembles gradient de-scent, enabling large steps, whereas near a minimum, the damping term is small and the update reduces to smaller Gauss-Newton steps. The Gauss-Newton method approximates the curvature of the cost land-scape to first order by evaluating the Jacobian of the residuals (one per training point) with respect to the trainable parameters, yielding a Jacobian of size M ×
+
+N , where M is the number of parameters and N is the number of training points. Although this approach does not scale to high-parameter regimes, in the low-parameter settings characteristic of WQSP circuits simulated in this work, it is known to exhibit substan-tially faster and more reliable convergence than stan-dard gradient-descent or Nelder-Mead based optimiz-ers used in conventional ML or QML pipelines, often reaching significantly lower cost function values. This training dynamics is particularly depicted in Figure 7. In our experiments, several circuits achieved an RMSE of the order of 10 −16 , a level of precision far beyond the reach of gradient-descent-based train-ing. This learning framework implemented through WQSP not only approximates prescribed polynomi-als but also naturally extends to arbitrary continu-ous functions. In Figure 8, we provide an example of approximating the continuous function sin(2 πx )using WQSP. The choice of this function is moti-vated by its fixed parity and we consider a 9-degree polynomial representation of the function. It can be observed that standard QSP yields an exact fit along with other weight choices. However, for non-trivial weight partitions, WQSP achieves the ap-proximation using fewer parameters at the expense of higher approximation error bounded by Theorem IV.1. Consequently, the WQSP neural network ar-chitecture provides a useful foundation for training expressive neural architectures such as Kolmogorov– Arnold Networks[21]. It is evident that the optimizer does not attain machine-precision accuracy in prac-tice, despite the theoretical guarantees of exact real-ization under the proposed framework. Therefore, in-corporating more specialized phase-recovery and op-timization techniques from [11–15, 18, 20] to improve numerical precision, as well as extending the frame-work to very high-degree ancilla-free parity agnostic polynomial approximation, remains an important di-21                                  
+
+> (a) Weight=[1 ,1, . . . , 1], Mean Error= 6 .89 ×10 −5(b) Weight=[2 ,1, . . . , 1], Mean Error= 1 .14 ×10 −4
+> (c) Weight=[2 ,2,2,1, . . . , 1], Mean Error= 5 .08 ×10 −5(d) Weight=[3 ,3,1, . . . , 1], Mean Error= 6 .81 ×10 −3
+> (e) Weight=[4 ,2,2,2], Mean Error= 2 .05 ×10 −1(f) Weight=[4 ,2,2,1,1], Mean Error= 5 .21 ×10 −2
+
+Figure 5. Illustration of approximating real degree 10 polynomials using learning based WQSP under different par-titions of 10. A total of 100 random polynomials were generated by sampling Chebyshev coefficients uniformly from [−1/11 , 1/11]. For each polynomial and partition, phase optimization was performed using the Levenberg–Marquardt method with 20 random restarts, and the minimum approximation error was retained. Each subfigure is labeled by the corresponding partition, with the first subfigure representing standard QSP. 
+
+rection for future work. So far, we have discussed how to generate and approximate univariate polyno-mials and continuous functions in the WQSP regime. It is also of interest to understand how to extract these polynomials from their corresponding quantum circuits. 
+
+V. POLYNOMIAL EXTRACTION FROM WQSP CIRCUIT 
+
+It is obvious that for real polynomials, extracting them from WQSP is direct i.e. | ⟨ 0| U WQSP  
+
+> Φw
+
+|0⟩ | 2.However, for complex polynomials, the process is nontrivial because the output generates |P (x)|2,
+
+P (x) ∈ C[x] and the real part and complex part is lost. For P (x) ∈ C[x] , one needs to extract the real and imaginary components of P . We adapt the Hadamard test approach [45] where we consider the quantum circuit: 
+
+|0⟩ H • H
+
+|0⟩ U QSP 
+
+> Φ
+
+(34) This circuit in Equation 34, the matrix U QSP  
+
+> Φw
+
+acts upon the second qubit provided the first qubit is |1⟩.This qubit also acts as an ancilla. 1. We begin with the starting state |00 ⟩.2. After applying ( H ⊗I), where H = 1√2
+
+"
+
+1 11 −1
+
+#
+
+,we get |00 ⟩ → 1√2 (|00 ⟩ + |10 ⟩). 3. Then controlled-U is applied on the second qubit provided the first one is |1⟩. Hence, we get the following 1
+
+√2 (|00 ⟩ + |1⟩ U |1⟩)= 1
+
+√2 (|00 ⟩ + P (x) |10 ⟩ + ip1 − x2Q |11 ⟩).4. We further apply ( H ⊗ I) and we get the state 12 |0⟩
+
+
+
+(1 + P (x)) |0⟩ + ip1 − x2Q(x) |1⟩
+
+
+
++ 12 |1⟩
+
+
+
+(1 − P (x)) |0⟩ − ip1 − x2Q(x) |1⟩
+
+22 11 10 98765432
+
+> Number of parameters
+> 123456789
+> Local partition index 4.5
+> 4.0
+> 3.5
+> 3.0
+> 2.5
+> 2.0
+> 1.5
+> 1.0
+> 0.5
+> log  (avg RMSE)
+> 4.0
+> 3.5
+> 3.0
+> 2.5
+> 2.0
+> 1.5
+> 1.0
+> log  (avg RMSE)
+
+(a) Mean Error 11 10 98765432 
+
+> Number of parameters
+> 123456789
+> Local partition index 16
+> 14
+> 12
+> 10
+> 8
+> 6
+> 4
+> 2
+> log  (median RMSE)
+> 14
+> 12
+> 10
+> 8
+> 6
+> 4
+> 2
+> log  (median RMSE)
+
+(b) Median Error 11 10 98765432
+
+> Number of parameters
+> 123456789
+> Local partition index 16
+> 14
+> 12
+> 10
+> 8
+> 6
+> 4
+> 2
+> log  (median RMSE)
+> 14
+> 12
+> 10
+> 8
+> 6
+> 4
+> 2
+> log  (median RMSE)
+
+(c) Minimum Error 
+
+Figure 6. WQSP fitting results for real degree-10 target polynomials whose Chebyshev coefficients were independently sampled from the uniform distribution U [−1/11 , 1/11]. A total of 100 random polynomial instances were generated. For each partition of 10 (as labeled in Table II) illustrated by a bar in the figure, optimization was performed with 20 random restarts and the solution with the lowest error was retained. The reported statistics correspond to the mean 6a, median6b, and minimum 6c approximation errors across all 100 samples. All of the errors have been presented in logarithmic scale. 
+
+5. Measuring |0⟩ on the first qubit is Pr(0) = 14 ∥(1 + P (x)) |0⟩ + ip1 − x2Q(x) |1⟩ ∥ 2
+
+= 14
+
+1 + 2Re( P (x)) + |P (x)|2 + (1 − x2)|Q(x)|2
+
+| {z }
+
+=1 
+
+
+
+= 14 (2 + 2Re( P (x))) This implies Re( P (x)) = 2Pr(0) − 1For Imaginary part of P (x), one uses the quantum circuit 
+
+|0⟩ H S • H
+
+|0⟩ U QSP 
+
+Φ
+
+(35) where S =
+
+"
+
+1 00 −i
+
+#
+
+. In such a case Im( P (x)) = 2Pr(0) − 1. 23 0 250 500 750 1000 1250 1500 1750 2000           
+
+> Function evaluations (LM)
+> 10 2
+> 10 1
+> 10 0
+> RMSE
+> LM RMSE GD RMSE
+> 0500 1000 1500 2000 2500 3000
+> Epoch (GD)
+
+Figure 7. Training dynamics of QSP circuit via gradient descent (GD) and Levenberg-Marquardt (LM) for univariate polynomial approximation using a single QSP circuit. LM leads to a much faster convergence to a much smaller value 
+
+O(10 −16 ) as opposed to O(10 −4) in gradient descent. Table II. WQSP Partition Indexing 
+
+Idx Partition #Parameters Idx Partition #Parameters 
+
+1 [10] 1 22 [3 , 3, 3, 1] 42 [9 , 1] 2 23 [3 , 3, 2, 2] 43 [8 , 2] 2 24 [6 , 1, 1, 1, 1] 54 [7 , 3] 2 25 [5 , 2, 1, 1, 1] 55 [6 , 4] 2 26 [4 , 3, 1, 1, 1] 56 [5 , 5] 2 27 [4 , 2, 2, 1, 1] 57 [8 , 1, 1] 3 28 [3 , 3, 2, 1, 1] 58 [7 , 2, 1] 3 29 [3 , 2, 2, 2, 1] 59 [6 , 3, 1] 3 30 [2 , 2, 2, 2, 2] 510 [6 , 2, 2] 3 31 [5 , 1, 1, 1, 1, 1] 611 [5 , 4, 1] 3 32 [4 , 2, 1, 1, 1, 1] 612 [5 , 3, 2] 3 33 [3 , 3, 1, 1, 1, 1] 613 [4 , 4, 2] 3 34 [3 , 2, 2, 1, 1, 1] 614 [4 , 3, 3] 3 35 [2 , 2, 2, 2, 1, 1] 615 [7 , 1, 1, 1] 4 36 [4 , 1, 1, 1, 1, 1, 1] 716 [6 , 2, 1, 1] 4 37 [3 , 2, 1, 1, 1, 1, 1] 717 [5 , 3, 1, 1] 4 38 [2 , 2, 2, 1, 1, 1, 1] 718 [5 , 2, 2, 1] 4 39 [3 , 1, 1, 1, 1, 1, 1, 1] 819 [4 , 4, 1, 1] 4 40 [2 , 2, 1, 1, 1, 1, 1, 1] 820 [4 , 3, 2, 1] 4 41 [2 , 1, 1, 1, 1, 1, 1, 1, 1] 921 [4 , 2, 2, 2] 4 42 [1 , 1, 1, 1, 1, 1, 1, 1, 1, 1] 10 
+
+VI. APPLICATION OF WQSP IN KOLMOGOROV-ARNOLD NETWORKS 
+
+To showcase the applicability of WQSP in ma-chine learning architectures, we apply this approach to realize activation functions in Kolmogorov–Arnold Networks (KANs) for multivariate function approxi-mation. Kolmogorov–Arnold Networks (KANs) [21] have recently emerged as a compelling alternative 24            
+
+> (a) (b) (c)
+> (d) (e) (f)
+> (g) (h) (i)
+> Figure 8. Illustration of fitting sin(2 πx ) using WQSP. The function is approximated using a degree-9 polynomial, and several partitions of 9 are selected as weight vectors. Optimization is performed using the Levenberg–Marquardt method with 50 random restarts for each partition. The first subfigure corresponds to standard QSP and serves as the baseline error output. As observed in the subsequent subfigures, several non-trivial weight partitions achieve exact fitting as well, indicating that QSP contains substantial parameter redundancy. For more generic weight partitions, such as (3 ,3,2,1), WQSP achieves a significant reduction in the number of parameters at the cost of increased approximation error.
+
+architecture in this context. They are inspired by the Kolmogorov–Arnold Representation Theorem (KART) [22], also known as the Kolmogorov Super-position Theorem, originating from Hilbert’s 13th problem. KART states that any continuous func-tion f on a compact subset of Rn can be represented exactly as a finite superposition of continuous uni-variate functions. Motivated by this decomposition, KANs replace fixed activation functions with learn-able univariate functions defined on edges, while ag-gregation is performed at nodes. We employ WQSP to parameterize learnable activation functions within Kolmogorov–Arnold Networks (KANs), resulting in a quantum-native architecture for multivariate func-tion approximation. Each edge activation is realized as a WQSP-generated polynomial, integrating the compositional and interpretable structure of KANs with the expressive power of WQSP. It can be ob-served that WQSP-assisted KANs achieve compact, expressive, and numerically stable approximation of 25 EVEN 
+
+ODD                                
+
+> . . . . . . Rz(
+> ϕ0)U(cos (w0θ)) Rz(
+> ϕ1)U(cos (w1θ)) Rz(
+> ϕ2)U(cos (w2θ)) Rz(
+> ϕ3)U(cos (wd− 1θ)) Rz(
+> ϕd)
+> 00-1 -1 -0.5 -0.5 0.5 0.5 110.5 0.5 111.5 1.5
+
+x0  x1 
+
+h0  h1  h2 
+
+WQSP circuits Activation 
+
+function 
+
+y
+
+Figure 9. The proposed WQSP-based QKAN architecture. Each activation edge carries two WQSP circuits of depths 
+
+L and L − 1 approximating the even and odd parity components of the activation function respectively, whose outputs are summed to produce an arbitrary univariate activation. 
+
+multivariate continuous functions. For Weighted Quantum Signal Processing, one can only generate polynomials with definite parity (either even or odd). Consequently, a general function f (x) must be de-composed into its even and odd components, i.e. 
+
+f (x) = f (x) + f (−x)2 + f (x) − f (−x)2 .
+
+. The structure of WQSP-KANs is depicted in Figure 9. Having validated the univariate approximation ca-pability of QSP and WQSP, we turn to the multivari-ate setting and evaluate the full QKAN architecture on the target function 
+
+y = f (x0, x 1) (36) = exp 
+
+(
+
+− (x0 − 0.5) 2 + ( x1 − 0.5) 2
+
+0.2
+
+!) 
+
++ 0 .3( x20 − x21)
+
+which combines a Gaussian peak centered at (0 .5, 0.5) with a broad saddle region. We employ WQSP-assisted KANs with degree-10 polynomial activa-tions, realized by WQSP circuits whose signal opera-tor weights correspond to all 42 different integer par-titions of 10. Since the function is bivariate, we con-sider a [2 , 3, 1] architecture i.e. the architecture has two input nodes x0 and x1, three hidden nodes, and one output node y, giving 9 activation edges in total. The number of trainable parameters per activation is kept equal across all architectures, namely, 2 L where 
+
+L is the length of the weight vector for WQSP. This yields a total of 18 L parameters per model. The QKAN parameters are randomly initial-ized and trained jointly using Levenberg-Marquardt method across all 9 edges simultaneously with 20 restarts and with the training residual set to the full network output. This joint optimization allows LM to account for the coupling between activations that arises from the summation and normalization opera-tions at each hidden node. The number of training points is set to 18 L + 10 in all cases. In Figure 10, we approximate the target function shown in Figure 10(a), defined in Equation 36, using a WQSP-assisted KAN with degree-10 polynomial ac-tivations. The WQSP-KAN at d = 10 visually cap-tures the broad structure of the target function, in-cluding the Gaussian peak and saddle region, with a relatively smooth and consistent surface. The point-wise error surface reveals that the largest residuals occur near the boundary, while the saddle region is approximated with lower error. The WQSP-QKAN for weight [3 , 3, 2, 1, 1] i.e L = 5 requires only 90 total parameters compared to 198 parameters for the base QSP-QKAN and produces a better result with er-ror of magnitude O(10 −1.2), along with other weight partitions as illustrated in Figure 11. In these exper-iments, we naively assume that all activation poly-nomials have the same degree. Exploring optimal network architectures and heterogeneous degree as-signments tailored to a given target function is left for future work. Thus, we observe that WQSP also proves to be an effective tool for integration into machine learning frameworks such as Kolmogorov–Arnold Networks. Its ability to represent expressive polynomial activa-tions using significantly fewer trainable parameters enables compact models for multivariate function ap-proximation. This highlights the broader applica-bility of WQSP beyond polynomial approximation, positioning it as a promising primitive for develop-ing scalable quantum-inspired learning architectures with reduced parameter complexity. 26 1.00  
+
+> 0.75
+> 0.50 0.25
+> 0.00 0.25 0.50 0.75 1.00
+> x1.00
+> 0.75
+> 0.50
+> 0.25
+> 0.00 0.25 0.50 0.75 1.00
+> y
+> 1.00
+> 0.75
+> 0.50
+> 0.25
+> 0.00 0.25 0.50 0.75 1.00
+> f(x,y)
+> 1.0
+> 0.5
+> 0.0 0.5 1.0
+
+(a) Target function 1.00   
+
+> 0.75
+> 0.50 0.25
+> 0.00 0.25 0.50 0.75 1.00
+> x1.00
+> 0.75
+> 0.50
+> 0.25
+> 0.00 0.25 0.50 0.75 1.00
+> y
+> 1.00
+> 0.75
+> 0.50
+> 0.25
+> 0.00 0.25 0.50 0.75 1.00
+> approx
+> 0.5
+> 0.0 0.5
+
+(b) WQSP-KAN based approximation 1.00  
+
+> 0.75
+> 0.50 0.25
+> 0.00 0.25 0.50 0.75 1.00
+> x1.00
+> 0.75
+> 0.50
+> 0.25
+> 0.00 0.25 0.50 0.75 1.00
+> y
+> 0.000 0.025 0.050 0.075 0.100 0.125 0.150 0.175 0.200
+> |error|
+> 0.05 0.10 0.15
+
+(c) Point-wise Error 
+
+Figure 10. Multivariate function approximation by a WQSP-QKAN with weight vector chosen to be [3 , 3, 2, 1, 1] i.e. every activation function is naively assumed to be a degree 10 polynomial. 
+
+VII. CONCLUSION 
+
+In this work, we addressed a major bottleneck of QSP namely, the growth in circuit depth and param-eter count required for approximating high-degree polynomials. To overcome these limitations, we in-troduced Weighted Quantum Signal Processing, astructured extension of Quantum Signal Processing that incorporates fixed per-layer weights into the sig-nal operators. When the weights are natural numbers greater than 1, WQSP behaves as a pruned variant of QSP This modification enables the realization of higher-degree polynomial transformations while re-quiring significantly fewer trainable parameters. We showed that polynomial approximation in WQSP, and consequently in QSP, reduces to solving two linear systems. Furthermore, we demonstrated that with an appropriate choice of weights, WQSP can achieve performance comparable to QSP while requiring fewer parameters and consequently shal-lower quantum circuits. Our analysis revealed that QSP contains a substantial degree of parameter re-dundancy, whereas WQSP serves as a gate-count-and circuit-depth-optimized realization of QSP. We attributed this reduction in gate count to the effec-tive degrees of freedom induced by the nonzero co-efficients of the target polynomial in the Chebyshev basis. We further observed that if the partition in-27 40 60 80 100 120 140 160 180           
+
+> Total QKAN parameters
+> 10 1
+> RMSE
+> QSP [1, 1, ..., 1]
+> 46810 12 14 16 18 20
+> Parameters per activation
+> 46810 12 14 16 18 20 21
+> Parameters per activation
+
+(a) Approximation Error: WQSP-KAN 189 180 162 144 126 108 90 72 54 36  
+
+> Total QKAN parameters
+> 123456789
+> Local partition index 1.4
+> 1.2
+> 1.0
+> 0.8
+> 0.6
+> 0.4
+> 0.2
+> log  (RMSE)
+> 1.2
+> 1.0
+> 0.8
+> 0.6
+> 0.4
+> log  (RMSE)
+
+(b) WQSP-KAN based approximation: partition based classification 
+
+Figure 11. (a) RMSE vs. parameter count for a [2 , 3, 1] QKAN with degree 10 activations using WQSP across all integer partitions of 10. Several partitions match or outperform QSP with fewer parameters. (b) 3D bar plot highlighting each individual partition of 10 by their corresponding index provided in Table II. Clearly, it can be seen that, compared to QSP (index 42), WQSP based KANs use far less parameters and provide better approximation errors for suitable weight choices 
+
+duced by the weight vector exceeds this degree-of-freedom threshold under suitable conditions, WQSP can recover solutions comparable to those obtained through QSP. However, for high-degree polynomials, identifying such optimal partitions becomes compu-tationally expensive. Consequently, generic weight selections may introduce approximation errors, al-though they still provide substantial reductions in pa-rameter count. Specifically, for a target polynomial of degree (d), standard QSP requires Θ( d) trainable phase parameters and a similar circuit depth. In con-trast, WQSP with exponentially increasing weights 
+
+wj = 2 j−1 (or alternatively wj = j) achieves compa-rable approximation quality using only k parameters where ( k = Θ(log 2 d)) (or Θ( √d)), respectively). We also derived explicit upper bounds on the approxi-mation error and showed that when the polynomial coefficients are sufficiently small, the approximation error becomes negligible even under weighted con-structions. WQSP also provides a highly efficient, hardware-native framework for function generation. By utilizing Rx rotations that map to a single physi-cal pulse—rather than the multi-pulse Euler decom-positions required by SU(2) rotation-based methods. Thus, our architecture significantly minimizes physi-cal circuit depth and mitigates error accumulation in NISQ-era processors. We also demonstrated that WQSP admits a nat-ural interpretation as a quantum neural network ar-chitecture, where learning is performed through the optimization of phase angles. This learning-based formulation extends beyond polynomial fitting to the approximation of continuous functions, making WQSP a promising framework for compact function generators and learnable activation mechanisms in architectures such as Kolmogorov–Arnold Networks [21], where expressive univariate function representa-tions play a central role. To illustrate this broader applicability, we employed WQSP to parameterize the activation functions of a KAN and demonstrated its effectiveness in approximating multivariate con-tinuous functions. While these initial results are en-couraging, a comprehensive study of WQSP-assisted KANs remains an important direction for future re-search. In particular, investigating more complex benchmark functions and network architectures, per-forming architecture search and polynomial degree optimization, establishing tighter approximation and resource bounds, and exploring applications to scien-tific machine learning tasks, such as solving differen-tial equations, are promising avenues for future work. Another key open problem is whether WQSP can be generalized to weighted oracle access within coher-ent QSVT settings. While our classical-input for-mulation incurs no physical gate overhead, extending this to unknown eigenvalues inside a black-box oracle faces known lower-bound constraints and remains a task for future research. We also note that all numer-ical experiments in this work are restricted to real-valued functions. To extend to complex functions 28 
+
+f (x), one must learn two real functions u(x), v (x)such that f (x) = u(x) + iv (x) and the procedure fol-lows similarly. Overall, WQSP provides a compact, structured, and trainable framework for polynomial and con-tinuous function realization with reduced circuit re-sources while preserving expressive power compara-ble to state-of-the-art QSP constructions. It is worth noting that the WQSP framework can, in principle, accommodate non-integer weights. However, such weights currently lack a clear physi-cal interpretation within the standard quantum sig-nal processing framework. Developing a comprehen-sive theoretical understanding of WQSP with non-integer weights, together with efficient algorithms for their optimization and implementation, remains an important direction for future research. Fur-thermore, for the approximation of very high-degree polynomials, it would be valuable to incorporate ad-vanced phase-recovery and optimization techniques from [16, 18, 20] to improve the numerical precision, computational efficiency, and stability of the pro-posed framework. Another promising direction is to extend WQSP to multivariate settings and integrate it with existing multivariate polynomial approxima-tion frameworks [46, 47]. More generally, WQSP may also provide an efficient mechanism for the simultane-ous generation and approximation of multiple poly-nomials, following recent developments in this direc-tion [48]. 
+
+VIII. ACKNOWLEDGMENT 
+
+R.S.S. acknowledges funding through Marie Sklodowska-Curie Actions-Ramon Llull AIRA (Grant No. 101126667). LP is supported by the National Research Foundation, Singapore through the National Quantum Office, hosted in A*STAR, under its Centre for Quantum Technologies Fund-ing Initiative (S24Q2d0009). LP is also partially supported by A*STAR under its YIRG M25N8c0131. 
+
+[1] A. Gily´ en, Y. Su, G. H. Low, and N. Wiebe, in Pro-ceedings of the 51st Annual ACM SIGACT Sympo-sium on Theory of Computing , STOC 2019 (Associa-tion for Computing Machinery, New York, NY, USA, 2019) p. 193–204. [2] G. H. Low and I. L. Chuang, Phys. Rev. Lett. 118 ,010501 (2017). [3] D. W. Berry, A. M. Childs, and R. Kothari, in Pro-ceedings of the 56th IEEE Annual Symposium on Foundations of Computer Science (FOCS) (IEEE, 2015) pp. 792–809, arXiv:1501.01715 [quant-ph]. [4] A. M. Childs, R. Kothari, and R. D. Somma, SIAM Journal on Computing 46 , 1920 (2017). [5] J.-T. Bu, L. Zhang, Z. Yu, J.-B. Wang, W.-Q. Ding, W.-F. Yuan, B. Wang, H.-J. Du, W.-J. Chen, L. Chen, J.-W. Zhang, J.-C. Li, F. Zhou, X. Wang, and M. Feng, Phys. Rev. Appl. 23 , 034073 (2025). [6] Y. Kikuchi, C. Mc Keever, L. Coopmans, M. Lubasch, and M. Benedetti, npj Quantum Information 9, 93 (2023). [7] J. M. Martyn, Z. M. Rossi, A. K. Tan, and I. L. Chuang, PRX Quantum 2, 040203 (2021). [8] A. M. Dalzell, S. McArdle, M. A. Berta, P. Bienias, C.-F. Chen, A. Gily´ en, C. T. Hann, M. J. Kasto-ryano, E. T. Khabiboulline, A. Kubica, G. Salton, S. Wang, and F. G. S. L. Brand˜ ao, Quantum Algo-rithms: A Survey of Applications and End-to-End Complexities (Cambridge University Press, Cam-bridge, 2025). [9] L. Laneve, arXiv preprint arXiv:2303.11077 (2024). [10] D. Motlagh and N. Wiebe, PRX Quantum 5, 020368 (2024). [11] L. Lin, arXiv preprint arXiv:2510.00443 (2025), arXiv:2510.00443 [quant-ph]. [12] Y. Dong, X. Meng, K. B. Whaley, and L. Lin, Phys. Rev. A 103 , 042419 (2021). [13] R. Chao, D. Ding, A. Gily´ en, C. Huang, and M. Szegedy, arXiv preprint arXiv:2003.02831 (2020), 2003.02831. [14] J. Wang, Y. Dong, and L. Lin, Quantum 6, 850 (2022). [15] Y. Dong, L. Lin, H. Ni, and J. Wang, SIAM Journal on Scientific Computing 46 , A2951 (2024). [16] Y. Dong, L. Lin, H. Ni, and J. Wang, Quantum 8,1558 (2024). [17] J. Haah, Quantum 3, 190 (2019). [18] L. Ying, Quantum 6, 842 (2022). [19] M. Alexis, G. Mnatsakanyan, and C. Thiele, Revista Matem´ atica Complutense 37 , 655 (2024). [20] M. Alexis, L. Lin, G. Mnatsakanyan, C. Thiele, and J. Wang, Communications on Pure and Applied Mathematics 79 , 123 (2026). [21] Z. Liu, Y. Wang, S. Vaidya, F. Ruehle, J. Halver-son, M. Soljaˇ ci´ c, T. Y. Hou, and M. Tegmark, arXiv preprint arXiv:2404.19756 (2024). [22] J. Schmidt-Hieber, Neural Networks 137 , 119 (2021). [23] M. Cheon, arXiv preprint arXiv:2406.14916 (2024). [24] Y. Cang, L. Shi, et al. , arXiv preprint arXiv:2411.06727 (2024). [25] C. Dong, L. Zheng, and W. Chen, in International Conference on Advanced Data Mining and Applica-tions (Springer, 2024) pp. 342–355. [26] C. J. Vaca-Rubio, L. Blanco, R. Pereira, and M. Caus, in 2024 IEEE Globecom Workshops (GC Wkshps) (IEEE, 2024) pp. 1–6. 29 
+
+[27] S. Patra, S. Panda, B. K. Parida, M. Arya, K. Ja-cobs, D. I. Bondar, and A. Sen, Journal of Machine Learning Research 26 , 1 (2025). [28] Z. Zhang, Q. Wang, Y. Zhang, T. Shen, and W. Zhang, Scientific Reports 15 , 10523 (2025). [29] G. D. Carlo, A. Mastropietro, and A. Anagnos-topoulos, Kolmogorov–arnold graph neural networks (2025). [30] M. Kiamari, M. Kiamari, and B. Krishnamachari, arXiv preprint arXiv:2406.06470 (2024). [31] P. Ivashkov, P.-W. Huang, K. Koor, L. Pira, and P. Rebentrost, npj Quantum Information 12 , 1(2026). [32] L. de Branges, Proceedings of the American Mathe-matical Society 10 , 822 (1959). [33] A. Daskin, Quantum Kolmogorov-Arnold networks by combining quantum signal processing circuits (2024), 2410.04218. [34] A. Daskin, arXiv preprint arXiv:2410.04218 (2024). [35] S. Chakraborty, A. Gily´ en, and S. Jeffery, in 46th International Colloquium on Automata, Languages, and Programming (ICALP 2019) , Leibniz Interna-tional Proceedings in Informatics (LIPIcs), Vol. 132, edited by C. Baier, I. Chatzigiannakis, P. Flocchini, and S. Leonardi (Schloss Dagstuhl – Leibniz-Zentrum f¨ ur Informatik, Dagstuhl, Germany, 2019) pp. 33:1– 33:14. [36] M. J. Kochenderfer and T. A. Wheeler, Algo-rithms for Optimization (MIT Press, Cambridge, MA, 2019). [37] J. J. Mor´ e, in Numerical Analysis , edited by G. A. Watson (Springer Berlin Heidelberg, Berlin, Heidel-berg, 1978) pp. 105–116. [38] E. Wilson, F. Mueller, L. Bassman, and C. Iancu, arXiv preprint arXiv:2107.06701 (2021), arXiv:2107.06701 [quant-ph]. [39] B. N. Datta, Numerical Linear Algebra and Appli-cations , 2nd ed. (Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA, 2010). [40] E. Kreyszig, Introductory Functional Analysis with Applications (John Wiley & Sons, New York, 1978). [41] J. P. Boyd, Chebyshev and Fourier Spectral Methods ,2nd ed. (Dover Publications, New York, 2001). [42] D. Jones, P.-D. Letourneau, M. J. Morse, and M. H. Langston, arXiv preprint arXiv:2309.14584 (2023). [43] N. Hale and A. Townsend, SIAM Journal on Scien-tific Computing 36 , A148 (2014). [44] J. Soni, Function Fitting using Quantum Signal Processing, PennyLane Demos (2022), last updated: April 14, 2026. [45] M. A. Nielsen and I. L. Chuang, Quantum Computa-tion and Quantum Information , 10th ed. (Cambridge University Press, Cambridge, 2010). [46] Z. M. Rossi and I. L. Chuang, Quantum 6, 811 (2022). [47] Z. M. Rossi, J. L. Ceroni, and I. L. Chuang, Quantum 
+
+9, 1776 (2025). [48] L. Laneve, arXiv preprint arXiv:2311.03949 (2023).

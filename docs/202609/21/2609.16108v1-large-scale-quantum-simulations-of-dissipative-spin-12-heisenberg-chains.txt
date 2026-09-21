@@ -1,0 +1,1031 @@
+Title: Large-scale quantum simulations of dissipative spin-1/2 Heisenberg chains
+
+URL Source: https://arxiv.org/pdf/2609.16108v1
+
+Published Time: Wed, 16 Sep 2026 00:04:49 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+Large-scale quantum simulations of dissipative spin-1/2 Heisenberg chains 
+
+Jo˜ ao C. Getelina ,1 Andrew Cox ,1 Muhammad Asaduzzaman ,1 Omar Alsheikh ,1 Ryan S. Bennink ,2 James K. Freericks ,3 and Alexander F. Kemper 1
+
+> 1
+
+Department of Physics and Astronomy, North Carolina State University, Raleigh, North Carolina 27695, USA 
+
+> 2
+
+Computational Sciences and Engineering Division, Oak Ridge National Laboratory, Oak Ridge, Tennessee 37831, USA 
+
+> 3
+
+Department of Physics, Georgetown University, 37th and O Sts. NW, Washington, DC 20057, USA 
+
+A quantum many-body system coupled to an environment relaxes to a nonequilibrium steady state that can sustain order with no equilibrium counterpart. Computing such steady states is harder than closed-system dynamics as the density matrix problem squares the Hilbert-space dimension, and no free energy selects the steady state. The dissipative spin-1/2 Heisenberg chain is a bench-mark example for nonequilibrium steady state physics; various methods have each calculated its phase diagram but do not agree, and a controlled determination at large system size has remained out of reach. Here we simulate the Lindblad dynamics of chains of up to 50 sites on the supercon-ducting processor ibm kingston —100 simultaneously active qubits at up to 1700 entangling-gate depths—realizing the dissipation via Stinespring dilation. The system’s dissipative evolution is a self-correcting mechanism that effectively erases errors, so hardware noise enters only as a weak competing dissipator. We measure static structure factors and resolve ferromagnetic, antiferromag-netic, spin-density-wave, and paramagnetic steady states, mapping the phase diagram with 117 quantum hardware data points across the Jx–Jy plane. We uncover a rich non-equilibrium phase diagram of ordered phases with only remnants of the mean-field order, and where sharp transitions give way to the crossovers expected in one dimension. We also find the existence of an incipient (Trotter-induced) spin density wave phase, highlighting the potential of controlled Trotterization as a tool to engineer various magnetic phases in dissipative spin systems. Our quantum simulations largely settle the lingering uncertainty regarding the correct phase diagram of this benchmark sys-tem. Moreover, they show that quantum computers are now a feasible tool for addressing scientific questions involving dissipative quantum systems. 
+
+When coherent many-body dynamics compete with a dissipation that violates detailed balance, a quantum sys-tem relaxes not to a Gibbs state but to a nonequilibrium steady state (NESS) [1, 2]. The dynamics and phase diagrams are governed by the Liouvillian rather than by a free energy [3, 4], and order without an equilib-rium counterpart can be stabilized, including exotic mag-netism [5, 6], time crystals [7], limit cycles [8], synchro-nization [9], and dissipative chaos [10]. A paradigmatic arena for these questions is the dissipative anisotropic spin-1/2 Heisenberg model with local spin decay, whose mean-field phase diagram hosts ferromagnetic (FM), an-tiferromagnetic (AFM), spin-density-wave (SDW), and paramagnetic (PM) steady states meeting at Lifshitz points [5]. A decade of scrutiny has shown that correla-tions beyond mean field radically reshape this diagram: the paramagnet becomes re-entrant and incommensurate tendencies appear [6, 11]. This model has become a benchmark for open-system numerics [12–18], but as yet the phase diagram remains in question because the nu-merics are limited; the Lindblad equation [19–21] squares the Hilbert-space dimension, the NESS doesn’t minimize a free energy [22], and quasi-exact methods reach only small lattices or weak entanglement [23–25]. Quantum computers are natural instruments for this problem, for two reasons. First, steady states are attrac-tors of the dynamics, and can be reached from generic initial states without the state-preparation overhead that burdens closed-system quantum simulations [22, 26]. Second, and counterintuitively, the physics is intrinsically noise correcting: a dissipative system loses memory of its initial state, and of errors accumulated along the way, at a rate set by the Liouvillian spectral gap [4], so hardware noise enters merely as an additional dissipator competing with the engineered one—damping observables, but not scrambling the structure from which phases are identi-fied [27–32]. The dissipative character of the problem, the very source of its classical hardness, is an asset on noisy hardware. Beyond analog driven-dissipative platforms [33–38], digital hardware experiments have so far either used dissipation instrumentally—engineered reservoirs cool-ing spin systems toward the low-energy states of target Hamiltonians [39–42]—or probed measurement-induced dynamics, as in the landmark adaptive-circuit study of an absorbing-state transition by Chertkov et al. [43] and its successors [44, 45], where the steady state is a triv-ial dark state and the critical physics lives in transients and trajectory-to-trajectory fluctuations. Determinis-tic Lindblad evolution toward a nontrivial ensemble-averaged NESS, scanned across a many-body phase dia-gram, has not been realized on quantum hardware at any scale. Here we realize precisely this. We simulate dissipative spin-1/2 Heisenberg chains of up to L = 50 sites (100 qubits) on the superconducting processor ibm kingston 
+
+in circuits of up to 1700 entangling-gate depth. We employ a Trotterization of the Liouvillian to first order and realize the dissipator via the Stinespring dilation, with ancillary qubits that are reset after every time arXiv:2609.16108v1 [quant-ph] 14 Sep 2026 20.00.10.2tr £Ωæ z
+
+> 0
+
+æzj
+
+§
+
+0 6 12 18 0.00.10.2 tr £Ωæ x 
+
+> 0
+
+æxj
+
+§ nearest neighbor ( j = 1) largest separation ( j = 25) 
+
+30 0 340 680 1020 1700 time Entangling-gate depth                                                                                      
+
+> 78910 11 12 13 14 15
+> 17 19
+> 21 22 23 24 25 26 27 29 30 31 32 33 34 35 36 38
+> 41 42 43 49 50 51 52 53 54 55 56 59
+> 61 62 63 65 66 67 68 69 70 71 72 73 74 75 76 77
+> 81 82 83 85 86 87 91 92 93 94 95 96 97 98 99
+> 103 104 105 107 108 109 110 111 113 114 115
+> 117 119
+> 125 126 127 133 134 135
+> 137 139
+> 147 148 149 150 151 152 153 154 155
+
+a b
+
+c d e
+
+ibm kingston 
+
+FIG. 1. Stable non-equilibrium steady states of the dissipative Heisenberg model (a) 1D dissipative spin-1/2 Heisenberg chain. The system sites interact with their nearest neighbors and with a reservoir that flips the spin down at a dissipation rate γ. (b) Quantum circuit representation of a single time step in the Liouvillian dynamics of an open-boundary chain of size L = 3, consisting of two parts: a coherent evolution under the closed system Hamiltonian, and a (non-unitary) dissipative part representing the interaction with the reservoir, which is implemented by coupling to an ancilla that is reset each time step. (c) Qubit layout used in our simulations in the 156-qubit superconducting quantum device ibm kingston . Here show a closed chain with L = 50 sites (100 qubits including ancillae). Green (orange) dots represent the physical sites (ancilla) of active qubits. (d) Stable non-equilibrium steady state from ibm kingston for the nearest neighbors and the two furthest apart sites for ( Jx, J y ) = (3 , 2), and with Jz = γ = 1. The shaded area around each curve corresponds to the standard error of the mean. (e) Conceptual underlying reason for the stability. The hardware noise shifts the steady state from the model ρSS 
+
+to a modified ρSS+HW ; as long as the model evolution is sufficient to balance the hardware noise, the ρSS+HW will retain the physics of ρSS .
+
+step [31, 32, 46, 47]. This approach has the advantage of being simple to implement compared to competing unitary embeddings [26, 48–51]. The measured corre-lation matrices yield the static structure factor S(q), whose peak structure identifies FM, AFM, SDW, and PM behavior. From 117 hardware data points across the 
+
+Jx–Jy plane we sketch the steady-state phase diagram, finding qualitative agreement with mean-field theory but only when deep in the ordered phases [5]. Since the studied model is one dimensional, where no spontaneous symmetry-breaking phase transition is expected, we find crossovers between finite-size remnants of the mean-field orders [6]. 
+
+Dissipative spin-1/2 Heisenberg model. The dissipa-tive anisotropic spin-1/2 Heisenberg Hamiltonian in 1D is given by 
+
+H = 12
+
+∑
+
+⟨i,j ⟩
+
+[Jxσxi σxj + Jy σyi σyj + Jz σzi σzj
+
+] , (1) where σαi are Pauli operators, Jα are the coupling am-plitudes. By coupling this system to a memoryless (i.e., Markovian) environment through local spontaneous spin decay, the corresponding Lindblad master equation that governs its dynamics becomes [19–21], ˙ρ(t) = − i [H, ρ (t)] + DD =γ ∑
+
+m
+
+(
+
+Lmρ(t)L†
+
+m − 12
+
+{L†
+
+mLm, ρ (t)})
+
+, (2) with jump operators Lm = σ−
+
+m = ( σxm − iσ ym)/2 acting on every site m at rate γ [Fig. 1(a)]. For this model, single-site mean-field theory predicts that the steady state hosts FM, AFM, SDW, and PM phases meeting at Lifshitz points across the Jx–Jy plane at fixed 
+
+Jz = γ = 1 [5]. This phase diagram, and its fate beyond mean field [6], is the target of our quantum hardware simulations. 
+
+Quantum hardware simulations. We performed all the quantum simulations on the 156-qubit superconducting 3device ibm kingston , which is depicted in Fig. 1(c), us-ing up to 100 qubits. We implemented an alternat-ing pattern between physical and ancilla qubits (green and orange circles in Fig. 1(c), respectively), yielding an entangling-gate circuit depth of 17 per Trotter step. We choose the initial state according to the target observ-able, assigning a fully-polarized up state in the same ba-sis as the measurement; i.e., the initial state is either 
+
+|0⟩⊗L ⊗ | 0⟩⊗L or |0⟩⊗L ⊗ | +⟩⊗L (with σxi |±⟩ = ±|±⟩ ), when measuring ZZ- and XX-correlators, respectively, with the leftmost L qubits corresponding to the ancil-lae. To estimate the steady state, we evolve the initial state to a sufficiently long time, up to t = 30, with a time step ∆ t = 0 .3, resulting in an entangling-gate depth of 1700. Fig. 1(d) shows the time trace of the ZZ- and XX-correlation between the two closest and the two furthest apart sites for a periodic chain of size L = 50 [Fig. 1(c)]. Notice that the ZZ-correlation for both distances set-tles at a non-zero value, which does not degrade as the circuit deepens, thus corroborating our assertion about the resilience of open-system dynamics against hardware noise. On the other hand, the XX-correlation, which is the quantity used for identifying magnetic phases, ap-pears to reach a non-zero steady-state value only for the nearest-neighboring pair. A time step of ∆ t = 0 .3 is large enough to raise Trotter-error concerns, yet under hardware noise we observe the opposite of the noiseless expectation: a larger time step brings the system closer to the target NESS. The reason for this is a competition between dissipators [Fig. 1(e)]: noise converts the ideal evolution L into L + DHW , where 
+
+DHW is the unknown hardware dissipator, and the steady state that dominates at long times is the one whose Liou-villian gap is larger. Because the engineered dissipation enters each circuit through the rotation angle θ(γ∆t), while the hardware noise per step is fixed, increasing ∆t strengthens the target dissipator relative to DHW , at the price of additional Trotter error (see App. A and Ref. [52]). 
+
+Phase diagram. To find the phase diagram across the 
+
+Jx–Jy plane (fixed Jz = γ = 1), we measure the static XX correlation function, which is given by 
+
+Sij = Tr [ρSS σxi σxj
+
+] , (3) where ρSS is the approximate non-equilibrium steady state, which is estimated by letting the system evolve for a relatively long time. In Fig. 2(a) we show the full set of static correlation functions at the end of the evolution for all pairs of sites i, j on a 40-site periodic chain (80 qubits) and for 4 separate points in the ( Jx, J y ) phase diagram. Here we have averaged over the last ten circuits of the evolution ( t ∈ [27 .3, 30]) to mitigate the effects of shot noise. Notice that the magnetic phases are already dis-tinguishable at this level: the ferromagnetic (FM) phase looks notably different from the anti-ferromagnet (AF) and spin density wave (SDW). This is also reflected in the momentum space static structure factor (Fig. 2(b)), 0.91.01.1
+
+Jx = °1.0
+
+Jy = 0 .00.91.01.1
+
+Jx = 1 .0
+
+Jy = 0 .00.91.01.1
+
+Jx = 3 .0
+
+Jy = 2 .0
+
+°º °º/2 0 º/2 º
+
+q
+
+0.91.01.1
+
+Jx = °3.0
+
+Jy = °2.0
+
+> S(q)
+
+# a b   
+
+> FIG. 2. Distinguishing steady state phases of the dissi-pative Heisenberg model. Real space (a) and momentum space (b) structure factors for a 40 site (80 qubit) chain, av-eraged over the last 10 time steps. Vertical lines in the SDW panels in (b) indicate the expected ordering vector for ten-sor network calculations for 40 sites. Shaded areas around the curves correspond to the 95% confidence interval of 1000 bootstrap samples, resampled from the last 10 time steps.
+
+which is defined as 
+
+S(q) = 1
+
+L
+
+> L
+
+∑
+
+> i,j =1
+
+eiq (ri−rj )Sij , (4) whose peak position distinguishes the candidate orders: 
+
+q = 0 (FM), q = π (AFM), incommensurate q or spin density wave (SDW), or no peak above baseline set by the ri = rj terms (PM). According to the mean-field pre-dictions of Ref. [5], the four selected coupling pairs of Fig. 2 should correspond to AFM, FM and SDW phases. Indeed, this is what we observe in Fig. 2(b), with two curves peaking at commensurate momenta and the other 4−4 −2 0 2 4             
+
+> Jx/γ
+> −4
+> −2024
+> Jy/γ
+> 4×
+> 4×
+> SDW2 AFM FM SDW1 iSDW iSDW
+> L= 40
+> L= 42
+> L= 50
+> 0
+> π/ 4
+> π/ 23π/ 4
+> π
+> |qpeak |
+> FIG. 3. Phase diagram of the dissipative spin-1/2 Heisenberg model. Peak position in S(q) from quantum hardware simulation, opacity is set by the height of the peak. Data is interpolated before plotting. Corners show an incip-ient SDW phase, which has been scaled 4 ×for visibility. All correlator data obtained from the hardware used to create this phase diagram are presented in the App. B.
+
+two peaking at an incommensurate momenta. These re-sults also agree with small-scale ( L = 12) exact numer-ical calculations (see App. C), and same scale ( L = 40) tensor network simulations (see App. D), from which we show the resulting peak locations (dot-dashed lines) for the SDW phases. We now move beyond these representative points and scan the phase diagram. To distinguish between the dif-ferent magnetic phases, we keep track of the height and position of the peak in S(q) calculated from the quantum hardware data. Fig. 3 shows the resulting phase diagram, interpolated from 117 hardware data points for three dif-ferent system sizes, namely L = 40 , 42 , and 50 One can find details about the employed interpolation scheme in App. E. We clearly distinguish the ferromagnetic (FM, 
+
+q = 0), anti-ferromagnetic (AFM, q = π) and spin den-sity wave (SDW, incommensurate q) phases, as well as the paramagnetic regions where there is a lack of order in the XX correlators. The FM and AFM regions are pri-marily near the Jy = 0 line, and are appropriately sym-metric under ( Jx, J y ) → (−Jx, −Jy ) due to the inherent symmetry in the model. The SDW phases are clearly vis-ible, with two identifiable regions of longer (light green, upper-right corner) and shorter (light orange, lower-left corner) spatial modulations. Coincidentally, these areas are in good agreement with the mean-field predictions of Ref. [5]. The most striking difference from the mean-field predictions [5] is the absence of a large PM area near the center of the diagram; rather, this is limited to the region right around Jx = Jy where the fixed point is the dark state |1⟩⊗L. Moreover, there is a re-entrant paramagnetic phase—appearing and disappearing across the phase diagram—at large couplings that is driven by a much different mechanism: as the interactions grow stronger, the state becomes increasingly mixed, eventu-ally losing all transverse order. 
+
+Incipient SDW ordering. We observe a signal that in-dicates SDW ordering in the upper left and lower right corners of the phase diagram, which is not observed in either the mean field phase diagram or the L = 12 nu-merical results. However, rather than this being a fea-ture that only appears at large system sizes, we attribute this to an effective Hamiltonian that is modified from the dissipative Heisenberg model of Eq. 2 due to Trotter er-ror. When ∆ t is large, commutator terms arise from the Trotter decomposition that behave like additional effec-tive terms in the Hamiltonian. In certain instances this has proven to be a shortcut to adding desired terms that are hard to implement [53]; here, however, it modifies the Hamiltonian in the far corners of the phase diagram (where |J| is large and thus Trotter error is worse), and we start to see the phases that arise from it. For the dissipative Heisenberg model, the additional terms that appear centered on the mth site are the chiral terms of the form Zm−1YmXm+1 − Xm−1YmZm+1 and its cyclic permutations. Indeed, these enhance an incipient SDW phase, as confirmed by small exact diagonalization cal-culations including these terms (see App. F). While this is not strictly part of the dissipative Heisenberg model, it does demonstrate that the remarkable stability and conceptual framework of a modified ρSS carries over to extensions away from this model. Finally, we also consider two horizontal cuts in the phase diagram, and investigate how the correspond-ing static structure factor changes as a function of Jx.Figs. 4(a) and (b) correspond to horizontal cuts at Jy = 0 and Jy = 1 .5, respectively. We compare the quantum hardware data points (gray symbols) of the static struc-ture factor with respect to Gaussian fits (lines and shaded areas) as we decrease the value of Jx (top to bottom). For Jy = 0 [Fig. 4(a)], notice how the system gradually changes from a ferromagnet to an antiferromagnet, sep-arated by a paramagnetic phase at Jx = 0. On the other hand, for Jy = 1 .5 [Fig. 4(b)], the system starts at an incommensurate q phase until it shifts to a state with co-existence of FM and AFM phases, with the former losing its dominance to the latter as we decrease Jx. Eventually, however, both the FM and AFM peaks become negligi-ble, and the system enters a PM phase at Jx = −3, which is then replaced by an incipient SDW phase at Jx = −4, arising due to higher-order corrections in the Trotter ap-proximation (see App. F). 
+
+Discussion and outlook. After a decade in which each new classical method redrew the phase diagram of the dissipative Heisenberg chain, our results in Fig. 3 sup-ply a measure of ground truth. At L = 40–50 the steady state organizes into finite-size remnants of the mean-field 5°º/2 0 º/2 º 3º/2                                
+
+> qS(q)
+> Jx=°4
+> Jx=°3
+> Jx=°2
+> Jx=°1
+> Jx= +0
+> Jx= +1
+> Jx= +2
+> Jx= +3
+> Jx= +4
+> Jy= 0 .0
+> °º/20º/2º3º/2
+> q
+> Jx=°4
+> Jx=°3
+> Jx=°2
+> Jx=°1
+> Jx= +0
+> Jx= +1
+> Jx= +2
+> Jx= +3
+> Jx= +4
+> Jy= 1 .5
+
+## a b               
+
+> FIG. 4. Observing the crossover between magnetic phases. Static structure factor S(q) for several values of cou-pling amplitude Jxand fixed (a) Jy= 0 .0 and (b) Jy= 1 .5. Symbols correspond to the quantum hardware data points, whereas lines and shaded area correspond to curve fits of sum of Gaussian distributions. System size is L= 40 (80 qubits) and the dissipative rate is γ=Jz= 1.
+
+orders separated by crossovers, with the paramagnet con-fined to the vicinity of the dark-state line Jx = Jy rather than the broad central region predicted by mean-field theory [5]. The quantum hardware result rests on the stability mechanism of Fig. 1(e): the engineered dissipation con-tinually erases accumulated errors, so hardware noise en-ters as a weak additional dissipator and the measured steady state ρSS+HW retains the structure of the target 
+
+ρSS . The same mechanism sets the method’s boundaries. The competition between the two dissipators is governed by the ratio of the dissipation, Trotter step, and hardware error [ γ∆t/ε , Eq. (A2)], and it is lost where large cou-pling amplitudes amplify the Trotter error, as in the far corners of the diagram. Moreover, because our diagno-sis rests on the static structure factor, we can locate the crossovers between magnetic behaviors but cannot certify a phase boundary; in one dimension none is expected, but sharpening this distinction will require quantitative error mitigation beyond the suppression techniques employed here. The incipient SDW phases in the upper-left and lower-right corners carry some implication beyond the fact that they are observed there. The phases originate from chi-ral three-site terms generated by the Trotter decomposi-tion, effectively changing the Liouvillian being simulated. Typically such terms produce phases absent from the tar-get model and are considered to be a problem with the simulation. However, applied deliberately, they realize interactions that are otherwise costly to implement [53] and can even tune the universality class of a dissipative process [52]. Since the stability mechanism is agnostic to which Liouvillian is simulated, Trotter-engineered exten-sions of this kind inherit it at no additional cost. Our data also set the terms for comparison to state of the art classical methods. The 117 measured points, and the underlying S(q) curves at L = 40–50, constitute a quantitative target for the classical contenders: the bond dimension at which the tensor-jump method [18]—which reached 1000 spins at bond dimension four—reproduces them is now a well-posed question, as is whether variational-perturbative [17] and neural-network [13–15] ans¨ atze agree. The hardware systematics (noise and Trotter error) are independent of the classical ones (bond dimension and ansatz bias), so agreement between the two carries information about the model rather than about either method. This cross-validation, more than any single calculation, will settle the phase diagram. Finally, our results indicate that quantum hardware is now a feasible tool for addressing questions in dissipative and driven-dissipative systems. The issues with decoher-ence and scaling that plague closed (unitary) dynamics are ameliorated by the inherent stability of a dissipative steady state, thus realizing the idea of accepting the dissi-pation rather than fighting it [40, 54]. The questions are now how such an approach can be applied to other prob-lems of interest. Moving beyond one dimension—where true dissipative transitions are expected [6, 11, 12] and classical methods are most strained— is trivial within this framework, as the methods directly carry over. Driven models, such as those that exhibit limit cycles or time crystals, offer additional areas for exploration with quantum hardware simulation. 
+
+> ACKNOWLEDGMENTS
+
+We acknowledge useful discussions with Raghav Jha, Berkley Delmonico, and Yan Wang. This work was sup-ported by the U.S. Department of Energy, Office of Sci-ence, Office of Advanced Scientific Computing Research under Award Number DE-SC0025623. Exact numeri-cal calculations were supported by the U.S. Department of Energy, Office of Science, Office of Advanced Sci-entific Computing Research under Award Number DE-SC0025430. 6
+
+METHODS Quantum hardware implementation 
+
+To realize Eq. (2) on hardware, we write the time-independent Liouvillian as L = H + D, where H[ρ] and 
+
+D[ρ] are the right-hand side of Eq. (2) with γ = 0 and 
+
+H = 0, respectively, and apply a first-order Trotter ap-proximation to ρ(t) = eLtρ(0), 
+
+ρ(t) ≈ [eD∆teH∆t]N ρ(0) , (5) with time step ∆ t = t/N . The coherent factor is a stan-dard Hamiltonian-simulation circuit, whereas the dissi-pative factor is realized exactly by a Stinespring dila-tion [46]: each system qubit is coupled to a dedicated ancilla through a controlled-Ry (θ) rotation and a CNOT, with θ = 2 sin −1
+
+(√1 − e−γ∆t
+
+)
+
+, and the ancillae are reset after every Trotter step [Fig. 1(b)]. This is the simplest of the unitary embeddings of Lindblad dynamics: it dou-bles the qubit count, but adds only two entangling gates per site per step, and with physical and ancilla qubits alternating along the device the entangling-gate depth is 17 per Trotter step [Fig. 1(c)]. All quantum hardware simulations use two error sup-pression techniques provided by the Qiskit Runtime ser-vice. First, Pauli twirling (randomized compiling) [55] is applied to every two-qubit entangling gate: each gate is sandwiched between randomly chosen single-qubit Pauli operators whose net action is the identity in the ab-sence of noise, so that averaging over multiple random instances converts coherent gate errors, which accumu-late quadratically with circuit depth, into a stochastic Pauli noise channel that accumulates only linearly [56]. Second, dynamical decoupling is enabled with the XY4 pulse sequence [57, 58], which inserts a repeating X-Y-X-Y gate pattern on idling qubits during scheduling gaps in the circuit. The XY4 sequence suppresses low-frequency dephasing and residual ZZ crosstalk while being self-correcting against systematic over- or under-rotations in the decoupling pulses themselves [59]. Neither technique adds ancilla qubits or additional two-qubit gates, so the overhead is limited to single-qubit operations that are fast compared to the dominant two-qubit gate errors. No error mitigation techniques (such as zero-noise extrapo-lation or probabilistic error cancellation) are applied; the reported expectation values are raw hardware measure-ments with suppression only. 
+
+[1] R. Fazio, J. Keeling, L. Mazza, and M. Schir` o, SciPost Phys. Lect. Notes 99 (2025). [2] L. M. Sieberer, M. Buchhold, J. Marino, and S. Diehl, Rev. Mod. Phys. 97 , 025004 (2025). [3] E. M. Kessler, G. Giedke, A. Imamo˘ glu, S. F. Yelin, M. D. Lukin, and J. I. Cirac, Phys. Rev. A 86 , 012116 (2012). [4] F. Minganti, A. Biella, N. Bartolo, and C. Ciuti, Phys. Rev. A 98 , 042118 (2018). [5] T. E. Lee, S. Gopalakrishnan, and M. D. Lukin, Phys. Rev. Lett. 110 , 257204 (2013). [6] J. Jin, A. Biella, O. Viyuela, L. Mazza, J. Keeling, R. Fazio, and D. Rossini, Phys. Rev. X 6, 031011 (2016). [7] K. Chinzei and T. N. Ikeda, Phys. Rev. Lett. 125 , 060601 (2020). [8] E. T. Owen, J. Jin, D. Rossini, R. Fazio, and M. J. Hart-mann, New J. Phys. 20 , 045004 (2018). [9] B. Buˇ ca, C. Booker, and D. Jaksch, SciPost Phys. 12 ,097 (2022). [10] F. Ferrari, L. Gravina, D. Eeltink, P. Scarlino, V. Savona, and F. Minganti, Phys. Rev. Res. 7, 013276 (2025). [11] A. Kshetrimayum, H. Weimer, and R. Or´ us, Nat. Com-mun. 8, 1291 (2017). [12] R. Rota, F. Storme, N. Bartolo, R. Fazio, and C. Ciuti, Phys. Rev. B 95 , 134431 (2017). [13] A. Nagy and V. Savona, Phys. Rev. Lett. 122 , 250501 (2019). [14] M. J. Hartmann and G. Carleo, Phys. Rev. Lett. 122 ,250502 (2019). [15] F. Vicentini, A. Biella, N. Regnault, and C. Ciuti, Phys. Rev. Lett. 122 , 250503 (2019). [16] D. Huybrechts and M. Wouters, Phys. Rev. A 99 , 043841 (2019). [17] A. Melo, G. Beugnot, and F. Minganti, arXiv:2504.00085 (2025). [18] A. Sander, M. Fr¨ ohlich, M. Eigel, J. Eisert, P. Gelß, M. Hinterm¨ uller, R. M. Milbradt, R. Wille, and C. B. Mendl, Nat. Commun. 16 , 11074 (2025). [19] A. Kossakowski, Rep. Math. Phys. 3, 247 (1972). [20] G. Lindblad, Commun. Math. Phys. 48 , 119 (1976). [21] V. Gorini, A. Kossakowski, and E. C. G. Sudarshan, J. Math. Phys. 17 , 821 (1976). [22] H. Weimer, A. Kshetrimayum, and R. Or´ us, Rev. Mod. Phys. 93 , 015008 (2021). [23] A. J. Daley, Adv. Phys. 63 , 77 (2014). [24] F. Verstraete, J. J. Garc´ ıa-Ripoll, and J. I. Cirac, Phys. Rev. Lett. 93 , 207204 (2004). [25] M. Zwolak and G. Vidal, Phys. Rev. Lett. 93 , 207205 (2004). [26] A. Miessen, P. J. Ollitrault, F. Tacchino, and I. Taver-nelli, Nat. Comput. Sci. 3, 25 (2023). [27] G. Garc´ ıa-P´ erez, M. A. C. Rossi, and S. Maniscalco, npj Quantum Inf. 6, 1 (2020). [28] L. Del Re, B. Rost, A. F. Kemper, and J. K. Freericks, Phys. Rev. B 102 , 125112 (2020). [29] H. Kamakari, S.-N. Sun, M. Motta, and A. J. Minnich, PRX Quantum 3, 010320 (2022). [30] M. Cattaneo, M. A. C. Rossi, G. Garc´ ıa-P´ erez, R. Zam-brini, and S. Maniscalco, PRX Quantum 4, 010324 (2023). [31] L. Del Re, B. Rost, M. Foss-Feig, A. F. Kemper, and J. K. Freericks, Phys. Rev. Lett. 132 , 100601 (2024). [32] B. Rost, L. Del Re, N. Earnest, A. F. Kemper, B. Jones, and J. K. Freericks, npj Quantum Inf. 11 , 10 (2025). [33] J. Kasprzak, M. Richard, S. Kundermann, A. Baas, 7
+
+P. Jeambrun, J. M. J. Keeling, F. M. Marchetti, M. H. Szyma´ nska, R. Andr´ e, J. L. Staehli, V. Savona, P. B. Lit-tlewood, B. Deveaud, and L. S. Dang, Nature 443 , 409 (2006). [34] J. T. Barreiro, M. M¨ uller, P. Schindler, D. Nigg, T. Monz, M. Chwalla, M. Hennrich, C. F. Roos, P. Zoller, and R. Blatt, Nature 470 , 486 (2011). [35] I. Carusotto and C. Ciuti, Rev. Mod. Phys. 85 , 299 (2013). [36] S. Helmrich, A. Arias, and S. Whitlock, Phys. Rev. A 98 ,022109 (2018). [37] M. Fitzpatrick, N. M. Sundaresan, A. C. Y. Li, J. Koch, and A. A. Houck, Phys. Rev. X 7, 011016 (2017). [38] R. Ma, B. Saxberg, C. Owens, N. Leung, Y. Lu, J. Simon, and D. I. Schuster, Nature 566 , 51 (2019). [39] S. Diehl, A. Micheli, A. Kantian, B. Kraus, H. P. B¨ uchler, and P. Zoller, Nat. Phys. 4, 878 (2008). [40] F. Verstraete, M. M. Wolf, and J. I. Cirac, Nat. Phys. 5,633 (2009). [41] X. Mi, A. A. Michailidis, S. Shabani, K. C. Miao, P. V. Klimov, et al. , Science 383 , 1332 (2024). [42] K. Seki, Y. Kikuchi, T. Hayata, and S. Yunoki, Phys. Rev. Appl. 26 , 014062 (2026). [43] E. Chertkov, Z. Cheng, A. C. Potter, S. Gopalakrishnan, T. M. Gatterman, J. A. Gerber, K. Gilmore, D. Gresh, A. Hall, A. Hankin, M. Matheny, T. Mengle, D. Hayes, B. Neyenhuis, R. Stutz, and M. Foss-Feig, Nat. Phys. 19 ,1799 (2023). [44] B. Pokharel, H. Pan, K. Aziz, L. C. G. Govia, S. Gane-shan, T. Iadecola, J. H. Wilson, B. A. Jones, A. Desh-pande, J. H. Pixley, and M. Takita, arXiv:2509.18259 (2025). [45] Z. Wu, X. Sun, S. Wang, J. Zhang, X. Yang, J. Chu, J. Niu, Y. Zhong, X. Chen, Z.-C. Yang, and D. Yu, Phys. Rev. Lett. 137 , 010401 (2026). [46] N. P. Vu, D. Dong, X. Dan, N. Lyu, V. Batista, and Y. Liu, J. Chem. Theory Comput. 21 , 6258 (2025). [47] B. Delmonico, L. Nelson, and J. K. Freericks, American Journal of Physics 94 , 814 (2026). [48] A. M. Childs and T. Li, Quantum Inf. Comput. 17 , 0901 (2017). [49] R. Cleve and C. Wang, in 44th International Col-loquium on Automata, Languages, and Programming (ICALP 2017) (Schloss Dagstuhl–Leibniz-Zentrum f¨ ur Informatik, Dagstuhl, Germany, 2017). [50] Z. Ding, X. Li, and L. Lin, PRX Quantum 5, 020332 (2024). [51] E. Borras and M. Marvian, Phys. Rev. Res. 7, 023076 (2025). [52] R. Prampain dit Boulan, J. Jebai, and H. Weimer, arXiv:2607.14663 (2026). [53] A. Ali, J. Gibbs, K. Kumaran, V. Muruganandam, B. Xiao, P. Kairys, G. Hal´ asz, A. Banerjee, and P. C. Lotshaw, arXiv:2507.08939 (2025). [54] T. S. Cubitt, arXiv preprint arXiv:2303.11962 (2023). [55] J. J. Wallman and J. Emerson, Phys. Rev. A 94 , 052325 (2016). [56] A. Hashim, R. K. Naik, A. Morvan, J.-L. Ville, B. Mitchell, J. M. Kreikebaum, M. Davis, E. Smith, C. Iancu, K. P. O’Brien, I. Hincks, J. J. Wallman, J. Emerson, and I. Siddiqi, Phys. Rev. X 11 , 041039 (2021). [57] A. Maudsley, Journal of Magnetic Resonance (1969) 69 ,488 (1986). [58] L. Viola, E. Knill, and S. Lloyd, Phys. Rev. Lett. 82 ,2417 (1999). [59] N. Ezzell, B. Pokharel, L. Tewala, G. Quiroz, and D. A. Lidar, Phys. Rev. Appl. 20 , 064027 (2023). [60] K. Mølmer, Y. Castin, and J. Dalibard, Journal of the Optical Society of America B 10 , 524 (1993). [61] R. Wille, L. Berent, T. Forster, J. Kunasaikaran, K. Mato, T. Peham, N. Quetschlich, D. Rovara, A. Sander, L. Schmid, D. Schoenberger, Y. Stade, and L. Burgholzer, in IEEE International Conference on Quantum Software (QSW) (2024) 2405.17543. [62] O. Alsheikh, yaqs, Available at https://github.com/kemperlab/yaqs (2026). 8
+
+> Appendix A: Effects of time-step size in the Liouvillian dynamics
+
+In the absence of noise, the Trotter step ∆ t controls only the accuracy of the first-order product-formula approx-imation to eLt, and smaller is always better. Under hardware noise this logic inverts. Each Trotter step is realized by a circuit layer of fixed entangling-gate depth and therefore deposits a fixed amount of unwanted dissipation per step, which we characterize by a strength ε. Advancing the simulation to time t requires N = t/ ∆t layers, so in simulated-time units the noise acts at an effective rate 
+
+γHW ∼ ε
+
+∆t , (A1) while the engineered dissipation acts at the fixed rate γ. Which of the two competing steady states dominates at accessible times is controlled by the dimensionless ratio 
+
+γγHW 
+
+∼ γ ∆tε . (A2) Increasing ∆ t therefore strengthens the target Liouvillian relative to the hardware noise floor, at the cost of a first-order coherent Trotter error that grows with ∆ t and with the coupling amplitudes Jα. For too small ∆ t the measured state approaches the noise fixed point; for too large ∆ t the Trotter error corrupts the coherent evolution, which is the origin of the anomalous points at |Jα| ≳ 4 discussed in Appendix F. We note that the discretization is not merely a source of numerical error: for the quantum contact process, the choice of Trotterization can even tune the universality class of the resulting dynamics [52]. The time step must therefore be regarded as a physical parameter of the simulated process, to be chosen—as here—by balancing competing physical effects rather than minimized indiscriminately. We can illustrate this with a simple example. Consider a single spin with engineered decay toward | ↓⟩ (jump operator σ−, rate γ, no Hamiltonian), and model the per-layer hardware noise as a depolarizing channel of strength 
+
+ε. Per layer, the engineered channel acts with probability p = 1 − e−γ∆t ≈ γ∆t, pulling the state toward the target NESS | ↓⟩⟨↓ | , while the noise pulls the state toward the maximally mixed state 11/2. The fixed point of the composite map is ˜ρss = C | ↓⟩⟨↓ | + (1 − C) 112 , (A3) with contrast 
+
+C = pp + ε(1 − p) ≈ γ∆tγ∆t + ε , (A4) i.e., the target NESS survives with a contrast that increases monotonically with ∆ t. This is precisely the behavior we observe in the interacting model: hardware noise suppresses the amplitude of the correlations [Fig. 1(e)] without destroying the structure from which the magnetic phase is identified, and larger time steps improve the contrast. 0 2 4 6 8 10 time 0.00.20.40.60.81.0Tr [ ρσ z                
+
+> 0σz
+> 1]
+> L= 3 ,OBC
+> Exact ∆t= 0 .05 ∆t= 0 .1∆t= 0 .2∆t= 0 .4
+> FIG. A1. Time evolution of the ZZ correlation function between nearest neighbors in a dissipative Heisenberg chain of size
+> L= 3, with coupling amplitudes ( Jx, J y) = (4 ,2) and dissipative rate γ=Jz= 1. The dashed black line corresponds to exact simulations, whereas the remaining curves correspond to quantum circuit simulations with variable time step on a fake backend emulating the error rates of the ibm fez device.
+
+9To reinforce this idea of the inverted logic regarding time-step size for noisy simulations, we provide some numerical results for the dissipative Heisenberg chain using a noise model that emulates the error rates of real quantum hardware. Fig. A1 shows the time evolution of the ZZ correlation between nearest-neighboring sites in an open boundary chain of size L = 3. We compare the exact simulation results (dashed black line) with quantum circuit simulations on the fake backend that emulates the device ibm fez , for which we consider four different values of the time step ∆ t.Notice that as we make the time step larger, the curves approach the exact results, which is the opposite behavior as expected in the noiseless case γHW = 0. Moreover, since for these simulations H̸ = 0, the role of the engineered dissipation γ in the previous example is now played by the Liouvillian gap. 
+
+> Appendix B: Compilation of quantum hardware results
+
+This appendix presents the complete set of raw measurement data obtained from the dissipative Heisenberg simu-lations on quantum hardware. In Figs. B1 and B2 we present our complete quantum hardware dataset as correlation matrices ( Sij , Eq. 3) and static structure factors ( S(q), Eq. 4), respectively. These data span 117 points across the parameter space, from which the phase diagram reported in the main text (Fig. 3) is drawn. Overall, the hardware reproduces the qualitative structure expected from mean-field predictions [5]: ferromagnetic (FM) and antiferromag-netic (AFM) regions near the line Jy = 0, for Jx > 0 and Jx < 0, respectively, and two spin-density-wave (SDW) wedges with distinct spatial modulation from each other. However, as discussed in the main text, there are some notable changes in the phase diagram compared to the mean-field predictions. Here we focus on the two most striking ones: the existence of a re-entrant paramagnetic (PM) phase and the incipient SDW phases. One can observe the re-emergence of paramagnetic-like behavior at the region surrounding the highlighted corners in Fig. B2. This re-entrance of the paramagnet is predicted by cluster mean-field (CMF) results [6] and differs from the paramagnetic ordering along the Jx = Jy line. For Jx = Jy , the anisotropic XYZ Heisenberg Hamiltonian reduces to an XXZ model that conserves total σz , leaving the coherent part of the dynamics unable to counteract the spin-lowering dissipation, and ultimately driving the system into a trivial all-down steady state. The re-entrance of the paramagnetic phase at large couplings is driven by a much different mechanism: As the interactions grow stronger, the state becomes increasingly mixed, eventually losing all transverse order and reverting to a paramagnetic regime. As predicted by cluster mean-field theory, this re-entrant paramagnetic regime is susceptible to finite-momentum instabilities, making it vulnerable to incommensurate orderings. The stability analysis of Ref. [6] shows that once short-range correlations are included, the paramagnetic steady state can develop an unstable mode at nonzero momenta 
+
+q, indicating a susceptibility toward incommensurate behavior. Our hardware simulations exhibit clear signatures of this effect at several points in the ( Jx, J y ) grid, as highlighted in the corners of Fig. B2. Interestingly, this appearance of incommensurate peaks is highly sensitive to the Trotter step size ∆ t. Because the Trotterization modifies the effective Liouvillian, small changes in ∆ t can act as a perturbation that either preserves the paramagnetic character or pushes the system across the finite-momentum instability boundary (see also App. F). As can be seen in Fig. B3, at ∆ t = 0 .2 the system remains largely paramagnetic, with only a weak residual ferromagnetic component. Increasing the step size to ∆ t = 0 .3 alters the effective dynamics enough to trigger the finite-momentum instability predicted by CMF theory, resulting in the emergence of clear incommensurate peaks. This behavior is consistent with the picture that the re-entrant paramagnet lies close to an instability boundary, and modest perturbations to the Liouvillian can determine whether the system remains in the mixed paramagnetic state or develops short-range incommensurate structure. Taken together, the hardware results show broad quantitative agreement with the mean-field phase structure while simultaneously reflecting the key corrections introduced by cluster mean-field analysis. Along the Jx = Jy line, we recover the expected paramagnetic behavior, but the “widening” of this region to nearby points predicted by mean-field does not appear. The SDW regions exhibit the correct directional structure, though only one of the two mean-field SDW wedges is recovered in each corner. Along the Jy = 4 and −4 lines, the hardware also shows faint SDW structure on the opposite side of the paramagnetic line, however these features are much less pronounced than the primary SDW wedges and do not form a full second wedge. Ferromagnetic and anti-ferromagnetic features are present as well, but their spatial extent is significantly reduced. The emergence of re-entrant paramagnetic behavior at large couplings, with the appearance of finite-momentum instabilities and the sensitivity of incommensurate peaks to ∆ t, further underscores that the hardware is probing the same dynamical mechanisms responsible for the modified topology of the CMF phase diagram [6]. Overall, the hardware simulations reproduce the qualitative landscape of the dissipative Heisenberg model while exhibiting the distortions, suppressions, and instabilities expected once short-range correlations and finite-size effects are properly taken into account. 10 0
+
+L/ 2(−4.0, 4.0) (−3.0, 4.0) (−2.0, 4.0) (−1.0, 4.0) (0 .0, 4.0) (1 .0, 4.0) (2 .0, 4.0) (3 .0, 4.0) (4 .0, 4.0) 
+
+0
+
+L/ 2(−4.0, 3.0) (−3.0, 3.0) (−2.0, 3.0) (−1.0, 3.0) (0 .0, 3.0) (1 .0, 3.0) (2 .0, 3.0) (3 .0, 3.0) (4 .0, 3.0) 
+
+0
+
+L/ 2(−4.0, 2.0) (−3.0, 2.0) (−2.0, 2.0) (−1.0, 2.0) (0 .0, 2.0) (1 .0, 2.0) (2 .0, 2.0) (3 .0, 2.0) (4 .0, 2.0) 
+
+0
+
+L/ 2(−4.0, 1.5) (−3.0, 1.5) (−2.0, 1.5) (−1.0, 1.5) (0 .0, 1.5) (1 .0, 1.5) (2 .0, 1.5) (3 .0, 1.5) (4 .0, 1.5) 
+
+0
+
+L/ 2(−4.0, 1.0) (−3.0, 1.0) (−2.0, 1.0) (−1.0, 1.0) (0 .0, 1.0) (1 .0, 1.0) (2 .0, 1.0) (3 .0, 1.0) (4 .0, 1.0) 
+
+0
+
+L/ 2(−4.0, 0.5) (−3.0, 0.5) (−2.0, 0.5) (−1.0, 0.5) (0 .0, 0.5) (1 .0, 0.5) (2 .0, 0.5) (3 .0, 0.5) (4 .0, 0.5) 
+
+0
+
+L/ 2(−4.0, 0.0) (−3.0, 0.0) (−2.0, 0.0) (−1.0, 0.0) (0 .0, 0.0) (1 .0, 0.0) (2 .0, 0.0) (3 .0, 0.0) (4 .0, 0.0) 
+
+0
+
+L/ 2(−4.0, −0.5) (−3.0, −0.5) (−2.0, −0.5) (−1.0, −0.5) (0 .0, −0.5) (1 .0, −0.5) (2 .0, −0.5) (3 .0, −0.5) (4 .0, −0.5) 
+
+0
+
+L/ 2(−4.0, −1.0) (−3.0, −1.0) (−2.0, −1.0) (−1.0, −1.0) (0 .0, −1.0) (1 .0, −1.0) (2 .0, −1.0) (3 .0, −1.0) (4 .0, −1.0) 
+
+0
+
+L/ 2(−4.0, −1.5) (−3.0, −1.5) (−2.0, −1.5) (−1.0, −1.5) (0 .0, −1.5) (1 .0, −1.5) (2 .0, −1.5) (3 .0, −1.5) (4 .0, −1.5) 
+
+0
+
+L/ 2(−4.0, −2.0) (−3.0, −2.0) (−2.0, −2.0) (−1.0, −2.0) (0 .0, −2.0) (1 .0, −2.0) (2 .0, −2.0) (3 .0, −2.0) (4 .0, −2.0) 
+
+0
+
+L/ 2(−4.0, −3.0) (−3.0, −3.0) (−2.0, −3.0) (−1.0, −3.0) (0 .0, −3.0) (1 .0, −3.0) (2 .0, −3.0) (3 .0, −3.0) (4 .0, −3.0) 
+
+0 L/ 20
+
+L/ 2(−4.0, −4.0) 
+
+0 L/ 2(−3.0, −4.0) 
+
+0 L/ 2(−2.0, −4.0) 
+
+0 L/ 2(−1.0, −4.0) 
+
+0 L/ 2(0 .0, −4.0) 
+
+0 L/ 2(1 .0, −4.0) 
+
+0 L/ 2(2 .0, −4.0) 
+
+0 L/ 2(3 .0, −4.0) 
+
+0 L/ 2(4 .0, −4.0) 
+
+FIG. B1. Full grid of quantum hardware data for the (normalized) steady-state correlation matrix Sij = Tr [ρSS σxi σxj
+
+]
+
+for several coupling amplitude pairs ( Jx, J y ) and periodic chain length identified by the upper-right symbols: • → L = 40, 
+
+▲ → L = 42, and ■ → L = 50. Data corresponds to the average over the last 10 time steps, with t ∈ [27 .3, 30] and dissipative rate γ = Jz = 1 .0. 11 
+
+FIG. B2. Same as Fig. B1, but with the correlation measurement computed in momentum space, i.e., S(q) =
+
+> 1
+> L
+
+∑Li,j =1 eiq (ri−rj )Sij . Color of the shaded areas reflect the magnetic phase the system is found, following the same color scheme as the phase diagram reported in the main text (Fig. 3). System size is indicated by the marker shape. 12 −π −π/ 2 0 π/ 2 πq
+
+0.98 0.99 1.00 1.01 1.02 1.03 
+
+> S(q)
+
+(Jx, J y) = (4 , −2)   
+
+> ∆t= 0 .3∆t= 0 .2
+
+FIG. B3. Static structure factor S(q) at the unstable re-entrant paramagnetic phase for two different values of time step ∆t. Simulated system is a periodic chain with L = 40 sites, with coupling amplitudes ( Jx, J y ) = (4 , −2) and dissipative rate 
+
+γ = Jz = 1. 
+
+Appendix C: Exact simulations for small system sizes 
+
+We discuss exact diagonalization results for various observables using the Liouvillian dynamics of a periodic spin chain with L = 12 sites. The results presented in this section are used to compare the hardware results in the main text and tensor network formulation results that are discussed in the following section. 0 5 10 site i                                      
+
+> 0.02.55.07.510 .0site  j
+> AFM
+> (a)
+> −π−π/ 20π/ 2πq
+> 1.01.52.0
+> S(q)
+> Jx=−1
+> Jy= 0
+> (b)
+> 0510 site i
+> FM
+> −π−π/ 20π/ 2πq
+> Jx= 1
+> Jy= 0
+> 0510 site i
+> SDW1
+> −π−π/ 20π/ 2πq
+> Jx= 3
+> Jy= 2
+> 0510 site i
+> SDW2
+> −π−π/ 20π/ 2πq
+> Jx=−3
+> Jy=−2
+> −101
+> Sij
+
+FIG. C1. Steady state phases of the dissipative Heisenberg model obtained using exact diagonalization. Real space (a) and momentum space (b) structure factors for a 12 site chain. 
+
+From the exact diagonalization calculation we can identify various magnetic phases. In Fig. C1, the real-space and momentum-space correlators of ⟨σxi σxj ⟩ are plotted. Alternating blue and red bands identify the antiferromagnetic steady state, and a uniform red band identifies the ferromagnetic state. Both the real-space and momentum-space plots distinguish the spin density wave (SDW) from the other two phases: a periodicity greater than two in Sij 
+
+identifies the SDW, and peaks away from 0 and π in momentum space identify the same phase. Interestingly, even for this small lattice the SDW1 and SDW2 phases show distinct differences, with the peaks shifted toward opposite sides 13 Jx = 4 
+
+(a) Jy = 0 
+
+Jx = 3 .75 
+
+Jx = 3 .5
+
+Jx = 3 .25 
+
+Jx = 3 
+
+Jx = 2 .75 
+
+Jx = 2 .5
+
+Jx = 2 .25 
+
+Jx = 2 
+
+Jx = 1 .75 
+
+Jx = 1 .5
+
+Jx = 1 .25 
+
+Jx = 1 
+
+Jx = 0 .75 
+
+Jx = 0 .5
+
+Jx = 0 .25 
+
+Jx = 0 
+
+Jx = −0.25 
+
+Jx = −0.5
+
+Jx = −0.75 
+
+Jx = −1
+
+Jx = −1.25 
+
+Jx = −1.5
+
+Jx = −1.75 
+
+Jx = −2
+
+Jx = −2.25 
+
+Jx = −2.5
+
+Jx = −2.75 
+
+Jx = −3
+
+Jx = −3.25 
+
+Jx = −3.5
+
+Jx = −3.75 
+
+−π/ 2 0 π/ 2 π 3π/ 2
+
+q
+
+Jx = −4
+
+Jx = 4 
+
+(b) Jy = 0 .75 
+
+Jx = 3 .75 
+
+Jx = 3 .5
+
+Jx = 3 .25 
+
+Jx = 3 
+
+Jx = 2 .75 
+
+Jx = 2 .5
+
+Jx = 2 .25 
+
+Jx = 2 
+
+Jx = 1 .75 
+
+Jx = 1 .5
+
+Jx = 1 .25 
+
+Jx = 1 
+
+Jx = 0 .75 
+
+Jx = 0 .5
+
+Jx = 0 .25 
+
+Jx = 0 
+
+Jx = −0.25 
+
+Jx = −0.5
+
+Jx = −0.75 
+
+Jx = −1
+
+Jx = −1.25 
+
+Jx = −1.5
+
+Jx = −1.75 
+
+Jx = −2
+
+Jx = −2.25 
+
+Jx = −2.5
+
+Jx = −2.75 
+
+Jx = −3
+
+Jx = −3.25 
+
+Jx = −3.5
+
+Jx = −3.75 
+
+−π/ 2 0 π/ 2 π 3π/ 2
+
+q
+
+Jx = −4
+
+Jx = 4 
+
+(c) Jy = 1 
+
+Jx = 3 .75 
+
+Jx = 3 .5
+
+Jx = 3 .25 
+
+Jx = 3 
+
+Jx = 2 .75 
+
+Jx = 2 .5
+
+Jx = 2 .25 
+
+Jx = 2 
+
+Jx = 1 .75 
+
+Jx = 1 .5
+
+Jx = 1 .25 
+
+Jx = 1 
+
+Jx = 0 .75 
+
+Jx = 0 .5
+
+Jx = 0 .25 
+
+Jx = 0 
+
+Jx = −0.25 
+
+Jx = −0.5
+
+Jx = −0.75 
+
+Jx = −1
+
+Jx = −1.25 
+
+Jx = −1.5
+
+Jx = −1.75 
+
+Jx = −2
+
+Jx = −2.25 
+
+Jx = −2.5
+
+Jx = −2.75 
+
+Jx = −3
+
+Jx = −3.25 
+
+Jx = −3.5
+
+Jx = −3.75 
+
+−π/ 2 0 π/ 2 π 3π/ 2
+
+q
+
+Jx = −4
+
+Jx = 4 
+
+(d) Jy = 1 .5
+
+Jx = 3 .75 
+
+Jx = 3 .5
+
+Jx = 3 .25 
+
+Jx = 3 
+
+Jx = 2 .75 
+
+Jx = 2 .5
+
+Jx = 2 .25 
+
+Jx = 2 
+
+Jx = 1 .75 
+
+Jx = 1 .5
+
+Jx = 1 .25 
+
+Jx = 1 
+
+Jx = 0 .75 
+
+Jx = 0 .5
+
+Jx = 0 .25 
+
+Jx = 0 
+
+Jx = −0.25 
+
+Jx = −0.5
+
+Jx = −0.75 
+
+Jx = −1
+
+Jx = −1.25 
+
+Jx = −1.5
+
+Jx = −1.75 
+
+Jx = −2
+
+Jx = −2.25 
+
+Jx = −2.5
+
+Jx = −2.75 
+
+Jx = −3
+
+Jx = −3.25 
+
+Jx = −3.5
+
+Jx = −3.75 
+
+−π/ 2 0 π/ 2 π 3π/ 2
+
+q
+
+Jx = −4
+
+> S(q)
+
+FIG. C2. Observing the crossover between magnetic phases using exact diagonalization. Static structure factor S(q) for several values of coupling amplitude Jx and fixed (a) Jy = 0 .0, (b) Jy = 0 .75, (c) Jy = 1 .0 and (d) Jy = 1 .5. 14 −4 −2 0 2 4        
+
+> Jx/γ
+> −4
+> −2024
+> Jy/γ  AFM FM SDW1 SDW2
+> (a)
+> −4−2024
+> Jx/γ
+> −4
+> −2024
+> Jy/γ
+> (b)
+> 0
+> π/ 4
+> π/ 23π/ 4
+> π
+> |qpeak |
+> 0.00.20.40.60.81.01.2
+> ξ (sites)
+> FIG. C3. Phase diagram of the dissipative spin-1/2 Heisenberg model from the exact diagonalization calculation using (a) the peak position in structure factor S(q), opacity is set by the height of the peak in the phasor construction described in the Appendix E and (b) using the correlation length computed from the width of the structure factor. Data is interpolated before plotting. Since we use small Trotter step with dt = 0 .05, an incipient SDW phase is absent unlike the hardware results.
+
+of q = π/ 2. The peak height of S(q) in the various phases identifies the strength of the different magnetic orderings, and this identification carries over to the structure factor plots in Fig. C2 as well. However, for the hardware data, the peak height is diminished and close to the case with the uniform average value of one, which is why distinguishing various phases near crossover regime becomes increasingly difficult as we go close to the boundary of various phases. The figure shows that a scan at fixed Jy not only recovers the various dissipative magnetically ordered phases but also indicates that several quantities associated with the structure factor have the potential to act as order parameters for identifying phase boundaries. The bulk phase identifications carry over to the large-scale hardware results. Fig. C3 shows various phases across the phase diagram, with white lines marking the phase boundaries or crossover regimes. The AFM, FM, SDW1, and SDW2 regions provide a rough idea of what to expect from larger-lattice simulations on the quantum simulator. The phase plots obtained from the peak prominence (a) and the correlation length (b) both identifies the phase boundaries and conform to the phase diagrams obtained from the quantum simulator. Phasor plot from the prominence can identify various phases, whereas phase diagram from the correlation length serves better to describe how strongly the system is correlated at various phases. The main difference from the quantum processing unit’s result is the absence of the iSDW phases at the smaller Trotter step. The emergence of this phase in the hardware is explained in the Appendix F. 
+
+> Appendix D: Tensor network simulations
+
+In this section we present our tensor network results for system size L = 40. Our classical simulations use the tensor jump method (TJM) [18], a tensor network adaptation of the Monte Carlo wavefunction method (MCWF) [60]. This technique that is a part of a family of methods called stochastic unraveling. The main idea rests on exchanging the deterministic Lindbladian evolution of the density matrix ρ(t) ∈ C2L
+
+×C2L
+
+with a stochastic Schrodinger evolution of a wavefunction |ψi(t)⟩ ∈ C2L
+
+. Stochastic in nature, each evolution generates a different trajectory, and ρ(t) is recovered by averaging over |ψi(t)⟩⟨ ψi(t)|. Each trajectory starts from an initial state that is subjected to a non-unitary evolution generated by a non-Hermitian Hamiltonian: ˜H = H + HD , (D1) 15 where H is the Hermitian system Hamiltonian, and HD is the dissipative Hamiltonian built from the jump operators: 
+
+HD = − iγ 
+
+2
+
+∑
+
+> m
+
+L†
+
+> m
+
+Lm. (D2) We use this Hamiltonian to generate the Trotterized evolution 
+
+|ψ(t + ∆ t)(i)⟩ = e−i ˜H∆t|ψi(t)⟩. (D3) Because of the non-unitary of the evolution, the norm of the wavefunction decreases by some amount: 
+
+⟨ψ(i)(t + ∆ t)|ψ(i)(t + ∆ t)⟩ = 1 − δp (t). (D4) This denormalization is the direct result of the dissipative nature of the system, and in the picture of stochastic trajectories, is a sudden jump caused by the jump operators. The denormalization factor can be thought of as the combined effect of individual stochastic factors corresponding to our jump operators: 
+
+δp (t) = ∑
+
+> m
+
+δp m(t), δp m(t) = ∆ tγ ⟨ψi(t)|L†
+
+> m
+
+Lm|ψi(t)⟩. (D5) In this picture, δp becomes the probability that a jump occurs at each time step. If no jump occurs, the wavefunction is normalized and we go to the next step: 
+
+|ψi(t + ∆ t)⟩ = 1
+
+√1 − δp (t) |ψ(i)(t + ∆ t)⟩. (D6) If a jump did occur, then we sample which particular process happened from the our set of jump operators, with each process having the probability δp m(t)/δp (t): 
+
+|ψi(t + ∆ t)⟩ =
+
+√
+
+γ∆tδp m(t) Lm|ψi(t)⟩. (D7) We then apply this process at every time step until the desired final simulation time is reached. This constitutes one trajectory. TJM employs a tensor network scheme combined with a dynamic time-dependent variational principle (TDVP) algorithm to efficiently implement the MCWF method. One trajectory of TJM follows the evolution 
+
+U (T ) = 
+
+> n
+
+∏
+
+> i=0
+
+Fn−i(∆ t), (D8) where 
+
+Fj (∆ t) = 
+
+
+
+Jϵ(∆ t)D(∆ t/ 2) U(∆ t), j = n
+
+Jϵ(∆ t)D(∆ t)U(∆ t), 0 < j < n 
+
+Jϵ(∆ t)D(∆ t/ 2) , j = 0 .
+
+(D9) The unitary part of the evolution is encoded by U(∆ t) = e−iH 0∆t, and the dissipative evolution is encoded by 
+
+D(∆ t) = e−iH D ∆t, while the stochastic jump process is encoded by Jϵ(∆ t). The states are encoded as matrix product states (MPS) and the operators are encoded as matrix product operators (MPO). The unitary part of the evolution is computed using a dynamic TDVP method, where the solver dynamically switches between one-site TDVP and two-site TDVP based on whether the bond dimension has more room to grow. This allows for more smaller truncation errors while maintaining computational efficiency. The dissipative evolution and the stochastic jump evolution can also be efficiently encoded for single-site jump operators. To cut down on memory requirements, we can save trajectories of expectation values instead of trajectories of full state vectors. If we are interested in a set of operators {Oj (t)}, then we run N TJM trajectories, and we estimate the expectation values by an averaging process over the trajectories: 
+
+⟨Oj (t)⟩ = 1
+
+N
+
+> N
+
+∑
+
+> i=1
+
+⟨ψi(t)|Oj |ψi(t)⟩. (D10) 16 °º °º/2 0 º/2 º                       
+
+> q
+> 1.01.52.02.5
+> S(q)
+> Jx=°1.0
+> Jy= 0 .0
+> °º°º/20º/2º
+> qJx= 1 .0
+> Jy= 0 .0
+> °º°º/20º/2º
+> qJx= 3 .0
+> Jy= 2 .0
+> °º°º/20º/2º
+> qJx=°3.0
+> Jy=°2.0
+
+# a
+
+## b
+
+> FIG. D1. Real space spin-spin correlation function (a) and momentum space structure factor (b) for a 40-site chain obtained using the tensor jump method described in the text. Shaded area around the curves correspond to the 95% confidence interval of 1000 bootstrap samples, resampled from the 128 trajectories.
+
+Since each TJM trajectory is an independent run, this algorithm is embarrassingly parallelizable. For the simulations in this paper, we used the python package provided by the authors of TJM [61]. The original code accepted only 1-site and neighboring 2-site operators, so we modified the code to allow for arbitrary 2-site operators to be able to determine the structure factors [62]. We ran the simulations for L = 40 with final simulation time T = 20 and time step ∆ t = 0 .1. The bond dimension was capped at 16, and the averages were calculated over 128 trajectories. Correlator and structure factor plots of the NESS is shown in the Fig D1 which shows qualitatively similar behavior to exact results at smaller lattice. The location of the peaks in the structure factor plots are in agreement with hardware results for the parameters we ran, but the amplitudes from the hardware data appear to be damped. Each parameter set took approximately 25 minutes on an Apple M3 Pro chip using 10 threads. We also ran the same parameters for bond dimension caps 8 and 32 (not shown in the paper), and the results remained largely consistent with what was shown. The locations of the peaks were the same, but there was a very slight change in the amplitudes of the structure factor points. 
+
+> Appendix E: Interpolation of the phase diagram
+
+In this section we provide details about the interpolation scheme employed in sketching the phase diagram based on the peak position and height of the static structure factor in momentum space. For every measured coupling pair (Jx, J y ) we build the equal-time Sij = Tr [ρσ xi σxj
+
+] correlation matrix averaged over the last ten Trotter steps, and Fourier transform to the static structure factor S(q) with q ∈ [0 , π ]: 
+
+S(q) = 1
+
+L
+
+∑
+
+> i,j
+
+Sij eiq (ri−rj ) (E1) Each point is then reduced to two descriptors: the peak wavevector q∗, the location of the dominant maximum of 
+
+S(q) refined below the FFT bin spacing by a three-point parabolic fit, and its prominence Π = S(q∗) − median q S(q). Hardware data carry a common-mode artifact confined to the q = 0 bin; when S(0) forms a single-bin cusp that overshoots the smooth trend extrapolated from its neighbors, that bin is excluded from the peak search so that q∗
+
+tracks the physical ordering peak. The field q∗(Jx, J y ) cannot be interpolated as a scalar: across a direct FM–AFM boundary it jumps from 0 to π with no intermediate ordering in between, and linear interpolation would sweep through every intermediate wavevector, 17 painting a spurious SDW-colored band along a boundary where the data show no such order. Instead, each measured point is mapped to a prominence-weighted phasor 
+
+v = Π (cos q∗, sin q∗), (E2) and the two components are interpolated linearly onto the plot grid. At each grid cell the color encodes the recovered angle q = atan2( vy , v x), which remains in [0 , π ] because vy ≥ 0, and the opacity is set by |v|. Where neighboring points order at similar wavevectors this reduces to ordinary linear interpolation of q∗ and Π, so smooth regions — including the genuine incommensurate lobes — are rendered exactly as a naive scheme would. Across an FM–AFM boundary, however, the two phasors are antiparallel: the interpolated v moves along the axis joining them, the recovered angle switches directly from 0 to π without visiting intermediate values, and |v| dips to zero. Such boundaries therefore appear as thin transparent seams; the seam marks a switch in the identity of the dominant peak, not an absence of order. The opacity ramps linearly from zero at a prominence floor Π 0 = 0 .03, below which we consider no order discernible, to one at the 95th percentile of the measured prominences. Outside the convex hull of the measured points the map is fully transparent. As a cross-check of the scheme, we also interpolated the baseline-subtracted S(q) profiles themselves, bin by bin in q, and re-extracted the dominant peak at every grid cell; away from phase boundaries the two constructions agree, and both eliminate the phantom boundary colors produced by scalar interpolation of q∗.In the far anti-diagonal corners a weak but reproducible incommensurate signal (symmetry partners under (Jx, J y ) → (−Jx, −Jy )) is nearly invisible on the global opacity scale. Inside the corner triangles |Jx − Jy | ≥ 5.5the opacity is therefore stretched onto a local scale, saturating at the 95th percentile of the corner-point prominences with a ramp four times steeper than the global one; the dashed lines in the figure mark this change of scale. 
+
+> Appendix F: Higher-order Trotter terms and the incipient SDW phases
+
+In this section we discuss how by setting a relatively large Trotter step we observe incipient SDW phases in the main diagonal corners of the phase diagram, which arise as a consequence of higher-order corrections to the Trotter approximation. One circuit step applies the unitary even bond layer Le, the unitary odd bond layer Lo, and the dissipation LD in sequence, eL ∆t ≃ eLe ∆t eLo ∆t eLD ∆t, so the leading correction to the generator is 
+
+Leff = LH + LD + ∆t
+
+2
+
+([Le, Lo
+
+] + [LH , LD
+
+])
+
++ O(∆ t2), LH = Le + Lo. (F1) The first commutator is the Hamiltonian correction ∆ H. Splitting the Hamiltonian into even and odd bond layers, 
+
+e−iH ∆t ≃ e−iH e ∆t e−iH o ∆t, the circuit implements the effective Hamiltonian 
+
+Heff = H + ∆ H + O(∆ t2), ∆H = − i ∆t
+
+2 [He, H o]. (F2) Only adjacent bonds sharing a site contribute to the commutator. With [ σam, σ bm] = 2 i ϵ abc σcm on the shared site, each pair of couplings JaJb (a̸ = b) generates a three-site term, and collecting all of them gives ∆H = ∆ t ∑
+
+> m
+
+(−1) m+1 [
+
+JxJy
+
+(Xm−1ZmYm+1 − Ym−1ZmXm+1 
+
+) (F3) +Jy Jz
+
+(Ym−1XmZm+1 − Zm−1XmYm+1 
+
+) (F4) +Jz Jx
+
+(Zm−1YmXm+1 − Xm−1YmZm+1 
+
+) ]
+
+. (F5) All three families are chiral: three-site, staggered, and odd under reflection about the central site. At the isotropic point Jx = Jy = Jz = J the bracket in Eq. (F5) collapses to −8J2 Sm−1 · (Sm × Sm+1 ), the staggered scalar spin chirality; away from it the three families carry independent weights JaJb. Along the Jy = 0 line the xy and yz families vanish identically and only the zx family survives. The second commutator in Eq. F1 is not a Hamiltonian term: for the jump operators σ− 
+
+> i
+
+at rate γ,
+
+[LH , LD
+
+](ρ) = γ ∑
+
+> i
+
+[
+
+−i
+
+(
+
+[H, σ − 
+
+> i
+
+] ρ σ + 
+
+> i
+
++ σ− 
+
+> i
+
+ρ [H, σ + 
+
+> i
+
+]
+
+)︸ ︷︷ ︸
+
+> modified jump
+
++ i
+
+2
+
+{ [H, σ + 
+
+> i
+
+σ− 
+
+> i
+
+], ρ }︸ ︷︷ ︸
+
+> modified damping
+
+]
+
+. (F6) 18 With σ−
+
+i = ( Xi − iY i)/2 and σ+
+
+i σ−
+
+i = (1 + Zi)/2 the required commutators are two-site, [H, σ −
+
+i ] = ∑
+
+j ∈ nn( i)
+
+(
+
+Jx ZiXj − iJ y ZiYj − 2Jz σ−
+
+i Zj
+
+)
+
+, [H, σ +
+
+i σ−
+
+i ] = 12 [H, Z i], (F7) so the Trotterized dissipation is no longer local: the step generates correlated two-site decay together with a state-dependent damping ∝ [H, Z i]. Equivalently, to first order in ∆ t the entire cross term amounts to keeping the Lindblad form and renormalizing each jump operator, ˜σ−
+
+i = σ−
+
+i − i ∆t
+
+2 [H, σ −
+
+i ] = σ−
+
+i − i ∆t
+
+2
+
+∑
+
+j ∈ nn( i)
+
+(
+
+Jx ZiXj − iJ y ZiYj − 2Jz σ−
+
+i Zj
+
+)
+
+, (F8) i.e. D[σ−
+
+i ] → D [˜ σ−
+
+i ] reproduces Eq. (F6) up to O(∆ t2). 4 2 0 2 4                                   
+
+> Jx
+> 4
+> 2
+> 024
+> Jy
+> baseline
+> 42024
+> Jx
+> 4
+> 2
+> 024
+> Jy
+> t= 0.05
+> spurious anti-diagonal SDW: 10 pts (black edge)
+> 42024
+> Jx
+> 4
+> 2
+> 024
+> Jy
+> t= 0.10
+> spurious anti-diagonal SDW: 18 pts (black edge)
+> Hamiltonian Trotter terms only ( H, no dissipator cross term) (L= 6, Jz== 1)
+> marker area S(q*)
+> q*= 0 (FM) q*=/3 (SDW) q*= 2 /3 (SDW) q*=(AFM) unordered spurious (absent in baseline)
+
+FIG. F1. Location of the peak in the spin structure factor for an L = 6 dissipative Heisenberg chain, for baseline (no Trotter error), and ∆ t = 0 .05 and ∆ t = 0 .10. The size of the markers indicates the relative strength of the order (peak height), whereas the color indicates the peak position. 
+
+In Fig. F1 we show that the additional terms in ∆ H give rise to the incipient SDW phases in the corners of the phase diagram. We use small scale ( L = 6) exact diagonalization of the Liouvillian to determine the steady state. As the Trotter error is increased from 0, the iSDW phases emerge in the corners, and this effect gets stronger with increasing ∆ t. The rest of the phase diagram remains unaffected by the Trotter error, in agreement with the quantum hardware results. The modification of the jump operator σ−
+
+i → ˜σ−
+
+i , while it affects the strength of the observed orders, does not shift the peak.
