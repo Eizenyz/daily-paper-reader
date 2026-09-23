@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-23",
+  "date": "2026-09-23",
+  "generated_at": "2026-09-23T22:32:03",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/23/2609.26372v1-lattice-lindbladian-simulation-by-patching-and-merging",
+      "section": "deep",
+      "title_en": "Lattice Lindbladian simulation by patching and merging",
+      "authors": "Kaoru Mizuta",
+      "date": "2026-09-22",
+      "pdf": "https://arxiv.org/pdf/2609.26372v1",
+      "score": "9.0",
+      "evidence": "晶格Lindbladian耗散动力学的近最优量子算法",
+      "tldr": "模拟局域 Lindblad 耗散多体动力学是量子计算基础任务，但门数远未达到哈密顿模拟的近最优水平。本文利用格点局域性，提出 patching 与 merging：前者将耗散动力学分解到子系统并控制指数小误差，后者把反向耗散吸收进演化以降低准概率采样开销。稀疏耗散系统达到 O(Nt polylog(Nt/ε)) 门数，一般有限程格点 Lindbladian 每样本达到 O((Nt)^{4/3} polylog(Nt/ε)) 门数，系统尺寸依赖为已知最小，推动了耗散多体快速量子模拟。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Simulating the dynamics of dissipative quantum many-body systems governed by local Lindbladians is a fundamental task in quantum computation. While the near-optimal gate count has been achieved for Hamiltonian simulation, comparable results for Lindbladian simulation remain elusive. In this work, we develop quantum algorithms for lattice Lindbladians by exploiting their locality. First, we consider sparsely dissipative systems, in which the dissipation is sparsely located, including boundary-driven systems. We establish a near-optimal quantum algorithm for their dynamics with gate count $O(Nt \\, \\mathrm{polylog}(Nt/\\varepsilon))$, where $N$ is the system size, $t$ is the evolution time, and $\\varepsilon$ is the allowable error. We then consider generic lattice Lindbladians with finite-range interactions and dissipation, and develop an algorithm for simulating time-evolved observables with gate count $O((Nt)^{4/3} \\, \\mathrm{polylog}(Nt/\\varepsilon))$ per sample with the sampling complexity $Θ(\\varepsilon^{-2})$. The gate count has the smallest known dependence on the system size among algorithms retaining polylogarithmic dependence on $1/\\varepsilon$. Our algorithms are based on two techniques that exploit locality: patching and merging. Patching decomposes dissipative dynamics into dynamics on subsystems with exponentially small error, generalizing a key idea underlying the Haah-Hastings-Kothari-Low algorithm for near-optimal Hamiltonian simulation. Merging absorbs reversed dissipative dynamics into other parts of the evolution, substantially reducing the overhead associated with quasi-probabilistic sampling. These results demonstrate that locality can be fully exploited to achieve fast quantum simulation of dissipative many-body dynamics, opening the way to applications such as predicting nonequilibrium phenomena and preparing desirable quantum states.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/23/2609.19239v1-lazy-training-of-quantum-physics-informed-neural-networks",
+      "section": "quick",
+      "title_en": "Lazy training of quantum physics informed neural networks",
+      "authors": "Anderson Melchor Hernandez, Giacomo De Palma",
+      "date": "2026-09-16",
+      "pdf": "https://arxiv.org/pdf/2609.19239v1",
+      "score": "6.0",
+      "evidence": "面向二阶椭圆偏微分方程求解的量子物理信息神经网络训练理论",
+      "tldr": "针对量子物理信息神经网络（QPINN）求解二阶椭圆型偏微分方程时的训练动力学缺乏理论刻画，本文研究其梯度流训练过程。作者将参数化量子电路视为函数逼近器，利用神经正切核（NTK）分析过参数化区域，建立非渐近的懒惰训练理论。结果表明，当电路宽度足够大时，非线性梯度流可被线性化NTK模型定量近似，并给出依赖量子比特数、电路深度、光锥几何及PDE定义域维度的显式误差界。该工作为QPINN的收敛性与可训练性提供了理论保证。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "We study the gradient-flow training dynamics of quantum physics-informed neural networks (QPINNs) for the solution of second-order elliptic partial differential equations with Dirichlet boundary conditions. We consider parameterized quantum circuits as function approximators and analyze their overparameterized regime through the lens of the neural tangent kernel (NTK). Our contribution is a nonasymptotic lazy-training theory for QPINNs and their variational formulation: we prove that, for sufficiently large circuit width, the nonlinear gradient flow is quantitatively approximated by a linearized NTK model, with explicit bounds depending on the number of qubits, circuit depth, circuit light-cone geometry, and the dimension of the domain of the solution to the PDE.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

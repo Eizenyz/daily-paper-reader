@@ -1,6 +1,11 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-09-23 <!--dpr-date:20260923-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/23/2609.26372v1-lattice-lindbladian-simulation-by-patching-and-merging" data-sidebar-item="{&quot;title&quot;: &quot;Lattice Lindbladian simulation by patching and merging&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.26372v1-lattice-lindbladian-simulation-by-patching-and-merging&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;晶格Lindbladian耗散动力学的近最优量子算法&quot;}">Lattice Lindbladian simulation by patching and merging</a>
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/23/2609.19239v1-lazy-training-of-quantum-physics-informed-neural-networks" data-sidebar-item="{&quot;title&quot;: &quot;Lazy training of quantum physics informed neural networks&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.19239v1-lazy-training-of-quantum-physics-informed-neural-networks&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;面向二阶椭圆偏微分方程求解的量子物理信息神经网络训练理论&quot;}">Lazy training of quantum physics informed neural networks</a>
   * 2026-09-21 <!--dpr-date:20260921-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/21/2609.16108v1-large-scale-quantum-simulations-of-dissipative-spin-12-heisenberg-chains" data-sidebar-item="{&quot;title&quot;: &quot;Large-scale quantum simulations of dissipative spin-1/2 Heisenberg chains&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.16108v1-large-scale-quantum-simulations-of-dissipative-spin-12-heisenberg-chains&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;在超导处理器上模拟耗散自旋链的Lindblad动力学&quot;}">Large-scale quantum simulations of dissipative spin-1/2 Heisenberg chains</a>

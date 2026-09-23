@@ -1,0 +1,41 @@
+{
+  "date": "20260923",
+  "date_label": "",
+  "generated_at": "2026-09-23 22:32:01 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.26372v1",
+      "route": "202609/23/2609.26372v1-lattice-lindbladian-simulation-by-patching-and-merging",
+      "title": "Lattice Lindbladian simulation by patching and merging",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "晶格Lindbladian耗散动力学的近最优量子算法",
+      "first_seen_at": "2026-09-23 22:32:01 UTC",
+      "updated_at": "2026-09-23 22:32:01 UTC"
+    },
+    {
+      "paper_id": "2609.19239v1",
+      "route": "202609/23/2609.19239v1-lazy-training-of-quantum-physics-informed-neural-networks",
+      "title": "Lazy training of quantum physics informed neural networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向二阶椭圆偏微分方程求解的量子物理信息神经网络训练理论",
+      "first_seen_at": "2026-09-23 22:32:01 UTC",
+      "updated_at": "2026-09-23 22:32:01 UTC"
+    }
+  ]
+}
