@@ -1,0 +1,41 @@
+{
+  "date": "20260924",
+  "date_label": "",
+  "generated_at": "2026-09-24 22:35:42 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.23960v1",
+      "route": "202609/24/2609.23960v1-global-zero-excitation-state-preparation-through-subsystem-cooling",
+      "title": "Global zero-excitation state preparation through subsystem cooling",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "由GKLS主方程和局域跳跃算符描述的耗散动力学",
+      "first_seen_at": "2026-09-24 22:35:42 UTC",
+      "updated_at": "2026-09-24 22:35:42 UTC"
+    },
+    {
+      "paper_id": "2609.28369v1",
+      "route": "202609/24/2609.28369v1-simulation-of-a-battery-cell-on-quantum-computers-reactions--transport",
+      "title": "Simulation of a Battery Cell on Quantum Computers: Reactions & Transport",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "用量子算法结合Feynman-Kitaev哈密顿量求解非线性偏微分方程",
+      "first_seen_at": "2026-09-24 22:35:42 UTC",
+      "updated_at": "2026-09-24 22:35:42 UTC"
+    }
+  ]
+}

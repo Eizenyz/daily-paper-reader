@@ -1,0 +1,97 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-24T22:35:25.782429+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 0,
+    "deep_cap": 7,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 12,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.23960v1",
+      "source": "arxiv",
+      "title": "Global zero-excitation state preparation through subsystem cooling",
+      "abstract": "Preparing interacting quantum systems in low-energy or ground states is a fundamental task in quantum simulation and quantum information processing. In realistic settings, dissipation and active cooling can typically be engineered only on a limited subset of the system. We study the dissipative dynamics of excitation-number conserving quantum systems governed by a GKLS master equation with local jump operators acting on a subset of qubits. We establish sufficient conditions under which such localized dissipation drives the full system to a unique globally attractive zero-excitation state. In particular, we prove that if the Hamiltonian generates excitation transfer described by a graph for which the dissipative subsystem forms a zero forcing set, then the zero-excitation state is the unique globally attractive stationary state. When this state coincides with a ground state of the Hamiltonian, the same mechanism realizes ground-state cooling. Our results provide a graph-theoretic criterion for global state preparation from localized dissipation, which we illustrate using a nearest-neighbor Heisenberg spin chain. For this model, a reduction to the single-excitation sector further yields a scaling estimate with the length of the chain which indicates efficient cooling.",
+      "authors": [
+        "Kerstin Beer",
+        "Daniel Burgarth"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math-ph"
+      ],
+      "published": "2026-09-21T00:10:36+00:00",
+      "link": "https://arxiv.org/pdf/2609.23960v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "dissipative dynamics governed by a GKLS master equation with local jump operators",
+      "llm_evidence_cn": "由GKLS主方程和局域跳跃算符描述的耗散动力学",
+      "llm_evidence": "由GKLS主方程和局域跳跃算符描述的耗散动力学",
+      "canonical_evidence": "由GKLS主方程和局域跳跃算符描述的耗散动力学",
+      "llm_tldr_en": "For excitation-conserving systems governed by a GKLS master equation with local jump operators, localized dissipation drives the whole system to a unique zero-excitation state if the dissipative subset forms a zero forcing set.",
+      "llm_tldr_cn": "在实际量子模拟中，耗散和主动冷却往往只能施加在系统的有限子集上，如何据此制备全局目标态仍不清楚。作者研究由GKLS主方程描述、跳跃算符仅作用于部分量子比特的激发数守恒系统，并建立局域耗散驱动全系统收敛的充分条件。结果表明，若哈密顿量诱导的激发转移图使耗散子系统构成零强制集，则全系统被唯一地驱动到全局吸引的零激发态。该结论为耗散型态制备和开放量子系统的收敛性提供了严格判据。",
+      "llm_tldr": "在实际量子模拟中，耗散和主动冷却往往只能施加在系统的有限子集上，如何据此制备全局目标态仍不清楚。作者研究由GKLS主方程描述、跳跃算符仅作用于部分量子比特的激发数守恒系统，并建立局域耗散驱动全系统收敛的充分条件。结果表明，若哈密顿量诱导的激发转移图使耗散子系统构成零强制集，则全系统被唯一地驱动到全局吸引的零激发态。该结论为耗散型态制备和开放量子系统的收敛性提供了严格判据。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.28369v1",
+      "source": "arxiv",
+      "title": "Simulation of a Battery Cell on Quantum Computers: Reactions & Transport",
+      "abstract": "Simulations of electrochemical materials and systems accelerate technological progress, but are still limited by computational power. In particular, quantum computing offers prospects for higher resolutions, due to the exponential amount of data that can be stored in a quantum state. As current quantum computers are still noisy, we consider a hybrid quantum-classical algorithm, that divides the problem into smaller computational tasks. We describe how to implement such an algorithm for non-linear partial differential equations, the Feynman-Kitaev Hamiltonian, in a scalable way for an electrochemical system. We show how it can evaluate general electrochemical models and present a quantum simulation of the Single Particle Model with electrolyte (SPMe) as the first quantum simulation of a battery cell.",
+      "authors": [
+        "Albert J. Pool",
+        "Michael Schelling",
+        "Birger Horstmann"
+      ],
+      "primary_category": "physics.chem-ph",
+      "categories": [
+        "physics.chem-ph",
+        "physics.comp-ph",
+        "quant-ph"
+      ],
+      "published": "2026-09-23T16:44:27+00:00",
+      "link": "https://arxiv.org/pdf/2609.28369v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "quantum algorithm for nonlinear PDEs via Feynman-Kitaev Hamiltonian for electrochemical systems",
+      "llm_evidence_cn": "用量子算法结合Feynman-Kitaev哈密顿量求解非线性偏微分方程",
+      "llm_evidence": "用量子算法结合Feynman-Kitaev哈密顿量求解非线性偏微分方程",
+      "canonical_evidence": "用量子算法结合Feynman-Kitaev哈密顿量求解非线性偏微分方程",
+      "llm_tldr_en": "The paper addresses quantum simulation of electrochemical systems by implementing a hybrid quantum-classical algorithm for nonlinear partial differential equations, using the Feynman-Kitaev Hamiltonian and demonstrating a scalable Single Particle Model with electrolyte.",
+      "llm_tldr_cn": "该工作针对电化学材料模拟受限于经典计算能力的问题，采用混合量子-经典算法将非线性偏微分方程对应的Feynman-Kitaev哈密顿量分解为可扩展的小计算任务。结果显示可对含电解液的单粒子模型进行量子模拟，并能评估通用电化学模型。其贡献在于展示了量子算法求解非线性偏微分方程的可行性，属于量子微分方程求解的重要应用方向。",
+      "llm_tldr": "该工作针对电化学材料模拟受限于经典计算能力的问题，采用混合量子-经典算法将非线性偏微分方程对应的Feynman-Kitaev哈密顿量分解为可扩展的小计算任务。结果显示可对含电解液的单粒子模型进行量子模拟，并能评估通用电化学模型。其贡献在于展示了量子算法求解非线性偏微分方程的可行性，属于量子微分方程求解的重要应用方向。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

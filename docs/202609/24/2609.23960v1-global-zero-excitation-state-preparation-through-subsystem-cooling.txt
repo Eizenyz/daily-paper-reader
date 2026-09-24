@@ -1,0 +1,913 @@
+Title: Global zero-excitation state preparation through subsystem cooling
+
+URL Source: https://arxiv.org/pdf/2609.23960v1
+
+Published Time: Tue, 22 Sep 2026 01:57:10 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# Global zero-excitation state preparation through subsystem cooling 
+
+Kerstin Beer ∗
+
+School of Mathematical and Physical Sciences, Macquarie University, Sydney, Australia 
+
+Daniel Burgarth 
+
+Physics Department, Friedrich-Alexander Universit¨ at of Erlangen-Nuremberg, Staudtstr. 7, 91058 Erlangen, Germany 
+
+(Dated: September 22, 2026) Preparing interacting quantum systems in low-energy or ground states is a fundamental task in quantum simulation and quantum information processing. In realistic settings, dissipation and active cooling can typically be engineered only on a limited subset of the system. We study the dissipative dynamics of excitation-number conserving quantum systems governed by a GKLS master equation with local jump operators acting on a subset of qubits. We establish sufficient conditions under which such localized dissipation drives the full system to a unique globally attractive zero-excitation state. In particular, we prove that if the Hamiltonian generates excitation transfer described by a graph for which the dissipative subsystem forms a zero forcing set, then the zero-excitation state is the unique globally attractive stationary state. When this state coincides with a ground state of the Hamiltonian, the same mechanism realizes ground-state cooling. Our results provide a graph-theoretic criterion for global state preparation from localized dissipation, which we illustrate using a nearest-neighbor Heisenberg spin chain. For this model, a reduction to the single-excitation sector further yields a scaling estimate with the length of the chain which indicates efficient cooling. 
+
+I. INTRODUCTION 
+
+Quantum computing [1] harnesses principles of quan-tum mechanics, such as superposition and entanglement, to process information in ways that differ fundamentally from classical computing. These properties enable quan-tum algorithms with advantages over their classical coun-terparts for specific tasks, including factorization [2] and unstructured search [3]. Every quantum algorithm re-quires a well-defined initial state from which the compu-tation begins. Preparing well-controlled quantum states is therefore an essential ingredient in quantum computa-tion, simulation, and other quantum technologies. Many quantum information platforms rely on cooling in order to prepare low-energy or ground states. Even though quantum devices are often operated at extremely low temperatures, this does not necessarily prepare the system in the desired ground state, and residual exci-tations can remain. A variety of techniques have been developed for this purpose, ranging from laser cooling [4–6] and evaporative cooling [7, 8] to adiabatic [9, 10], measurement-based [11–13], and dissipative approaches [14, 15]. In large interacting systems, however, direct ac-cess to every constituent may be experimentally difficult or resource intensive. In this work, we investigate systems of coupled qubits in which dissipation acts only on a subset of the system, as illustrated schematically in Figure 1. This raises the central question of our work: under which conditions can localized dissipation drive an entire coupled quantum sys-tem to a unique zero-excitation state? When this zero-excitation state is also a ground state of the Hamiltonian, the same mechanism realizes ground-state cooling.  
+
+> ∗Contact author: kerstin.beer@posteo.de
+
+The possibility of controlling a large quantum sys-tem through access to only a small subsystem has previ-ously been investigated in the context of quantum con-trol. Burgarth and Giovannetti [16] demonstrated a scheme in which local control of a subsystem is medi-ated to a larger system through a fixed coupling Hamil-tonian. Related work developed an explicit protocol for cooling and controlling composite systems through lo-cal interactions [17]. These protocols are formulated in terms of repeated discrete control steps, in which Hamil-tonian evolution is interspersed with local operations such as swaps with auxiliary memory systems, whereas the present work considers continuous-time GKLS dy-namics with Hamiltonian evolution and localized dissi-pation acting simultaneously. More recently, Langbehn 
+
+et al. [13] studied measurement-induced cooling in the dilute limit and showed, for particular one-dimensional spin chains, that measurements applied to a single link can be sufficient for ground-state preparation. Related quasiparticle-cooling protocols have also used dissipa-tive auxiliary degrees of freedom to remove excitations from interacting many-body systems and prepare low-energy states [18]. In contrast, rather than constructing a measurement or auxiliary-based cooling protocol for particular many-body models, we consider continuous-time GKLS dynamics with fixed localized jump opera-tors and derive structural conditions under which such local dissipation guarantees convergence of the full sys-tem to a unique zero-excitation state. For the excitation-conserving qubit systems considered here, these condi-tions can be verified through the zero-forcing property of the excitation-transfer graph. In this sense, our cri-terion is not tied to one particular spin-chain model or cooling protocol: Hamiltonians with different coupling strengths and geometries can be treated within the same framework whenever they satisfy the required excitation-arXiv:2609.23960v1 [quant-ph] 21 Sep 2026 2
+
+> cooling 123456
+
+FIG. 1: Schematic illustration of localized cooling applied to only part of a coupled qubit system. The Hamiltonian interactions can mediate the influence of the dissipative subsystem to qubits that are not cooled directly. conservation and graph-connectivity conditions. This broader structural applicability comes at the cost of re-stricting the present analysis to excitation-conserving qubit systems and lowering-type dissipation. These re-sults illustrate that access to only a small part of an in-teracting system can, under suitable conditions, influence the state of the full system. Localized dissipation has also been studied directly in many-body open systems. For example, Kepesidis and Hartmann [19] considered a Bose–Hubbard model with particle loss acting on a single lattice site and showed that destructive interference can prevent part of the sys-tem from reaching the dissipative site. More generally, boundary-driven open quantum systems provide a broad setting in which dissipation acts only on restricted parts of an interacting system [20, 21]. These examples also il-lustrate an important difficulty for localized cooling: ex-citations may remain trapped in portions of the system that are not sufficiently coupled to the dissipative degrees of freedom. Complementary to these approaches, engineered dissi-pation has become an established tool for quantum-state preparation. Dissipative quantum-state engineering can be used to construct dynamics for which a desired target state is a stationary state or the unique stationary state [14, 22–25]. Whereas many such approaches engineer or construct the dissipative dynamics specifically for the de-sired target state, our question is instead when a fixed localized lowering process acting only on a subsystem is already sufficient to determine the asymptotic state of the entire system. Structural properties of stationary states and their attractivity under GKLS dynamics have like-wise been studied extensively. Baumgartner and Narn-hofer [26] analyzed the structure of stationary states of finite-dimensional quantum dynamical semigroups with GKLS generators. As a special case, their results im-ply that for finite-dimensional GKLS dynamics, unique-ness of the steady state implies convergence to it. In the physics community, this was independently derived by Schirmer and Wang [27]. Further sufficient conditions for uniqueness have been investigated in more recent work [28]. These works address stationary-state structure and attractivity for broader classes of GKLS generators. Our setting is more specialized, but the additional excitation-conservation and locality structure allows us to reduce the question of uniqueness to a physically transparent condition on excitation transport and, for the qubit sys-tems considered here, to the zero-forcing property of an interaction graph. These results provide the mathemat-ical background for understanding when dissipative dy-namics converges to a unique target state. The speed of this convergence is another important as-pect of dissipative state preparation. Spectral properties of quantum Markov generators can be used to charac-terize relaxation rates, and recent work has investigated spectral-gap bounds and mixing-time behavior in dissipa-tive state preparation [24, 29]. While our primary ques-tion is the structural one of when dissipation acting only on part of a system is sufficient to enforce a unique global stationary state, for the Heisenberg chain considered be-low we additionally analyze the relaxation rate through a reduction to the single-excitation sector and derive its asymptotic system-size scaling. Our approach separates this problem into two ingre-dients. First, we derive sufficient conditions for finite-dimensional GKLS dynamics under which a locally dis-sipative subsystem drives the full system to a unique globally attractive zero-excitation state. The conditions express conservation of total excitation number by the Hamiltonian, lowering of the excitation number by the dissipative jump operators, uniqueness of the locally an-nihilated state, and uniqueness of a Hamiltonian eigen-state compatible with the dissipative subsystem being in that state. Second, for multipartite qubit systems with excitation-transfer interactions, we connect the last of these con-ditions to the structure of the interaction graph. Zero forcing is a graph-theoretic process in which an initially selected set of vertices progressively determines the rest of a graph through vertices with a unique unforced neigh-bor. It has previously been connected to controllability of linear and quantum systems on networks [30]. Here, we show that if the dissipative subsystem forms a zero forc-ing set of the excitation-transfer graph, then the global zero-excitation state is the only Hamiltonian eigenstate compatible with the dissipative subsystem being locally 3cooled. Zero forcing therefore provides a sufficient graph-theoretic condition for global attractivity under localized dissipation. We illustrate these results using a nearest-neighbor Heisenberg spin chain, whose excitation-transfer graph is a path graph. Cooling one endpoint provides a zero forcing set, and the theoretical conditions therefore pre-dict convergence to the global zero-excitation state. For small system sizes, we compare the full Liouvillian spec-trum with a reduced single-excitation effective Hamilto-nian and find agreement of the corresponding gap es-timates to numerical precision. The reduced description further allows us to derive analytically an asymptotic n−3
+
+scaling of the reduced gap estimate, which we verify nu-merically for systems of up to n = 1000 qubits. The remainder of this paper is organized as follows. We first formulate the sufficient conditions for global convergence under subsystem-restricted GKLS dynamics and prove the corresponding proposition. We then intro-duce the excitation-transfer graph and zero forcing and derive a graph-theoretic corollary for multipartite qubit systems. Finally, we illustrate the theoretical results us-ing the Heisenberg spin model, analyze the relaxation rate through the reduced single-excitation dynamics and its asymptotic scaling, and conclude with a discussion of the implications and possible directions for future work.  
+
+> II. RESULTS
+
+To explore whether cooling a subset of qubits in a cou-pled quantum system can lead to the effective cooling of the entire system, we consider the dynamics gener-ated by the Hamiltonian and describe the source of the cooling using GKLS dynamics. We divide the system into an indirectly cooled subsystem A and an actively cooled subsystem B. We characterize cooling in terms of an excitation-counting operator M , such that the zero-excitation states of the two subsystems are denoted by 
+
+∣0A⟩ and ∣0B ⟩. The following proposition gives conditions under which cooling subsystem B drives the entire sys-tem to the zero-excitation state ∣0A0B ⟩.
+
+Proposition II.1. Let H = HA ⊗ H B be a finite-dimensional Hilbert space. Let 
+
+M = MA ⊗ IB + IA ⊗ MB
+
+be a Hermitian excitation-counting operator, where ∣0A⟩
+
+and ∣0B ⟩ are the unique eigenvectors of MA and MB ,respectively, associated with their smallest eigenvalues. Suppose that the dynamics of a density operator ρ is governed by the GKLS equation 
+
+ddt ρ = L( ρ) = − i[H, ρ ] + ∑ 
+
+> j
+
+γj (Bj ρB † 
+
+> j
+
+− 12 {B† 
+
+> j
+
+Bj , ρ }) , (1) 
+
+where γj > 0, under the following conditions: 1. Conservation of excitation number: M satis-fies 
+
+[H, M ] = 0.
+
+2. Lowering relation: Each jump operator lowers the M -eigenvalue by sj > 0:
+
+M B j = Bj (M − sj ).
+
+3. Unique annihilated state: The operators Bj act only on subsystem B and annihilate ∣0B ⟩, i.e. 
+
+Bj = IA ⊗ bj , bj ∣0B ⟩ = 0,
+
+with 
+
+⋂
+
+> j
+
+ker (bj ) = span {∣ 0B ⟩} .
+
+4. Factorized extremal eigenstate: There exists, up to a global phase, exactly one state ∣ψ⟩ of the form 
+
+∣ψ⟩ = ∣ χ⟩ ⊗ ∣ 0B ⟩ , ∣χ⟩ ∈ H A,
+
+that is an eigenstate of H, i.e. 
+
+H ∣ψ⟩ = h ∣ψ⟩
+
+for some h ∈ R.Then the dynamics has a unique globally attractive sta-tionary state: 
+
+lim  
+
+> t→∞
+
+etL(ρ(0)) = ∣ 0A0B ⟩ ⟨ 0A0B ∣ , ∀ρ(0).
+
+Proof. 
+
+Step 1 - Zero state is a stationary state: As a first step, we check that the zero state ρ0 ∶= ∣ ψ0⟩ ⟨ ψ0∣ = ∣0A0B ⟩ ⟨ 0A0B ∣ is a stationary state. Note that ∣0A0B ⟩
+
+is a non-degenerate eigenvector of M associated with its smallest eigenvalue. With Condition 1, [H, M ] = 0, we know that it is also an eigenvector of H. Furthermore, by Condition 3, Bj ∣0A0B ⟩ = 0 for all j. Therefore, both the Hamiltonian and dissipative parts of the GKLS equation vanish on ρ0, and thus 
+
+L( ρ0) = 0.
+
+Step 2 - ddt ⟨M ⟩ under the lowering relation: 
+
+In this step, we study the time derivative of the ex-pectation value ddt ⟨M ⟩ = tr (M dρ dt ). First, we consider an arbitrary state ρ(t).Using Equation 1, it follows 
+
+ddt ⟨M ⟩ = tr (M L( ρ)) = − i tr (M [H, ρ ]) + ∑ 
+
+> j
+
+γj tr (B† 
+
+> j
+
+M B j ρ
+
+− 12 M B † 
+
+> j
+
+Bj ρ − 12 B† 
+
+> j
+
+Bj M ρ ).4With Condition 1 and the cyclicity of the trace, it fol-lows tr (M [H, ρ ]) = tr ([ M, H ]ρ) = 0.
+
+Hence, with the lowering relation of Condition 2, 
+
+ddt ⟨M ⟩ = ∑ 
+
+> j
+
+γj tr (( B† 
+
+> j
+
+Bj (M − sj ) − 12 M B † 
+
+> j
+
+Bj − 12 B† 
+
+> j
+
+Bj M ) ρ) .
+
+Note that we use [B† 
+
+> j
+
+Bj , M ] = 0: given M B j = Bj (M −
+
+sj ), we obtain [M, B j ] = − sj Bj and [M, B † 
+
+> j
+
+] = sj B† 
+
+> j
+
+.Using [M, AB ] = [ M, A ]B + A[M, B ], we get 
+
+[M, B † 
+
+> j
+
+Bj ] = [ M, B † 
+
+> j
+
+]Bj + B† 
+
+> j
+
+[M, B j ]= sj B† 
+
+> j
+
+Bj − sj B† 
+
+> j
+
+Bj
+
+= 0.
+
+Therefore, 
+
+ddt ⟨M ⟩ = ∑ 
+
+> j
+
+γj tr (( B† 
+
+> j
+
+Bj M − sj B† 
+
+> j
+
+Bj − 12 B† 
+
+> j
+
+Bj M − 12 B† 
+
+> j
+
+Bj M ) ρ)= − ∑ 
+
+> j
+
+sj γj tr (B† 
+
+> j
+
+Bj ρ) ≤ 0.
+
+Thus, the expectation value of M cannot increase un-der the dynamics: the Hamiltonian evolution leaves it unchanged, while the dissipative terms can only decrease it. Now, let us choose an arbitrary stationary state 
+
+L( ρ★) = 0. For a stationary state, ddt ⟨M ⟩ = 0. Since 
+
+sj > 0, γj > 0, and each summand tr (B† 
+
+> j
+
+Bj ρ★) ≥ 0 be-cause ρ★ ≥ 0 and B† 
+
+> j
+
+Bj ≥ 0, it follows that tr (B† 
+
+> j
+
+Bj ρ★) = 0 for every j. 
+
+Consider the spectral decomposition ρ★ =∑k pk∣ψk⟩⟨ ψk∣, where pk > 0 and ∣ψk⟩ ∈ supp (ρ★).We get the sum of non-negative terms tr (B† 
+
+> j
+
+Bj ρ★) = ∑ 
+
+> k
+
+pk⟨ψk∣B† 
+
+> j
+
+Bj ∣ψk⟩= ∑ 
+
+> k
+
+pk ∥Bj ∣ψk⟩∥ 2.
+
+It follows that ∥Bj ∣ψk⟩∥ 2 = 0 for all j and all ∣ψk⟩ ∈ 
+
+supp (ρ★). That means Bj ∣ψk⟩ = 0, which we can phrase as supp (ρ★) ⊆ ker (Bj ).
+
+Since we get this expression for all j, it follows overall that supp (ρ★) ⊆ ⋂ 
+
+> j
+
+ker (Bj ).
+
+Since Bj = IA ⊗ bj , we have 
+
+⋂
+
+> j
+
+ker (Bj ) = H A ⊗ ⋂ 
+
+> j
+
+ker (bj ).
+
+With Condition 3, 
+
+⋂
+
+> j
+
+ker (bj ) = span {∣ 0B ⟩} ,
+
+and therefore supp (ρ★) ⊆ H A ⊗ span {∣ 0B ⟩} .
+
+Hence, any stationary state must have the form 
+
+ρ★ = σ ⊗ ∣ 0B ⟩ ⟨ 0B ∣,
+
+for some positive operator σ on HA with tr (σ) = 1. 
+
+Step 3 - Uniqueness from factorized extremal state: 
+
+From Step 2, we know that any stationary state has the form 
+
+ρ★ = σ ⊗ ∣ 0B ⟩ ⟨ 0B ∣.
+
+From Equation 1, we have 
+
+−i[H, ρ ★] = ∑ 
+
+> j
+
+γj (Bj ρ★B† 
+
+> j
+
+− 12 {B† 
+
+> j
+
+Bj , ρ ★}) .
+
+Since ρ★ = σ⊗∣ 0B ⟩ ⟨ 0B ∣ and Bj = IA⊗bj with bj ∣0B ⟩ = 0, the right-hand side vanishes, and thus 
+
+[H, ρ ★] = 0.
+
+Since H and ρ★ are Hermitian and commute, they can be simultaneously diagonalized. Therefore, we can choose a common eigenbasis {∣ νi⟩} such that 
+
+ρ★ = ∑ 
+
+> i
+
+pi ∣νi⟩ ⟨ νi∣ ,
+
+where every ∣νi⟩ with pi > 0 is also an eigenvector of H.From Step 2, we already know that supp (ρ★) ⊆ H A ⊗ span {∣ 0B ⟩} .
+
+Hence, every eigenvector ∣νi⟩ in the support of ρ★ must have the form 
+
+∣νi⟩ = ∣ μi⟩ ⊗ ∣ 0B ⟩ .
+
+With Condition 4, there exists exactly one eigenstate of H of this form. Therefore, the support of ρ★ is one-dimensional and 
+
+ρ★ = ∣ χ⟩ ⟨ χ∣ ⊗ ∣ 0B ⟩ ⟨ 0B ∣.
+
+From Step 1, we already know that ∣0A0B ⟩ is an eigen-state of H. Since it is also a factorized state with subsys-tem B in ∣0B ⟩, Condition 4 implies that it is the unique eigenstate of this form, up to a global phase. Therefore, 
+
+ρ★ = ∣ 0A0B ⟩ ⟨ 0A0B ∣ .5Thus, the stationary state is unique. 
+
+Step 4 - Global attractivity: 
+
+Since the GKLS dynamics acts on a finite-dimensional Hilbert space and ρ0 is the unique stationary state, the result of Schirmer and Wang [27] implies that ρ0 is glob-ally asymptotically stable. Therefore, lim  
+
+> t→∞
+
+etL(ρ(0)) = ρ0 = ∣ 0A0B ⟩ ⟨ 0A0B ∣ ∀ρ(0).
+
+In the following, we provide physical intuition for Proposition II.1. Condition 1 states that the Hamiltonian cannot create or destroy total excitations; it can only re-distribute them between subsystems A and B. Condition 2 guarantees that every dissipative event moves the sys-tem down the excitation ladder defined by M . Combined with Condition 1, this creates a directed flow in state space: the coherent dynamics redistributes excitations, while the dissipation removes them. Condition 3 demands that ∣0B ⟩ is the unique state of subsystem B that is annihilated by all jump operators. Hence, once subsystem B reaches ∣0B ⟩, the dissipation acts trivially on it, and there is no other state of B in which the dissipative dynamics can become trapped. Condition 4 rules out dark states in which subsystem 
+
+B is already in its zero-excitation state while excitations remain trapped elsewhere in the system. Such a state would no longer be affected by the local dissipation and could therefore prevent convergence to the global zero-excitation state. Condition 4 excludes this possibility by requiring ∣0A0B ⟩ to be the only Hamiltonian eigenstate whose B-part is ∣0B ⟩. We illustrate this mechanism more concretely below using simple excitation-transfer graphs in the discussion of zero forcing. Proposition II.1 therefore shows that Conditions 1–4 are sufficient for convergence to the zero-excitation state. In a multipartite system, Condition 4 is the condition that is less direct to verify from the microscopic cou-plings. The remaining question is therefore whether the interaction structure of the Hamiltonian guarantees that an eigenstate with the dissipative subsystem in ∣0B ⟩ must in fact have all qubits in their zero-excitation state. To formalize this idea, we introduce a graph-theoretic de-scription of excitation transfer and relate it to the notion of zero forcing [31]. 
+
+Definition II.2 (zero forcing set) . Let G = ( V, E ) be a graph. Given a V0 ⊂ V and starting from the initial col-oring in which the vertices in V0 are colored blue and all vertices in V ∖ V0 are colored white, execute the follow-ing iterative step: if a blue vertex has exactly one white neighbor, then that neighbor is recolored blue. The procedure is repeated until no further recoloring is possible. If this process results in all vertices being blue, then V0 is called a zero forcing set of G.
+
+Two simple examples illustrate the zero forcing rule. 
+
+Example 1: Chain. Consider the path graph    
+
+> 1234
+
+with V0 = { 1}. Vertex 1 forces 2, then 2 forces 3, and finally 3 forces 4. Hence, V0 = { 1} is a zero forcing set. 
+
+Example 2: Y-shaped graph. Now consider the graph  
+
+> 1234
+
+with V0 = { 1}. Vertex 1 first forces 2. However, vertex 2 then has two white neighbors, 3 and 4, so no further forcing step is possible. Hence, V0 = { 1} is not a zero forcing set. These examples illustrate the role of branching: in the chain, there is a unique direction in which the forcing process can propagate, whereas in the Y-shaped graph the central vertex cannot determine which of several un-forced neighbors should be forced next. In the quantum setting below, this distinction will correspond to whether localized dissipation can rule out excitations remaining elsewhere in the system. To connect this graph-theoretic notion with the dy-namics of our quantum system, we consider a system of N qubits with vertex set V = { 1, . . . , N } and Hilbert space 
+
+H = ( C2)⊗N .
+
+We denote by σxv , σ yv , σ zv the Pauli operators acting on qubit v, explicitly understood as acting trivially on all other qubits, i.e. with the identity acting on every qubit except v. We define the excitation-lowering and excitation-raising operators as 
+
+σ− 
+
+> v
+
+= 12 (σxv + iσ yv ) = ∣ 0v ⟩ ⟨ 1v ∣ ,σ+ 
+
+> v
+
+= 12 (σxv − iσ yv ) = ∣ 1v ⟩ ⟨ 0v ∣ .
+
+The operators σ+ 
+
+> u
+
+σ− 
+
+> v
+
++ σ− 
+
+> u
+
+σ+ 
+
+> v
+
+exchange an excitation be-tween qubits u and v, whereas the terms σzuσzv and σzv do not change the excitation configuration. Consequently, the connectivity through which excitations can propagate is determined by the nonzero transfer couplings Juv .
+
+Definition II.3 (Excitation-transfer graph for Hamilto-nian H). Let 
+
+H = ( C2)⊗N
+
+be the Hilbert space of N qubits with vertex set V ={1, . . . , N }. Assume the Hamiltonian H conserves ex-citation number, i.e. [H, M ] = 0, and can be written in the form 
+
+H = ∑
+
+> {u,v }⊂ V
+
+Juv (σ+ 
+
+> u
+
+σ− 
+
+> v
+
++ σ− 
+
+> u
+
+σ+ 
+
+> v
+
+)+ ∑
+
+> {u,v }⊂ V
+
+∆uv σzuσzv + ∑ 
+
+> v∈V
+
+hv σzv ,6
+
+with real coefficients Juv , ∆uv , h v .The excitation-transfer graph associated with H is the undirected graph G = ( V, E ) with vertex set V and edge set 
+
+E = {{ u, v } ⊂ V ∣ Juv ≠ 0}.
+
+Using this graph-theoretic perspective, we can heuris-tically interpret how the influence of the dissipative sub-system propagates through the excitation-transfer graph induced by the Hamiltonian. Suppose a subset of qubits forms the dissipative subsystem and is therefore driven towards its zero-excitation state. If a qubit in this set has exactly one neighboring qubit outside the set, then an excitation on that neighboring qubit would couple, through the Hamiltonian, to the already cooled qubit. For an eigenstate whose cooled qubits remain in their zero-excitation state, this is only possible if the neigh-boring qubit is also in its zero-excitation state. Conse-quently, this qubit can be added to the effectively cooled set. Repeating this argument iteratively extends the set of qubits constrained to the zero-excitation state. If the initially cooled subsystem forms a zero forcing set of the excitation-transfer graph, the argument eventu-ally reaches the entire system. Hence, the only Hamilto-nian eigenstate compatible with the dissipative subsys-tem being in its zero-excitation state is the global zero-excitation state. By Proposition II.1, this implies con-vergence to that state. The above intuition is formalized in the following corollary. 
+
+Corollary II.4. Let 
+
+H = ( C2)⊗N
+
+be a system of N qubits, and assume that Conditions 1, 2 and 3 of Proposition II.1 are satisfied. Let G = ( V, E )
+
+denote the excitation-transfer graph associated with H,and let V0 ⊂ V be the set of vertices corresponding to the dissipative subsystem B.If V0 is a zero forcing set of G, then Condition 4 of Proposition II.1 is satisfied. Hence, the GKLS dynamics has a unique globally attractive stationary state given by the zero-excitation state 
+
+ρ0 = ∣ 0A0B ⟩⟨ 0A0B ∣.
+
+In particular, 
+
+lim  
+
+> t→∞
+
+etL(ρ) = ρ0 for all initial states ρ. 
+
+Proof. We show that the zero forcing condition implies Condition 4 of Proposition II.1. Let ∣ψ⟩ be an eigenstate of H of the form 
+
+∣ψ⟩ = ∣ χ⟩ ⊗ ∣ 0B ⟩ , H ∣ψ⟩ = h ∣ψ⟩ .
+
+Since the vertices in V0 correspond to subsystem B, all vertices in V0 are in their zero-excitation state. Hence, we can write 
+
+∣ψ⟩ = ∣ 0V0 ⟩ ⊗ ∣ ϕ⟩V ∖V0 .
+
+Suppose that, at some stage of the zero forcing process, all vertices in a set S with 
+
+V0 ⊆ S ⊆ V
+
+are known to be in their zero-excitation state, such that 
+
+∣ψ⟩ = ∣ 0S ⟩ ⊗ ∣ ϕ⟩V ∖S .
+
+Let v ∈ S be a vertex with exactly one neighbor w ∉ S, as required by the zero forcing rule. Consider the eigenvalue equation 
+
+H ∣ψ⟩ = h ∣ψ⟩
+
+and project it onto the subspace in which v is ex-cited while all other vertices in S remain in their zero-excitation state. The projection of the right-hand side vanishes, since v is in the state ∣0v ⟩ in ∣ψ⟩. The diago-nal terms σzuσzv and σzv in H do not change the excita-tion configuration and therefore do not contribute to this projected subspace. Likewise, excitation-transfer terms not incident on v cannot excite v, and excitation-transfer terms between v and vertices already in S vanish because these vertices are in their zero-excitation state. Since w is the unique neighbor of v outside S, the only remaining term that can create an excitation on v is 
+
+Jvw σ+ 
+
+> v
+
+σ−
+
+> w
+
+.
+
+Therefore, the projected eigenvalue equation gives 
+
+Jvw σ− 
+
+> w
+
+∣ϕ⟩V ∖S = 0.
+
+Since {v, w } ∈ E, we have Jvw ≠ 0, and hence 
+
+σ− 
+
+> w
+
+∣ϕ⟩V ∖S = 0.
+
+For a qubit, ker (σ−
+
+> w
+
+) = span {∣ 0w⟩} ,
+
+and therefore w must also be in its zero-excitation state. Thus, 
+
+∣ψ⟩ = ∣ 0S∪{ w}⟩ ⊗ ∣ ϕ′⟩V ∖( S∪{ w}) .
+
+Repeating this argument along the zero forcing sequence, and using that V0 is a zero forcing set, eventually all vertices in V are forced to their zero-excitation state. Hence, 
+
+∣ψ⟩ = ∣ 01⋯0N ⟩ = ∣ 0A0B ⟩ .
+
+Thus, up to a global phase, ∣0A0B ⟩ is the unique eigen-state of H of the form ∣χ⟩ ⊗ ∣ 0B ⟩. Therefore, Condition 4 of Proposition II.1 is satisfied. By Proposition II.1, the GKLS dynamics therefore has the unique globally attractive stationary state 
+
+ρ0 = ∣ 0A0B ⟩ ⟨ 0A0B ∣ ,
+
+and lim  
+
+> t→∞
+
+etL(ρ) = ρ0 for all initial states ρ. 7The inductive argument above is closely related to the propagation mechanism used in the zero-forcing control-lability framework of [30]. In both settings, the zero forc-ing process provides an ordering in which influence prop-agates from an initial set of vertices to the rest of the graph via vertices with a unique unforced neighbor. The difference is in the physical interpretation: in [30], zero forcing is used to show the propagation of controllability through the network, whereas here it is used to show that no Hamiltonian eigenstate can retain excitations outside the dissipative subsystem while the latter is in its zero-excitation state. To see this explicitly, consider again the Y-shaped graph in Example 2 above. Denoting states with a single excitation at site n by ∣n⟩, it is easy to see that ∣3⟩ − ∣ 4⟩ is an eigenstate of the Hamiltonian with eigenvalue 0, a dark state, which is also invariant under the noise and therefore remains stuck. In this way, zero forcing provides a sufficient condition for Condition 4 of Proposition II.1, which then implies convergence to the global zero-excitation state under localized dissipation.  
+
+> III. NUMERICAL SIMULATIONS
+
+For numerical results supporting our findings above, we consider the Heisenberg spin model [32], which de-scribes a system of spins interacting via nearest-neighbor exchange interactions. This model plays a central role in quantum many-body physics, capturing essential fea-tures of magnetism, entanglement, and quantum phase transitions. In the following, we denote the spin-1 /2 operators by 
+
+Sα = σα/2 with α ∈ { x, y, z }, where σα are the Pauli matrices, and define 
+
+Sαi = 1⊗i−1 ⊗ Sα ⊗ 1⊗n−i.
+
+The Hamiltonian used in the numerical simulations is 
+
+H =
+
+> n−1
+
+∑
+
+> i=1
+
+∑
+
+> α=x,y,z
+
+Sαi Sαi+1.
+
+Hence, for every nearest-neighbor pair {i, i + 1}, the Hamiltonian induces coherent excitation transfer be-tween vertices i and i + 1. The excitation-transfer graph associated with H there-fore coincides with the path graph Pn. Any endpoint of the path graph is a zero forcing set; in particular, choos-ing the last vertex vB = n gives the zero forcing sequence 
+
+n → n − 1 → ⋯ → 1.
+
+We define the excitation-counting operator as 
+
+M =
+
+> n
+
+∑
+
+> i=1
+
+( 1
+
+2 − Szi ) = MA + MB ,
+
+where 
+
+MA =
+
+> n−1
+
+∑
+
+> i=1
+
+( 1
+
+2 − Szi ) , MB = 1
+
+2 − Szn.
+
+With this convention, ∣0⟩⊗n is the unique zero-excitation state. We choose 
+
+B = 1⊗n−1 ⊗ ∣ 0⟩ ⟨ 1∣ .
+
+We denote the corresponding dissipation rate by γ1 and set γ1 = 1 in the numerical simulations unless stated oth-erwise. To see that [H, M ] = 0, note that 
+
+Sxi Sxi+1 + Syi Syi+1 = 12 (S+ 
+
+> i
+
+S− 
+
+> i+1
+
++ S− 
+
+> i
+
+S+
+
+> i+1
+
+) ,
+
+where S± 
+
+> i
+
+= Sxi ∓ iS yi . These terms exchange an exci-tation between neighboring qubits without changing the total excitation number, while the terms Szi Szi+1 leave the excitation configuration unchanged. Hence, 
+
+[H, M ] = 0.
+
+Furthermore, the jump operator lowers the excitation number by one, 
+
+M B = B(M − 1),
+
+and ker (∣ 0⟩ ⟨ 1∣) = span {∣ 0⟩} .
+
+Thus, Conditions 1–3 of Proposition II.1 are satisfied. Since the dissipative vertex vB = n is a zero forcing set of the excitation-transfer graph, Corollary II.4 applies. Therefore, the global zero-excitation state ∣0⟩⊗n is the unique globally attractive stationary state. To simulate the time evolution of a density matrix 
+
+dρ dt = L( ρ),
+
+we vectorize ρ and denote the matrix representation of the Liouvillian L by ̃ L. The vectorized density matrix is then propagated between consecutive time steps accord-ing to 
+
+∣ρ(t + δt )) = ẽLδt ∣ρ(t)) . (2) We denote the eigenvalues of the Liouvillian L by 
+
+{λk} ⊂ C≤0. For the dissipative dynamics considered here, Re (λk) ≤ 0,
+
+and the stationary state corresponds to the eigenvalue 
+
+λ0 = 0. For a unique stationary state, we define the positive Liouvillian spectral gap as ∆ = − max   
+
+> λk≠0
+
+Re (λk).
+
+Thus, ∆ is determined by the nonzero Liouvillian eigen-value whose real part lies closest to zero. 8         
+
+> (a) n=2
+> (b) n=3
+> (c) n=4
+
+FIG. 2: Convergence of the dynamical map to its asymptotic cooling map. The solid curves show the Frobenius norm ∥ẽ Lt −̃ Φ∞∥F for systems of (a) two, (b) three, and (c) four qubits. The vertical axis is logarithmic. The dashed curves decay as e−∆t, with ∆ obtained from the Liouvillian spectrum. This quantity determines the asymptotic convergence timescale of the system toward the stationary state [33], with the slowest decaying contribution scaling as 
+
+e−∆t.
+
+For the cooling dynamics considered here, the unique stationary state is 
+
+ρss = ∣ 0 . . . 0⟩ ⟨ 0 . . . 0∣ .
+
+We compare the full dynamical map with its asymp-totic limit. Since every density matrix has unit trace and converges to ρss , the asymptotic map acting on an arbitrary operator X is Φ∞(X) = ρss Tr (X).
+
+The factor Tr (X) extends the map linearly from nor-malized density matrices to the full operator space. Using the same vectorization convention as above, the matrix representation of this map is ̃
+
+Φ∞ = ∣ ρss ))(( 1∣,
+
+where 
+
+(( 1∣X)) = Tr (X).
+
+We therefore evaluate 
+
+∥ẽ Lt −̃ Φ∞∥F ,
+
+where for simplicity we chose the Frobenius norm, 
+
+∥A∥F = √Tr (A†A).
+
+This quantity vanishes when the dynamical map ap-proaches its asymptotic cooling map. Figure 2 shows this convergence for n = 2, . . . , 4 on a logarithmic vertical axis. The dashed reference curves decay as e−∆t, where ∆ is obtained from the Liouvil-lian spectrum. Their vertical normalization is fixed using a late-time point of the corresponding numerical curve. The numerical curves approach the predicted asymptotic decay rate at late times. The corresponding simula-tions and plotting code are available in the accompanying repository [34].  
+
+> IV. SINGLE-EXCITATION REDUCTION AND ASYMPTOTIC SCALING
+
+Let us now try to get an analytical handel on the scaling of the cooling efficiency for large dimensions. Intuitively, the dominant contribution (the hardest to catch state) should stem from the single excitation sector, where the probabiliy to catch an excitation on the cool-ing site would be lowest. For n = 2, . . . , 8, this intuition is confirmed numerically, as the reduced single-excitation gap ∆ red introduced below agrees with a direct calcula-tion of the full Liouvillian gap ∆ to numerical precision. This motivates us to use the single-excitation sector to analyze the relaxation rate for larger systems and to in-vestigates its asymptotic scaling. Since the Hamiltonian conserves the total excita-tion number, the Hilbert space decomposes into fixed-excitation sectors, 
+
+H = n
+
+⊕
+
+> m=0
+
+Hm,9where Hm denotes the subspace containing exactly m
+
+excitations. The zero-excitation sector is 
+
+H0 = span {∣ vac ⟩} , ∣vac ⟩ = ∣ 0⟩⊗n ,
+
+and the single-excitation sector is 
+
+H1 = span {∣ j⟩} nj=1,
+
+where ∣j⟩ denotes the state with a single excitation local-ized at site j.Restricting H to H1 gives the n × n Hamiltonian 
+
+H1 =⎛⎜⎜⎜⎜⎜⎝ 
+
+> n−3412
+
+0 ⋯ 0 
+
+> 12
+> n−5412
+
+⋱ ⋮
+
+0 12 ⋱ ⋱ 0
+
+⋮ ⋱ ⋱ n−5412
+
+0 ⋯ 0 12
+
+> n−34
+
+⎞⎟⎟⎟⎟⎟⎠
+
+.
+
+The off-diagonal entries 1 /2 arise from the Sxi Sxi+1 +
+
+Syi Syi+1 terms and describe hopping of the excitation be-tween neighboring sites. The diagonal terms arise from the Szi Szi+1 interactions. A boundary excitation creates one anti-aligned nearest-neighbor bond, giving the diag-onal value (n − 3)/ 4, whereas a bulk excitation creates two, giving (n − 5)/ 4. Within the zero- and single-excitation sectors, the cool-ing jump acts as 
+
+B = ∣ vac ⟩ ⟨ n∣ ,
+
+and hence 
+
+B†B = ∣ n⟩ ⟨ n∣ .
+
+The corresponding non-Hermitian effective Hamiltonian in the single-excitation sector is therefore 
+
+Heff = H1 − iγ 1
+
+2 ∣n⟩ ⟨ n∣ .
+
+The imaginary term represents loss of amplitude when the excitation occupies the dissipative boundary site. We denote the eigenvalues of Heff by {μa}. Let ∣ϕa⟩
+
+be a corresponding right eigenvector. Since the vacuum is unaffected by the jump operator and has energy 
+
+Evac = n − 14 ,
+
+the operator ∣ϕa⟩ ⟨ vac ∣ is an eigenoperator of the Liouvil-lian with eigenvalue 
+
+λred  
+
+> a
+
+= − i (μa − Evac ) .
+
+Its decay rate is therefore 
+
+− Re (λred  
+
+> a
+
+) = − Im (μa).
+
+We define the reduced single-excitation gap as ∆red (n) = min  
+
+> a
+
+[− Im (μa)] .
+
+The reduction is also computationally advantageous. Whereas the full Hilbert-space dimension grows as 2 n
+
+and the matrix representation of the Liouvillian has di-mension 4 n, Heff is only an n × n tridiagonal matrix. We therefore use ∆ red (n) to study substantially larger sys-tems, as well as providing analytical asymptotics. The asymptotic system-size dependence of ∆ red (n) can be obtained analytically. To expose the quasi-uniform tridiagonal structure, we define 
+
+Tn = 2Heff − n − 52 1 =⎛⎜⎜⎜⎜⎜⎝
+
+1 1 0 ⋯ 01 0 1 ⋱ ⋮
+
+0 1 ⋱ ⋱ 0
+
+⋮ ⋱ ⋱ 0 10 ⋯ 0 1 1 − iγ 1
+
+⎞⎟⎟⎟⎟⎟⎠
+
+.
+
+Following the treatment of quasi-uniform tridiagonal ma-trices in Ref. [35], we parameterize the bulk eigenvalues as 
+
+θ = 2 cos k. 
+
+For an eigenvector v = ( v1, . . . , v n)T of Tn with eigenvalue 
+
+θ = 2 cos k, the bulk eigenvalue equation is 
+
+vj−1 + vj+1 = 2 cos (k) vj , j = 2, . . . , n − 1.
+
+At the left boundary, the first row of Tn gives 
+
+v1 + v2 = 2 cos (k) v1.
+
+Comparing this with the bulk recurrence extended for-mally to j = 1 shows that the left boundary condition can be written as 
+
+v0 = v1.
+
+A solution of the bulk recurrence satisfying this condition is therefore 
+
+vj ∝ cos [( j − 12 ) k] .
+
+At the dissipative boundary, the last row of Tn gives 
+
+vn−1 + ( 1 − iγ 1)vn = 2 cos (k) vn.
+
+Equivalently, extending the bulk recurrence to a ficti-tious site n + 1 gives the right boundary condition 
+
+vn+1 = ( 1 − iγ 1)vn.
+
+Substituting the cosine solution yields the spectral con-dition cos [( n + 12 ) k] = ( 1 − iγ 1) cos [( n − 12 ) k] .
+
+This can equivalently be written as tan (nk ) = iγ 1
+
+2 − iγ 1
+
+cot ( k
+
+2 ) .10 
+
+FIG. 3: System-size scaling of the single-excitation gap estimate. The points show ∆red (n) obtained numerically from the reduced single-excitation effective Hamiltonian for systems up to 
+
+n = 1000 with γ1 = 1. Both axes are logarithmic. The dashed line shows the corresponding analytical asymptotic result ∆ red (n) = π2/( 5n3).For fixed γ1 > 0, the least-damped modes approach the two band edges as n increases. Expanding the spectral condition around the lower band edge, k → π, gives 
+
+− Im θlower = 2γ1
+
+4 + γ21
+
+π2
+
+n3 + O(n−4),
+
+whereas expansion around the upper band edge, k → 0, gives 
+
+− Im θupper = 12γ1
+
+π2
+
+n3 + O(n−4).
+
+The least-damped mode is determined by the smaller of these two decay rates, so that 
+
+− Im θslow = π2
+
+n3 min { 2γ1
+
+4 + γ21
+
+, 12γ1
+
+} + O(n−4).
+
+Since 
+
+θ = 2μ − n − 52 ,
+
+the shift is purely real, and hence ∆red (n) = − Im μslow = − 12 Im θslow .
+
+Consequently, ∆red (n) = π2
+
+n3 min { γ1
+
+4 + γ21
+
+, 14γ1
+
+} + O(n−4). (3) For the value γ1 = 1 used in our numerical simula-tions, the lower-band contribution is the smaller one, and Eq. (3) reduces to ∆red (n) = π2
+
+5n3 + O(n−4).
+
+Figure 3 compares the analytical asymptotic result for 
+
+γ1 = 1 with the numerical eigenvalues of Heff for sys-tems up to n = 1000. The numerical results approach the predicted n−3 scaling and its analytical prefactor as the system size increases. Thus, for any fixed γ1 > 0, the reduced gap estimate closes cubically with system size, while the prefactor de-pends on the dissipation strength. The corresponding reduced relaxation timescale therefore grows as n3. 
+
+> V. OUTLOOK AND CONCLUSION
+
+In this study, we have explored whether cooling only a subsystem of a coupled quantum system can lead to effective cooling of the entire system. We derived suffi-cient conditions under which localized dissipation drives the system to a unique globally attractive zero-excitation state. For multipartite qubit systems with excitation-transfer interactions, we further showed that the zero-forcing property of the interaction graph provides a suffi-cient condition for this convergence. We illustrated these results numerically for the Heisenberg spin model. For small system sizes, direct diagonalization of the full Liouvillian agrees to numerical precision with the decay rate obtained from the reduced single-excitation effec-tive Hamiltonian. For γ1 = 1, we analytically find that the corresponding reduced gap estimate scales asymptot-ically as ∆red (n) = π2
+
+5n3 + O(n−4),
+
+and verify this behavior numerically for systems of up to 
+
+n = 1000 qubits. This implies a polynomial n3 scaling of the corresponding reduced relaxation timescale. Our findings provide a connection between localized dissipative control, excitation transport, and the graph structure of an interacting quantum system. They show that access to only a subset of a system can, under suit-able conditions, be sufficient to prepare a global zero-excitation state. When this state coincides with a ground state of the Hamiltonian, the same mechanism provides a route to ground-state cooling. This may be relevant in settings where direct dissipative control of every compo-nent of a quantum system is experimentally difficult or resource intensive. Looking ahead, an important open question is whether the vacuum–single-excitation coherence sector remains the slowest Liouvillian sector for arbitrary system size. Establishing this would clarify when the reduced single-excitation decay rate determines the full Liouvillian gap beyond the small systems tested directly here. It would also be interesting to determine how the asymptotic scal-ing and its prefactor change with interaction strengths and with the structure of the excitation-transfer graph. More broadly, identifying further classes of Hamiltonians and dissipative processes for which localized cooling leads 11 to global state preparation remains an interesting direc-tion. Additionally, exploring the interplay between cool-ing methods and error-correction protocols could help clarify the role of localized dissipation in practical quan-tum architectures. In conclusion, our results establish sufficient conditions under which localized subsystem cooling leads to global preparation of a unique zero-excitation state, and identify zero forcing as a graph-theoretic criterion that guarantees this behavior for excitation-transfer networks. For the Heisenberg chain considered here, we provide numerical and analytical evidence for this cooling to be efficient. 
+
+[1] M. A. Nielsen and I. L. Chuang, Quantum Computation and Quantum Information (Cambridge University Press, Cambridge, 2000). [2] P. Shor, Algorithms for quantum computation: Discrete logarithms and factoring, in Proceedings 35th Annual Symposium on Foundations of Computer Science (1994) pp. 124–134. [3] L. K. Grover, A fast quantum mechanical algorithm for database search, in Proceedings of the Twenty-Eighth An-nual ACM Symposium on Theory of Computing (1996) pp. 212–219. [4] J. Chan, T. P. M. Alegre, A. H. Safavi-Naeini, J. T. Hill, A. Krause, S. Gr¨ oblacher, M. Aspelmeyer, and O. Painter, Laser cooling of a nanomechanical oscillator into its quantum ground state, Nature 478 , 89 (2011). [5] S. Stellmer, B. Pasquiou, R. Grimm, and F. Schreck, Laser Cooling to Quantum Degeneracy, Phys. Rev. Lett. 
+
+110 , 263003 (2013). [6] F. Schreck and K. van Druten, Laser cooling for quantum gases, Nat. Phys. 17 , 1296 (2021). [7] S. Chaudhuri, S. Roy, and C. S. Unnikrishnan, Evapo-rative Cooling of Atoms to Quantum Degeneracy in an Optical Dipole Trap, J. Phys.: Conf. Ser. 80 , 012036 (2007). [8] J.-R. Li, W. G. Tobias, K. Matsuda, C. Miller, G. Val-tolina, L. De Marco, R. R. W. Wang, L. Lassabli` ere, G. Qu´ em´ ener, J. L. Bohn, and J. Ye, Tuning of dipolar in-teractions and evaporative cooling in a three-dimensional molecular quantum gas, Nat. Phys. 17 , 1144 (2021). [9] T.-L. Ho and Q. Zhou, Intrinsic Heating and Cooling in Adiabatic Processes for Bosons in Optical Lattices, Phys. Rev. Lett. 99 , 120404 (2007). [10] J. Schachenmayer, D. M. Weld, H. Miyake, G. A. Siviloglou, W. Ketterle, and A. J. Daley, Adiabatic cool-ing of bosons in lattices to magnetically ordered quantum states, Phys. Rev. A 92 , 041602(R) (2015). [11] L. Buffoni, A. Solfanelli, P. Verrucchi, A. Cuccoli, and M. Campisi, Quantum Measurement Cooling, Phys. Rev. Lett. 122 , 070603 (2019). [12] J. Cotler, S. Choi, A. Lukin, H. Gharibyan, T. Grover, M. E. Tai, M. Rispoli, R. Schittko, P. M. Preiss, A. M. Kaufman, M. Greiner, H. Pichler, and P. Hayden, Quan-tum Virtual Cooling, Phys. Rev. X 9, 031013 (2019). [13] J. Langbehn, K. Snizhko, I. Gornyi, G. Morigi, Y. Gefen, and C. P. Koch, Dilute Measurement-Induced Cool-ing into Many-Body Ground States, PRX Quantum 5,030301 (2024). [14] F. Verstraete, M. M. Wolf, and J. I. Cirac, Quantum computation and quantum-state engineering driven by dissipation, Nat. Phys. 5, 633 (2009). [15] K. Seki, Y. Kikuchi, T. Hayata, and S. Yunoki, Dissi-pative ground-state preparation of a quantum spin chain on a trapped-ion quantum computer, Phys. Rev. Applied 
+
+26 , 014062 (2026), arXiv:2601.08137 [quant-ph]. [16] D. Burgarth and V. Giovannetti, Full Control by Locally Induced Relaxation, Phys. Rev. Lett. 99 , 100501 (2007). [17] D. Burgarth and V. Giovannetti, A protocol for cooling and controlling composite systems by local interactions, in Quantum Information and Many Body Quantum Sys-tems , CRM Series, Vol. 8, edited by M. Ericsson and S. Montangero (Edizioni della Normale, Pisa, 2008) pp. 17–34. [18] J. Lloyd, A. A. Michailidis, X. Mi, V. Smelyanskiy, and D. A. Abanin, Quasiparticle Cooling Algorithms for Quantum Many-Body State Preparation, PRX Quantum 
+
+6, 010361 (2025), arXiv:2404.12175 [quant-ph]. [19] K. V. Kepesidis and M. J. Hartmann, Bose-Hubbard model with localized particle losses, Phys. Rev. A 85 ,063620 (2012). [20] G. T. Landi, D. Poletti, and G. Schaller, Nonequilibrium boundary-driven quantum systems: Models, methods, and properties, Rev. Mod. Phys. 94 , 045006 (2022). [21] E. A. Carlen, D. A. Huse, and J. L. Lebowitz, Stationary states of boundary-driven quantum systems: Some exact results, Phys. Rev. A 111 , 012210 (2025). [22] B. Kraus, H. P. B¨ uchler, S. Diehl, A. Kantian, A. Micheli, and P. Zoller, Preparation of entangled states by quan-tum Markov processes, Phys. Rev. A 78 , 042307 (2008). [23] Z. Ding, C.-F. Chen, and L. Lin, Single-ancilla ground state preparation via Lindbladians, Phys. Rev. Research 
+
+6, 033147 (2024), arXiv:2308.15676 [quant-ph]. [24] Y. Zhan, Z. Ding, J. Huhn, J. Gray, J. Preskill, G. K.-L. Chan, and L. Lin, Rapid Quantum Ground State Preparation via Dissipative Dynamics, Phys. Rev. X 16 ,011004 (2026). [25] Z. Ding, Y. Zhan, J. Preskill, and L. Lin, Simple and efficient end-to-end quantum thermal and ground state preparation, Nat. Phys. 10.1038/s41567-026-03389-y (2026), arXiv:2508.05703 [quant-ph]. [26] B. Baumgartner and H. Narnhofer, Analysis of quantum semigroups with GKS–Lindblad generators ii. general, J. Phys. A: Math. Theor. 41 , 395303 (2008). [27] S. G. Schirmer and X. Wang, Stabilizing open quantum systems by Markovian reservoir engineering, Phys. Rev. A 81 , 062306 (2010). [28] H. Yoshida, Uniqueness of steady states of Gorini-Kossakowski-Sudarshan-Lindblad equations: A simple proof, Phys. Rev. A 109 , 022218 (2024). [29] A. Lucia, D. P´ erez-Garc´ ıa, and A. P´ erez-Hern´ andez, Spectral Gap Bounds for Quantum Markov Semigroups via Correlation Decay (2025), arXiv:2505.08991 [quant-ph]. [30] D. Burgarth, D. D’Alessandro, L. Hogben, S. Sev-erini, and M. Young, Zero forcing, linear and quantum controllability for systems evolving on networks, IEEE Trans. Automat. Contr. 58 , 2349 (2013), arXiv:1111.1475 12 
+
+[quant-ph]. [31] AIM Minimum Rank–Special Graphs Work Group, Zero forcing sets and the minimum rank of graphs, Linear Al-gebra Appl. 428 , 1628 (2008). [32] A. Auerbach, Interacting Electrons and Quantum Mag-netism , Graduate Texts in Contemporary Physics (Springer, New York, 1994). [33] H. Spohn, An algebraic condition for the approach to equilibrium of an open N-level system, Lett Math Phys 
+
+2, 33 (1977). [34] K. Beer and D. Burgarth, Code for “global zero-excitation state preparation through subsystem cooling”, 
+
+https://github.com/KerstinBeer/subsystem-cooling 
+
+(2026), gitHub repository. [35] L. Banchi and R. Vaia, Spectral problem for quasi-uniform nearest-neighbor chains, Journal of Mathemati-cal Physics 54 , 043501 (2013).

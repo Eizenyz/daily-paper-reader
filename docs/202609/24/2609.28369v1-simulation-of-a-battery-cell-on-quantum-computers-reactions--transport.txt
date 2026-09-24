@@ -1,0 +1,364 @@
+Title: Simulation of a Battery Cell on Quantum Computers: Reactions     Transport
+
+URL Source: https://arxiv.org/pdf/2609.28369v1
+
+Published Time: Thu, 24 Sep 2026 01:36:07 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Simulation of a Battery Cell on Quantum Computers: Reactions & Transport 
+
+## Albert J. Pool 1,2 , Michael Schelling 1,2 , and Birger Horstmann* 1,2,3 1Institute of Engineering Thermodynamics, German Aerospace Center (DLR), Wilhelm-Runge-Str. 10, 89081 Ulm, Germany 
+
+> 2
+
+## Helmholtz Institute Ulm, Helmholtzstr. 11, 89081 Ulm, Germany 
+
+> 3
+
+## Department of Physics, Ulm University, Albert-Einstein-Allee 11, 89081 Ulm, Germany *Email: birger.horstmann@dlr.de 
+
+# Abstract 
+
+Simulations of electrochemical materials and systems accelerate technological progress, but are still lim-ited by computational power. In particular, quantum computing offers prospects for higher resolutions, due to the exponential amount of data that can be stored in a quantum state. As current quantum computers are still noisy, we consider a hybrid quantum-classical algorithm, that divides the problem into smaller com-putational tasks. We describe how to implement such an algorithm for non-linear partial differential equa-tions, the Feynman–Kitaev Hamiltonian, in a scalable way for an electrochemical system. We show how it can evaluate general electrochemical models and present a quantum simulation of the Single Particle Model with electrolyte (SPMe) as the first quantum simulation of a battery cell. |Ψ⟩= ⊗r+ -
+
+Graphical abstract Partial differential equations (PDEs) build the fun-dament of basically every discipline in science and engineering. In physical chemistry, PDEs are nec-essary to describe and simulate phenomena such as diffusion and reaction rates accurately, both for the-oretical insight and for practical applications. 1–6 The demand for more accurate computational results in-creases steadily, leading to higher and higher de-mands in both complexity and resolution. Especially multi-scale and three-dimensional models operate on the limits of classical methods. 7 While Moore’s Law has guaranteed the steady increase of computational power over the last decades, miniaturisation is reach-ing its physical limit, 8 and the quest for novel ideas seems more relevant than ever. In this context, quantum computing holds tremen-dous promises for solving PDEs 9,10 by offering an exponentially large Hilbert state space of the phys-ical qubits, whose potential might be harnessed to achieve high-resolution descriptions of physical chem-istry models. Recently, a quantum algorithm for dif-fusion through a fuel cell membrane has been pre-sented. 11 As quantum computers inherently perform unitary, and thus linear, operations, special consider-ation have to be made to achieve scalable algorithms for non-linear problems, for which various methods have been recently proposed and tested. 12–17 
+
+This work presents the first solution for a full elec-trochemical cell using a quantum algorithm. Our method employs a combination of the Feynman– Kitaev (FK) Hamiltonian 18–20 with Quantum Non-linear Processing Units (QNPUs), 21,22 previously used for the Burgers equation. 23 We extend this with an improved, scalable treatment of boundary condi-tions, as well as a novel treatment of coupled nonlin-ear equations. The FK Hamiltonian gives a space-time formulation, where the state of the system at all times and points in space results from a single optimisation process. This formulation allows to ex-tend the exponential scaling advantage to the time domain and circumvents the accumulation of errors of time-stepping methods where the state needs to be 1arXiv:2609.28369v1 [physics.chem-ph] 23 Sep 2026 Ck ∂∂t cs,k = 1
+
+rk
+
+∂2
+
+∂r 2
+
+> k
+
+# 
+
+# rk · cs,k 
+
+# 
+
+|0⟩|0⟩|0⟩|0⟩|0⟩|0⟩|0⟩
+
+H
+
+ˆUc(⃗θ)
+
+t0
+
+t1
+
+r0
+
+r1
+
+|0⟩|0⟩ 1/r 
+
+ˆA(†)
+
+|0⟩|0⟩ r
+
+ˆAH
+
+Figure 1: One of the quantum circuits encoding Eq. (1), showcasing the quantum implementation of a differ-ential equation for two qubits in space and time. The ansatz circuit ˆUc(⃗ θ) (blue) encodes the concentration in time and space. The multiplication with r and 1/r (red) realises the transformation to spherical coordinates. The binary shift operator ˆA(†) (green) implements the spatial derivative; the dagger in parentheses indicates that both the left and right derivative are required (in separate circuits) to determine the Laplacian. The shift operator ˆA on the right (yellow) implements the time derivative. Both have an ancilla qubit as their most significant bit to remove periodicity. This circuit implements the spherical Laplacian using the dis-cretisation described in Sec. 1 of the supporting information. read out after every step. Combining this spacetime FK formulation with a variational approach makes it compatible with current noisy intermediate-scale quantum (NISQ) hardware, 24,25 while the FK formu-lation itself can also be incorporated into quantum algorithms for future fault-tolerant quantum hard-ware. We consider the implementation on today’s superconducting hardware with an experiment on an emulated IBM superconducting computer. We be-lieve our work provides a solid foundation for more complex systems, opening the way for studying 3D models and more sophisticated differential-algebraic systems of equations using quantum computing. The main component of a battery cell model is a differential-algebraic system of equations that de-scribes the transport of charge carriers (e.g. lithium ions) between the two electrodes of the cell as well as the chemical reactions taking place on the electrode surfaces. The electrodes are porous structures con-sisting of spherical particles. Here, the pores are filled with electrolyte, which allows ions to be transported through these pores and reach every electrode parti-cle. There are different established methods to sim-ulate these electrode particles. In the Doyle–Fuller– Newman (DFN) model, 26 the electrodes consist of a 1D grid where a radially symmetric particle is mod-elled at every grid point, while in the Single Parti-cle Model with electrolyte (SPMe), 27 only one repre-sentative particle is modelled for each electrode. In order to determine the electrochemical potential in the electrolyte as well as the electrode potentials, a galvanostatic condition (fixed charge/discharge cur-rent) or potentiostatic condition (fixed cell voltage) is used. The electrode and electrolyte variables are coupled to each other by the Butler–Volmer equation, which gives the reaction rate on the electrode particle surface as a function of these variables. As demonstration case for our quantum algorithm, we solve the SPMe model with galvanostatic condi-tions, which consists of a set of differential equations for concentration inside the electrode particles and a set of analytical expressions for concentration and electrochemical potential in the electrolyte. We for-mulate these equations in such a way that they can be efficiently implemented in quantum circuits, as de-tailed in Sec. 1 of the supporting information. 17,32,33 
+
+We describe the concentration inside each electrode particle by the diffusion equation in spherical coor-dinates, Eq. (40a) from Marquis et al., 27 which we rewrite as 
+
+∂c s,k 
+
+∂t = Ds,k 
+
+1
+
+rk
+
+∂2
+
+∂r 2
+
+> k
+
+
+
+rk · cs,k 
+
+
+
+, (1) where k ∈ { n, p} stands for the (negative) anode or (positive) cathode, cs,k = c∗
+
+> s,k
+
+/c max s,k is the dimension-less solid concentration inside the electrode particle, 2Table 1: Physical parameters of the described battery. Parameter Description anode separator cathode 
+
+D∗ 
+
+> s,k
+
+Diffusion coefficient ( k ∈ { n, p}) 2 × 10 −16 m2/s (d) 5 × 10 −13 m2/s (a) 
+
+R∗ 
+
+> k
+
+Particle radius ( k ∈ { n, p}) 80 nm (c) 3.8 μm (a) 
+
+C∗ 
+
+> A
+
+Areal capacity 6.5 Ah/m 2 (d) 6.5 Ah/m 2 (b) 
+
+L∗ 
+
+> k
+
+Thickness ( k ∈ { n, s, p}) 4 μm (d) 12 μm (a) 15 μm (b) 
+
+ϵk Porosity ( k ∈ { n, s, p}) 0.561 (c) 0.45 (a) 0.345 (b) 
+
+β Bruggeman coefficient 1.5 1.5 1.5 
+
+D∗ 
+
+> e
+
+Electrolyte diffusion constant 4.6 × 10 −10 m2/s (e) 
+
+κ∗ Electrolyte ionic conductivity 1.16 S/m 2 (e) 
+
+c0 
+
+> e
+
+Electrolyte standard concentration 1 M 
+
+t+ Transference number 0.38 (e) (a) Cathode material and separator parameters from Sturm et al. 28 (b) Cathode geometry parameters from Wu et al. 29 with thickness and capacity divided by 4 for a high-power cell  
+
+> (c)
+
+Anode parameters from Pan et al. 30 (d) Estimated for a matching diffusion timescale and areal capacity of both electrodes. Ds,n is within the range given by Pan et al. 30 (e) Electrolyte parameters from molecular dynamics simulations of Lehnert et al. 31 
+
+Table 2: Simulation parameters for the nondimensionalised SPMe. Parameter Description anode cathode 
+
+c0 Initial concentration of the electrodes, as fraction of the maximum concentration 0.1 0.9 
+
+jk Dimensionless current density ( k ∈ { n, p}) 0.0125 -0.0125 
+
+≜ 4.13 C
+
+kf,k Dimensionless reaction rate parameter ( k ∈ { n, p}) 0.125 
+
+Ds,k Dimensionless diffusion coefficient ( k ∈ { n, p}) 1obtained by dividing the real concentration through the maximum of the respective electrode material, 
+
+rk = r∗
+
+> k
+
+/R ∗ 
+
+> k
+
+the radial coordinate nondimensionalised by the particle radius R∗
+
+> k
+
+, and Ds,k = D∗
+
+> s,k
+
+τd/R ∗2
+
+> k
+
+the nondimensionalised diffusion coefficient. Here, 
+
+τd is the characteristic timescale of diffusion, which we also use as the unit of time in the simulation, and choose it to be the same for both electrodes (τd,n = τd,p = 28 .8 s to obtain Ds,k = 1 ). The bound-ary conditions are given by Eq. (40d) from Marquis et al. 27 as 
+
+∂c s,k 
+
+∂r s,k rk =0 
+
+= 0 , −Ds,k 
+
+∂c s,k 
+
+∂r s,k rk =1 
+
+= jk, (2) where jk is a nondimensionalised fixed current (gal-vanostatic condition). For a scalable quantum implementation, we modify the outer boundary condition such that the reaction is applied in a small boundary region r ≥ rr instead of a boundary point, as detailed in Sec. 1.1 of the sup-porting information. As a proof of concept, we take the Butler–Volmer equation, Eq. (3g/i) from Marquis et al., 27 and linearise it as 
+
+R(ck, φ k) = kf,k (a0 + a1 · ck + a2 · φk
+
++ a3 · ck · φk)/V th , (3a) 
+
+≈ j0,k sinh 
+
+ φ − Uk (cs,k )2Vth 
+
+
+
+, (3b) with φk = ϕs,k − ϕe,k and ck = cs,k , where ϕs,k and 
+
+ϕe,k are the potential of each electrode k ∈ { n, p},and of the electrolyte in its pores, respectively, Uk is the open circuit voltage (OCV) function of the elec-trode material under consideration, and Vth = RT /F 
+
+the thermal voltage. kf,k is the reaction rate con-stant, a prefactor extracted from the concentration-dependent exchange current density j0,k for each elec-trode. We implement the galvanostatic condition in an algebraic equation 
+
+X
+
+> r≥rr
+
+R(ck(r), φ k(r))∆ r = jk ∀t, (4) 3(a) anode cathode representative particle representative particle Li +e-rn rp separator 0.2 0.4 0.6 0.8 1.0
+
+rn0.1000 0.1025 0.1050 0.1075 0.1100 0.1125 0.1150 0.1175   
+
+> c(rn, t )
+> 0.00.20.4
+
+t
+
+> 0.3475 0.3500 0.3525
+> φ(rn = 1 , t )
+
+(b)     
+
+> 0.20.40.60.81.0
+
+rp0.8800 0.8825 0.8850 0.8875 0.8900 0.8925 0.8950 0.8975 0.9000   
+
+> c(rp, t )
+> 0.00.20.4
+
+t
+
+> 3.165 3.170 3.175
+> φ(rp = 1 , t )
+
+(c) 
+
+> 0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40
+> t
+
+1
+
+Figure 2: Concentration and potential for the anode and cathode for a charging process with a constant current density jn = 0 .0125 /jp = −0.0125 and ∆t = 1 /16 , starting at an anode concentration of 0.1 and a cathode concentration of 0.9. (a) Schematic explaining the two electrodes and representative particles, inspired by. 34 (b) Concentration and electrochemical potential φn = ϕs,n − ϕe,n (inset) in the anode repre-sentative particle as a function of time and space, with an infidelity of 2.8 × 10 −6 for the concentration. (c) Concentration and electrochemical potential φp = ϕs,p − ϕe,p (inset) in the cathode representative particle as a function of time and space, with an infidelity of 2.1 × 10 −5 for the concentration. In both figures, the dashed lines represent a numerical solution to the model equations. which couples φk and ck. We note that the SPMe model allows calculating the potentials φk in post-processing; accordingly, it would be possible to only model the concentration with quantum circuits and determine all potentials analytically. However, we de-liberately choose to implement the coupled equations in our quantum algorithm to showcase this important step towards more sophisticated models. We attempt to solve the system of Eqs. (1, 2, 4) of the SPMe with a quantum algorithm. For an ex-ponential scaling in both time and space we choose the FK Hamiltonian, 19 which encodes the full space-time solution in its ground state. To make our ap-proach feasible for NISQ devices, we use a hybrid quantum-classical optimisation, where the quantum computer evaluates a quadratic cost function and the optimisation is performed on classical hardware. We extend our existing implementation 23 with quantum circuits for spherical diffusion, Neumann boundary conditions, as well as reaction terms with a coupling between the concentration and potential. For the spherical diffusion, we use quantum nonlinear pro-cessing units (QNPUs) 21 to multiply with quantum circuits that represent the functions rk and 1/r k from Eq. (1). An example circuit is shown in Fig. 1. We make this system non-periodic by adding one more spatial qubit, and introduce an efficient implementa-tion of the Neumann boundary condition, that sig-nificantly reduces the amount of circuits and multi-qubit gates compared to the existing implementation 40.2 0.4 0.6 0.8 1.0
+
+rn0.1000 0.1005 0.1010 0.1015 0.1020 0.1025 0.1030  
+
+> c(rn, t )
+> 0.00.1
+
+t
+
+> 0.35 0.36 0.37 0.38 0.39
+> φ(rn = 1 , t )
+
+(a)     
+
+> 0.20.40.60.81.0
+
+rp0.8970 0.8975 0.8980 0.8985 0.8990 0.8995 0.9000  
+
+> c(rp, t )
+> 0.00.1
+
+t
+
+> 3.13 3.14 3.15 3.16 3.17
+> φ(rp = 1 , t )
+
+(b) 
+
+> 0.00 0.02 0.04 0.06 0.08 0.10 0.12
+> t
+
+1Figure 3: Concentration and potential for the anode and cathode for a GITT pulse with a duration of 0.075 
+
+and an equally long relaxation phase, starting at an anode concentration of 0.1 and a cathode concentration of 
+
+0.9. (a) Anode concentration and electrochemical potential φn = ϕs,n − ϕe,n (inset) as a function of time and space, with an infidelity of 4.5 × 10 −7 for the concentration. (b) Cathode concentration and electrochemical potential φp = ϕs,p − ϕe,p (inset) as a function of time and space, with an infidelity of 3.0 × 10 −7 for the concentration. In all figures, the dashed lines represent a numerical solution to the model equations. by Over et al., 35 which is detailed in Sec. 2.1 of the supporting information. Lastly, we add QNPU cir-cuits to calculate all terms of Eq. (3a). We then use similar circuits, without any time evolution, to im-plement the algebraic equation (4). All of these are detailed in Sec. 2 of the supporting information. After obtaining a solution with our quantum algo-rithm for an SPMe of both an anode and a cathode particle, we can extract the cell voltage of the simu-lated battery cell. We determine the overpotentials 
+
+¯ηc and ∆ ¯ϕe due to electrolyte transport as described in Sec. 3 of the supporting information. 27 We then calculate the cell voltage from the electrochemical po-tentials φk of both electrodes as 
+
+U = φp − φn + ¯ ηc + ∆ ¯ϕe. (5) We nondimensionalise the required electrolyte pa-rameters in a similar fashion to the electrode parame-ters. We divide the liquid concentration ce,k = c∗
+
+> e,k
+
+/c 0
+
+> e
+
+by its standard value c0 
+
+> e
+
+and the length scale by the thickness of the cell, such that Lp + Ls + Ln = 1 .For a proof of principle of the quantum algorithm, we assume that both electrodes have the same areal capacity and timescale of diffusion τd. We imple-ment linearised electrode characteristics as described in Sec. 4 of the supporting information, taking sam-ple parameters a0 to a3 in Eq. (3a) from a silicon anode 30 and NMC811 cathode, 28 respectively. We model a high-power cell with thin electrodes and a current density just above 4C. We assume a reaction rate parameter of kf,k = 0 .125 for both electrodes, for a sufficiently large coupling between potential and concentration, in order to observe the effect of an increasing/decreasing charging state in the cell volt-age. This corresponds to a cell with the parameters given in Tab. 1. We then use a noiseless simulator of a quantum computer to optimise a parameterised quantum circuit, in order to find the minimum of the FK Hamiltonian, which represents the solutions for ck
+
+and φk. To facilitate this variational optimisation, we employ an adaptive optimisation strategy using the Adam 36 and L-BFGS-B 37 optimisers and a multigrid approach to refine the spatial grid, 38 as detailed in Sec. 5 of the supporting information. We validate our method by simulating two dif-ferent operation modes. In the charging case, we apply a galvanostatic condition and simulate long enough that a constant concentration gradient inside the particle is reached. In the GITT (galvanostatic intermittent titration technique) 39 case, we simu-50.0 0.2 0.4  
+
+> t
+> 2.875 2.880 2.885 2.890
+> U (t)
+> (a)
+> 0.00 0.05 0.10
+> t
+> 2.74 2.76 2.78 2.80 2.82 2.84 2.86 2.88
+> (b)
+
+1Figure 4: Cell voltage for (a) charging with a constant current and ∆t = 1 /16 and (b) a GITT pulse lasting 
+
+0.075 s followed by an equally long relaxation phase. The dashed lines represent a numerical solution to the model equations. late a short pulse with constant current followed by an equally long relaxation phase with zero current. This case highlights the dynamics at short timescales, where a concentration gradient is formed and disap-pears again, which is recognisable in the cell voltage due to the coupling between concentration and po-tential. The parameters for both of these cases are given in Tab. 2. We perform all simulations with 
+
+3 + 3 qubits, meaning 23 = 8 points in both time and space. First, we simulate the charging case. The result-ing concentrations and potentials are shown in Fig. 2. The modelled anode particle clearly shows the char-acteristics of a charging scenario, with a lithiation of the particle, i.e. increasing concentration at its sur-face rp = 1 and diffusion towards the particle centre, and a drop in the potential over time. The mod-elled cathode particle exhibits an inverse behaviour, showing the characteristics of delithiation and an as-sociated surge of the electrode potential. We observe a parabolic shape of the lithium concentration, which validates the quantum implementation of the spher-ical diffusion, as the concentration would evolve to-wards a straight line in Cartesian coordinates. Both the closed Neumann boundary condition in the par-ticle centres, rk = 0 , and the reactions on the outer boundaries rk = 1 are captured by our circuits. While the general shape is adequately met, the reaction overshoots slightly and the initial condition is not fully matched. The potential is matched very well for both electrodes, showcasing the successful coupling of the two variables through Eq. (3a) by our method. In the second experiment, we consider the GITT case, for which the results are shown in Fig. 3. Again, the obtained solution shows the expected character-istics, displaying the lithiation of the anode and the delithiation of the cathode particle. As in the previ-ous experiment both the spherical geometry, here in the parabolic shape of the intermediate time steps, and the closed boundary in the particle centre are visible. On the outer boundary, rk = 1 , the influence of the sudden cut of the external voltage is clearly vis-ible by a decrease in concentration during the later time steps, which extends into the particle over time. This relaxation of the concentration profiles indicate that the corresponding drop in the reaction rates at the particle surfaces is captured. This is assured by the sudden change in the particle potentials, which are again met very well. We see that the concentra-tion in the second half of time shows some deviation from the expected profile, being too high in the centre of the particle for the anode case and too low at the edge in the cathode case. We note that a relaxation of the potential is not visible at this timescale. We derive the resulting cell voltage for the two cases, charging and GITT, as can be seen in Fig. 4. The voltage depicts the difference between the two potentials plus an electrolyte contribution that de-pends on the current and properties of the cell. As can be seen in both figures, the voltage is well repro-duced, showing the same trends as the potentials of the individual electrodes, demonstrating that the cell voltage can be successfully retrieved from the pro-posed quantum algorithm in both scenarios. Lastly, we prepare a circuit with less qubits and gates suitable for current superconducting quantum computing hardware. We take an optimised circuit for 2 + 2 qubits for the anode in the charging case, with a higher charging current of jn = 0 .0625 to have larger differences in amplitude, making it less sus-ceptible to noise. We start with an optimised cir-cuit where all four qubits are connected to each other in four layers, and progressively reduce this to three layers where only neighbouring qubits are connected by removing connections while optimising again. We sample both circuits on the IBM Berlin fake backend, which emulates an IBM Quantum Nighthawk proces-sor with a square topology. We perform 2.5 million shots with M3 error mitigation 40 and show the results in Fig. 5. Comparing the left and right side of the fig-ure, it is apparent that the circuit with a lower gate count produces less noise. We also show a similar experiment on the IQM Emerald 41 superconducting quantum computer in Sec. 6 of the supporting infor-mation. In summary, we demonstrate the solution of a full electrochemical model, consisting of a system of cou-pled nonlinear equations, using a quantum algorithm. For this purpose we transformed the electrochemical processes of the SPMe into a quantum algorithm, rep-60.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+
+rn0.100 0.105 0.110 0.115 0.120 0.125   
+
+> c(rn, t )
+> 0.00 0.05 0.10
+
+t
+
+> 0.1875 0.1900 0.1925
+> φ(rn = 1 , t )
+
+(a)        
+
+> 0.30.40.50.60.70.80.91.0
+
+rn0.100 0.105 0.110 0.115 0.120   
+
+> c(rn, t )
+> 0.00 0.05 0.10
+
+t
+
+> 0.190 0.192
+> φ(rn = 1 , t )
+
+(b) 
+
+> 0.00 0.02 0.04 0.06 0.08 0.10
+> t
+
+1Figure 5: Comparison of two different circuits with 2 + 2 qubits ( 22 = 4 points in space and time) on the IBM Berlin fake backend, showing concentration as a function of time and space and (inset) potential as a function of time. (a) 4 layers with all-to-all connectivity. (b) 3 layers hardware-efficient, only including connections that are physically present. The dashed lines correspond to a result from a noiseless simulator for the same circuits. Both results were produced using 2.5 million shots with M3 error mitigation. resenting boundary conditions, coupled variables and nonlinear terms with quantum circuits. The experi-ments demonstrate that our chosen approach is func-tional, captures the characteristics of the simulated battery electrodes, that relevant battery parameters such as the cell voltage can be extracted, and that it can be extended to include coupled equations. Us-ing a variational approach based on the FK Hamil-tonian, our method is scalable as the depth of the quantum circuits scales linearly with the number of qubits and the number of circuits only depends on the equations and desired precision. While we em-ploy strategies to speed up the variational optimisa-tion by using a multigrid approach, 23 the optimisa-tion process currently remains a practical bottleneck of unclear complexity. However, it is possible to im-prove scalability by using other methods to find the ground state such as subspace solvers 42 or quantum imaginary time evolution. 43 Due to the limitations of current quantum hardware, our experiments remain small-scale demonstrations. Additional experiments may be conducted with a higher spatial resolution, in order to resolve larger concentration gradients in-side the particles for a better simulation of the relax-ation phase in the GITT case. On the emulator of the IBM superconducting platform, we observe that the ansatz circuit needs to be reduced to be more hardware-efficient in order to sample the state, but this counteracts trainability. While superconducting quantum computers offer very fast gate times, they do have more limited connectivity than other platforms such as neutral atoms or trapped ions. 10 This is not only a limit to variational algorithms, but also to er-ror correcting codes for fault-tolerant algorithms. 44 
+
+Some recent developments aim to alleviate this, such as multi-qubit couplers 45 or architectures with a cen-tral resonator. 46 
+
+Conclusively, in providing a quantum simulation of an electrochemical cell using a Hamiltonian for-mulation, we believe our work can serve as a basis for more advanced models, and we see no fundamen-tal limitation to extend it to more complex electro-chemical models, such as the two-dimensional DFN model 26 or microstructure-resolved 3D models, 47 or other systems of coupled non-linear PDEs in chem-istry or engineering. 7Methods 
+
+We implement all quantum circuits in Qiskit 48 and verify that they are numerically equivalent to the functions we want to evaluate. To speed up the opti-misation, we generate a statevector for the ansatz cir-cuit in every optimisation step and calculate the cost function classically. All results represent the best out of 20 random initial conditions for every optimisation procedure. We emulate the IBM Berlin supercon-ducting quantum computer using the fake backend in the Qiskit Runtime library. 
+
+# Acknowledgements 
+
+We thank Alexios A. Michailidis for helpful discus-sions about implementation details and Lukas Köb-bing and Johannes Hörmann for providing the OCV functions of the electrode materials. This work is part of the project ‘Battery materi-als simulation using quantum computers’ (BASIQ), https://qci.dlr.de/en/basiq/, which is made possible by the DLR Quantum Computing Initiative (QCI) and the German Federal Ministry of Research, Tech-nology and Space (BMFTR). The classical com-putations were performed on the JUSTUS 2 clus-ter, supported by the state of Baden-Württemberg through bwHPC and the German Research Foun-dation (DFG) through Grant No. INST 40/575-1 FUGG. This work contributes to the research per-formed at CELEST (Center for Electrochemical En-ergy Storage Ulm-Karlsruhe). 
+
+# References 
+
+(1) Sokalski, T.; Lingenfelter, P.; Lewenstam, A. J. Phys. Chem. B 2003 , 107 , 2443–2452. (2) Kostré, M.; Schütte, C.; Noé, F.; Del Razo, M. J. Multiscale Model. Simul. 2021 , 19 , 1659–1683. (3) Latz, A.; Zausch, J. J. Power Sources 2011 , 196 , 3296–3302. (4) Braun, S.; Yada, C.; Latz, A. J. Phys. Chem. C 2015 , 119 , 22281–22288. (5) Thomas, M.; Kirchner, B. J. Phys. Chem. Lett. 2016 , 7, 509–513. (6) Ruiz-Garcia, A.; Esquivel-Peña, V.; Godínez, F.; Montoya, R. ChemElectroChem 2024 , 11 ,e202300712. (7) Tadmor, E. Bull. Amer. Math. Soc. 2012 , 49 , 507–554. (8) Shalf, J. Philos. Trans. R. Soc. A 2020 , 378 .(9) Givi, P.; Daley, A. J.; Mavriplis, D.; Malik, M. AIAA J. 2020 , 58 , 3715–3727. (10) Tennie, F.; Laizet, S.; Lloyd, S.; Magri, L. Nat. Rev. Phys. 2025 , 7, 220–230. (11) Gubaev, T.; Pfeffer, P.; Dreßler, C.; Schumacher, J. Phys. Rev. Appl. 2026 , 26 , 014051. (12) Jin, S.; Liu, N. Quantum Sci. Technol. 2024 , 9, 035047. (13) Lu, Z.; Yang, Y. Proc. Combust. Inst. 2024 , 40 , 105440. (14) Berger, S.; Hosters, N.; Möller, M. Sci. Rep. 2025 , 15 , 18823. (15) Costa, P. C.; Schleich, P.; Morales, M. E.; Berry, D. W. npj Quantum Inf. 2025 , 11 , 141. (16) Tennie, F.; Magri, L. Proc. R. Soc. A 2025 , 481 , 20250016. (17) Siegl, P.; Reese, G. S.; Hashizume, T.; van Hülst, N.-L.; Jaksch, D. Phys. Rev. Res. 2026 , 8, 013052. (18) Jarrod McClean; John A. Parkhill; Alán Aspuru-Guzik Proc. Natl. Acad. Sci. U.S.A. 2013 , 110 ,E3901. (19) Tempel, D. G.; Aspuru-Guzik, A. New J. Phys. 2014 , 16 , 113066. (20) Barison, S.; Vicentini, F.; Cirac, I.; Carleo, G. Phys. Rev. Res. 2022 , 4, 043161. (21) Lubasch, M.; Joo, J.; Moinier, P.; Kiffner, M.; Jaksch, D. Phys. Rev. A 2020 , 101 , 010301(R). (22) Sarma, A.; Watts, T. W.; Moosa, M.; Liu, Y.; McMahon, P. L. Phys. Rev. A 2024 , 109 , 062616. (23) Pool, A. J.; Somoza, A. D.; Mc Keever, C.; Lubasch, M.; Horstmann, B. Phys. Rev. Res. 2024 , 6,033257. 8(24) Cerezo, M.; Arrasmith, A.; Babbush, R.; Benjamin, S. C.; Endo, S.; Fujii, K.; McClean, J. R.; Mitarai, K.; Yuan, X.; Cincio, L., et al. Nat. Rev. Phys. 2021 , 3, 625–644. (25) Jaksch, D.; Givi, P.; Daley, A. J.; Rung, T. AIAA J. 2023 , 61 , 1885–1894. (26) Doyle, M.; Fuller, T. F.; Newman, J. J. Electrochem. Soc. 1993 , 140 , 1526. (27) Marquis, S. G.; Sulzer, V.; Timms, R.; Please, C. P.; Chapman, S. J. J. Electrochem. Soc. 2019 , 166 ,A3693. (28) Sturm, J.; Rheinfeld, A.; Zilberman, I.; Spingler, F.; Kosch, S.; Frie, F.; Jossen, A. J. Power Sources 
+
+2019 , 412 , 204–223. (29) Wu, X.; Li, X.; Yang, Z.; Ingram, B. J.; Li, M.; Su, C.-C.; Amine, K. ACS Appl. Mater. Interfaces 
+
+2026 , 18 , 3714–3722. (30) Pan, K.; Zou, F.; Canova, M.; Zhu, Y.; Kim, J.-H. J. Power Sources 2019 , 413 , 20–28. (31) Lehnert, L.; Lorenz, M.; Juarez, M. F.; Schammer, M.; Nojabaee, M.; Schönhoff, M.; Horstmann, B. 
+
+Journal of The Electrochemical Society 2025 , 172 , 050523. (32) Zeng, Y.; Albertus, P.; Klein, R.; Chaturvedi, N.; Kojic, A.; Bazant, M. Z.; Christensen, J. J. Elec-trochem. Soc. 2013 , 160 , A1565–A1571. (33) Iten, R.; Colbeck, R.; Kukuljan, I.; Home, J.; Christandl, M. Phys. Rev. A 2016 , 93 , 032318. (34) Kuhn, Y.; Wolf, H.; Latz, A.; Horstmann, B. Batter. Supercaps 2023 , 6, e202200374. (35) Over, P.; Bengoechea, S.; Rung, T.; Clerici, F.; Scandurra, L.; de Villiers, E.; Jaksch, D. Comput. Fluids 2025 , 288 , 106508. (36) Kingma, D. P.; Ba, J. 2014 , arXiv preprint 1412.6980, DOI: 10.48550/arXiv.1412.6980 .(37) Byrd, R. H.; Lu, P.; Nocedal, J.; Zhu, C. SIAM J. Sci. Comput. 1995 , 16 , 1190–1208. (38) Lubasch, M.; Moinier, P.; Jaksch, D. J. Comput. Phys. 2018 , 372 , 587–602. (39) Weppner, W.; Huggins, R. A. J. Electrochem. Soc. 1977 , 124 , 1569. (40) Nation, P. D.; Kang, H.; Sundaresan, N.; Gambetta, J. M. PRX Quantum 2021 , 2, 040326. (41) Abdurakhimov, L.; Adam, J.; Ahmad, H.; Ahonen, O.; Algaba, M.; Alonso, G.; Bergholm, V.; Beriwal, R.; Beuerle, M.; Bockstiegel, C., et al. 2024 , arXiv preprint arXiv:2408.12433, DOI: 10.48550/arXiv. 2408.12433 .(42) Kirby, W.; Motta, M.; Mezzacapo, A. Quantum 2023 , 7, 1018. (43) Mao, Y.; Chaudhary, M.; Kondappan, M.; Shi, J.; Ilo-Okeke, E. O.; Ivannikov, V.; Byrnes, T. Phys. Rev. Lett. 2023 , 131 , 110602. (44) Campbell, E. T.; Terhal, B. M.; Vuillot, C. Nature 2017 , 549 , 172–179. (45) Feulner, V.; Fani, M.; Heunisch, L.; Tasler, S.; Hartmann, M. J. 2026 , arXiv preprint arXiv:2606.14522, DOI: 10.48550/arXiv.2606.14522 .(46) Renger, M.; Verjauw, J.; Wurz, N.; Hosseinkhani, A.; Ockeloen-Korppi, C.; Liu, W.; Rath, A.; Thapa, M. J.; Vigneau, F.; Wybo, E., et al. Phys. Rev. Res. 2026 , 8, 013148. (47) Hein, S.; Feinauer, J.; Westhoff, D.; Manke, I.; Schmidt, V.; Latz, A. J. Power Sources 2016 , 336 ,161–171. (48) Javadi-Abhari, A.; Treinish, M.; Krsulich, K.; Wood, C. J.; Lishman, J.; Gacon, J.; Martiel, S.; Nation, P. D.; Bishop, L. S.; Cross, A. W., et al. 2024 , arXiv preprint arXiv:2405.08810, DOI: 10.48550/ arXiv.2405.08810 .9
