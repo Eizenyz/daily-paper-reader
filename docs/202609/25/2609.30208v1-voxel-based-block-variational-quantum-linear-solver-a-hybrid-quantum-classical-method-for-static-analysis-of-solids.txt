@@ -1,0 +1,2942 @@
+Title: Voxel-based block variational quantum linear solver: a hybrid quantum-classical method for static analysis of solids
+
+URL Source: https://arxiv.org/pdf/2609.30208v1
+
+Published Time: Fri, 25 Sep 2026 01:43:30 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# Voxel-based block variational quantum linear solver: a hybrid quantum–classical method for static analysis of solids 
+
+## Feng Wu, Chen Li, Li Zhu, Yuxiang Yang, and Xu Guo *
+
+State Key Laboratory of Structural Analysis, Optimization and CAE Software for Industrial Equipment, School of Mechanics and Aerospace Engineering, Dalian University of Technology, Dalian 116024, Liaoning, P. R. China 
+
+In solid mechanics, finite element discretization of large-scale static problems produces large sparse linear systems whose solu-tion requires substantial computation time and memory. The variational quantum linear solver (VQLS) offers a hybrid quantum– classical route, but its use in quantum finite element analysis is limited by the decomposition of nonunitary matrices, barren plateaus, and the measurement cost of expectation values. We propose a voxel-based block variational quantum linear solver (Voxel-BVQLS) that combines structured matrix decomposition, the principle of minimum potential energy, and batched quantum tests. First, we construct an LCU decomposition of the stiffness matrix from the recursive block-banded structure of voxel-grid finite element matrices, with the number of unitary terms bounded independently of the problem size. Second, we optimize the ansatz parameters using a minimum-potential-energy objective in place of a conventional VQLS loss function, thereby mitigating barren plateaus in the studied problems. Third, we introduce a block-Hadamard test whose circuit directly estimates weighted sums of multiple inner products, reducing the number of circuit configurations required per iteration. We assessed the proposed method in noiseless classical simulations using three examples. These examples show that the method reduces both the number of unitary terms in the LCU decomposition and the number of iterations required to converge, while still yielding solutions of finite accuracy. Voxel-BVQLS thus provides a structured hybrid quantum–classical framework for quantum finite element analysis on regular grids. 
+
+Keywords: variational quantum linear solver, quantum finite element method, voxel grid, linear combination of unitaries, block-Hadamard test 
+
+## 1. Introduction 
+
+Advances in computing power have continually driven numerical analysis in solid mechanics [1, 2]. The finite element method (FEM) has evolved alongside classical computers and has become one of the most important numerical methods in solid mechanics [3-5]. FEM partitions the problem domain into elements, constructs element stiffness equations, and assembles a global equilibrium system. Fine discretization of very large structures often produces large sparse linear systems [6, 7]. As the number of degrees of freedom grows to millions or beyond, solution time, memory use, and parallel communication overhead typically increase substantially[8, 9]. At billions of degrees of freedom, large-scale parallel computing resources are usually required, which imposes a significant computational bottleneck. New computing approaches that alleviate the cost of classical finite element solvers are therefore of considerable interest. Quantum computing offers a different way to process information in scientific computation [10,11]. Superposition, entangle-ment, and interference allow quantum algorithms to manipulate information in high-dimensional state spaces. These features may offer computational advantages for particular tasks [12, 13]. Applications in quantum chemistry and quantum simulation 
+
+*) Corresponding author: Xu Guo. E-mail: guoxu@dlut.edu.cn arXiv:2609.30208v1 [cs.CE] 24 Sep 2026 2
+
+have shown promise [14-16]. At the intersection of scientific computing and mechanics, quantum algorithms have been stud-ied for partial differential equations [17], materials and structural analysis [18], and fluid mechanics [19-21]. Solid mechanics, however, often involves heterogeneous materials, complex geometries, and varied boundary conditions [22, 23]. The entries and sparsity patterns of the resulting stiffness matrices depend on the particular problem, complicating uniform quantum en-codings and circuit implementations. Moreover, most governing equations in solid mechanics, especially static equilibrium equations, do not directly take the form of a unitary Schr¨ odinger evolution suitable for quantum simulation [24, 25]. Quantum computing for solid mechanics therefore remains at an early stage. Recent studies have constructed quantum Hamiltonians for solid dynamics through energy-conservation mappings [26], or developed decomposition-free variational solvers for structural statics [27]. Most results nevertheless concern equation mappings or small-scale proof-of-principle demonstrations. End-to-end quantum speedup for general solid mechanics problems has not been established. Methods tailored to the structure of solid mechanics problems are therefore needed. The main computational tasks in FEM include solving large sparse linear systems and eigenvalue problems. Both are closely related to quantum linear algebra. Embedding quantum subroutines in finite element workflows is therefore a route for research at the interface of quantum computing and solid mechanics. Here, the quantum finite element method denotes a hybrid quantum–classical framework. Geometry modeling, mesh discretization, element calculations, and global assembly remain classical, while a quantum or hybrid algorithm solves the discrete algebraic system or estimates selected physical quantities [28]. In the gate model, two representative routes for finite element linear systems are quantum linear systems algorithms and the variational quantum linear solver (VQLS). The HHL algorithm is an example of the former. It uses quantum phase estimation and controlled rotations to prepare a solution state proportional to K−1f [29]. Under ideal assumptions, HHL-type algorithms may offer exponential speedup. However, a finite element complexity analysis found that the advantage over classical algorithms is generally at most polynomial [30]. HHL-type methods are thus better suited to estimating a small number of solution-state observables. VQLS casts a linear system as a hybrid quantum–classical optimization problem [31, 32]. Its core idea is to prepare a nor-malized trial solution state with the ansatz circuit V(ααα) and to iteratively update its parameters with a classical optimizer, so that the state approaches the exact solution. VQLS can use shallower circuits than phase-estimation-based quantum linear systems algorithms, making it a leading approach in recent quantum finite element studies. Improvements have focused on objective functions, matrix encodings, and ansatz design [33-36]. Variational quantum methods have already been applied to several finite element and related partial differential equation problems. Trahan et al. [37] used Pauli decomposition to study discrete finite element systems for the one-dimensional steady Poisson, transient heat conduction, and wave equations. Ali and Kabel [38] studied variational solutions of the Poisson equation on a noiseless simulator and a quantum device. They reported substantial limitations on current hardware. Arora et al. [39] examined a quantum finite element workflow for steady heat con-duction with different elements, material properties, and boundary conditions. Liu et al. [40] combined FEM with a variational quantum eigensolver to analyze the natural vibrations of trusses, beams, and continua. Although these studies demonstrate the potential of VQLS for shallow circuits and problem-aware design, VQLS still faces three interrelated challenges in solid mechanics. First, trainability of parameterized circuits is not guaranteed. Certain random ansatz circuits and global objective functions can exhibit barren plateaus [41, 42]. Second, a quantum representation of the stiffness matrix may contain many uni-tary terms. An n-qubit system has 4 n Pauli strings. Without exploiting matrix structure, the nonzero terms and their controlled implementations may incur substantial circuit and measurement costs [43-45]. A common global VQLS loss contains KTK,so representing K by M terms in an LCU decomposition leads to O(M2) inner products in the direct expansion, each of which also requires enough measurements to control statistical error [32, 37]. To address these challenges for real symmetric positive-definite finite element stiffness systems, we propose the voxel-based block variational quantum linear solver (Voxel-BVQLS). Voxel-BVQLS exploits regular voxel structure to reduce both the number of LCU unitary terms and the circuit configurations needed to evaluate the minimum-potential-energy objective and its gradient. The main contributions are as follows. (1) We develop an LCU decomposition for stiffness matrices on voxel grids. It exploits the recursive block-banded structure of the finite element matrix together with cyclic permutation matrices and Euler’s formula, and its number of unitary terms is bounded independently of the problem dimension. (2) We construct a variational objective from the principle of minimum potential energy. For a constrained symmetric positive-definite stiffness matrix K, the quadratic form associated with linear-static total potential energy has the unique mini-mizer K−1f over the full displacement space, and the resulting objective can mitigate barren plateaus in the studied settings. (3) We propose a block-Hadamard test and use it to construct the block variational solver. Quantum multiplexors and a 3
+
+block-partitioning strategy allow one circuit to estimate weighted sums of multiple inner products, which reduces the number of circuit configurations required per iteration. (4) We test the method in noiseless classical simulations on a two-dimensional truss, a plane-stress model, and a three-dimensional steady-state heat-conduction model with one degree of freedom per node. All three examples produce approximate displacement or temperature fields, and the structured LCU uses fewer unitary terms than the Pauli decomposition. The remainder of this paper is organized as follows. Section 2 reviews quantum computing fundamentals, LCU decomposi-tion, VQLS, and its main challenges in solid mechanics. Section 3 presents the voxel-grid stiffness-matrix LCU decomposition and the minimum-potential-energy formulation. Section 4 develops the block-Hadamard test and Voxel-BVQLS. Section 5 reports three numerical examples. Section 6 summarizes the conclusions and limitations. 
+
+## 2. Quantum finite element method and VQLS 
+
+Quantum finite element analysis combines FEM with quantum computing. Its basic approach retains established classical steps for geometry modeling, mesh discretization, element calculations, and global assembly. The computationally demanding algebraic solve is then expressed in a form suitable for a quantum computer. After discretization and imposition of the required boundary conditions, the finite element equilibrium equation is 
+
+Ku = f, (1) where K ∈ RN×N is the finite element system matrix after boundary conditions have been imposed. The vectors u, f ∈ RN are the unknown displacement and load vectors, respectively. Here, N is the number of unknown degrees of freedom. In the quantum finite element workflow used here, the finite element equations are assembled classically and solved by a hybrid quantum–classical algorithm. On the quantum side, the VQLS encodes the right-hand-side vector as a quantum state, represents the system matrix as an LCU, and prepares a trial solution with a parameterized quantum circuit V(ααα). Quantum measurements estimate the objective function. On the classical side, an optimizer updates ααα from the measurement results. The two sides alternate until a stopping criterion is met. This section is organized as follows: Section 2.1 introduces quantum amplitude encoding and basic gates, Section 2.2 presents matrix LCU decomposition, Section 2.3 reviews the VQLS framework including the ansatz, loss functions, and the Hadamard test, and Section 2.4 discusses the main challenges of applying VQLS to solid mechanics and outlines the proposed solutions. 
+
+2.1 Quantum amplitude encoding and basic quantum gates 
+
+To solve Eq. (1) with VQLS, the right-hand-side vector must first be encoded as a quantum state. The basic information unit of a quantum computer is the qubit. A qubit has two computational basis states, |0⟩ and |1⟩, corresponding to classical bit values 0 and 1. Unlike a classical bit, a qubit may occupy a linear combination of these basis states: |a⟩ = a0|0⟩ + a1|1⟩. The complex numbers a0 and a1 are probability amplitudes. Measurement yields |0⟩ and |1⟩ with probabilities |a0|2 and |a1|2, respectively. Hence, |a0|2 + |a1|2 = 1. An n-qubit system has 2 n computational basis states, and a general state can be expanded as |a⟩ = ∑2n−1 
+
+> i=0
+
+ai|i⟩. Here |i⟩
+
+denotes the n-bit basis state corresponding to integer i. A quantum state corresponds to a normalized complex vector of length 2n. Conversely, any nonzero vector x ∈ C2n
+
+can be normalized and written as 
+
+|x⟩ = 1
+
+∥x∥22n−1
+
+# ∑
+
+> i=0
+
+xi|i⟩. (2) Equation (2) defines amplitude encoding. The normalized quantum states of the displacement and load vectors in Eq. (1) are 
+
+|f⟩ = 1
+
+∥f∥22n−1
+
+# ∑
+
+> i=0
+
+fi |i⟩, f = ( f0, f1, · · · , fN−1)T
+
+|u⟩ = 1
+
+∥u∥22n−1
+
+# ∑
+
+> i=0
+
+ui |i⟩, u = ( u0, u1, · · · , uN−1)T. (3) 4
+
+The computational basis state |i⟩ is labeled by the n-bit binary representation of integer i.Classical logic gates change bit values, whereas quantum gates change quantum states in the gate model. A deterministic quantum gate acting on a closed system is represented by a unitary matrix. Unitarity preserves the norm of the state. A quantum register usually starts in the readily prepared state |0⟩⊗n = |0⟩| 0⟩ · · · | 0⟩. For any target pure state, a unitary matrix F exists such that 
+
+|f⟩ = F|0⟩⊗n, (4) where F is an N × N unitary matrix. Equation (4) shows that the load vector can be represented as a quantum state. Any unitary transformation can be built from a universal set of elementary gates. Table 1 lists the single-qubit and two-qubit gates used below, along with their circuit symbols. 
+
+Table 1 Single-qubit and two-qubit gates used in this work Basic gate Unitary matrix Quantum circuit Single-qubit gates Hadamard gate H = 1
+
+√2
+
+1 11 −1
+
+
+
+Pauli-X gate X =
+
+0 1 1 0 
+
+
+
+Ry rotation gate Ry (θ ) = 
+
+cos θ /2 − sin θ /2sin θ /2 cos θ /2
+
+
+
+Rz rotation gate Rz (θ ) = 
+
+e−iθ /2 00 eiθ /2
+
+
+
+Two-qubit gates SWAP gate 
+
+
+
+1111
+
+
+
+Open-controlled 
+
+U gate 
+
+UI2×2
+
+
+
+Controlled-U
+
+gate 
+
+I2×2
+
+U
+
+
+
+The ansatz circuits also use the CNOT gate, which is the controlled-U gate with U = X. All subsequent circuits are con-structed from the gates listed in Table 1. 
+
+2.2 LCU decomposition 
+
+In the gate model, deterministic coherent evolution is implemented by unitary operators. The constrained finite element stiffness matrix K is real symmetric positive definite but generally does not satisfy KHK = I. It therefore cannot act directly as a quantum gate. To represent K in a quantum circuit, we write it as a weighted sum of unitary matrices: 
+
+K =
+
+> M−1
+
+# ∑
+
+> i=0
+
+aiKi, (5) 5
+
+where Ki is unitary and ai ∈ C is its coefficient. Equation (5) expresses a nonunitary matrix as a linear combination of unitaries. We call this an LCU decomposition of the stiffness matrix. Each aiKi is a unitary term, and M is the number of terms. A common LCU construction uses Pauli decomposition. The single-qubit Pauli matrices are 
+
+σσσ 0 =
+
+"1 0 0 1 
+
+#
+
+, σσσ 1 =
+
+"0 1 1 0 
+
+#
+
+, σσσ 2 =
+
+"0 −ii 0
+
+#
+
+, σσσ 3 =
+
+"1 00 −1
+
+#
+
+. (6) Thus σσσ 0 = I, σσσ 1 = X, σσσ 2 = Y, and σσσ 3 = Z. The i-th n-qubit Pauli string is 
+
+Ki = σσσ i0 ⊗ σσσ i1 ⊗ · · · ⊗ σσσ in−1 . (7) Each position in the tensor product corresponds to one qubit. To enumerate the Pauli strings with a single integer, write i in base four with n digits: 
+
+i =
+
+> n−1
+
+# ∑
+
+> t=0
+
+it × 4n−1−t = i0 × 4n−1 + i1 × 4n−2 + · · · + in−1 × 40, (8) where it ∈ { 0, 1, 2, 3}. There are 4 n = N2 candidate Pauli strings, which satisfy the trace-orthogonality relation tr (KiK j) = 
+
+2nδi j . The coefficients in the full expansion are therefore 
+
+ai = 12n tr (KK i) . (9) Equation (9) gives the coefficients by projecting the stiffness matrix onto the Pauli strings. Several efficient Pauli-decomposition algorithms have been proposed, including tensorized Pauli decomposition (TPD) [50] and MSPD [51]. MSPD exploits ma-trix sparsity and uses a fast Hadamard transform to accelerate the decomposition. It is among the most efficient reported approaches. 
+
+2.3 Overview of VQLS 
+
+Building on quantum amplitude encoding and LCU decomposition, we review the VQLS framework. It has three components: an ansatz circuit that prepares a trial solution, a loss function that measures solution quality, and a quantum measurement procedure that estimates the loss. The following subsections introduce each component. 
+
+2.3.1 Ansatz 
+
+We first describe the ansatz used to approximate the unknown displacement vector in Eq. (1). Equation (3) defines the target displacement state |u⟩. VQLS uses a parameterized unitary V(ααα) to prepare a normalized trial state 
+
+|u (ααα)⟩ = V (ααα) |0⟩⊗n = V (ααα) zn. (10) This state approximates |u⟩. The circuit implementing V(ααα) is the ansatz circuit, also called a parameterized quantum circuit (PQC). We denote the vector corresponding to |0⟩⊗n by zn = ( 1, 0, . . . , 0)T ∈ RN . Figure 1 shows a representative ansatz with 
+
+Nα parameters. Alternating Ry and CNOT gates act on |0⟩⊗6 and encode a displacement vector of dimension 2 6.The Ry gates in Fig. 1 adjust the computational-basis amplitudes, while the CNOT gates create correlations between qubits. Additional rotation and entangling layers can increase ansatz expressivity. They also increase parameter count, circuit depth, and optimization difficulty. Ansatz design must therefore balance expressivity against trainability. The state |u(ααα)⟩ is normalized and specifies only the direction of the displacement vector. A classical scalar c sets its magnitude. From Eq. (10), the displacement vector is 
+
+u = cV (ααα) zn, c = ∥u∥2. (11) Substituting Eq. (11) into Eq. (1) gives 
+
+KcV (ααα) zn = f. (12) 6
+
+Figure 1 Real-amplitude ansatz circuit with alternating Ry and CNOT gates 
+
+Its quantum-state form is 
+
+cK |u (ααα)⟩ = ∥f∥2 |f⟩ . (13) The unknowns are thus c and ααα. Once ααα is determined, c follows. The main task is therefore to determine ααα.
+
+2.3.2 Loss functions 
+
+To determine ααα, VQLS casts the linear-system solve as an optimization problem. A loss function measures trial-solution quality, and a classical optimizer repeatedly updates the parameters to reduce that loss. The loss functions below are evaluated at the ansatz state |u(ααα)⟩. We omit its argument ααα in the following formulas for brevity. Common choices are: (1) The global loss [32] measures how far K|u⟩ departs from the direction of |f⟩:ˆLG = ⟨u| HG |u⟩ , HG = KT (I − | f⟩ ⟨ f|) K. (14) Its normalized form is 
+
+LG = ˆLG
+
+⟨u| KTK |u⟩ = 1 − ⟨u| KT |f⟩ ⟨ f| K |u⟩⟨u| KTK |u⟩ . (15) (2) The local loss [32] measures this departure separately on each qubit: ˆLL = ⟨u| HL |u⟩ , HL = KT  I − FPF H KP = 1
+
+n
+
+> n
+
+# ∑
+
+> j=1
+
+I⊗( j−1) 
+
+> 2
+
+⊗ τ ⊗ I⊗(n− j) 
+
+> 2
+
+, τ = |0⟩ ⟨ 0| =
+
+"1 0 0 0 
+
+#
+
+, (16) where F is the unitary defined in Eq. (4), with F|0⟩⊗n = |f⟩, and FH is its conjugate transpose. The operator P is the weighted average of n single-qubit projectors τττ = |0⟩⟨ 0|, which measures how far FHK|u⟩ departs from |0⟩⊗n. Its normalized form is 
+
+LL = ˆLL
+
+⟨u| KTK |u⟩ . (17) (3) The residual loss [48] directly measures the residual of Eq. (1): 
+
+LR = ∥cK |u⟩ − ∥ f∥2 |f⟩∥ 22 , (18) where c is the scaling factor defined in Eq. (11). The normalized global and local losses both lie in [0, 1], and the residual loss is the squared L2 norm of the residual of Eq. (1). If K is invertible and the ansatz can represent the normalized exact solution, the global minimum of each loss is zero. In principle, optimizing ααα to reach that minimum yields the solution. Estimating the loss and its gradient is the main computational expense during optimization. Figure 2 shows the VQLS workflow: the quantum processor estimates the objective, and the classical optimizer updates the parameters. 7
+
+Figure 2 Hybrid quantum–classical optimization loop of VQLS 
+
+2.3.3 Hadamard test 
+
+The loss functions contain vector inner products and operator expectation values. A Hadamard test maps the real part of a unitary expectation value or of an overlap between two quantum states to the measurement probability of an ancilla qubit. Equations (14)–(18) involve ⟨u|KTK|u⟩, ⟨f|K|u⟩, and ⟨u|KTFPF HK|u⟩. Explicitly forming KTK on a classical computer requires O(N2) storage and arithmetic in the stated setting, whereas the corresponding scalars for sparse K can be evaluated at a cost proportional to the number of nonzeros. In the quantum formulation, substituting Eq. (5) into the first term gives 
+
+⟨u| KTK |u⟩ =
+
+> M−1
+
+# ∑
+
+> i=0
+> M−1
+
+# ∑
+
+> j=0
+
+a∗ 
+
+> i
+
+a j ⟨u| Ui, j |u⟩, Ui, j = KH 
+
+> i
+
+K j. (19) Because the product Ui, j of two unitary matrices is unitary, evaluating the loss reduces to estimating its expectation value in 
+
+|u⟩. Figure 3 shows the corresponding Hadamard-test circuit. 
+
+Figure 3 Hadamard-test circuit for estimating Re ⟨u|KH 
+
+> i
+
+K j|u⟩
+
+Run the circuit in Fig. 3 and denote the probability of measuring the ancilla in |0⟩ by pi, j. Then Re  ⟨u| KiHK j |u⟩ = 2pi, j − 1. (20) Likewise, Eq. (5) gives 
+
+⟨f| K |u⟩ =
+
+> M−1
+
+# ∑
+
+> i=0
+
+ai ⟨f| Ki |u⟩. (21) If the probability of measuring the ancilla in |0⟩ is βi, then Re (⟨f| Ki |u⟩) = 2βi − 1. (22) 8
+
+These probabilities are estimated from finitely many repeated measurements. For independent Bernoulli samples, the stan-dard error is pp(1 − p)/S = O(S−1/2), where p is the true probability of the outcome and S is the number of shots. The matrix K, vector f, and ansatz amplitudes are real in this work, so the final objectives are real. Individual unitary terms may still have complex expectation values, but their imaginary parts cancel in the weighted sum. General complex-valued problems would require a phase gate on the ancilla to estimate the imaginary part. Note also that K|u⟩ is generally unnormalized and cannot be prepared directly as the output of an ordinary unitary gate. 
+
+2.4 Three challenges for VQLS 
+
+When combining classical finite element discretization with VQLS, comparing only linear-system dimensions is insufficient: one must also account for data encoding, matrix representation, quantum measurement, and classical optimization. Based on Eqs. (5)–(22), we focus on three challenges. (1) Term-by-term objective evaluation is costly. Global, local, and residual losses commonly contain KTK. If K has M
+
+unitary terms, the direct double expansion in Eq. (19) contains M2 ordered inner products. Conjugate symmetry reduces the prefactor but not the O(M2) scaling. (2) Generic matrix representations do not exploit the structure of finite element stiffness matrices. Pauli decomposition applies to any matrix, but an n-qubit system has 4 n = N2 candidate Pauli strings. The number of nonzero terms depends on stiffness-matrix sparsity, degree-of-freedom ordering, and coefficient structure. Using mechanical structure may reduce the number of unitary terms in the LCU decomposition. (3) VQLS convergence remains a challenge. The losses in Eqs. (14)–(18) are constructed from different error measures, and with many ansatz parameters their optimization can stall or fail to find a solution. In particular, the loss may become very small while the displacement error remains large. To address these challenges, Section 3.1 constructs an LCU decomposition of the stiffness matrix using regular voxel-grid adjacency, Section 3.2 develops a variational objective with one action of K from the principle of minimum potential energy and relates its gradient to displacement error, and Section 4 encodes multiple unitary terms and parameter-shifted states in index registers through a block-Hadamard test, reducing the number of circuit configurations. Together, these steps define a voxel-based quantum finite element framework intended to lower quantum computational cost and improve convergence. 
+
+## 3. Quantum finite element method on voxel grids 
+
+Section 2 presented the general VQLS procedure. Applying VQLS to finite elements requires two further steps specific to mechanics. First, we exploit stiffness-matrix structure to reduce the number of unitary terms in the LCU decomposition. Second, we choose a variational objective consistent with the equilibrium equations. The Pauli decomposition in Section 2.2 applies to any N × N matrix but has up to 4 n = N2 candidate Pauli strings. Finite element stiffness matrices are assembled from local element matrices according to nodal connectivity. Their nonzero patterns therefore reflect mesh adjacency. We construct the quantum representation from the mesh and degree-of-freedom ordering rather than treating the stiffness matrix as an arbitrary dense matrix. Voxel grids discretize a geometric domain with regularly arranged elements of identical topology. They provide uniform element connectivity, regular degree-of-freedom ordering, and convenient parallel assembly [22, 49]. For finite elements with local support, lexicographic numbering along the coordinate directions yields a banded stiffness matrix in one dimension. In two and three dimensions, the matrices admit recursive block-banded forms. This structure directly links geometric discretiza-tion to quantum operator decomposition. Local coupling between adjacent nodes produces a finite number of block-diagonal offsets. Cyclic permutation matrices handle these offsets, and the remaining blocks are decomposed into unitaries. We use this structure to construct an LCU decomposition. The upper bound on the number of unitary terms depends on the spatial dimension and the degrees of freedom per node, but not on the node count along each coordinate direction. Section 3.1 derives the decomposition for voxel finite elements. Section 3.2 develops a variational objective from the principle of minimum potential energy in solid mechanics. 
+
+3.1 LCU decomposition of stiffness matrices on voxel grids 9
+
+This section derives LCU decompositions for real symmetric stiffness matrices on one-, two-, and three-dimensional voxel grids. We begin in one dimension, where local coupling directly gives a banded matrix. The recursive block structure then extends the result to two and three dimensions. Each decomposition has three steps. A cyclic permutation moves off-diagonal blocks onto the main diagonal. Singular value decomposition is applied to the 2 × 2 real blocks. Euler’s formula then expresses each nonnegative diagonal matrix as a sum of two diagonal unitaries. The resulting unitary terms contain cyclic permutations, 2 × 2 orthogonal blocks, and diagonal phases. Remark 2 and Appendices 1 and 2 describe their quantum circuits and resource assumptions. 
+
+3.1.1 LCU decomposition for a one-dimensional voxel grid 
+
+(a) One degree of freedom per node Consider a one-dimensional finite element problem with Nx = 2nx nodes along the x
+
+direction, where nx is the number of qubits needed for the node index. We first consider one degree of freedom per node, as in elementary heat-conduction and one-dimensional string-vibration problems. The finite element stiffness matrix K is 
+
+K =
+
+
+
+k0,0 k0,1
+
+k1,0 k1,1 k1,2
+
+k2,1 k2,2
+
+. . .. . . . . . kNx−2,Nx−1
+
+kNx−1,Nx−2 kNx−1,Nx−1
+
+
+
+. (23) To obtain an LCU decomposition, split this stiffness matrix into three matrices: 
+
+K1 =
+
+
+
+k0,0
+
+k1,1
+
+k2,2
+
+. . .
+
+kNx−1,Nx−1
+
+
+
+= Nx−1
+
+⊕
+
+> n=0
+
+kn,n
+
+K2 =
+
+
+
+k0,1
+
+k1,2
+
+. . .
+
+kNx−2,Nx−1
+
+
+
+=
+
+Nx−2
+
+⊕
+
+> n=0
+
+kn,n+1 ⊕ 0
+
+
+
+SNx
+
+K3 =
+
+
+
+k1,0
+
+k2,1
+
+. . .
+
+kNx−1,Nx−2
+
+
+
+= ST
+
+> Nx
+
+Nx−2
+
+⊕
+
+> n=0
+
+kn+1,n ⊕ 0
+
+
+
+, (24) where SNx =
+
+"0 I Nx−1
+
+1 0
+
+#
+
+is a cyclic permutation matrix. It is unitary and its quantum circuit and resource assumptions are given in Remark 2. Because a product of unitaries is unitary, only the following three diagonal matrices require further decomposition: 
+
+D1 = Nx−1
+
+⊕
+
+> n=0
+
+kn,n,
+
+D2 =
+
+Nx−2
+
+⊕
+
+> n=0
+
+kn,n+1
+
+
+
+⊕ 0,10 
+
+D3 =
+
+Nx−2
+
+⊕
+
+> n=0
+
+kn+1,n
+
+
+
+⊕ 0.
+
+For a unified derivation, denote each matrix by LNx−1 
+
+> n=0
+
+ˆkn. Divide each diagonal entry by the largest absolute entry so that it lies in [−1, 1]. Euler’s formula then expresses it as the average of two conjugate phases. Indeed, any real a with 0 ≤ | a| ≤ 1can be written as 
+
+a = 12 eiφ + 12 e−iφ , φ = arccos (a) ∈ [0, π] . (25) By Eq. (25), 
+
+> Nx−1
+
+⊕
+
+> n=0
+
+ˆkn = kmax 
+
+2
+
+> Nx−1
+
+⊕
+
+> n=0
+
+eiφn + kmax 
+
+2
+
+> Nx−1
+
+⊕
+
+> n=0
+
+e−iφn , (26) where 
+
+kmax = max 
+
+> 0≤n≤Nx−1
+
+  ˆkn
+
+ , φn = arccos ˆkn
+
+kmax 
+
+!
+
+. (27) If kmax = 0, the diagonal matrix is zero and should be omitted from the LCU decomposition. Equation (27) applies only when 
+
+kmax > 0. Applying Eq. (27) to the three diagonal matrices gives the following expression. If κ1 or κ2 is zero, the corresponding zero matrix is omitted from the LCU decomposition. 
+
+> Nx−1
+
+⊕
+
+> n=0
+
+kn,n = κ1
+
+2
+
+Nx−1
+
+⊕
+
+> n=0
+
+eiφn + Nx−1
+
+⊕
+
+> n=0
+
+e−iφn
+
+
+
+> Nx−2
+
+⊕
+
+> n=0
+
+kn,n+1 ⊕ 0 = Nx−2
+
+⊕
+
+> n=0
+
+kn+1,n ⊕ 0 = κ2
+
+2
+
+ Nx−2
+
+⊕
+
+> n=0
+
+eiψn
+
+
+
+⊕ 1 +
+
+Nx−2
+
+⊕
+
+> n=0
+
+e−iψn
+
+
+
+⊕ (−1)
+
+
+
+, (28) where 
+
+κ1 = max  
+
+> 0≤n≤Nx−1
+
+|kn,n| , φn = arccos kn,n
+
+κ1
+
+κ2 = max  
+
+> 0≤n≤Nx−2
+
+|kn,n+1| , ψn = arccos kn,n+1
+
+κ2
+
+. (29) Substituting Eq. (28) into Eq. (24) gives 
+
+K = κ1
+
+2
+
+Nx−1
+
+⊕
+
+> n=0
+
+eiφn + Nx−1
+
+⊕
+
+> n=0
+
+e−iφn
+
+
+
++ κ2
+
+2
+
+ Nx−2
+
+⊕
+
+> n=0
+
+eiψn
+
+
+
+⊕ 1 +
+
+Nx−2
+
+⊕
+
+> n=0
+
+e−iψn
+
+
+
+⊕ (−1)
+
+
+
+SNx
+
++ κ2
+
+2 ST
+
+> Nx
+
+ Nx−2
+
+⊕
+
+> n=0
+
+eiψn
+
+
+
+⊕ 1 +
+
+Nx−2
+
+⊕
+
+> n=0
+
+e−iψn
+
+
+
+⊕ (−1)
+
+
+
+. (30) Thus, the one-dimensional stiffness matrix is a sum of at most six unitary terms. The stated implementation time for the cyclic permutation matrix SNx is O(poly (log N)) , and the other unitaries are diagonal and can be implemented with quantum multiplexors [52, 53], also with the stated O(poly (log N)) time complexity. See Remark 2 and Appendix 2 for the associated assumptions. 
+
+(b) Two degrees of freedom per node Next, consider two degrees of freedom per node, such as the deflection and rotation at each node of an Euler–Bernoulli beam element. For Nx = 2nx nodes along x and d = 2 degrees of freedom per node, the total number of degrees of freedom is N = dN x, and K has the following block-tridiagonal form: 11 
+
+K =
+
+
+
+k0,0 k0,1
+
+k1,0 k1,1 k1,2
+
+k2,1 k2,2
+
+. . .. . . . . . kNx−2,Nx−1
+
+kNx−1,Nx−2 kNx−1,Nx−1
+
+
+
+, (31) where each submatrix ki, j is 2 × 2. This block structure facilitates quantum encoding: nx qubits encode the node index, and another log 2 d qubits encode the degrees of freedom at each node (one qubit for d = 2). For the LCU decomposition, write K
+
+as 
+
+K = K1 + K2 + K3, (32) where 
+
+K1 =
+
+
+
+k0,0
+
+k1,1
+
+k2,2
+
+. . .
+
+kNx−1,Nx−1
+
+
+
+= Nx−1
+
+⊕
+
+> n=0
+
+kn,n
+
+K2 =
+
+
+
+k0,1
+
+k1,2
+
+. . .
+
+kNx−2,Nx−1
+
+
+
+=
+
+Nx−2
+
+⊕
+
+> n=0
+
+kn,n+1 ⊕ 02
+
+ SNx ⊗ Id
+
+
+
+K3 =
+
+
+
+k1,0
+
+k2,1
+
+. . .
+
+kNx−1,Nx−2
+
+
+
+= ST 
+
+> Nx
+
+⊗ Id
+
+ Nx−2
+
+⊕
+
+> n=0
+
+kn+1,n ⊕ 02
+
+
+
+, (33) where 02 and Id are the 2 × 2 zero matrix and the d × d identity matrix, respectively. Since SNx is unitary, only three block-diagonal matrices with 2 × 2 blocks need decomposition: LNx−1 
+
+> n=0
+
+kn,n, (LNx−2 
+
+> n=0
+
+kn,n+1) ⊕ 02, and (LNx−2 
+
+> n=0
+
+kn+1,n) ⊕ 02. Denote any of them by LNx−1 
+
+> n=0
+
+bkn. The singular value decomposition of each block is 
+
+ˆkn = UnΣnVT 
+
+> n
+
+, Σn =
+
+"σ1,n
+
+σ2,n
+
+#
+
+. (34) The formulas for Un, Vn, and the singular values σ1,n ≥ σ2,n ≥ 0 are given in Lemma 1 of Appendix 1. Substituting Eq. (34) into LNx−1 
+
+> n=0
+
+ˆkn gives 
+
+> Nx−1
+
+⊕
+
+> n=0
+
+ˆkn =
+
+Nx−1
+
+⊕
+
+> n=0
+
+Un
+
+  Nx−1
+
+⊕
+
+> n=0
+
+Σn
+
+  Nx−1
+
+⊕
+
+> n=0
+
+VT
+
+> n
+
+
+
+. (35) Both LNx−1 
+
+> n=0
+
+Un and LNx−1 
+
+> n=0
+
+VT 
+
+> n
+
+are unitary, so completing the LCU decomposition of LNx−1 
+
+> n=0
+
+ˆkn requires only the decompo-sition of LNx−1 
+
+> n=0
+
+diag (σ1,n, σ2,n). By Eq. (25), this matrix can be written as 12 
+
+> Nx−1
+
+⊕
+
+> n=0
+
+"σ1,n
+
+σ2,n
+
+#
+
+= σmax 
+
+2
+
+> Nx−1
+
+⊕
+
+> n=0
+
+"eiφ1,n
+
+eiφ2,n
+
+#
+
++ σmax 
+
+2
+
+> Nx−1
+
+⊕
+
+> n=0
+
+"e−iφ1,n
+
+e−iφ2,n
+
+#
+
+, (36) where 
+
+σmax = max  
+
+> 0≤n≤Nx−1
+
+{σ1,n, σ2,n} , φ1,n = arccos σ1,n
+
+σmax 
+
+, φ2,n = arccos σ2,n
+
+σmax 
+
+. (37) If σmax = 0, all 2 × 2 blocks vanish and this component can be omitted, whereas the following expression assumes σmax > 0. Substituting Eq. (36) into Eq. (35) completes the LCU decomposition of LNx−1 
+
+> n=0
+
+ˆkn:
+
+> Nx−1
+
+⊕
+
+> n=0
+
+ˆkn = σmax 
+
+2
+
+Nx−1
+
+⊕
+
+> n=0
+
+Un
+
+ Nx−1
+
+⊕
+
+> n=0
+
+"eiφ1,n
+
+eiφ2,n
+
+#! Nx−1
+
+⊕
+
+> n=0
+
+VT
+
+> n
+
+
+
++ σmax 
+
+2
+
+Nx−1
+
+⊕
+
+> n=0
+
+Un
+
+ Nx−1
+
+⊕
+
+> n=0
+
+"e−iφ1,n
+
+e−iφ2,n
+
+#! Nx−1
+
+⊕
+
+> n=0
+
+VT
+
+> n
+
+
+
+. (38) Thus, any block-diagonal matrix LNx−1 
+
+> n=0
+
+ˆkn with 2 × 2 blocks is a linear combination of two unitaries. Applying the same steps as in Eqs. (34)–(38) to K1, K2, and K3 gives two unitaries for each, so the one-dimensional voxel-grid stiffness matrix requires at most six unitary terms for d = 2. The unitaries in Eq. (38) are block-diagonal matrices with 2 × 2 unitary blocks. In particular, Un and Vn are 2 × 2 orthogonal matrices and can be represented by elementary rotation gates, as detailed in Appendix 1. 
+
+(c) Four degrees of freedom per node Finally, consider d = 4, for which N = 4Nx. A model with three degrees of freedom per node can be extended by adding one auxiliary degree of freedom with zero load and a positive diagonal entry γ. This produces a 4 × 4 nodal block, preserves the solution on the original three degrees of freedom, and avoids a zero eigenvalue. 
+
+Figure 4 Rearrangement of a block-tridiagonal matrix with 4 × 4 blocks into a block-heptadiagonal matrix with 2 × 2 blocks 
+
+With four degrees of freedom per node, K remains the block-tridiagonal matrix in Eq. (31), but each block is 4 × 4. As shown in Fig. 4, rearrange it as the sum of seven matrices with 2 × 2 blocks: 
+
+K = K1 + K2 + K3 + K4 + K5 + K6 + K7, (39) where 13 
+
+K1 = 2Nx−1
+
+⊕
+
+> n=0
+
+" k2n,2n k2n,2n+1
+
+k2n+1,2n k2n+1,2n+1
+
+#
+
+,
+
+K2 =
+
+"2Nx−2
+
+⊕
+
+> n=0
+
+" k2n,2n+2 k2n,2n+3
+
+k2n+1,2n+2 k2n+1,2n+3
+
+#
+
+⊕ 02
+
+# S2Nx ⊗ I2
+
+ ,
+
+K3 = ST2Nx ⊗ I2
+
+ "2Nx−2
+
+⊕
+
+> n=0
+
+"k2n+2,2n k2n+2,2n+1
+
+k2n+3,2n k2n+3,2n+1
+
+#
+
+⊕ 02
+
+#
+
+,
+
+K4 =
+
+"2Nx−3
+
+⊕
+
+> n=0
+
+" k2n,2n+4 k2n,2n+5
+
+k2n+1,2n+4 k2n+1,2n+5
+
+#
+
+⊕ 04
+
+# S22Nx ⊗ I2
+
+ ,
+
+K5 =
+
+h ST2Nx
+
+2 ⊗ I2
+
+i "2Nx−3
+
+⊕
+
+> n=0
+
+"k2n+4,2n k2n+4,2n+1
+
+k2n+5,2n k2n+5,2n+1
+
+#
+
+⊕ 04
+
+#
+
+,
+
+K6 =
+
+"2Nx−4
+
+⊕
+
+> n=0
+
+" k2n,2n+6 k2n,2n+7
+
+k2n+1,2n+6 k2n+1,2n+7
+
+#
+
+⊕ 06
+
+# S32Nx ⊗ I2
+
+ ,
+
+K7 =
+
+h ST2Nx
+
+3 ⊗ I2
+
+i "2Nx−4
+
+⊕
+
+> n=0
+
+"k2n+6,2n k2n+6,2n+1
+
+k2n+7,2n k2n+7,2n+1
+
+#
+
+⊕ 06
+
+#
+
+, (40) where S2Nx =
+
+" I2Nx−1
+
+1
+
+#
+
+is a cyclic permutation matrix. The matrices 02, 04, and 06 are zero matrices of sizes 2 × 2, 4 × 4, and 6 × 6, respectively. As in the d = 2 case, each Ki is a linear combination of two unitaries. Thus, for d = 4, the one-dimensional voxel-grid stiffness matrix has an LCU decomposition with 14 unitary terms. 
+
+3.1.2 LCU decomposition for two- and three-dimensional voxel grids 
+
+Figure 5 Recursive block-banded structure of voxel-grid stiffness matrices 
+
+A stiffness matrix assembled on a voxel grid has a self-similar block structure, as shown in Fig. 5: the three-dimensional matrix can be viewed as a block-tridiagonal matrix of two-dimensional voxel-grid stiffness matrices, and each two-dimensional matrix is likewise block tridiagonal with one-dimensional voxel-grid stiffness matrices as blocks. This property extends the decomposition in Section 3.1.1 to two and three dimensions. 
+
+(a) Two-dimensional case For a two-dimensional voxel-grid stiffness matrix K, the block-tridiagonal structure gives 
+
+K = K(1) 
+
+> 1
+
++ K(1) 
+
+> 2
+
++ K(1) 
+
+> 3
+
+, (41) where K(1) 
+
+> 1
+
+contains the main-diagonal blocks of K, whereas K(1) 
+
+> 2
+
+and K(1) 
+
+> 3
+
+contain the blocks immediately above and below the main diagonal, respectively. As in Eqs. (24) and (33), the latter two matrices are products of block-diagonal matrices and cyclic permutation matrices: 14 
+
+K(1) 
+
+> 2
+
+=
+
+Ny−2
+
+⊕
+
+> n=0
+
+Bn,n+1 ⊕ 0dN x
+
+  SNy ⊗ IdN x
+
+ , K(1) 
+
+> 3
+
+=  SNy ⊗ IdN x
+
+T
+
+Ny−2
+
+⊕
+
+> n=0
+
+Bn+1,n ⊕ 0dN x
+
+
+
+, (42) where Ny = 2ny is the number of nodes along y, and Bn,n+1 and Bn+1,n are dN x × dN x coupling blocks between adjacent nodal rows. The main-diagonal and coupling blocks remain block banded along x, so the decomposition in Section 3.1.1 applies. Figure 6 illustrates the two-dimensional splitting. 
+
+Figure 6 Three-part decomposition of a two-dimensional voxel-grid stiffness matrix 
+
+First, split the block-tridiagonal matrix into three parts along y. Then apply the one-dimensional decomposition along x to each part. The y direction produces three classes of block-diagonal offsets. Each class yields at most six unitary terms for d = 1or 2, or 14 terms for d = 4. Thus, the two-dimensional stiffness matrix requires at most 3 × 6 = 18 terms for d = 1 or 2, and 3 × 14 = 42 terms for d = 4. 
+
+(b) Three-dimensional case The three-dimensional decomposition is analogous. First, split the voxel-grid stiffness matrix as 
+
+K = K(2) 
+
+> 1
+
++ K(2) 
+
+> 2
+
++ K(2) 
+
+> 3
+
+, (43) where K(2) 
+
+> 1
+
+, K(2) 
+
+> 2
+
+, and K(2) 
+
+> 3
+
+contain the main-, upper-, and lower-diagonal blocks, respectively. Each top-level block has the structure of a two-dimensional voxel-grid stiffness matrix in the x–y plane. It can therefore be split into three components as in Eq. (41). Each two-dimensional component is finally reduced to a one-dimensional decomposition from Section 3.1.1. Equivalently, the three-dimensional decomposition introduces a three-part split in each of the z and y directions. Its upper bound on unitary terms is 3 2 times the one-dimensional bound: 9 × 6 = 54 for d = 1 or 2, and 9 × 14 = 126 for d = 4. Table 2 lists the upper bounds on the number of unitary terms in the LCU decomposition of K for different spatial dimensions and nodal degrees of freedom. Unlike a generic Pauli decomposition, the bound for the proposed voxel-grid decomposition does not increase with the matrix dimension when the spatial dimension and d are fixed. It depends on the spatial dimension and d. Consequently, the potential reduction relative to a Pauli decomposition can grow with problem size. 
+
+Table 2 Upper bounds on the number of unitary terms for voxel-grid stiffness matrices One-dimensional Two-dimensional Three-dimensional 
+
+d = 1 or 2 6 18 54 
+
+d = 4 14 42 126 
+
+Remark 1 Section 3.1 used three techniques: cyclic permutations to handle block-diagonal offsets, singular value decompo-sition of real 2 × 2 blocks, and Euler’s formula to express a nonnegative diagonal matrix as the sum of two diagonal unitaries. The construction can extend to other matrices with known finite block bandwidth, but the term count then depends on the block bandwidth and block size and does not imply a constant term count for arbitrary unstructured meshes. 
+
+Remark 2 The unitary terms obtained here mainly comprise cyclic permutations, 2 × 2 orthogonal blocks, and diagonal unitaries. A cyclic permutation can be implemented with a quantum Fourier transform or a reversible addition circuit. The gate count and depth depend on the gate set and whether an approximate QFT is used. A block-diagonal Ry operator, LN−1 
+
+> i=0
+
+Ry(θi),can be expressed by a change of basis as (IN ⊗ ξ ) N−1
+
+⊕
+
+> i=0
+
+Rz (θi) ( IN ⊗ ξ )H, where ξ = 1√2
+
+"−i i 1 1
+
+#
+
+is a single-qubit unitary. Thus, 15 
+
+implementing the unitaries in this decomposition ultimately depends on efficient implementations of diagonal unitaries. In general, such a unitary has the form L2n−1 
+
+> i=0
+
+eiθi . A standard approach uses quantum multiplexors [52, 53]. Appendix 2 states that even in the worst case, when all θi differ, this operator can be implemented with O(N) qubits and an O(log N)-time quantum circuit under the data-access assumptions stated in Appendix 2. 
+
+3.2 Solving finite element stiffness equations by minimum potential energy 
+
+Section 2 described variational quantum optimization and its convergence challenges. The loss functions in Section 2.3.2 are based on different error measures. With many ansatz parameters, optimization with these loss functions may converge slowly or fail to find a solution. In particular, the loss can become small while the displacement error remains large. Steepest descent and conjugate gradient are common classical finite element solvers. Both can be viewed as optimization methods. For a symmetric positive-definite stiffness matrix, the principle of minimum potential energy recasts the stiffness equation (1) as 
+
+Π (u) = 12 uTKu − fTu. (44) Solvers based on minimum potential energy, particularly conjugate gradient, have been highly successful in classical finite element analysis. This motivates using discrete total potential energy as a variational objective in place of a residual-based VQLS loss. The ansatz parameters are then optimized by minimizing that energy. Previous studies [24, 34] showed that, for a given relative displacement-error target, estimating the normalized energy difference can require less precision than estimating a VQLS loss. We therefore adopt a minimum-potential-energy variational algorithm and briefly describe its implementation. Substituting Eq. (11) into Eq. (44) gives 
+
+Π (c, ααα) = c2
+
+2 ⟨u (ααα)| K |u (ααα)⟩ − c∥f∥2 ⟨f|u (ααα)⟩ . (45) The problem becomes min c≥0, ααα∈Ωα Π(c, ααα), where Ωα is the ansatz-parameter domain. Several classical optimizers can solve this problem. Gradient-based methods, including steepest descent and sequential quadratic programming (SQP), require the gradient (∂ Π/∂ c, ∂ Π/∂ α 1, . . . , ∂ Π/∂ α Nα )T. It can be calculated analytically as follows: 
+
+
+
+∂ Π
+
+∂ c = c ⟨u (ααα)| K |u (ααα)⟩ − ∥ f∥2 ⟨f|u (ααα)⟩
+
+∂ Π
+
+∂ α j
+
+= c2 ⟨u (ααα)| K uα j (ααα) − c∥f∥2 f|uα j (ααα) , 1 ≤ j ≤ Nα
+
+, (46) where 
+
+uα j (ααα) = d |u (ααα)⟩
+
+dα j
+
+= dV (ααα)
+
+dα j
+
+|0⟩⊗n = Vα j |0⟩⊗n. (47) If the ansatz in Fig. 1 is used, each parameter occurs in exactly one Ry gate. Since d Ry(α)/dα = Ry(α + π)/2, we obtain 
+
+Vα j (ααα) = 12 V (ααα j,π ) , ααα j,π = ( α1, α2, · · · , α j + π, · · · , αNα )T. (48) Substituting Eq. (48) into the derivative of the total potential energy gives 
+
+
+
+∂ Π
+
+∂ c = c ⟨u (ααα)| K |u (ααα)⟩ − ∥ f∥2 ⟨f|u (ααα)⟩
+
+∂ Π
+
+∂ α j
+
+= 12
+
+c2 ⟨u (ααα)| K u (ααα j,π ) − c∥f∥2 f|u (ααα j,π )  , 1 ≤ j ≤ Nα
+
+. (49) Alternatively, a forward finite difference approximates the gradient: 
+
+
+
+∂ Π
+
+∂ c = c ⟨u (ααα)| K |u (ααα)⟩ − ∥ f∥2 ⟨f|u (ααα)⟩
+
+∂ Π
+
+∂ α j
+
+≈ Π  c, ααα j,∆α
+
+ − Π (c, ααα)
+
+∆α
+
+, (50) 16 
+
+where ααα j,∆α = ( α1, . . . , α j + ∆α, . . . , αNα )T.Treat s = ( c, αααT)T as the unknown parameters, and write the displacement vector as u(s). Define its Jacobian as 
+
+J(s) = ∂ u(s)
+
+∂ sT ∈ RN×(Nα +1).
+
+If J(s) has full row rank, so that its smallest singular value σmin (J(s)) > 0, the following error bounds hold: 
+
+∥∇sΠ(s)∥2
+
+σmax (J(s)) λmax (K) ≤ u(s) − K−1f 2 ≤ ∥∇sΠ(s)∥2
+
+σmin (J(s)) λmin (K) , (51) where λmin and λmax are the smallest and largest eigenvalues of K, while σmin and σmax are the smallest and largest singular values of J. The bounds show how the gradient and ansatz Jacobian jointly affect displacement error. When the Jacobian has full row rank, the gradient norm can indicate the solution error. Moreover, σmin (J) reflects, to some extent, the sensitivity of the ansatz to parameter changes. A smaller value indicates weaker local sensitivity and can make small gradients and slow convergence more likely. A larger value generally improves local identifiability of the ansatz parameters and can assist optimization. Minimizing the total potential energy over s = ( c, αααT)T mainly requires ⟨u(ααα)|K|u(ααα)⟩, ⟨f|u(ααα)⟩, and ⟨u(ααα)|K|u(ααα j,π )⟩.The load-state overlap ⟨f|u(ααα)⟩ can be estimated directly with a Hadamard test. Applying the LCU decomposition in Eq. (5) to K gives 
+
+⟨u(ααα)| K |u(ααα)⟩ =
+
+> M−1
+
+# ∑
+
+> i=0
+
+ai ⟨u(ααα)| Ki |u(ααα)⟩ ,
+
+⟨u(ααα)| K u(ααα j,π ) =
+
+> M−1
+
+# ∑
+
+> i=0
+
+ai ⟨u(ααα)| Ki u(ααα j,π ) .
+
+(52) These terms are estimated by the block-Hadamard circuits in Section 4. 
+
+## 4. Block-Hadamard quantum test 
+
+Estimating Eq. (52) with the Hadamard test from Section 2 requires a separate test for each Ki. Each potential-energy or derivative term therefore needs O(M) controlled-unitary circuit configurations. Evaluating all variational parameters increases this number with Nα . This section proposes a block-Hadamard quantum test. A quantum multiplexor coherently selects several 
+
+Ki within one circuit. The ancilla measurement probability then contains a weighted sum of overlaps. This enables batched estimation of ⟨u|Ki|u⟩ and ⟨u|Ki|uα j ⟩.
+
+4.1 Block-Hadamard tests for potential energy and its derivatives 
+
+Let V0 = V(ααα) and |u0⟩ = |u(ααα)⟩. For j = 1, . . . , Nα , define the normalized parameter-shifted state 
+
+V j = V(ααα j,π ), |u j⟩ = V j|0⟩⊗n.
+
+By Eq. (48), the derivative state is |uα j ⟩ = |u j⟩/2. The quantum circuit implements only the unitary V j. The factor 1 /2 is retained in the classical postprocessing of Eq. (49). The loss functions in Section 2.3.2 typically require overlaps of the form 
+
+⟨u|KH 
+
+> i
+
+K j|u⟩, involving O(M2) circuit calls when evaluated term by term. By contrast, the total-potential-energy objective from Section 3.2 requires only ⟨u|Ki|u⟩ and ⟨u|Ki|uα j ⟩. Their term-by-term evaluation uses O(M) calls. Measurement estimates also have sampling error of order O(S−1/2), where S is the number of shots. More overlaps therefore increase the total number of shots needed for a given precision. We now derive block-Hadamard tests for the two required overlap types. First, consider 
+
+⟨u|K|u j⟩:
+
+⟨u| K u j =
+
+> M−1
+
+# ∑
+
+> i=0
+
+ai ⟨u| Ki u j . (53) A term-by-term Hadamard test for the M overlaps on the right-hand side of Eq. (53) requires M circuit configurations, each sampled repeatedly. Instead, group the terms into blocks: 17 
+
+⟨u| K u j =
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai ⟨u| Ki u j +
+
+> 2B−1
+
+# ∑
+
+> i=B
+
+ai ⟨u| Ki u j + · · · +
+
+> M−1
+
+# ∑
+
+> i=M−B
+
+ai ⟨u| Ki u j , (54) where M = 2m and B = 2b.We now design a circuit that evaluates the first block in Eq. (54), ∑B−1 
+
+> i=0
+
+ai⟨u|Ki|u j⟩, in one batch. We consider (a) nonnegative real coefficients ai and (b) general complex coefficients. 
+
+(a) ai are nonnegative real numbers First, suppose all ai are nonnegative real numbers. Amplitude-encode the coefficients 
+
+(√a0, . . . , √aB−1) of the first block: 
+
+|ˆa1⟩ = 1
+
+sB−1
+
+∑
+
+> i=0
+
+aiB−1
+
+# ∑
+
+> i=0
+
+√ai |i⟩ = ˆA1|0⟩⊗b. (55) Figure 7 shows the circuit for B = 4. Here, V j is the state-preparation unitary for the normalized parameter-shifted state, not the nonunitary derivative ∂ V/∂ α j.
+
+Figure 7 Block-Hadamard circuit for the weighted sum in the first block with nonnegative real coefficients ( B = 4) 
+
+The input state is |ψ⟩ = |0⟩| 0⟩⊗b|0⟩⊗n. After the first Hadamard gate, it becomes |ψ⟩ = ( |0⟩ + |1⟩)|ˆa1⟩| 0⟩⊗n/√2. The next two layers are controlled. When the first qubit is |0⟩, V(ααα) acts on the n-qubit register. When it is |1⟩, V j acts on that register. The state is then 
+
+|ψ⟩ = 1
+
+√2 |0⟩ | ˆa1⟩ | u⟩ + 1
+
+√2 |1⟩ | ˆa1⟩ u j . (56) After the quantum multiplexors, the state becomes 
+
+|ψ⟩ = 1
+
+√21
+
+sB−1
+
+∑
+
+> i=0
+
+ai
+
+"
+
+|0⟩
+
+> B−1
+
+# ∑
+
+> i=0
+
+√ai |i⟩ | u⟩ + |1⟩
+
+> B−1
+
+# ∑
+
+> i=0
+
+√ai |i⟩Ki u j
+
+#
+
+. (57) Finally, the Hadamard gate produces 
+
+|ψ⟩ = 121
+
+sB−1
+
+∑
+
+> i=0
+
+ai
+
+"
+
+|0⟩
+
+> B−1
+
+# ∑
+
+> i=0
+
+√ai |i⟩  |u⟩ + Ki u j
+
+!
+
++ |1⟩
+
+> B−1
+
+# ∑
+
+> i=0
+
+√ai |i⟩  |u⟩ − Ki u j
+
+!# 
+
+. (58) Measure the first qubit and denote the probabilities of |0⟩ and |1⟩ by ζ0 and ζ1, respectively. Then 
+
+ζ0 = 12
+
+1 + 1
+
+> B−1
+
+∑
+
+> i=0
+
+ai
+
+Re 
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai ⟨u| Ki u j
+
+! , ζ1 = 12
+
+1 − 1
+
+> B−1
+
+∑
+
+> i=0
+
+ai
+
+Re 
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai ⟨u| Ki u j
+
+! . (59) 18 
+
+Therefore, Re 
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai ⟨u| Ki u j
+
+!
+
+= ( 2ζ0 − 1)
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai = ( 1 − 2ζ1)
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai. (60) The remaining blocks in Eq. (54) are treated similarly. If B = M, one circuit configuration estimates ⟨u|K|u j⟩. To estimate 
+
+⟨u|K|u⟩, replace V j in Fig. 7 with V.
+
+(b) ai are general complex numbers The LCU coefficients ai in Eq. (9) are real for the present problem, but for completeness we also consider complex coefficients. As in (a), amplitude-encode the coefficients (a0, . . . , aB−1) of the first block: 
+
+|ˆa1⟩ = 1
+
+sB−1
+
+∑
+
+> i=0
+
+|ai|2
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai |i⟩ = A1|0⟩⊗b. (61) Figure 8 gives the circuit for general complex coefficients. Again, V j prepares the normalized parameter-shifted state. 
+
+Figure 8 Block-Hadamard circuit for the weighted sum in the first block with general complex coefficients ( B = 4) 
+
+The input state is |ψ⟩ = |0⟩| 0⟩⊗b|0⟩⊗n. After the first Hadamard gate, it becomes |ψ⟩ = ( |0⟩ + |1⟩)|0⟩⊗b|0⟩⊗n/√2. The next two layers are controlled. On the |0⟩ branch of the first qubit, apply H⊗b ⊗ V(ααα) to the target registers. On the |1⟩ branch, apply A1 ⊗ V j. The state then becomes 
+
+|ψ⟩ = 1
+
+√2
+
+
+
+|0⟩ H⊗b|0⟩⊗b |u⟩ + |1⟩ | ˆa1⟩ u j
+
+
+
+. (62) After the quantum multiplexors, the state becomes 
+
+|ψ⟩ = 1
+
+√2
+
+|0⟩ 1
+
+√2
+
+bB−1
+
+# ∑
+
+> i=0
+
+|i⟩ | u⟩ + |1⟩ 1
+
+sB−1
+
+∑
+
+> i=0
+
+|ai|2
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai |i⟩Ki u j
+
+ . (63) The final Hadamard gate produces 
+
+|ψ⟩ = 12 |0⟩
+
+
+
+1
+
+√2
+
+bB−1
+
+# ∑
+
+> i=0
+
+|i⟩ | u⟩ + 1
+
+sB−1
+
+∑
+
+> i=0
+
+|ai|2
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai |i⟩Ki u j
+
+
+
++ 12 |1⟩
+
+
+
+1
+
+√2
+
+bB−1
+
+# ∑
+
+> i=0
+
+|i⟩ | u⟩ − 1
+
+sB−1
+
+∑
+
+> i=0
+
+|ai|2
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai |i⟩Ki u j
+
+ . (64) 19 
+
+Measure the first qubit and denote the probabilities of |0⟩ and |1⟩ by ζ0 and ζ1. Then 
+
+ζ0 = 12
+
+1 + 1
+
+s
+
+B B−1
+
+∑
+
+> i=0
+
+|ai|2
+
+Re 
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai ⟨u| Ki u j
+
+!
+
+ζ1 = 12
+
+1 − 1
+
+s
+
+B B−1
+
+∑
+
+> i=0
+
+|ai|2
+
+Re 
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai ⟨u| Ki u j
+
+! . (65) Hence, Re 
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai ⟨u| Ki u j
+
+!
+
+= ( 2ζ0 − 1)
+
+s
+
+B
+
+> B−1
+
+# ∑
+
+> i=0
+
+|ai|2 = ( 1 − 2ζ1)
+
+s
+
+B
+
+> B−1
+
+# ∑
+
+> i=0
+
+|ai|2. (66) Other blocks use the same circuit structure. If B = M, one circuit configuration estimates ⟨u|K|u j⟩. For ⟨u|K|u⟩, replace V j
+
+in Fig. 7 with V.
+
+4.2 Block-Hadamard test for batched derivatives 
+
+Section 4.1 combined several unitary terms within one block, so that the potential energy and its derivative with respect to one parameter can each be estimated with one circuit configuration. With B = M, this nominally requires two configurations. A gradient-based optimizer, however, needs derivatives with respect to all α j. Separate circuits for each parameter would still make the configuration count grow with Nα . We therefore encode the current state and each state shifted once by π in a state-index register. This enables batched estimation of all potential-energy derivatives. Section 3.2 gave two ways to calculate the potential-energy gradient, in Eqs. (49) and (50): Eq. (49) requires batched esti-mates of ⟨u(ααα)|K|uα j (ααα)⟩ and ⟨f|uα j (ααα)⟩ for 1 ≤ j ≤ Nα , whereas Eq. (50) requires ⟨u(ααα j,∆α )|K|u(ααα j,∆α )⟩ and ⟨f|u(ααα j,∆α )⟩.To organize these calculations, note that 
+
+
+
+⟨u (ααα)| K uα j (ααα) = ⟨0|⊗nVH (ααα) KV α j (ααα) |0⟩⊗n
+
+u  ααα j,∆α
+
+ K u  ααα j,∆α
+
+ = ⟨0|⊗nVH  ααα j,∆α
+
+ KV  ααα j,∆α
+
+ |0⟩⊗n
+
+f|uα j (ααα) = ⟨0|⊗nFHVα j |0⟩⊗n, f|u  ααα j,∆α
+
+ = ⟨0|⊗nFHV  ααα j,∆α
+
+ |0⟩⊗n
+
+. (67) By Eq. (48), the derivative state differs from the normalized parameter-shifted state only by the classical factor 1 /2, so that batched evaluation of ⟨u(ααα)|K|uα j (ααα)⟩ reduces to batched evaluation of ⟨0|⊗nVHKV j|0⟩⊗n. In addition, the finite-difference quadratic term reduces to ⟨0|⊗nVH 
+
+> j
+
+KV j|0⟩⊗n, and both overlaps with the load state are of the form ⟨0|⊗nFHV j|0⟩⊗n, up to the factor 1 /2 in the analytic derivative. We treat these three cases in turn. 
+
+(a) Batched evaluation of ⟨0|⊗nVHKV j|0⟩⊗n We need these overlaps for V0, V1, . . . , VNα −1. Decompose the stiffness matrix as K = ∑M−1 
+
+> i=0
+
+aiKi, so that the batched calculation becomes 
+
+⟨0|⊗nVHKV j|0⟩⊗n =
+
+> M−1
+
+# ∑
+
+> i=0
+
+ai⟨0|⊗nVHKiV j|0⟩⊗n
+
+=
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai⟨0|⊗nVHKiV j|0⟩⊗n +
+
+> 2B−1
+
+# ∑
+
+> i=B
+
+ai⟨0|⊗nVHKiV j|0⟩⊗n
+
++ · · · +
+
+> M−1
+
+# ∑
+
+> i=M−B
+
+ai⟨0|⊗nVHKiV j|0⟩⊗n. (68) 20 
+
+Partition j ∈ { 0, 1, . . . , Nα − 1} into Nα /D groups of D = 2d indices. Without loss of generality, consider the first group: 
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai⟨0|⊗nVHKiV0|0⟩⊗n,
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai⟨0|⊗nVHKiV1|0⟩⊗n, · · · ,
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai⟨0|⊗nVHKiVD−1|0⟩⊗n. (69) The terms in Eq. (69) can be estimated with the circuit in Fig. 9, illustrated for D = B = 4. To simplify the quantum multiplexor, we assume nonnegative real ai. For negative or complex coefficients, their phases can be absorbed into Ki as in Section 4.1(b). 
+
+Figure 9 Cross-state block-Hadamard circuit for batched estimation of Re ⟨u(ααα)|K|us⟩ (DK = B = 4) 
+
+The input is |ψ⟩ = |0⟩| 0⟩⊗d |0⟩⊗b|0⟩⊗n. After the circuit layers, the final state is 
+
+|ψ⟩ = 1
+
+√2
+
+d+2
+
+sB−1
+
+∑
+
+> i=0
+
+ai
+
+|0⟩
+
+> D−1
+
+# ∑
+
+> j=0
+
+| j⟩
+
+> B−1
+
+# ∑
+
+> i=0
+
+√ai |i⟩  |u⟩ + KiV j|0⟩⊗n + |1⟩
+
+> D−1
+
+# ∑
+
+> j=0
+
+| j⟩
+
+> B−1
+
+# ∑
+
+> i=0
+
+√ai |i⟩  |u⟩ − KiV j|0⟩⊗n!
+
+. (70) Measure the first ancilla and the state-index register. Denote the joint probabilities of |0⟩| j⟩ and |1⟩| j⟩ by ζ0 j and ζ1 j,respectively. They are 
+
+ζ0 j = 12D
+
+1 +
+
+Re 
+
+B−1
+
+∑
+
+> i=0
+
+ai⟨0|⊗nVHKiV j|0⟩⊗n
+
+
+
+> B−1
+
+∑
+
+> i=0
+
+ai
+
+ , ζ1 j = 12D
+
+1 −
+
+Re 
+
+B−1
+
+∑
+
+> i=0
+
+ai⟨0|⊗nVHKiV j|0⟩⊗n
+
+
+
+> B−1
+
+∑
+
+> i=0
+
+ai
+
+ . (71) Therefore, Re 
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai⟨0|⊗nVHKiV j|0⟩⊗n
+
+!
+
+=  1 − 2Dζ1 j
+
+ B−1
+
+# ∑
+
+> i=0
+
+ai =  2Dζ0 j − 1 B−1
+
+# ∑
+
+> i=0
+
+ai
+
+= D  ζ0 j − ζ1 j
+
+ B−1
+
+# ∑
+
+> i=0
+
+ai, 0 ≤ j ≤ D − 1. (72) The same circuit structure estimates all ⟨0|⊗nVHKV j|0⟩⊗n. If B = M and D = Nα , one circuit configuration suffices for all of them. 21 
+
+(b) Batched evaluation of ⟨0|⊗nVH 
+
+> j
+
+KV j|0⟩⊗n For the required quadratic terms, decompose K into its LCU terms. Then 
+
+⟨0|⊗nVH 
+
+> j
+
+KV j|0⟩⊗n =
+
+> M−1
+
+# ∑
+
+> i=0
+
+ai⟨0|⊗nVH 
+
+> j
+
+KiV j|0⟩⊗n
+
+=
+
+> B−1
+
+# ∑
+
+> i=0
+
+ai⟨0|⊗nVH 
+
+> j
+
+KiV j|0⟩⊗n +
+
+> 2B−1
+
+# ∑
+
+> i=B
+
+ai⟨0|⊗nVH 
+
+> j
+
+KiV j|0⟩⊗n
+
++ · · · +
+
+> M−1
+
+# ∑
+
+> i=M−B
+
+ai⟨0|⊗nVH 
+
+> j
+
+KiV j|0⟩⊗n. (73) Again, partition j ∈ { 0, 1, . . . , Nα − 1} into Nα /D groups of D = 2d indices and consider the first group. A circuit with the structure of Fig. 9 evaluates its terms. Replace state preparation V(ααα) in the first branch by V j. The two branches then prepare 
+
+V j|0⟩⊗n and KiV j|0⟩⊗n. The final state is 
+
+|ψ⟩ = 1
+
+√2
+
+d+2
+
+sB−1
+
+∑
+
+> i=0
+
+ai
+
+"
+
+|0⟩
+
+> D−1
+
+# ∑
+
+> j=0
+
+| j⟩
+
+> B−1
+
+# ∑
+
+> i=0
+
+√ai |i⟩  V j|0⟩⊗n + KiV j|0⟩⊗n
+
++ |1⟩
+
+> D−1
+
+# ∑
+
+> j=0
+
+| j⟩
+
+> B−1
+
+# ∑
+
+> i=0
+
+√ai |i⟩  V j|0⟩⊗n − KiV j|0⟩⊗n#
+
+. (74) The joint probabilities ζ0 j and ζ1 j for |0⟩| j⟩ and |1⟩| j⟩ have the form of Eq. (71), with VH replaced by VH 
+
+> j
+
+. Accordingly, Eq. (72) becomes Re ∑B−1 
+
+> i=0
+
+ai⟨0|⊗nVH 
+
+> j
+
+KiV j|0⟩⊗n = D(ζ0 j − ζ1 j) ∑B−1 
+
+> i=0
+
+ai, for 0 ≤ j ≤ D − 1. If B = M and D = Nα , one circuit configuration suffices for all such quadratic terms. 
+
+(c) Batched evaluation of ⟨0|⊗nFHV j|0⟩⊗n We need an overlap of this form for V0, V1, . . . , VNα −1. No stiffness matrix is involved, so a unitary-term index register is unnecessary. Partition j ∈ { 0, 1, . . . , Nα − 1} into Nα /D groups of D = 2d indices. For the first group, 
+
+⟨0|⊗nFHV0|0⟩⊗n, ⟨0|⊗nFHV1|0⟩⊗n, · · · , ⟨0|⊗nFHVD−1|0⟩⊗n. (75) The terms in Eq. (75) can be estimated by the circuit in Fig. 10, shown for D = 4. 
+
+Figure 10 Block-Hadamard circuit for batched estimation of Re ⟨0|⊗nFHVs|0⟩⊗n (D f = 4) 
+
+The input is |ψ⟩ = |0⟩| 0⟩⊗d |0⟩⊗n. After the circuit layers, the final state is 
+
+|ψ⟩ = 1
+
+√2
+
+d+2 |0⟩
+
+> D−1
+
+# ∑
+
+> j=0
+
+| j⟩ (F + V j) |0⟩⊗n + |1⟩
+
+> D−1
+
+# ∑
+
+> j=0
+
+| j⟩ (F − V j) |0⟩⊗n
+
+!
+
+. (76) 22 
+
+Measure the first ancilla and the state-index register. Denote the joint probabilities of |0⟩| j⟩ and |1⟩| j⟩ by ζ0 j and ζ1 j,respectively. They are 
+
+ζ0 j = 12D
+
+1 + Re  ⟨0|⊗nFHV j|0⟩⊗n , ζ1 j = 12D
+
+1 − Re  ⟨0|⊗nFHV j|0⟩⊗n . (77) Hence, Re  ⟨0|⊗nFHV j|0⟩⊗n = 1 − 2Dζ1 j = 2Dζ0 j − 1
+
+= D  ζ0 j − ζ1 j
+
+ , 0 ≤ j ≤ D − 1. (78) The same circuit structure estimates all ⟨0|⊗nFHV j|0⟩⊗n. If D = Nα , one circuit configuration suffices, so that the total potential energy and all its parameter derivatives can be estimated in batches with a constant number of circuit configurations. Define 
+
+A(K) 
+
+> s
+
+= Re  ⟨0|⊗nVHKV s|0⟩⊗n , L( f ) 
+
+> s
+
+= Re  ⟨0|⊗nFHVs|0⟩⊗n , 0 ≤ s ≤ Nα . (79) Here, A(K) 
+
+> s
+
+is recovered from the batched result in Eq. (72). For the finite-difference method in Eq. (50), use the corresponding diagonal term in Eq. (73). The quantity L( f ) 
+
+> s
+
+is recovered from Eq. (78), and the potential-energy gradient is then reconstructed as 
+
+∂ Π
+
+∂ c = cA (K) 
+
+> 0
+
+− ∥ f∥2L( f ) 
+
+> 0
+
+, ∂ Π
+
+∂ α j
+
+= 12
+
+h
+
+c2A(K) 
+
+> j
+
+− c∥f∥2L( f )
+
+> j
+
+i
+
+, 1 ≤ j ≤ Nα . (80) This reduction concerns the number of distinct circuit configurations: each configuration still requires repeated sampling, and the joint probability for an individual state index decreases as 1 /D. The shots required for a specified statistical precision therefore grow with the index-space size, variance, and target confidence level. 
+
+Remark 3 The batched method relies on quantum multiplexors implementing LD−1 
+
+> j=0
+
+V j and LB−1 
+
+> i=0
+
+Ki. Their realization is nontrivial and generally uses controlled gates and uniformly controlled rotation decompositions [46]. Noise in current hardware may limit their implementation. Practical deployment of the algorithm thus depends on hardware progress. Nevertheless, the LCU decomposition in Section 3.1 makes the Ki multiplexor primarily a combination of cyclic permutations, Ry gates, and diagonal unitaries. If the ansatz in Fig. 1 is used, the V j multiplexor also mainly comprises Ry gates. Remark 2 and Appendix 2 give the assumptions under which these gates can be implemented in O(poly (log N)) time. 
+
+Remark 4 The block-Hadamard test presented here batches overlaps of the form ⟨u|Ki|u j⟩, and the same idea also applies to ⟨u|KH 
+
+> i
+
+K j|u⟩ in conventional loss functions. Appendix 3 gives the corresponding quantum circuit. 
+
+## 5. Numerical examples 
+
+This section presents three proof-of-concept examples: a two-dimensional truss, a plane-stress plate, and a three-dimensional steady-state heat-conduction problem. The first two test static structural problems, and the third tests a three-dimensional system with one degree of freedom per node. Together, they assess the voxel-grid LCU decomposition and minimum-potential-energy formulation from Section 3. All results were obtained with classical numerical programs in MATLAB. Let uref denote the displacement or nodal-temperature vector from classical finite-element analysis, and let u denote the corresponding field reconstructed from the ansatz. The relative error is 
+
+ε = ∥u − uref ∥1
+
+∥uref ∥1
+
+. (81) Voxel-BVQLS uses the minimum-potential-energy objective in Eq. (44) and the voxel-grid LCU decomposition. For linear static problems, this objective is the total potential energy. The comparison methods VQLS-G, VQLS-L, and VQLS-R use the global, local, and residual losses from Section 2.3.2, respectively. Pauli-VQLS denotes the comparison method based on a Pauli decomposition. 
+
+Remark 5 The proposed block-Hadamard circuits estimate the total potential energy and its derivatives in batches. Under ideal noiseless conditions, different circuits estimating the same physical quantity yield the same result. The present examples 23 
+
+therefore do not quantify the computational-efficiency gain of block-Hadamard tests over conventional Hadamard tests. We provide only a qualitative assessment. As shown in Section 4, block-Hadamard tests reduce the number of circuit configurations needed for the total potential energy and its derivatives. If the block size equals the number of unitary terms, two types of circuit configuration are sufficient in principle. 
+
+Remark 6 The advantage of the proposed voxel-grid LCU decomposition is measured by its number of unitary terms. In each example, we decompose the stiffness matrix both by this method and by a Pauli decomposition, then compare the numbers of nonzero unitary terms. 
+
+Remark 7 The minimum-potential-energy objective in Eq. (44) is strictly convex over the full physical-field space, but its composition with a parameterized ansatz is generally nonconvex. The following comparisons describe numerical behavior for the specified ansatz, initial values, and stopping criteria and do not provide a general convergence guarantee for any objective or optimizer. 
+
+5.1 Truss problem 
+
+Figure 11 Geometry, boundary conditions, and applied load of the two-dimensional truss 
+
+The first example is the two-dimensional truss in Fig. 11. It has 20 nodes, two degrees of freedom per node, and a nodal spacing of 1 m. The bars have cross-sectional area A = 10 −4 m2 and Young’s modulus E = 2.1 × 10 11 Pa. The nodes on the left edge are fixed. A concentrated force of 5 N acts downward at the lower-right node. After imposing the constraints, N = 32 degrees of freedom remain. This is a two-dimensional problem with two degrees of freedom per node. Table 3 shows 51 nonzero unitary terms from the Pauli decomposition and 18 from the proposed voxel-grid LCU decomposition, a reduction of about 65%. We solve the problem with Voxel-BVQLS, VQLS-G, VQLS-L, and VQLS-R. All four methods use the ansatz in Fig. 12, with every initial parameter set to 1 and with 3, 5, or 7 layers. Sequential quadratic programming (SQP) is used with at most 500 iterations. The allowed difference between successive parameter iterates (StepTolerance) is 10 −10 . Figure 13 plots relative error against iteration count for the four methods and three ansatz depths. 
+
+Table 3 Nonzero unitary terms in Pauli and voxel-grid decompositions of the truss stiffness matrix Decomposition Pauli LCU Voxel-grid LCU Number of nonzero unitary terms 51 18 24 
+
+Figure 12 Ansatz circuit for the two-dimensional truss example 
+
+Figure 13 Displacement L1 relative-error curves for four methods with 3-, 5-, and 7-layer ansatz circuits in the two-dimensional truss example 25 
+
+Figure 13 shows that, with the same initial values and optimization settings, Voxel-BVQLS reduces the relative error rapidly and stabilizes after about 100–150 iterations at all three ansatz depths. With five layers, it reaches low error after about 110 iterations, whereas VQLS-G, VQLS-R, and VQLS-L need about 250, 320, and 370 iterations, respectively, to approach zero error. With three layers, none of those three comparison methods finds a low-error solution within the plotted range. With seven layers, VQLS-G also reduces the error relatively quickly, while VQLS-L and VQLS-R require more iterations. Under the ansatz, initialization, and SQP settings of this example, these results indicate that the minimum-potential-energy objective improves optimization and alleviates the high-error stagnation associated here with barren plateaus at shallow depth. 
+
+Figure 14 Reference and computed deformed truss configurations for block sizes B = 1, 2, and 4 
+
+Figure 14 compares the truss-node positions from the classical finite element reference, the unblocked scheme ( B = 1), and two block-Hadamard schemes ( B = 2, 4). All three schemes reproduce the overall deformation under load. At the plotted scale, the loaded and interior nodes are close to the reference positions. The B = 1, B = 2, and B = 4 results coincide with the finite element reference in the figure. Thus, changing the unitary-term block size does not visibly degrade nodal-displacement accuracy in this noiseless example. Blocking changes how the overlaps are organized and estimated. With exact summation, the stiffness matrix and variational objective are unchanged. The block-Hadamard test therefore combines several term-wise overlap tests into fewer circuit configurations while retaining the plotted nodal-displacement accuracy in this example. 
+
+5.2 Plane-stress problem 
+
+The second example is the plane-stress plate in Fig. 15. It has 36 nodes with two degrees of freedom per node. Its length, width, and thickness are 7 mm, 3 mm, and 1 mm, respectively. Materials A and B have Young’s moduli of 2 .1 × 10 5 MPa and 1.1 × 10 5 MPa, respectively, and both have a Poisson’s ratio of 0 .3. The left-edge nodes are fixed. A 10 N force acts in the positive x direction at the lower-right node, and a 15 N force acts in the positive y direction at the upper-right node. After imposing the constraints, N = 64 degrees of freedom remain. This is a two-dimensional problem with two degrees of freedom per node. Table 4 lists 224 nonzero unitary terms from the Pauli decomposition and 18 from the proposed voxel-grid LCU 26 
+
+Figure 15 Geometry, material layout, boundary conditions, and applied loads of the plane-stress model 
+
+decomposition, a reduction of about 92%. The four methods use the ansatz in Fig. 16, with every initial parameter set to 1 and depths of 4, 7, and 10 layers. SQP is run for at most 3000 iterations. To make every curve in Fig. 17 cover the same iteration range, the early-stopping tolerances for function value, step size, and first-order optimality are all set to zero. Figure 17 compares relative-error curves across methods and depths. Figure 18 shows spatial displacement-field errors for Voxel-BVQLS at the same depths. 
+
+Figure 16 Ansatz circuit for the plane-stress example 
+
+Table 4 Nonzero unitary terms in Pauli and voxel-grid decompositions of the plane-stress stiffness matrix Decomposition Pauli LCU Voxel-grid LCU Number of nonzero unitary terms 224 18 27 0 500 1000 1500 2000 2500 3000                
+
+> Iterations
+> 00.2 0.4 0.6 0.8 11.2
+> Relative Error (a) 4-layer ansatz
+> 0500 1000 1500 2000 2500 3000
+> Iterations
+> 00.2 0.4 0.6 0.8 11.2
+> Relative Error (b) 7-layer ansatz
+> 0500 1000 1500 2000 2500 3000
+> Iterations
+> 00.2 0.4 0.6 0.8 11.2
+> Relative Error (c) 10-layer ansatz
+> proposed VQLS-L VQLS-G VQLS-R
+
+Figure 17 Displacement L1 relative-error curves for four methods with 4-, 7-, and 10-layer ansatz circuits in the plane-stress example 
+
+Figure 17 shows that, with the same initial values and a 3000-iteration budget, Voxel-BVQLS reaches a low displacement-error range earlier at all three depths. With four layers, its final error is about 2 .15 × 10 −3. None of the other methods reaches 10 −2 in the plotted range. With seven layers, VQLS-G and VQLS-R reach that threshold after about 780 and 1000 iterations, respectively, later than Voxel-BVQLS. The VQLS-L error remains near 1. With ten layers, VQLS-G reaches 10 −2 after about 350 iterations, whereas VQLS-R needs about 1220. Under the ansatz, initialization, and SQP settings used here, the minimum-potential-energy objective reaches a 1% displacement relative error earlier at each depth and alleviates the high-error stagnation seen at shallow depth. 
+
+Figure 18 Reference x- and y-displacement fields and absolute errors for 4-, 7-, and 10-layer ansatz circuits in the plane-stress example 
+
+The upper row of Fig. 18 shows the classical finite element reference displacements in the x and y directions, with values on the order of 10 −3. The other rows show absolute errors for Voxel-BVQLS with 4, 7, and 10 layers. At four layers, the upper color-scale limits for the x- and y-direction errors are about 4 × 10 −5 and 8 × 10 −5. The larger errors occur mainly on the right 28 
+
+side of the plate. As depth increases, both maximum color-scale values decline. At ten layers, they are about 1 .5 × 10 −6 and 10 −6. Under the tested depths and optimization settings, the method reproduces the overall reference displacement distribution, and deeper ansatz circuits reduce local error. These are field approximations for the tested problem, not a general accuracy guarantee. 
+
+5.3 Three-dimensional heat-conduction problem 
+
+The third example is the three-dimensional steady-state heat-conduction model in Fig. 19. It contains 17 × 7 × 3 eight-node voxel elements and 18 × 8 × 4 = 576 nodes, each with one temperature degree of freedom. The two materials have thermal conductivities k1 = 2.33 W cm −1 ◦C−1 and k2 = 0.33 W cm −1 ◦C−1. A uniform heat flux of q = 2.5 W cm −2 is applied to the top surface. The left and right end faces are held at 0 ◦C. After applying these boundary conditions, N = 512 temperature degrees of freedom remain. This is a three-dimensional problem with one degree of freedom per node. Table 5 gives 228 nonzero unitary terms for the Pauli decomposition and 18 for the voxel-grid LCU decomposition, a reduction of about 92%. All four methods use the ansatz in Fig. 20, with initial parameters equal to 1 and depths of 4, 10, and 16 layers. SQP is run for at most 500 iterations with StepTolerance 10 −10 .Figure 21 shows that the Voxel-BVQLS relative error starts to decrease markedly earlier at all three depths. With four layers, it falls below 10 −1 after about 120 iterations and stabilizes near 4 × 10 −2. With ten and sixteen layers, it reaches a lower level after about 200 and 250 iterations, respectively, and continues to decrease. By comparison, VQLS-L stays near an error of 1 at all depths, and VQLS-R finds no low-error solution within 500 iterations. VQLS-G retains a noticeable residual error at four and ten layers. At sixteen layers, it also reduces the error close to zero, but requires more iterations than Voxel-BVQLS. For this three-dimensional example and the stated initialization and SQP settings, the minimum-potential-energy objective alleviates high-error stagnation. Greater ansatz depth also improves the solution accuracy. The classical finite element reference in Fig. 22 shows temperature rising from the two 0 ◦C end faces toward the interior, with a hot region near the heated surface and the center. At four layers, the absolute temperature error of Voxel-BVQLS has an upper color-scale limit of about 0 .8 ◦C. This falls to about 0 .15 ◦C at ten layers and 0 .04 ◦C at sixteen layers. The spatial decline in error with depth is consistent with the relative-error trends in Fig. 21. Thus, the solutions approach the reference both in overall vector norm and in the temperature-field pattern. 
+
+Table 5 Nonzero unitary terms in Pauli and voxel-grid decompositions of the heat-conduction stiffness matrix Decomposition Pauli LCU Voxel-grid LCU Number of nonzero unitary terms 228 18 
+
+These three noiseless examples show fewer nonzero unitary terms from the voxel-grid LCU decomposition than from the Pauli decomposition. Optimization of the minimum-potential-energy objective also yields approximations to the displacement and temperature fields. 29 
+
+Figure 19 Voxel geometry, material distribution, applied heat flux, and temperature boundary conditions of the three-dimensional heat-conduction model 
+
+Figure 20 Ansatz circuit for the three-dimensional heat-conduction example 
+
+Figure 21 Temperature L1 relative-error curves for four methods with 4-, 10-, and 16-layer ansatz circuits in the three-dimensional heat-conduction example 30 
+
+Figure 22 Reference temperature field and absolute errors at different ansatz depths for the three-dimensional heat-conduction problem 
+
+## 6. Conclusions 
+
+To address large sparse linear systems in static solid mechanics, we developed a voxel-based block variational quantum linear solver (Voxel-BVQLS) on regular voxel grids. It combines structured matrix decomposition, the principle of minimum potential energy, and batched quantum tests in a hybrid quantum–classical finite element workflow. First, for block-banded voxel-grid stiffness matrices, we use cyclic permutation matrices and block-diagonal matrices to construct an LCU decomposition whose upper bound on the number of unitary terms does not grow with the number of mesh nodes. Second, using the linear-static total potential energy as the variational objective mitigates barren plateaus in the studied settings. Third, we propose a block-Hadamard test that directly estimates weighted sums of multiple inner products, reducing the number of circuit configurations required per iteration. Three numerical examples assessed the method. In the two-dimensional truss, plane-stress, and three-dimensional steady-state heat-conduction problems, the voxel-grid LCU decomposition has 18 nonzero unitary terms in each case, compared with 51, 224, and 228 Pauli terms, respectively. The computed displacement and temperature fields also approximate the reference solutions with the errors reported above. Within these examples, the method reduces the numbers of unitary terms and circuit configurations and attains the reported field errors in fewer optimization iterations than the comparison VQLS methods. Several limitations remain. All calculations were performed on a classical computer. Finite-shot sampling, quantum gate noise, and measurement noise were not included. The block-Hadamard test relies on quantum multiplexors, whose gate-level cost and compatibility with current hardware require separate assessment. Future work will add gate-level resource estimates and noisy simulation, and develop improved optimizers for engineering applications. 
+
+## Appendix 1. Gate representation of the singular value decomposition of a real 2 × 2 matrix (proof of Lemma 1) 
+
+Lemma 1. The singular value decomposition of any real 2 × 2 matrix A =
+
+"a b c d 
+
+#
+
+can be written as 
+
+A = UΣΣΣVT, U = Ry (2γ) , V = Ry (2θ ) , ΣΣΣ = diag (σ1, σ2) , (82) where σ1 ≥ σ2 ≥ 0, and Ry(ϕ) is defined in Table 1: Ry(ϕ) = 
+
+"cos (ϕ/2) − sin (ϕ/2)
+
+sin (ϕ/2) cos (ϕ/2)
+
+#
+
+. The rotation angles 2 θ and 2 γ are given by Eqs. (93) and (94). If det A ≥ 0, both U and V can have the pure-rotation form of Eq. (82). If det A < 0, exactly one 31 
+
+of the two factors requires an additional Z gate as in Eq. (95). The proof follows. The key step is an orthogonal diagonalization of the real symmetric positive-semidefinite matrix ATA. First, expand it as 
+
+ATA =
+
+"a c b d 
+
+# " a b c d 
+
+#
+
+=
+
+" a2 + c2 ab + cd ab + cd b 2 + d2
+
+#
+
+. (83) Let T = tr (ATA) = a2 + b2 + c2 + d2 and D = det (ATA) = ( det A)2 = ( ad − bc )2. The discriminant of the characteristic equation is 
+
+∆ =
+
+p
+
+T 2 − 4D =
+
+q
+
+(a2 + c2 − b2 − d2)2 + 4(ab + cd )2 ≥ 0. (84) This quantity is nonnegative, ensuring that the eigenvalues of ATA are real and nonnegative. Solving λ 2 − T λ + D = 0 gives 
+
+λ1 = T + ∆
+
+2 , λ2 = T − ∆
+
+2 . (85) The singular values are the nonnegative square roots of the eigenvalues. In descending order, they form 
+
+ΣΣΣ =
+
+"σ1
+
+σ2
+
+#
+
+, σ1 = pλ1 =
+
+r T + ∆
+
+2 , σ2 = pλ2 =
+
+r T − ∆
+
+2 . (86) The columns of the matrix of right singular vectors V are orthonormal eigenvectors of ATA satisfying 
+
+ ATA − λiI2
+
+ vi = 0, i = 1, 2. (87) For the largest eigenvalue λ1, substitute Eq. (83) into Eq. (87). A normalized eigenvector satisfying the result is 
+
+v1 = 1
+
+N1
+
+" ab + cd 
+
+λ1 − a2 − c2
+
+#
+
+, N1 =
+
+q
+
+(ab + cd )2 + ( λ1 − a2 − c2)2. (88) By orthogonality of eigenvectors of a real symmetric matrix, an eigenvector for λ2 can be chosen as v2 = ( −v12 , v11 )T, where 
+
+v1i is component i of v1. Thus, the matrix of right singular vectors is 
+
+V =
+
+h
+
+v1 v2
+
+i
+
+= 1
+
+N1
+
+" ab + cd −  λ1 − a2 − c2
+
+λ1 − a2 − c2 ab + cd 
+
+#
+
+. (89) The matrix of left singular vectors follows from AV = UΣΣΣ: if σ2 > 0, then A has full rank, U = AV ΣΣΣ−1, and hence ui = Av i/σi
+
+for i = 1, 2, giving 
+
+U =
+
+h
+
+u1 u2
+
+i
+
+= 1
+
+σ1σ2
+
+"(av 11 + bv 12 ) σ2 (av 21 + bv 22 ) σ1
+
+(cv 11 + dv 12 ) σ2 (cv 21 + dv 22 ) σ1
+
+#
+
+. (90) If σ2 = 0, u1 = Av 1/σ1 still determines the first vector. Choose u2 as a unit vector orthogonal to u1.We now express the orthogonal factors U and V as rotation gates directly implementable in a quantum circuit. Since 
+
+ATA = V diag (λ1, λ2)VT, choose V as the rotation matrix 
+
+V = Ry (2θ ) = 
+
+"cos θ − sin θ
+
+sin θ cos θ
+
+#
+
+. (91) Expand V diag (λ1, λ2)VT and equate its entries to those in Eq. (83). This yields 
+
+ab + cd = λ1 − λ2
+
+2 sin 2 θ ,  a2 + c2 −  b2 + d2 = ( λ1 − λ2) cos 2 θ . (92) Dividing the two equations eliminates λ1 −λ2 and gives an explicit constraint on the rotation angle: tan 2 θ = 2(ab +cd )
+
+(a2+c2)−(b2+d2) .To retain quadrant information when a2 + c2 = b2 + d2, compute the angle with the two-argument arctangent: 2θ = atan2  2 (ab + cd ) , a2 + c2 − b2 − d2 . (93) 32 
+
+Similarly, substitute Eq. (89) into U = AV ΣΣΣ−1. Setting U = Ry(2γ) and comparing matrix entries gives the left rotation angle: 
+
+γ = atan2 (c cos θ + d sin θ , a cos θ + b sin θ ) . (94) In the degenerate case λ1 = λ2 > 0, we have ATA = λ1I2 and tan 2 θ is undefined, so one may choose θ = 0, V = I2 = Ry(0),and U = A/σ1. If A = 0, choose U = V = I2. The rotation angles are not unique in these cases, but the decomposition remains valid. Finally, consider the determinant signs. Every real orthogonal 2 × 2 matrix Q can be written as 
+
+Q = Ry (2η) Zs, s = 1 − det (Q)
+
+2 ∈ { 0, 1} , (95) where Z = diag (1, −1). If det A ≥ 0 and A has full rank, one can consistently choose det U = det V = 1, so both factors in Eq. (82) are pure rotations. If det A < 0, exactly one factor contains a reflection and requires a Z gate as in Eq. (95). Thus, regardless of the determinant sign, every 2 × 2 orthogonal block Un or Vn in Eqs. (34)–(38) can be implemented with a single-qubit Ry
+
+rotation and at most one Z gate. This completes the proof. 
+
+## Appendix 2. Quantum circuit for a diagonal phase unitary 
+
+Let N = 2n and consider the diagonal unitary 
+
+Dθ =
+
+> N−1M
+> i=0
+
+eiθi , Dθ |y⟩ =
+
+> N−1
+
+# ∑
+
+> i=0
+
+eiθi yi |i⟩, (96) where |y⟩ = ∑i yi|i⟩. By the definition of a quantum multiplexor, Eq. (96) is a uniformly controlled phase gate on n qubits. Suppose the N phases take only Ns distinct values, denoted by { ˆθ1, . . . , ˆθNs }. Let g(i) ∈ { 1, . . . , Ns} identify the class of θi, so that θi = ˆθg(i). Equation (96) can then be implemented with Ns ancilla qubits. First, encode the class in the ancilla register using one-hot encoding. Next, apply rotations to the ancillas in parallel. Finally, uncompute the register. A reversible lookup oracle Og writes the class information. It is defined by 
+
+Og : |i⟩ | 0⟩⊗Ns 7 −→ | i⟩ mg(i) . (97) The state |m j⟩ is a one-hot state on Ns qubits: qubit j is |1⟩ and all others are |0⟩. Each |m j⟩ corresponds to an angle ˆ θ j.Let the input at the left of the circuit be |ψ⟩ = ( ∑i yi|i⟩)|0⟩⊗Ns . After Og, it becomes 
+
+|ψ⟩ =
+
+> Ns
+
+# ∑
+
+> j=1
+
+# ∑ 
+
+> g(i)= j
+
+yi |i⟩ m j . (98) Apply Rz(s j) in parallel to the Ns ancilla qubits, namely NNs 
+
+> j=1
+
+Rz(s j). Since Rz(s) = diag (e−is/2, eis/2) and only qubit j is 
+
+|1⟩ in |m j⟩, the phase accumulated by the ancilla register is exp 
+
+"
+
+i s j − 12
+
+> Ns
+
+# ∑
+
+> q=1
+
+sq
+
+!# 
+
+. (99) For Ns̸ = 2, choose 
+
+s j = ˆθ j + Θ
+
+2 − Ns
+
+, Θ =
+
+> Ns
+
+# ∑
+
+> q=1
+
+ˆθq. (100) Equation (99) then equals ei ˆ θ j . For Ns = 2, after ignoring the global phase ei( ˆθ1+ ˆθ2)/2, choose s j = ˆθ j − ( ˆθ1 + ˆθ2)/2. Finally, apply O† 
+
+> g
+
+to uncompute the ancillas, obtaining 
+
+O†
+
+> g
+> Ns
+
+# ∑
+
+> j=1
+
+# ∑ 
+
+> g(i)= j
+
+yiei ˆ θ j |i⟩ m j
+
+!
+
+= ( Dθ |y⟩) |0⟩⊗Ns . (101) 33 
+
+Figure 23 Circuit for a diagonal phase unitary using a one-hot lookup oracle 
+
+The corresponding circuit is shown in Fig. 23. Figure 23 trades space for time. The parallel Rz layer has depth O(1) but requires Ns ancilla qubits and O(Ns) rotation gates. In the worst case, all N phases differ, so Ns = N. The oracle Og can then use bucket-brigade quantum random-access memory, with O(log N) addressing depth [47]. Storage, control, and fault-tolerant implementation costs remain linear in N. Without structured g(i) or available quantum random-access memory, generic oracle synthesis also generally requires resources growing with N. Thus, we assert only that a unitary implementation of Eq. (96) exists. Its actual complexity must be reassessed for a specific data-access model and hardware connectivity. 
+
+## Appendix 3. Block-Hadamard test for the global loss 
+
+Let K = ∑M−1 
+
+> i=0
+
+aiKi. The quadratic form in the global loss is 
+
+⟨u| KHK |u⟩ =
+
+> M−1
+
+# ∑
+
+> i=0
+> M−1
+
+# ∑
+
+> j=0
+
+a∗ 
+
+> i
+
+a j ⟨u| KH 
+
+> i
+
+K j |u⟩. (102) The loss requires the weighted sum of overlaps, not each individual value ⟨u|KH 
+
+> i
+
+K j|u⟩. A separate Hadamard circuit for each term in Eq. (102) requires O(M2) circuit calls. We therefore partition the M unitary terms into M/B blocks of B = 2b
+
+terms, padding the term list with zero coefficients if B does not divide M. Define the weighted sum for block pair (k, l) as 
+
+ck,l =
+
+> B(k+1)−1
+
+# ∑
+
+> i=Bk B(l+1)−1
+
+# ∑
+
+> j=Bl
+
+a∗ 
+
+> i
+
+a j ⟨u| KH 
+
+> i
+
+K j |u⟩, ⟨u| KHK |u⟩ =
+
+> M/B−1
+
+# ∑
+
+> k=0
+> M/B−1
+
+# ∑
+
+> l=0
+
+ck,l . (103) The quantity ck,l is a weighted sum of B2 overlaps and serves as a basic computational block for Eq. (102). If one circuit directly estimates ck,l , the number of circuit configurations per loss evaluation falls from O(M2) to O(( M/B)2). Define the normalized coefficient state of block k by 
+
+|ˆak⟩ = 1
+
+AkB(k+1)−1
+
+# ∑
+
+> i=Bk
+
+ai |i − Bk ⟩ = Ak|0⟩⊗b, Ak =
+
+vuutB(k+1)−1
+
+# ∑
+
+> i=Bk
+
+|ai|2, (104) where Ak is a B × B unitary. Figure 24 shows the circuit estimating ck,l for B = 2, which places coefficient-state preparation and the corresponding SELECT operations for blocks k and l in the two branches of a Hadamard test. 34 
+
+Figure 24 Block-Hadamard circuit for estimating ck,l (B = 2) 
+
+The input at the left of the circuit is |ψ⟩ = |0⟩| 0⟩⊗b|0⟩⊗b|0⟩⊗n. After the circuit layers, the final state is 
+
+|ψ⟩ = 1
+
+√2
+
+b+2 |0⟩
+
+> B−1
+
+# ∑
+
+> i=0
+> B−1
+
+# ∑
+
+> j=0
+
+|i⟩ | j⟩
+
+ ai+Bk 
+
+Ak
+
+Ki+Bk |u⟩ + a j+Bl 
+
+Al
+
+K j+Bl |u⟩
+
+
+
++ 1
+
+√2
+
+b+2 |1⟩
+
+> B−1
+
+# ∑
+
+> i=0
+> B−1
+
+# ∑
+
+> j=0
+
+|i⟩ | j⟩
+
+ ai+Bk 
+
+Ak
+
+Ki+Bk |u⟩ − a j+Bl 
+
+Al
+
+K j+Bl |u⟩
+
+
+
+.
+
+(105) Measure the first ancilla and denote the probabilities of |0⟩ and |1⟩ by ζ0 and ζ1, respectively. They are 
+
+ζ0 = 12
+
+"
+
+1 + Re  ck,l
+
+
+
+AkAl B
+
+#
+
+, ζ1 = 12
+
+"
+
+1 − Re  ck,l
+
+
+
+AkAl B
+
+#
+
+. (106) Therefore, Re  ck,l
+
+ = AkAl B (2ζ0 − 1) = AkAl B (1 − 2ζ1) = AkAl B (ζ0 − ζ1) . (107) Similar circuits estimate all ck,l in batches. For real symmetric K, summing all blocks gives the required real quadratic form. Blocking reduces the number of circuit configurations to O(( M/B)2), or one configuration when B = M. Larger B reduces the number of configurations but increases circuit width and depth and lowers individual outcome probabilities. 
+
+## References 
+
+[1] Q. Gao, F. Wu, H. W. Zhang, W. X. Zhong, W. P. Howson, F. W. Williams, A fast precise integration method for structural dynamics problems, Structural Engineering and Mechanics 43 (2012) 1–13. [2] M. Mosby, K. Matous, Computational homogenization at extreme scales, Extreme Mechanics Letters 6 (2016) 68–74. [3] M. J. Turner, R. W. Clough, H. C. Martin, L. J. Topp, Stiffness and deflection analysis of complex structures, Journal of the Aeronautical Sciences 23 (1956) 805–823. [4] R. W. Clough, The finite element method in plane stress analysis, in: Proceedings of the 2nd ASCE Conference on Electronic Computation, Pittsburgh, PA (1960). [5] F. Wu, Y. Sun, W. X. Zhong, Inter-belt finite element for the analysis of incompressible material problems, Applied Mathematics and Mechanics 34 (2013) 1–9 (in Chinese). [6] W. Bangerth, C. Burstedde, T. Heister, M. Kronbichler, Algorithms and data structures for massively parallel generic adaptive finite element codes, ACM Transactions on Mathematical Software 38 (2011) Article 14, 1–28. [7] S. Koric, Q. Lu, E. Guleryuz, Evaluation of massively parallel linear sparse solvers on unstructured finite element meshes, Computers & Structures 141 (2014) 19–25. [8] F. Wu, Y. Zhao, Y. Yang, X. Zhang, N. Zhou, A new discrepancy for sample generation in stochastic response analyses of aerospace problems with uncertain parameters, Chinese Journal of Aeronautics 37 (2024) 192–211. [9] F. Wu, D. Huang, X. Xu, K. Zhao, N. Zhou, An adaptive divided-difference perturbation method for solving stochastic problems, Structural Safety 103 (2023) 102346. [10] R. P. Feynman, Simulating physics with computers, International Journal of Theoretical Physics 21 (1982) 467–488. [11] S. Lloyd, Universal quantum simulators, Science 273 (1996) 1073–1078. [12] Y. Kim, A. Eddins, S. Anand, et al., Evidence for the utility of quantum computing before fault tolerance, Nature 618 (2023) 500–505. [13] J. Preskill, Quantum computing in the NISQ era and beyond, Quantum 2 (2018) 79. 35 
+
+[14] A. Peruzzo, J. McClean, P. Shadbolt, et al., A variational eigenvalue solver on a photonic quantum processor, Nature Communications 5 (2014) 4213. [15] Y. Cao, J. Romero, J. P. Olson, et al., Quantum chemistry in the age of quantum computing, Chemical Reviews 119 (2019) 10856–10915. [16] S. McArdle, S. Endo, A. Aspuru-Guzik, S. C. Benjamin, X. Yuan, Quantum computational chemistry, Reviews of Modern Physics 92 (2020) 015003. [17] R. Au-Yeung, B. Camino, O. Rathore, V. Kendon, Quantum algorithms for scientific computing, Reports on Progress in Physics 87 (2024) 116001. [18] G. Tosti Balducci, B. Chen, M. M¨ oller, M. Gerritsma, R. De Breuker, Review and perspectives in quantum computing for partial differential equations in structural mechanics, Frontiers in Mechanical Engineering 8 (2022) 914241. [19] Z. Meng, Y. Yang, Quantum computing of fluid dynamics using the hydrodynamic Schr¨ odinger equation, Physical Review Research 5 (2023) 033182. [20] Z. Meng, Y. Yang, Quantum spin representation for the Navier–Stokes equation, Physical Review Research 6 (2024) 043130. [21] Z. Meng, J. Zhong, S. Xu, et al., Simulating unsteady flows on a superconducting quantum processor, Communications Physics 7 (2024) 349. [22] F. Wu, Y. Yang, L. Zhu, C. Li, Y. Guo, X. Guo, A voxel-based quantum computing method (VBQC) for solid mechanics problem, arXiv:2606.03515 (2026). [23] H.-W. Zhang, J.-K. Wu, J. L¨ u, Z.-D. Fu, Extended multiscale finite element method for mechanical analysis of heterogeneous materials, Acta Mechanica Sinica 26 (2010) 899–920. [24] Y. Xu, H. Hu, Potential energy minimization for structural analysis via decomposition-free quantum computing, Computers & Structures 330 (2026) 108309. [25] S. Jin, N. Liu, Y. Yu, Quantum simulation of partial differential equations via Schr¨ odingerization, Physical Review Letters 133 (2024) 230602. [26] Y. Xu, K. Zhao, H.-T. Liu, K. Huang, Z. Liu, H. Fan, H. Hu, Hamiltonian simulation of elastodynamics on a quantum computer via energy conservation mapping, Journal of the Mechanics and Physics of Solids 213 (2026) 106639. [27] Y. Xu, H. Hu, Decomposition-free variational quantum linear solver: Application in computational mechanics, Computer Methods in Applied Mechan-ics and Engineering 447 (2025) 118396. [28] O. M. Raisuddin, S. De, FEqa: Finite element computations on quantum annealers, Computer Methods in Applied Mechanics and Engineering 395 (2022) 115014. [29] A. W. Harrow, A. Hassidim, S. Lloyd, Quantum algorithm for linear systems of equations, Physical Review Letters 103 (2009) 150502. [30] A. Montanaro, S. Pallister, Quantum algorithms and the finite element method, Physical Review A 93 (2016) 032324. [31] M. Cerezo, A. Arrasmith, R. Babbush, et al., Variational quantum algorithms, Nature Reviews Physics 3 (2021) 625–644. [32] C. Bravo-Prieto, R. LaRose, M. Cerezo, Y. Subasi, L. Cincio, P. J. Coles, Variational quantum linear solver, Quantum 7 (2023) 1188. [33] J.-W. Ying, J.-C. Shen, L. Zhou, W. Zhong, M.-M. Du, Y.-B. Sheng, Preparing a fast Pauli decomposition for variational quantum solving linear equations, Annalen der Physik 535 (2023) 2300212. [34] Y. Sato, R. Kondo, S. Koide, H. Takamatsu, N. Imoto, Variational quantum algorithm based on the minimum potential energy for solving the Poisson equation, Physical Review A 104 (2021) 052409. [35] H. Patil, Y. Wang, P. S. Krsti´ c, Variational quantum linear solver with a dynamic ansatz, Physical Review A 105 (2022) 012423. [36] A. Pellow-Jarman, I. Sinayskiy, A. Pillay, F. Petruccione, A comparison of various classical optimizers for a variational quantum linear solver, Quantum Information Processing 20 (2021) 202. [37] C. J. Trahan, M. Loveland, N. Davis, E. Ellison, A variational quantum linear solver application to discrete finite-element methods, Entropy 25 (2023) 580. [38] M. Ali, M. Kabel, Performance study of variational quantum algorithms for solving the Poisson equation on a quantum computer, Physical Review Applied 20 (2023) 014054. [39] A. Arora, B. M. Ward, C. Oskay, An implementation of the finite element method in hybrid classical/quantum computers, Finite Elements in Analysis and Design 248 (2025) 104354. [40] Y. Liu, J. Liu, J. R. Raney, P. Wang, Quantum computing for solid mechanics and structural engineering—A demonstration with variational quantum eigensolver, Extreme Mechanics Letters 67 (2024) 102117. [41] J. R. McClean, S. Boixo, V. N. Smelyanskiy, R. Babbush, H. Neven, Barren plateaus in quantum neural network training landscapes, Nature Commu-nications 9 (2018) 4812. [42] M. Cerezo, A. Sone, T. Volkoff, L. Cincio, P. J. Coles, Cost function dependent barren plateaus in shallow parametrized quantum circuits, Nature Communications 12 (2021) 1791. [43] A. M. Childs, N. Wiebe, Hamiltonian simulation using linear combinations of unitary operations, Quantum Information and Computation 12 (2012) 901–924. [44] F. Wu, C. Li, Y.-X. Yang, L. Zhu, X. Guo, Quantum simulation of Hamiltonian in solid mechanics based on voxel representation, Chinese Journal of Computational Mechanics 42 (2025) 329–338 (in Chinese). [45] S. Chakraborty, Implementing any linear combination of unitaries on intermediate-term quantum computers, Quantum 8 (2024) 1496. [46] M. M¨ ott¨ onen, J. J. Vartiainen, V. Bergholm, M. M. Salomaa, Transformation of quantum states using uniformly controlled rotations, Quantum Informa-tion and Computation 5 (2005) 467–473. [47] V. Giovannetti, S. Lloyd, L. Maccone, Architectures for a quantum random access memory, Physical Review A 78 (2008) 052310. [48] H.-Y. Huang, K. Bharti, P. Rebentrost, Near-term quantum algorithms for linear systems of equations with regression loss functions, New Journal of Physics 23 (2021) 113021. [49] M. Schneider, Voxel-based finite elements with hourglass control in fast Fourier transform-based computational homogenization, International Journal for Numerical Methods in Engineering 123 (2022) 6286–6313. [50] L. Hantzko, L. Binkowski, S. Gupta, Tensorized Pauli decomposition algorithm, Physica Scripta 99 (2024) 085128. [51] F. Wu, C. Li, X. Wu, Y. Guo, X. Guo, A matrix sparsity-based Pauli decomposition algorithm, Acta Mechanica Sinica (2026) in press. [52] V. V. Shende, S. S. Bullock, I. L. Markov, Synthesis of quantum-logic circuits, IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 25 (2006) 1000–1010. [53] A. V. Soudackov, D. G. A. Cabral, B. C. Allen, et al., QFlux: Quantum circuit implementations of molecular dynamics. Part III—State initialization and unitary decomposition, ChemRxiv (2026).

@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-25",
+  "date": "2026-09-25",
+  "generated_at": "2026-09-25T22:21:13",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/25/2609.28999v1-on-the-numerical-limitations-of-dual-koopman-von-neumann-embeddings-for-solving-conservative-nonlinear-ordinary-differential-equations-on-quantum-computers",
+      "section": "deep",
+      "title_en": "On the numerical limitations of dual Koopman von Neumann embeddings for solving conservative nonlinear ordinary differential equations on quantum computers",
+      "authors": "Thibault Fredon, Abhay K. Ram, Fabrice Debbasch, Julien Zylberman, Nuno F. Loureiro",
+      "date": "2026-09-24",
+      "pdf": "https://arxiv.org/pdf/2609.28999v1",
+      "score": "8.0",
+      "evidence": "基于 Koopman-von Neumann 嵌入的量子求解非线性常微分方程算法及其数值局限",
+      "tldr": "量子门本质线性，直接模拟非线性常微分方程面临根本困难。本文提出基于Koopman-von Neumann算子的量子算法，将Liouville概率密度嵌入波函数，并通过测量Koopman可观测量均值重建轨迹。研究推导Ehrenfest型误差估计，揭示线性拉伸与Hessian折叠的竞争，并给出依赖局部Ehrenfest-Reynolds数的稳定性判据。数值验证Lotka-Volterra与四次振子，发现误差在阈值附近快速增长，为初始高斯分布宽度选择提供指导。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "The simulation of nonlinear ordinary differential equations on quantum computers is inherently challenging, as quantum gates are linear operators on qubit states. In this paper, we put forth a Koopman-von Neumann (KvN) operator based algorithm for solving nonlinear ordinary differential equations on a quantum computer which overcomes the innate limitations of quantum operations. In this approach, a Liouville probability density is embedded into a wavefunction, the evolution of which is governed by an operator dual to the Koopman operator. The trajectories corresponding to the nonlinear differential equations are reconstructed from the average value of Koopman observables evaluated through quantum measurements. We specifically evaluate the computational limitations of solving nonlinear equations within this Liouville embedding framework. An Ehrenfest-type estimate is derived that relates the reconstruction error to the covariance of the transported density, highlighting the competition between linear stretching and Hessian-induced folding.This leads to a key stability criterion, which depends on the local Ehrenfest-Reynolds number. We discuss the effects of measurement-induced errors including those due to Hadamard-test sampling, amplitude estimation, and bias due to covariance in probabilistic Grover-type inference on the evaluation of trajectories. The limiting bounds on the accuracy of quantum computations are numerically verified for the Lotka-Volterra system and for the quartic oscillator. We observe a rapid growth in computational errors when the Ehrenfest-Reynolds number approaches the predicted threshold. The bounds resulting from our analysis provide key guidelines for selecting the width of the initial Gaussian probability distribution associated with a system of nonlinear ordinary differential equations.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/25/2609.30208v1-voxel-based-block-variational-quantum-linear-solver-a-hybrid-quantum-classical-method-for-static-analysis-of-solids",
+      "section": "quick",
+      "title_en": "Voxel-based block variational quantum linear solver: a hybrid quantum-classical method for static analysis of solids",
+      "authors": "Feng Wu, Chen Li, Li Zhu, Yuxiang Yang, Xu Guo",
+      "date": "2026-09-24",
+      "pdf": "https://arxiv.org/pdf/2609.30208v1",
+      "score": "6.0",
+      "evidence": "面向大规模稀疏有限元线性系统的 LCU 分块变分量子线性求解器",
+      "tldr": "固体静力分析中，有限元离散产生大规模稀疏线性系统，传统求解耗时耗存，VQLS 虽具量子-经典混合潜力，却受非幺正矩阵分解、贫瘠高原和测量成本限制。本文提出 Voxel-BVQLS，利用体素网格刚度矩阵的递归块带状结构做 LCU 分解，并用最小势能目标优化 ansatz，同时设计块 Hadamard 测试批量估计内积。无噪声模拟显示，该方法减少了 LCU 幺正项数和收敛迭代数，仍给出有限精度解。它为规则网格上的量子有限元分析提供了结构化混合框架。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "In solid mechanics, finite element discretization of large-scale static problems produces large sparse linear systems whose solution requires substantial computation time and memory. The variational quantum linear solver (VQLS) offers a hybrid quantum-classical route, but its use in quantum finite element analysis is limited by the decomposition of nonunitary matrices, barren plateaus, and the measurement cost of expectation values. We propose a voxel-based block variational quantum linear solver (Voxel-BVQLS) that combines structured matrix decomposition, the principle of minimum potential energy, and batched quantum tests. First, we construct an LCU decomposition of the stiffness matrix from the recursive block-banded structure of voxel-grid finite element matrices, with the number of unitary terms bounded independently of the problem size. Second, we optimize the ansatz parameters using a minimum-potential-energy objective in place of a conventional VQLS loss function, thereby mitigating barren plateaus in the studied problems. Third, we introduce a block-Hadamard test whose circuit directly estimates weighted sums of multiple inner products, reducing the number of circuit configurations required per iteration. We assessed the proposed method in noiseless classical simulations using three examples. These examples show that the method reduces both the number of unitary terms in the LCU decomposition and the number of iterations required to converge, while still yielding solutions of finite accuracy. Voxel-BVQLS thus provides a structured hybrid quantum-classical framework for quantum finite element analysis on regular grids.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

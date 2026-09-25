@@ -1,0 +1,100 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-25T22:19:02.918880+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 1,
+    "deep_cap": 7,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 12,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2609.28999v1",
+      "source": "arxiv",
+      "title": "On the numerical limitations of dual Koopman von Neumann embeddings for solving conservative nonlinear ordinary differential equations on quantum computers",
+      "abstract": "The simulation of nonlinear ordinary differential equations on quantum computers is inherently challenging, as quantum gates are linear operators on qubit states. In this paper, we put forth a Koopman-von Neumann (KvN) operator based algorithm for solving nonlinear ordinary differential equations on a quantum computer which overcomes the innate limitations of quantum operations. In this approach, a Liouville probability density is embedded into a wavefunction, the evolution of which is governed by an operator dual to the Koopman operator. The trajectories corresponding to the nonlinear differential equations are reconstructed from the average value of Koopman observables evaluated through quantum measurements. We specifically evaluate the computational limitations of solving nonlinear equations within this Liouville embedding framework. An Ehrenfest-type estimate is derived that relates the reconstruction error to the covariance of the transported density, highlighting the competition between linear stretching and Hessian-induced folding.This leads to a key stability criterion, which depends on the local Ehrenfest-Reynolds number. We discuss the effects of measurement-induced errors including those due to Hadamard-test sampling, amplitude estimation, and bias due to covariance in probabilistic Grover-type inference on the evaluation of trajectories. The limiting bounds on the accuracy of quantum computations are numerically verified for the Lotka-Volterra system and for the quartic oscillator. We observe a rapid growth in computational errors when the Ehrenfest-Reynolds number approaches the predicted threshold. The bounds resulting from our analysis provide key guidelines for selecting the width of the initial Gaussian probability distribution associated with a system of nonlinear ordinary differential equations.",
+      "authors": [
+        "Thibault Fredon",
+        "Abhay K. Ram",
+        "Fabrice Debbasch",
+        "Julien Zylberman",
+        "Nuno F. Loureiro"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math-ph"
+      ],
+      "published": "2026-09-24T04:08:53+00:00",
+      "link": "https://arxiv.org/pdf/2609.28999v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Quantum algorithm for solving nonlinear ODEs via Koopman-von Neumann embedding and its numerical limitations",
+      "llm_evidence_cn": "基于 Koopman-von Neumann 嵌入的量子求解非线性常微分方程算法及其数值局限",
+      "llm_evidence": "基于 Koopman-von Neumann 嵌入的量子求解非线性常微分方程算法及其数值局限",
+      "canonical_evidence": "基于 Koopman-von Neumann 嵌入的量子求解非线性常微分方程算法及其数值局限",
+      "llm_tldr_en": "Because quantum gates are linear, simulating nonlinear ODEs on quantum computers is hard; the authors embed a Liouville density into a wavefunction evolved by an operator dual to the Koopman operator, reconstruct trajectories from observable averages, and expose the embedding's numerical limits.",
+      "llm_tldr_cn": "量子门本质上是线性算符，直接在量子计算机上求解非线性常微分方程十分困难。本文提出基于 Koopman-von Neumann 算符的算法，将 Liouville 概率密度嵌入波函数，用与 Koopman 算符对偶的算符驱动其演化，再由 Koopman 可观测量的平均值重构非线性方程轨迹。工作同时分析了该嵌入方法的数值局限性，为非幺正、非线性动力学的量子模拟提供了可行路径与边界认识。",
+      "llm_tldr": "量子门本质上是线性算符，直接在量子计算机上求解非线性常微分方程十分困难。本文提出基于 Koopman-von Neumann 算符的算法，将 Liouville 概率密度嵌入波函数，用与 Koopman 算符对偶的算符驱动其演化，再由 Koopman 可观测量的平均值重构非线性方程轨迹。工作同时分析了该嵌入方法的数值局限性，为非幺正、非线性动力学的量子模拟提供了可行路径与边界认识。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.30208v1",
+      "source": "arxiv",
+      "title": "Voxel-based block variational quantum linear solver: a hybrid quantum-classical method for static analysis of solids",
+      "abstract": "In solid mechanics, finite element discretization of large-scale static problems produces large sparse linear systems whose solution requires substantial computation time and memory. The variational quantum linear solver (VQLS) offers a hybrid quantum-classical route, but its use in quantum finite element analysis is limited by the decomposition of nonunitary matrices, barren plateaus, and the measurement cost of expectation values. We propose a voxel-based block variational quantum linear solver (Voxel-BVQLS) that combines structured matrix decomposition, the principle of minimum potential energy, and batched quantum tests. First, we construct an LCU decomposition of the stiffness matrix from the recursive block-banded structure of voxel-grid finite element matrices, with the number of unitary terms bounded independently of the problem size. Second, we optimize the ansatz parameters using a minimum-potential-energy objective in place of a conventional VQLS loss function, thereby mitigating barren plateaus in the studied problems. Third, we introduce a block-Hadamard test whose circuit directly estimates weighted sums of multiple inner products, reducing the number of circuit configurations required per iteration. We assessed the proposed method in noiseless classical simulations using three examples. These examples show that the method reduces both the number of unitary terms in the LCU decomposition and the number of iterations required to converge, while still yielding solutions of finite accuracy. Voxel-BVQLS thus provides a structured hybrid quantum-classical framework for quantum finite element analysis on regular grids.",
+      "authors": [
+        "Feng Wu",
+        "Chen Li",
+        "Li Zhu",
+        "Yuxiang Yang",
+        "Xu Guo"
+      ],
+      "primary_category": "cs.CE",
+      "categories": [
+        "cs.CE"
+      ],
+      "published": "2026-09-24T17:42:08+00:00",
+      "link": "https://arxiv.org/pdf/2609.30208v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Hybrid variational quantum linear solver with LCU decomposition for large sparse FEM linear systems",
+      "llm_evidence_cn": "面向大规模稀疏有限元线性系统的 LCU 分块变分量子线性求解器",
+      "llm_evidence": "面向大规模稀疏有限元线性系统的 LCU 分块变分量子线性求解器",
+      "canonical_evidence": "面向大规模稀疏有限元线性系统的 LCU 分块变分量子线性求解器",
+      "llm_tldr_en": "Finite-element static analysis produces large sparse linear systems that are costly to solve. A voxel-based block variational quantum linear solver combines LCU decomposition, minimum potential energy and batched tests to make quantum finite-element analysis more practical.",
+      "llm_tldr_cn": "固体静力分析的有限元离散会产生大规模稀疏线性系统，传统求解耗时且占用大量内存。作者提出体素分块变分量子线性求解器，结合结构化矩阵分解、最小势能原理与批量量子测试，并从递归结构构造刚度矩阵的 LCU 分解。该方法缓解变分量子线性求解器的非幺正矩阵分解、贫瘠高原与测量成本问题，为量子有限元分析提供可行的混合量子-经典求解方案。",
+      "llm_tldr": "固体静力分析的有限元离散会产生大规模稀疏线性系统，传统求解耗时且占用大量内存。作者提出体素分块变分量子线性求解器，结合结构化矩阵分解、最小势能原理与批量量子测试，并从递归结构构造刚度矩阵的 LCU 分解。该方法缓解变分量子线性求解器的非幺正矩阵分解、贫瘠高原与测量成本问题，为量子有限元分析提供可行的混合量子-经典求解方案。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum algorithms for solving linear systems with improved complexity and condition number dependence",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
