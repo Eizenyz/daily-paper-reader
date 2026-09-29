@@ -1,0 +1,57 @@
+{
+  "date": "20260929",
+  "date_label": "",
+  "generated_at": "2026-09-29 23:05:39 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.32310v1",
+      "route": "202609/29/2609.32310v1-conserved-and-relaxing-modes-enable-polynomial-success-coherent-carleman-lattice-boltzmann-evolution",
+      "title": "Conserved and relaxing modes enable polynomial-success coherent Carleman lattice Boltzmann evolution",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "Carleman量子块编码提升非线性动力学成功概率",
+      "first_seen_at": "2026-09-29 23:05:39 UTC",
+      "updated_at": "2026-09-29 23:05:39 UTC"
+    },
+    {
+      "paper_id": "2609.32262v1",
+      "route": "202609/29/2609.32262v1-contour-integral-and-fourier-transform-based-multivariable-quantum-eigenvalue-transformation-for-commuting-matrices",
+      "title": "Contour-integral and Fourier transform based multivariable quantum eigenvalue transformation for commuting matrices",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "结合量子奇异值变换、压缩小工具与酉算符线性组合的多变量特征值变换",
+      "first_seen_at": "2026-09-29 23:05:39 UTC",
+      "updated_at": "2026-09-29 23:05:39 UTC"
+    },
+    {
+      "paper_id": "2609.34623v1",
+      "route": "202609/29/2609.34623v1-trotterisation-thresholds-and-dissipative-quantum-chaos-in-open-system-digital-quantum-simulation",
+      "title": "Trotterisation Thresholds and Dissipative Quantum Chaos in Open-System Digital Quantum Simulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "开系统耗散动力学的数字量子模拟与Trotter阈值",
+      "first_seen_at": "2026-09-29 23:05:39 UTC",
+      "updated_at": "2026-09-29 23:05:39 UTC"
+    }
+  ]
+}

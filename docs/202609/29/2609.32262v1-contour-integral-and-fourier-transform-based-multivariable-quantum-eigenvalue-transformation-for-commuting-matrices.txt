@@ -1,0 +1,4838 @@
+Title: Contour-integral and Fourier transform based multivariable quantum eigenvalue transformation for commuting matrices
+
+URL Source: https://arxiv.org/pdf/2609.32262v1
+
+Published Time: Tue, 29 Sep 2026 00:39:58 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# Contour-integral and Fourier transform based multivariable quantum eigenvalue transformation for commuting matrices 
+
+Shan Jiang 1, Dong An 2 
+
+> 1
+
+School of Mathematical Sciences, Peking University, Beijing, China  
+
+> 2
+
+Beijing International Center for Mathematical Research, Peking University, Beijing, China 
+
+Abstract 
+
+We study the problem of implementing multivariable matrix-valued functions on a quantum computer and propose two quantum algorithms for multivariable matrix eigenvalue transforma-tions acting on tuples of pairwise commuting matrices. The first algorithm is based on multi-variable contour integrals and applies to arbitrary holomorphic functions on Cn. The second algorithm is based on high-dimensional Fourier transforms and designed for smooth functions of commuting Hermitian matrices. For both algorithms, we discuss and analyze the complexity of their quantum implementation leveraging quantum singular value transformation, compression gadgets, and linear combination of unitaries. We additionally study their hybrid quantum– classical variants that reduce the number of required ancilla qubits to logarithmic dependence on the number of variables, at the cost of increased query complexity. As an application, we show that multivariable matrix polynomials can be implemented with no additional explicit degree dependence, depending only on global properties of the polynomials. 
+
+# Contents 
+
+1 Introduction 2
+
+1.1 Problem statement . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31.2 Main results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 51.2.1 Quantum multivariable contour integral algorithm . . . . . . . . . . . . . . . 51.2.2 Quantum multivariable Fourier transform algorithm . . . . . . . . . . . . . . 61.2.3 Application in matrix polynomial . . . . . . . . . . . . . . . . . . . . . . . . . 81.3 Related works . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 81.4 Discussions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 91.5 Organization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+
+2 Preliminaries 9
+
+2.1 LCU lemma . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 92.2 Single-ancilla LCU . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10 2.3 Compression gadget . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11 2.4 Quantum singular value transformation . . . . . . . . . . . . . . . . . . . . . . . . . 12 1arXiv:2609.32262v1 [quant-ph] 26 Sep 2026 3 Contour integral 12 
+
+3.1 Quantum algorithm . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 3.2 Complexity analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16 3.3 Ancilla-efficient algorithm . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20 
+
+4 Fourier transform 22 
+
+4.1 Quantum algorithm . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25 4.2 Complexity analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 4.3 Ancilla-efficient algorithm . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 
+
+5 Application of matrix polynomial 29 
+
+5.1 Contour integral . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30 5.2 Fourier transform . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31 
+
+A Non-exponential dependence of Fourier transform 34 
+
+# 1 Introduction 
+
+Computing matrix-valued functions is a crucial problem in scientific computing. Many practical problems can be directly represented as matrix-valued functions, such as matrix inversion, Hamil-tonian simulation and the simulation of dynamical systems through matrix exponentials. Further-more, the matrix-valued function problem can also act as a subproblem to solve more complex problems. For example, matrix φ-function is a fundamental subroutine for nonlinear time inte-gration, two-matrix geometric means arise naturally in Wasserstein barycenter computation, and matrix square roots and inverse square roots are widely used in covariance estimation and statistical computations. Despite its wide applications, implementing matrix-valued functions, especially for high-dimensional matrices, generally remains computationally expensive on classical computers. In recent years, quantum computers have demonstrated the potential to accelerate matrix-valued function problems through quantum superposition and entanglement. For this task, the quantum singular value transformation (QSVT) [GSLW18] is a remarkable framework. Based on quantum signal processing (QSP) [LC17], QSVT provides a unified method for problems that can be represented as singular value transformation of matrices both time- and space-efficiently, and has been demonstrated to unify major quantum algorithms including search, phase estimation and Hamiltonian simulation [MRTC21]. Nevertheless, although certain scientific computing prob-lems such as matrix inversion can be represented as singular value transformation, many other problems, including matrix polynomials and solving differential equations, are naturally eigenvalue transformation instead of singular value transformation. This inspires recent rapid progresses on quantum algorithms for matrix eigenvalue transformation, such as quantum eigenvalue process-ing [LS26], Laplace transform based quantum eigenvalue transformation [ACLY26], contour inte-gral approach [TOSU20, TOSU22, JA26], and Poisson summation approach [WZD +26]. For either singular value transformation or eigenvalue transformation, these existing algorithms mainly focus on computing single-variable matrix functions, i.e., functions of a single matrix. In matrix-valued function problem, the computation of multivariable matrix functions, i.e., functions of multiple matrices is another important task with broad applications. For example, digital simulation of time-dependent evolutions can be reduced to multivariable matrix-valued function problems, such as the time-dependent Hamiltonian simulation or ordinary differential 2equation evolution. In multigraph filtering, different edge types are represented by multiple graph shift matrices, and the resulting filtering operation is described by a multivariable matrix poly-nomial. Despite its wide applications, a general quantum algorithm framework for multivariable matrix functions is still lacking, and it can be challenging to generalize algorithms for single-variable matrix functions to the multivariable case. In QSP/QSVT framework, several recent works [RC22, NKK +23, MMF24, LW25, Lan26] have attempted to extend QSP to multivariable case, whose success may lead to a multivariable matrix singular value transformation algorithm. However, compared to the completeness of univariate QSP, the conditions required for multivari-able approaches remain more stringent, making it difficult to handle general multivariable QSP and QSVT. Additionally, for general eigenvalue transformations, efficient quantum algorithms for the multivariable case are missing. In this work, we make a step towards the realization of general multivariable matrix-valued functions by designing two efficient quantum multivariable eigenvalue transformation algorithms for mutually commuting matrices . The first approach is based on contour integral, which applies any holomorphic function on Cn to a set of mutually commuting matrices, and the second is based on Fourier transform, which applies any function f satisfying f (x) ∈ Hs(Rn) ∩ L1(Rn), s > n 
+
+> 2
+
+and 
+
+xj f (x) ∈ L1(Rn) to a set of mutually commuting Hermitian matrices. Our quantum algorithms are realized from these two representations by the linear combination of unitaries (LCU) subrou-tine [CW12]. Additionally, we combine these approaches and the recently proposed sampling-based LCU [Cha24, WMB24] to propose qubit-efficient multivariable quantum eigenvalue transformation algorithms. We carefully analyze the general complexities of our algorithms, and study their efficiency for computing matrix polynomials as a concrete application. Specifically, the complexities of our algorithms for polynomials depend on analytical properties such as the polynomial’s maximum value and Lipschitz continuity, rather than the polynomial’s degree or the coefficients of each term in the polynomial. This is highly advantageous compared to a straightforward LCU when implementing certain polynomials such as Chebyshev polynomials, which are well-behaved but with exponentially large 1-norm of the coefficients. 
+
+1.1 Problem statement 
+
+Let A = Cm×m denote the space of complex m×m matrices. Let |ψ⟩ be an m-dimensional quantum state, and let 
+
+A = ( A1, A 2, . . . , A n) ∈ A n
+
+be an n-tuple of pairwise commuting matrices. Our goal is to design quantum algorithms that approximate the action of a multivariable matrix eigenvalue transformation 
+
+f (A) = f (A1, A 2, . . . , A n)on the input state |ψ⟩, where f : Cn → C is a complex-valued function. Here we define this problem as below [HL24]: 
+
+Definition 1 (Multivariable matrix eigenvalue transformation) . Let F ∈ { C, R} be a scalar field. For an open set Ω ∈ Fn, let f : Fn → F be a multivariable function on Ω. Let A = Cm×m be the matrix space, and A = ( A1, · · · , A n) ∈ A n be an n-tuple of commuting matrices with its joint spectrum spec A (A) ⊂ Ω ⊂ Fn. Then f (A) is a multi-matrix eigenvalue transformation (or simply called multi-matrix function in this work) if the following proposition holds. 
+
+31. For a polynomial f ∈ F [z 1, · · · , zn], of the form 
+
+f (z) = f (z1, · · · , z n) = X
+
+> α∈Nn
+
+λα · zα1 
+
+> 1
+
+· · · zαn 
+
+> n
+
+=: X
+
+> α∈Nn
+
+λα · zα,
+
+we have 
+
+f (A) = f (A1, · · · , A n) = X
+
+> α∈Nn
+
+λα · Aα1 
+
+> 1
+
+· · · Aαn 
+
+> n
+
+=: X
+
+> α∈Nn
+
+λα · Aα.
+
+2. For f : Fn → F, if r > n , An+1 , · · · , A r ∈ A and ef : Fr → F is the trivial extension of f
+
+defined by ef (z1, · · · , z r) = f (z1, · · · , z n). Then denoting eA := ( A1, · · · , A r), we have 
+
+ef ( eA) = f (A).
+
+3. If {fk}k∈N is a sequence of functions which converges locally uniformly to f ∈ Fn, then 
+
+fk(A) → f (A).
+
+When these commuting matrices can be diagonalized by the same set of invertible matrices, let Aj = QD j Q−1 for j = 1 , · · · , n , where Q is an invertible matrix and D = ( D1, · · · , D n) is an n-tuple of diagonal matrices. Suppose Dj = diag( dj1, · · · , d jm ), then it is straightforward to show that f (A) = Qf (D)Q−1 is a multi-matrix function that satisfies Theorem 1, where f (D) = diag( f (d1), · · · , f (dm)) and dk = ( d1k, · · · , d nk ). Therefore, Theorem 1 is a self-consistent way of defining eigenvalue transformation for mutually commuting matrices. For each j = 1 , . . . , n , assume that αj ≥ ∥ Aj ∥ and that there exists an ( αj , a, 0) block-encoding of Aj , denoted by UAj , acting on a ancilla qubits, such that 
+
+UAj =
+
+Aj /α j ·· ·
+
+
+
+.
+
+Furthermore, assume access to a state-preparation oracle Uψ satisfying 
+
+Uψ|0⟩ = |ψ⟩.
+
+Using the oracles {UAj }nj=1 and Uψ, we formalize the following computational tasks. 
+
+Definition 2 (Quantum Matrix Function Problem) . Let A1, . . . , A n ∈ Cm×m be mutually com-muting matrices with block-encodings {UAj }nj=1 , and let |ψ⟩ be a quantum state representing an 
+
+m-dimensional complex vector. For a matrix function f (A), define the normalized target state 
+
+|f ⟩ := f (A)|ψ⟩∥f (A)|ψ⟩∥ .
+
+Given an error parameter 0 ≤ ϵ ≤ 12 , the goal is to output a quantum state | ef ⟩ such that 
+
+|f ⟩ − | ef ⟩ ≤ ϵ
+
+with probability at least 1/2.
+
+4In certain applications, it is unnecessary to explicitly prepare the quantum state |f ⟩. Instead, one is interested only in estimating its expectation value with respect to a given observable O. This leads to the following estimation problem. 
+
+Definition 3 (Quantum Matrix Function Estimation Problem) . Let A1, . . . , A n ∈ Cm×m be matri-ces with block-encodings {UAj }nj=1 , and let |ψ⟩ be a quantum state. Given a matrix function f (A),an observable O, and accuracy parameters ϵ > 0 and δ ∈ (0 , 1) , the task is to output a real number 
+
+μ such that 
+
+μ − ⟨ ψ|f †(A) O f (A)|ψ⟩ ≤ ϵ
+
+with probability at least 1 − δ.
+
+1.2 Main results 
+
+1.2.1 Quantum multivariable contour integral algorithm 
+
+In this method we consider F = C and f : Cn → C is a holomorphic function on Ω. The quantum multivariable contour integral algorithm is based on the integral formula: 
+
+f (A) = f (A1, · · · , A n) := 1(2 πi) n
+
+Z
+
+> Γ1
+
+· · · 
+
+Z
+
+> Γn
+
+f (z) ·
+
+> n
+
+Y
+
+> j=1
+
+(zj Im − Aj )−1 dz, (1.1) here z = ( z1, · · · , z n) and d z = d z1 · · · dzn, and Γ j , 1 ≤ j ≤ n, are integration contours that encircle spec A (Aj ). This formula has been proved in [HL24, Theorem 2.4] to satisfy Theorem 1. Similar to [TOSU22, JA26], we implement the matrix inverse ( zj Im − Aj )−1 by QSVT, use a compression gadget to multiply them, and use quantum LCU [CW12] to compute the finite sum from the integral discretization to approximate the matrix function in our target. Our first main result is the complexity analysis of this algorithm. 
+
+Result 4 (Informal version of Theorem 12) . Ignoring the n-th power of some constant, the quan-tum multivariable contour integral algorithm can solve the problem defined by Theorem 2 using 
+
+eO
+
+ B Qnj=1 γj lj  
+
+> ∥f(A)|ψ⟩∥
+
+· γj αj log 1
+
+> ϵ
+
+
+
+queries to the input model of the matrix Aj , O
+
+ B Qnj=1 γj lj 
+
+> ∥f(A)|ψ⟩∥
+
+
+
+queries to the input model of |ψ⟩ and O
+
+Pnj=1 log n(Bγ j +BK Γj +L) Qnj=1 lj γj 
+
+> ∥f(A)|ψ⟩∥ ϵ
+
+
+
+additional ancilla qubits. Here 
+
+αj ≥ ∥ Aj ∥, B = max z∈Qnj=1 Γj |f (z)|, L is the Lipschitz constant of f on the holomorphic area of f , lj is the length of Γj , KΓj is an upper bound on the tangent variation rate of Γj , and 
+
+γj ≥ ∥ (zj Im − Aj )−1∥ for all z ∈ Γj .
+
+This result shows that the number of ancilla used in quantum multivariable contour inte-gral algorithm depends logarithmically on many technical parameters. Since these parameters involve n-term product, they ultimately exhibit an approximately quadratic dependence on n.For the observable estimation problem defined in Definition 3, we develop a hybrid quantum-classical algorithm whose ancilla-qubit requirement scales only logarithmically with n and is in-dependent of all other technical parameters. The algorithm combines contour integral represen-tation with the sampling-based LCU technique introduced in [Cha24]. Related ideas have previ-ously been employed to design qubit-efficient hybrid quantum–classical algorithms for a variety of tasks [WBC22, DLT22, ALL23, WMB24, WW25]. Specifically, as the matrix function can 5be approximated by the linear combination of the products of matrix inverses, the observable 
+
+⟨ψ| f †(A)Of (A) |ψ⟩ can likewise be approximated by a linear combination of observables involving only O and two products of matrix inverses with form Qnj=1 (zj Im − Aj )−1 with different choices of the parameter vector z. We then employ classical sampling to draw values of z according to a probability distribution determined by the coefficients in the linear combination. For each sam-pled term, the corresponding observable is independently estimated on a quantum computer using QSVT and compression gadget to implement matrix inverses and the Hadamard test to evaluate the expectation value of O. The final estimate is obtained by classically aggregating the sampled outcomes. The complexity of our algorithm is given in the following result, which shows that in our algorithm the amount of ancilla qubits has logarithmic dependence on n, while the overall query complexity has been worse compared to the purely quantum contour integral algorithm. 
+
+Result 5 (Informal version of Theorem 14) . Ignoring the n-th power of some constant, the quan-tum multivariable contour integral algorithm can solve the problem defined by Theorem 3 using 
+
+eO
+
+ ∥O∥2γj αj (B Qnj=1 γj lj )4
+
+> ϵ2
+
+
+
+queries to the input model of the matrix Aj , O
+
+ ∥O∥2(B Qnj=1 γj lj )4
+
+> ϵ2
+
+
+
+queries to the input model of |ψ⟩ and O (log n) additional ancilla qubits. Here the parameters are defined the same as in Theorem 4. 
+
+1.2.2 Quantum multivariable Fourier transform algorithm 
+
+In this method we consider F = R and f : Rn → R with some smoothness requirements. When the pairwise commuting matrices are all Hermitian, write H = ( H1, · · · , H n), we prove that we can design the quantum multivariable Fourier transform algorithm based on the high-dimensional Fourier transform formula: 
+
+f (H) = f (H1, · · · , H n) = lim  
+
+> M→+∞
+
+1(2 π) n
+
+> 2
+
+Z
+
+> |λ|∞≤M
+
+bf (λ)e iλ·H dλ (1.2) Here λ = ( λ1, λ 2, · · · , λ n) ∈ Rn and bf (λ) is the Fourier transformation of f (x). Following the previous idea, we implements the Hamiltonian simulation e iλj Hj by QSVT, use a compression gadget to multiply them, and use quantum LCU [CW12] to compute the finite sum from the integral discretization to approximate the matrix function in our target. Similarly, we give the complexity analysis of this algorithm as a main result. 
+
+Theorem 6 (Informal version of Theorem 18) . Let UHj be an (αj , a, 0) -block-encoding of Hj for 
+
+j = 1 , · · · , n . Under the assumption that f (x) ∈ Hs(Rn) ∩ L1(Rn), s > k + n 
+
+> 2
+
+and xj f (x) ∈ L1(Rn)
+
+for j = 1 , · · · , n , let |f (x)| ≤ B, we can solve the problem defined by Definition 2 using a quantum circuit with 
+
+eO
+
+ αj M + log(1 /ϵ ′) ·
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+
+
+6queries to the input model of the matrix Hj ,
+
+O
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+
+
+queries to the input model of |ψ⟩ and n log N + log n + a + 4 ancilla qubits, where ϵ′, M, N is given by: 
+
+M ≥
+
+ 1(2 π) n
+
+> 2
+
+· 8
+
+∥f (H) |ψ⟩ ∥ ϵ ·
+
+> n
+
+X
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1(Rn)
+
+
+
+> 1
+> k
+
+, (1.3) 
+
+N ≥ (2 M )n+1 
+
+(2 π)n ·
+
+∥f ∥L1
+
+> n
+
+X
+
+> j=1
+
+∥Hj ∥ +
+
+> n
+
+X
+
+> j=1
+
+∥xj f ∥L1
+
+ · 8
+
+∥f (H) |ψ⟩ ∥ ϵ . (1.4) 
+
+ϵ′ ≤ (2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ ϵ
+
+2n
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+(1.5) Although the query complexity contains terms exponentially depend of n, we show in Sec-tion A that when f behaves well they cancel each other out, so the final complexity does not depend exponentially on n. Meanwhile, the number of ancilla used ultimately exhibit an approx-imately quadratic dependence on n. Similar to the previous analysis, we also develop a hybrid quantum-classical algorithm whose ancilla-qubit requirement scales only logarithmically with n
+
+and is independent of all other technical parameters for the observable estimation problem defined in Definition 3. The algorithm is almost identical to the one in the previous part, but products of matrix inverses with form Qnj=1 (zj Im − Aj )−1 is replaced with products of Hamiltonian simulation with form Qnj=1 eiλj Hj .The complexity of our algorithm is summarized in the following result. It also shows that, the number of required ancilla qubits scales logarithmically with n, whereas the overall query complexity is higher than that of the purely quantum contour-integral algorithm. 
+
+Theorem 7 (Informal version of Theorem 19) . The quantum multivariable Fourier transform algorithm can solve the problem defined by Theorem 3 using 
+
+eO
+
+ αj M + log(1 /ϵ ′) ∥O∥2 ln(1 /ξ 2) 1(2 π) n
+
+> 2
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+!4
+
+ϵ2
+
+
+
+7queries to the input model of matrix Hj ,
+
+O
+
+
+
+∥O∥2 ln(1 /ξ 2) 1(2 π) n
+
+> 2
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+!4
+
+ϵ2
+
+
+
+queries to the input model of |ψ⟩ and log n + 4 additional ancilla qubits Here the parameters are defined the same as in Theorem 6. 
+
+1.2.3 Application in matrix polynomial Contour integral Let f (z) be a multivariable complex polynomial of z, and we would like to implement the matrix polynomial f (A), which is naturally an eigenvalue transformation. For simplicity, we assume Aj = SD j S−1 is diagonalizable and let κS = ∥S∥∥ S−1∥ denote the condition number of S. We can choose the contour to be a circle centered at the origin with radius larger than the spectral radius of Aj . Then, ignoring the n-th power of some constant, Theorem 4 shows that the complexity of the contour integral approach is 
+
+eO Bκ n+1 
+
+> S
+
+∥f (A) |ψ⟩∥ log 1
+
+ϵ
+
+!
+
+. (1.6) Here B = max z∈Qnj=1 Γj |f (z)|.
+
+Fourier transform Let f (x) be a multivariable real polynomial of x. Since f (x) doesn’t support on bounded regions, we can define a C∞ kernel function k(x) that takes the value 1 on the joint spectrum of f (x), and rapidly decreases to 0 outside the spectrum of f (x). Let g(x) = f (x)k(x), Theorem 6 shows that the query complexity of Hj in the Fourier transform approach is 
+
+eO
+
+(αj M + log(1 /ϵ )) ·
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥g∥Hs(Rn)
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+
+
+with 
+
+M ≥
+
+ 1(2 π) n
+
+> 2
+
+· 8
+
+∥f (H) |ψ⟩ ∥ ϵ ·
+
+> n
+
+X
+
+> j=1
+
+∂kg∂x kj
+
+!∧
+
+> L1(Rn)
+
+
+
+> 1
+> k
+
+for any positive integer k.
+
+1.3 Related works 
+
+This work is an extension of our previous work [JA26]. In [JA26], we analyzed the complexity of the contour integral method in the one-dimensional case, then we can ask whether this method can be generalized to higher dimensions. Luckily, [HL24] provides us with the necessary integration 8formula, which allows our work to be extended to higher-dimensional commuting cases with almost no resistance. In addition to contour integrals, another question is whether there are other similar integral schemes that can transform general high-dimensional matrix-valued functions into integrals of some easily implemented matrix-valued functions. [RBMS +25] uses Fourier transform and Chebyshev transform for quantum state preparation for multivariate functions, and we applied Fourier trans-form to the problem of multivariable matrix-valued functions. Based on a simple analysis, we think that the Chebyshev transform method may not offer an asymptotic improvement in complexity compared to the Fourier transform method. Therefore, we only provide a detailed analysis of the Fourier transform method in this work. Based on our knowledge, this two methods are the first to implement multivariable matrix-valued functions that is not limited to a specific function form, but only requires smoothness and integral properties of the function. Besides our work, a series of works based on QSP and QSVT have the potential to realize multivariable matrix value functions. This path may lead to singular value transformations of mul-tivariable matrices, which are slightly different from our eigenvalue transformations of multivariable matrices. [RC22] provided a multivariable quantum signal processing method (MQSP). However, this method has a limitation on the multivariable polynomials it can represent, making it difficult to provide quantum algorithms for general polynomials like QSP. Subsequent work [NKK +23, LW25] further explored the polynomials that MQSP could express, but still did not overcome this problem. 
+
+1.4 Discussions 
+
+One limitation of our work is that it can only implement commutative multivariable matrix-valued functions. For non-commutative matrices, rewriting matrix-valued functions as scalar-valued func-tions results in the loss of information about the order of variables. Therefore, a method similar to the integral transform-based approach used in this paper for non-commutative matrices may not exist. We might be able to perform a Taylor expansion on this function and then directly sum all the expanded terms using LCU, but the advantages of this approach are still worth exploring. Furthermore, we must acknowledge that most of the simple multivariable matrix-valued func-tions we encounter can be implemented by separately implementing the univariate matrix-valued functions and then combining them. For complex multivariate matrix-valued functions, our algo-rithm struggles to achieve good results due to the potential exponential dependence of the dimension 
+
+n. This also limits the application scenarios of our method somewhat. 
+
+1.5 Organization 
+
+The rest of this work is organized as follows. In Section 2, we briefly introduce some preliminary results needed in our analysis. Then we discuss contour integral algorithm in Section 3, and Fourier transform algorithm in Section 4. We show the applications in Section 5. 
+
+# 2 Preliminaries 
+
+2.1 LCU lemma 
+
+The linear combination of unitaries (LCU) lemma provides a standard method to implement an operator of the form PK−1 
+
+> i=0
+
+ciUi, where {Ui}K−1 
+
+> i=0
+
+are unitary operators [CW12]. Let ci = rieiθi ∈
+
+9C, r i > 0, θ i ∈ [0 , 2π). We define √ci := √rieiθi/2. Suppose two state-preparation unitaries V and 
+
+eV such that their first column and first row, respectively, encode the amplitudes {√ci}K−1 
+
+> i=0
+
+:
+
+V = 1
+
+p∥c∥1
+
+
+
+√c0 ∗ · · · ∗
+
+... ... . . . ...
+
+√cK−1 ∗ · · · ∗
+
+ , (2.1) 
+
+eV = 1
+
+p∥c∥1
+
+
+
+√c0 · · · √cK−1
+
+∗ · · · ∗
+
+... . . . ...
+
+∗ · · · ∗
+
+ , (2.2) where ∥c∥1 := PK−1 
+
+> i=0
+
+|ci|. We also define the select oracle 
+
+U := 
+
+> K−1
+
+X
+
+> i=0
+
+|i⟩⟨ i| ⊗ Ui. (2.3) The following lemma shows that these ingredients allow us to implement the desired linear combi-nation. 
+
+Lemma 8 (LCU lemma [GSLW18, Lemma 52]) . Let c = ( c0, c 1, . . . , c K−1) ∈ CK , and define 
+
+W := ( eV ⊗ Im) U (V ⊗ Im). Then for any input state |ψ⟩,
+
+W |0log K ⟩| ψ⟩ = 1
+
+∥c∥1
+
+|0log K ⟩
+
+> K−1
+
+X
+
+> i=0
+
+ciUi|ψ⟩ + | e⊥⟩ ,
+
+where | e⊥⟩ is an unnormalized state satisfying 
+
+ |0log K ⟩⟨ 0log K | ⊗ Im
+
+| e⊥⟩ = 0 .
+
+Equivalently, the unitary W constitutes a ( ∥c∥1, log K, 0)-block-encoding of the operator PK−1 
+
+> i=0
+
+ciUi.
+
+2.2 Single-ancilla LCU 
+
+The conventional LCU framework typically requires a large number of ancilla qubits as well as highly nontrivial multi-qubit controlled unitary operations, which pose significant challenges for near-term and intermediate-scale quantum devices. A recent development [Cha24] introduces a 
+
+single-ancilla LCU scheme that reduces the ancilla requirement to a single qubit and replaces complicated multi-controlled operations with simpler controlled unitaries, at the expense of an increased number of circuit repetitions. Let S = PK−1 
+
+> i=0
+
+ciUi be a linear combination of unitaries and let |ψ⟩ denote the input state. In contrast to the standard LCU construction, which aims to coherently prepare the normalized state 
+
+S|ψ⟩/∥S|ψ⟩∥ , the single-ancilla LCU method is designed to estimate expectation values of the form 
+
+⟨ψ|S†OS |ψ⟩ for a given observable O.The single-ancilla LCU algorithm assumes that the coefficients {ci}K−1 
+
+> i=0
+
+are positive real num-bers. This assumption is made without loss of generality. Indeed, for complex coefficients one may 10 write ci = rieiθi , r i > 0, θ i ∈ [0 , 2π), so that S = PK−1 
+
+> i=0
+
+ri
+
+ eiθi Ui
+
+ . Since the phase eiθi can be absorbed into the implementation of the unitary Ui, we may assume throughout that all ci are positive real numbers. To estimate the expectation value, the algorithm proceeds by randomly selecting unitaries Ui
+
+according to the probability distribution 
+
+n c0 
+
+> ∥c∥1
+
+, c1 
+
+> ∥c∥1
+
+, . . . , cK−1
+
+> ∥c∥1
+
+o
+
+, ∥c∥1 := PK−1 
+
+> i=0
+
+ci, applying them to the input state, and measuring the observable O. The detailed procedure is summarized in Algorithm 1. The output μ serves as an estimator of ⟨ψ|S†OS |ψ⟩.
+
+Algorithm 1 Single-ancilla LCU for expectation observable ( O, U k, |ψ⟩ , T )1. Prepare the state |ψ1⟩ = |+⟩ ⊗ | ψ⟩.2. Sample two independent unitaries V1, V 2 from the distribution 
+
+n
+
+Uk, ck
+
+> ∥c∥1
+
+o
+
+.3. Define the controlled unitaries 
+
+eV1 = |0⟩⟨ 0| ⊗ I + |1⟩⟨ 1| ⊗ V1, eV2 = |0⟩⟨ 0| ⊗ V2 + |1⟩⟨ 1| ⊗ I, 
+
+and measure the observable ( X ⊗ O) on the state 
+
+|ψ′⟩ = ˜V2 ˜V1 |ψ1⟩
+
+4. For the jth iteration, record the measurement outcome as μj .5. Repeat Steps 1 to 4 for a total of T times. 6. Output the estimator 
+
+μ = ∥c∥21
+
+T
+
+> T
+
+X
+
+> j=1
+
+μj .
+
+2.3 Compression gadget 
+
+The compression gadget provides a space-efficient way to coherently multiply a sequence of block-encoded operators while reusing the same block-encoding ancilla register. Instead of keeping a separate ancilla register for every factor, it introduces a logarithmic-size counter register that co-herently records how many block encodings have been successfully applied [FLT23, Lemma 3]. 
+
+Lemma 9 (Compression gadget) . Let V1, . . . , V L be unitaries such that Vℓ is an (αℓ, a, 0) -block-encoding of Aℓ, then one can construct an 
+
+QLℓ=1 αℓ, a + ⌈log 2 L⌉ + 1 , 0
+
+
+
+-block-encoding of the ordered product AL · · · A2A1, using one application of each Vℓ.
+
+The idea of Theorem 9 is illustrated in Fig. 1. A counter register of r = ⌈log 2 L⌉ + 1 qubits is initialized to |L⟩ by Add L, where Add |c⟩ = |c + 1 mod 2 r⟩. After each Vℓ, a zero-controlled Add † subtracts one from the counter exactly when the block-encoding ancilla is in |0a⟩. Hence the counter returns to |0r⟩ if and only if all L block encodings succeed, and postselecting the counter and block-encoding ancillas on zero yields AL · · · A1/(QLℓ=1 αℓ). 11 |0r⟩ctr Add L Add † Add † · · · Add †
+
+|0a⟩anc V1 V2
+
+· · · VL
+
+|ψ⟩ · · · 
+
+Figure 1: Compression gadget for coherently implementing the ordered product AL · · · A1. The open controls indicate conditioning on the block-encoding ancilla register being in |0a⟩.
+
+2.4 Quantum singular value transformation 
+
+Quantum Singular Value Transformation (QSVT) [GSLW18] is a powerful framework for imple-menting polynomial transformations of the singular values of a matrix within a quantum circuit. Depending on the parity of the target polynomial, QSVT admits different constructions. Since our application focuses on matrix inversion, we restrict our attention to the case of odd polynomial transformations. Let A ∈ Cm×m be a square matrix. For simplicity, we assume m = 2 d for some positive integer 
+
+d. The singular value decomposition (SVD) of the normalized matrix A can be written as 
+
+A = W ΣV †, (2.4) where W and V are unitary matrices and Σ = diag( σ1, σ 2, . . . , σ m)contains the singular values of A.
+
+Definition 10 (Generalized matrix function) . Let f : R → R be a scalar function such that f (σi)
+
+is well defined for all i = 1 , 2, . . . , m . The generalized matrix function induced by f is defined as 
+
+f ⋄(A) := W f (Σ) V †,
+
+where 
+
+f (Σ) := diag  f (σ1), f (σ2), . . . , f (σm).
+
+Suppose that there exists an ( α, a, 0)-block-encoding of A, denoted by UA, such that the singular values of A/α lie in the interval [0 , 1]. Let p be a real-coefficient odd polynomial of degree n satisfying 
+
+p(x) ∈ [−1, 1] for all x ∈ [−1, 1] .
+
+Then QSVT provides an efficient quantum algorithm to implement the operator p⋄(A/α ). More precisely, p⋄(A/α ) can be realized using a quantum circuit that employs a single ancilla qubit and makes n queries to the block-encoding unitary UA. This construction forms the basis for several quantum linear algebra algorithms, including quantum matrix inversion [CGJ19]. 
+
+# 3 Contour integral 
+
+In the introduction, we presented the multivariable matrix eigenvalue transformation problem in Theorem 1. [HL24, Theorem 2.4] shows that the function satisfying Theorem 1 is unique, and it 12 can be described via the multi-dimensional contour integral formula as 
+
+f (A) = f (A1, · · · , A n) := 1(2 πi) n
+
+Z
+
+> Γ1
+
+· · · 
+
+Z
+
+> Γn
+
+f (z) ·
+
+> n
+
+Y
+
+> j=1
+
+(zj Im − Aj )−1 dz, (3.1) where Im denotes the m × m identity matrix, d z = d z1 · · · dzn, and Γ j , 1 ≤ j ≤ n, are integration contours that encircle spec A (Aj ) with Qnj=1 Γj ⊂ Ω. Assume that for any j, Γ j is a piecewise C1,1 simple closed curve covering all eigenvalues of Aj .Let lj be the length of Γ j , z = zj (t) be its parametrization with |z′ 
+
+> j
+
+(t)| = 1 in every smooth piece for t ∈ [0 , l j ], and denote z′ 
+
+> j
+
+(t) = eiθ j (t). Let the rate of change of the tangent vector be bounded with |eiθj (t) − eiθj (t′)| ≤ KΓj |t − t′|, and f (z) is holomorphic in Ω and L-Lipschitz continuous in Ω. Then, by change of variable, we have 
+
+f (A) = 1(2 πi) n
+
+Z
+
+> Γ1
+
+· · · 
+
+Z
+
+> Γn
+
+f (z) ·
+
+> n
+
+Y
+
+> j=1
+
+(zj Im − Aj )−1 dz
+
+= 1(2 πi) n
+
+Z l1
+
+> 0
+
+· · · 
+
+Z ln
+
+> 0
+
+f (z1(t1), · · · , z n(tn)) 
+
+> n
+
+Y
+
+> j=1
+
+h
+
+(zj (tj )Im − Aj )−1 eiθj (tj )i
+
+dt1 · · · dtn.
+
+(3.2) Next, we approximate f (A) by its Riemann sum fM (A) defined as 
+
+fM (A) = 1(2 πi) nM1−1X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+f (z1,k 1 , · · · , z n,k n )
+
+> n
+
+Y
+
+> j=1
+
+ lj
+
+Mj
+
+ zj,k j Im − Aj
+
+−1 eiθj,k j
+
+
+
+, (3.3) where M = ( M1, · · · , M n), Mj is the number of nodes in the discretization of Γ j , and tj,k j = lj kj 
+
+> Mj
+
+,
+
+zj,k j = zj (tj,k j ) and θj,k j = θj (tj,k j ) for kj = 0 , 1, · · · , M j − 1. The error of fM (A) approaching 
+
+f (A) can be bounded by the following proposition. 
+
+Proposition 11 (Discrete integration error by contour integral) . Suppose Γj is a piecewise C1,1
+
+simple closed curve covering all eigenvalues of Aj and KΓj is an upper bound on the tangent variation rate of Γj , f : Ω ⊂ Cn → C is holomorphic in Ω and L-Lipschitz continuous on Ω, and 
+
+B = max z∈Qnj=1 Γj |f (z)|. Assume that for every j and every tj ∈ [0 , l j ] there holds ∥(zj (tj )Im −
+
+Aj )−1∥ ≤ γj . Then, for the matrix function f (A) in Eq. (3.2) and the approximation fM (A) in Eq. (3.3) , the following error bound holds: 
+
+f (A) − fM (A) ≤ 1(2 π)n
+
+> n
+
+Y
+
+> ℓ=1
+
+lℓγℓ
+
+! 
+
+> n
+
+X
+
+> j=1
+
+lj (Bγ j + BK Γj + L)
+
+Mj
+
+ . (3.4) 
+
+Proof. For piecewise C1,1 curves, we can discretize the integration for each segment and sum the results, achieving the same convergence properties as for globally C1,1 curves; therefore, without loss of generality, we assume the curve is C1,1 globally. For two values tj , t ′ 
+
+> j
+
+we have 
+
+(zj (tj )Im − Aj )−1 − (zj (t′ 
+
+> j
+
+)Im − Aj )−1 = (zj (tj ) − zj (t′ 
+
+> j
+
+)) I
+
+(zj (tj )Im − Aj )( zj (t′ 
+
+> j
+
+)Im − Aj ) ≤ γ2 
+
+> j
+
+|tj − t′ 
+
+> j
+
+|. (3.5) 13 Suppose hj (t) = 12πi f (· · · , z j (t), · · · ) ( zj (t)Im − Aj )−1 eiθj (t), here all variables of f except zj (t) are fixed. Because f (z) is L-Lipschitz continuous on Ω, we have 
+
+hj (tj ) − hj (t′ 
+
+> j
+
+) ≤ 12πi f (· · · , z j (tj ), · · · )e iθj (tj ) × (zj (tj )Im − Aj )−1 − (zj (t′ 
+
+> j
+
+)Im − Aj )−1 +
+
+12πi f (· · · , z j (tj ), · · · ) − 12πi f (· · · , z j (t′ 
+
+> j
+
+), · · · ) × eiθj (tj )(zj (t′ 
+
+> j
+
+)Im − Aj )−1 +
+
+eiθj (tj ) − eiθj (t′  
+
+> j)
+
+× 12πi f (· · · , z j (t′ 
+
+> j
+
+), · · · )( zj (t′ 
+
+> j
+
+)Im − Aj )−1
+
+≤ Bγ 2 
+
+> j
+
++ BK Γj γj + Lγ j
+
+2π |tj − t′ 
+
+> j
+
+|.
+
+(3.6) Let 
+
+H(t1, . . . , t n) := 1(2 πi) n f (z1(t1), . . . , z n(tn)) 
+
+> n
+
+Y
+
+> j=1
+
+h
+
+(zj (tj )Im − Aj )−1eiθj (tj )i
+
+. (3.7) Then f (A) = R 
+
+> [0 ,l 1]×···× [0 ,l n]
+
+H(t) d t. Choose one index j ∈ { 1, . . . , n } and keep the other coordinates tℓ (ℓ̸ = j) fixed, then 
+
+∥H(. . . , t j , . . . ) − H(. . . , t ′ 
+
+> j
+
+, . . . )∥≤ 1(2 πi) n−1
+
+Y
+
+> ℓ̸=j
+
+h
+
+(zℓ(tℓ)Im − Aℓ)−1eiθℓ(tℓ)i
+
+· hj (tj ) − hj (t′ 
+
+> j
+
+)
+
+≤ (Bγ j + BK Γj + L) Qnℓ=1 γℓ
+
+(2 π)n |tj − t′ 
+
+> j
+
+|.
+
+(3.8) Therefore, for ( t1, · · · , t n) ∈ [t1,k 1 , t 1,k 1+1 ] × · · · × [tn,k n , t n,k n+1 ] we have |tj − tj,k j | ≤ lj 
+
+> Mj
+
+and 
+
+Z  
+
+> [t1,k 1,t 1,k 1+1 ]×···× [tn,kn ,t n,kn +1 ]
+
+H(t1, · · · , t n) d t1 · · · dtn − H(t1,k 1 , · · · , t n,k n )
+
+> n
+
+Y
+
+> j=1
+
+lj
+
+Mj
+
+=
+
+Z  
+
+> [t1,k 1,t 1,k 1+1 ]×···× [tn,kn ,t n,kn +1 ]
+
+(H(t1, · · · , t n) − H(t1,k 1 , · · · , t n,k n )) d t1 · · · dtn
+
+≤
+
+> n
+
+X
+
+> j=1
+
+Z  
+
+> [t1,k 1,t 1,k 1+1 ]×···× [tn,kn ,t n,kn +1 ]
+
+ H(. . . , t j , . . . ) − H(. . . , t j,k j , . . . ) dt1 · · · dtn
+
+≤
+
+> n
+
+X
+
+> j=1
+
+Z  
+
+> [t1,k 1,t 1,k 1+1 ]×···× [tn,kn ,t n,kn +1 ]
+
+(Bγ j + BK Γj + L) Qnℓ=1 γℓ
+
+(2 π)n |tj − tj,k j | dt1 · · · dtn
+
+≤ 1(2 π)n
+
+> n
+
+Y
+
+> ℓ=1
+
+lℓγℓ
+
+Mℓ
+
+! 
+
+> n
+
+X
+
+> j=1
+
+lj (Bγ j + BK Γj + L)
+
+Mj
+
+ .
+
+(3.9) Then summarizing all of these integrals, we can get the result 14 f (A) − fM (A)
+
+≤
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+Z  
+
+> [t1,k 1,t 1,k 1+1 ]×···× [tn,kn ,t n,kn +1 ]
+
+H(t1, · · · , t n) d t1 · · · dtn − H(t1,k 1 , · · · , t n,k n )
+
+> n
+
+Y
+
+> j=1
+
+lj
+
+Mj
+
+≤
+
+> n
+
+Y
+
+> r=1
+
+Mr
+
+!
+
+· 1(2 π)n
+
+> n
+
+Y
+
+> ℓ=1
+
+lℓγℓ
+
+Mℓ
+
+! 
+
+> n
+
+X
+
+> j=1
+
+lj (Bγ j + BK Γj + L)
+
+Mj
+
+
+
+= 1(2 π)n
+
+> n
+
+Y
+
+> ℓ=1
+
+lℓγℓ
+
+! 
+
+> n
+
+X
+
+> j=1
+
+lj (Bγ j + BK Γj + L)
+
+Mj
+
+ .
+
+(3.10) 
+
+3.1 Quantum algorithm 
+
+Our task is to approximate fM (A) given Γ 1, · · · , Γn, M and A. We start with the initial state 
+
+|ψ⟩. Note that for j = 1 , · · · , n we have block encoding UAj of the matrix Aj . Then 
+
+UAj |0a⟩ | ψ⟩ = 1
+
+αj
+
+|0a⟩ Aj |ψ⟩ + |⊥⟩ . (3.11) For zj,k j = zj (tj,k j ), j = 1 , · · · , n , let Uj be select oracles, Vj be the controlled rotations satisfying 
+
+Vj |kj ⟩ | 0⟩Vj = 1
+
+q
+
+αj + |zj,k j ||kj ⟩  √zj,k j |0⟩ + i √αj |1⟩ , (3.12) 
+
+Uj = |0⟩ ⟨ 0| ⊗ Im + |1⟩ ⟨ 1| ⊗ UAj . (3.13) Thus, applying Theorem 8, we have that 
+
+ eVj ⊗ Ia ⊗ Im
+
+
+
+(Ikj ⊗ Uj ) ( Vj ⊗ Ia ⊗ Im) |kj ⟩ | 0⟩Vj |0a⟩ | ψ⟩ = |kj ⟩ | 0⟩Vj |0a⟩ (zj,k j Im − Aj ) |ψ⟩
+
+αj + |zj,k j | + | e⊥⟩ ,
+
+(3.14) where eVj is a control rotation, and its action on the last qubit is constructed from Eq. (2.2). Among them, | e⊥⟩ refers to both the vertical component in block encoding and LCU. Thus we have that Eq. (3.14) is an ( αj + |zj,k j |, a + 1 , 0)-block-encoding of zj,k j Im − Aj controlled by |kj ⟩, and we simply call it Uj,k j .As x−1 is an odd function on [ −1, 1] and singular at x = 0, we can use an odd polyno-mial pj (x) to approximate 3δj 
+
+> 4x
+
+on [ −1, −δj ] ∪ [δj , 1], and p⋄
+
+> j
+
+ zj,k j Im−Aj  
+
+> αj+|zj,k j|
+
+†
+
+can be implemented by QSVT [GSLW18], where p⋄ 
+
+> j
+
+(U ) is defined by Theorem 10. The control circuit of Eq. (3.14) can be introduced over the QSVT circuit like Fig. 2, which gives a block encoding of ( zj,k j Im − Aj )−1,and we call this circuit eUk.Through compression gadget Theorem 9, we can generate a block encoding of Qnj=1 
+
+ zj,k j Im − Aj
+
+−1
+
+by calling the circuit showed in Fig. 2. The block encoding of Qnj=1 
+
+ zj,k j Im − Aj
+
+−1 is shown Fig. 3, 15 |kj ⟩ • • · · · |0⟩ H e−iϕ 0Z e−iϕ 1Z · · · e−iϕ dZ H
+
+|0⟩V |0a⟩ Uj,k j U †
+
+> j,k j
+
+· · · |ψ⟩ · · · 
+
+Figure 2: QSVT circuit with control gate |k⟩. This is a block encoding of ( zj,k j Im − Aj )−1, and it’s the sub-circuit that implements f (A). We call this entire circuit eUkj , which will be used in subsequent line. and due to the control gate, it can be used directly as the select oracle SEL in LCU. The prepare oracle in the corresponding LCU is a unitary such that 
+
+C |0⟩ · · · | 0⟩ = 1
+
+p∥c∥1
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+√ck |k1⟩ · · · | kn⟩ , (3.15) where c = ( c(0 ,··· ,0) , c (0 ,··· ,1) , · · · , c (M1−1,··· ,M n−1) ), and 
+
+ck = f (z1,k 1 , . . . , z n,k n )
+
+> n
+
+Y
+
+> j=1
+
+23δj πi · eiθj,k j lj
+
+(αj + |zj,k j |)Mj
+
+. (3.16) Notice that 
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+≈
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+f (z1,k 1 , . . . , z n,k n )
+
+> n
+
+Y
+
+> j=1
+
+23δj πi · eiθj,k j lj
+
+(αj + |zj,k j |)Mj
+
+· 3δj (αj + |zj,k j |)4 (zj,k j Im − Aj )−1
+
+= 1(2 πi) nM1−1X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+f (z1,k 1 , · · · , z n,k n )
+
+> n
+
+Y
+
+> j=1
+
+ lj
+
+Mj
+
+ zj,k j Im − Aj
+
+−1 eiθj,k j
+
+
+
+.
+
+(3.17) By Theorem 8, the operator  eC ⊗ I
+
+
+
+SEL ( C ⊗ I) (3.18) gives a block encoding of 
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+,
+
+which is an approximation of fM (A). 
+
+3.2 Complexity analysis 
+
+In the previous discussion, we have showed that we use pj (x) to approximate 3δj 
+
+> 4x
+
+on [ −1, −δj ]∪[δj , 1]. Suppose that 
+
+pj (x) − 3δj
+
+4x ≤ ϵ′, ∀x ∈ [−1, −δj ] ∪ [δj , 1] (3.19) 16 |k1⟩ • · · · |k2⟩ • · · · · · · · · · · · · · · · · · · · · · · · · |kn⟩ · · · •|0⟩ Add n Add † Add † · · · Add †
+
+|0⟩ eU eUk1 eUk2
+
+· · · eUkn
+
+|ψ⟩ · · · 
+
+Figure 3: Controlled block encoding of Qnj=1 
+
+ zj,k j Im − Aj
+
+−1, which also serves as the select oracle SEL. and |pj (x)| ≤ 1 for all x ∈ [−1, 1]. The existence of such an odd polynomial of degree O( 1 
+
+> δj
+
+log( 1 
+
+> ϵ′
+
+)) is guaranteed by [GSLW18, Corollary 69]. Assume that there is singular value decomposition 
+
+zj,k j Im − Aj
+
+αj + |zj,k j | = Wj,k j
+
+Σj,k j
+
+αj + |zj,k j | V † 
+
+> j,k j
+
+,
+
+then [GSLW18, Theorem 2] enables us to implement 
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+= Vj,k j pj
+
+ Σj,k j
+
+αj + |zj,k j |
+
+
+
+W † 
+
+> j,k j
+
+.
+
+If all diagonal elements of Σj,k j   
+
+> αj+|zj,k j|
+
+, i.e. the singular values of zj,k j Im−Aj   
+
+> αj+|zj,k j|
+
+, are in the interval [ δj , 1] for kj = 0 , 1, · · · , M j − 1, then we have 
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+− 3δj
+
+4
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+−1
+
+= pj
+
+ Σj,k j
+
+αj + |zj,k j |
+
+
+
+− 3δj
+
+4
+
+ Σj,k j
+
+αj + |zj,k j |
+
+−1
+
+≤ ϵ′.
+
+(3.20) Assume Γ j is inside disk |z| ≤ Rj , then 0 ≤ αj + |zj,k j | ≤ αj + Rj . Under the assumption that for any t ∈ [0 , l ], (zj (t)Im − Aj )−1 ≤ γj , the singular values of zj,k j Im−Aj   
+
+> αj+|zj,k j|
+
+are all larger than 
+
+δj = 1    
+
+> γj(αj+Rj)
+
+,
+
+∥c∥1 ≤ B
+
+> n
+
+Y
+
+> j=1
+
+2lj
+
+3πα j δj
+
+= B
+
+> n
+
+Y
+
+> j=1
+
+2γj lj (1 + Rj /α j )3π . (3.21) Since we use PM1−1 
+
+> k1=0
+
+· · · PMn−1 
+
+> kn=0
+
+ck
+
+Qnj=1 p⋄
+
+> j
+
+ zj,k j Im−Aj  
+
+> αj+|zj,k j|
+
+†
+
+to approximate fM (A), we have 
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+− fM (A)
+
+≤
+
+
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+|ck|
+
+
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+−
+
+> n
+
+Y
+
+> j=1
+
+(3 δj /4) 
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+−1
+
+≤ ∥ c∥1nϵ ′.
+
+(3.22) 17 When the algorithm succeeds, we get the state 
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+|ψ⟩
+
+, M1−1X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+|ψ⟩ .
+
+Also, choose a proper M so that 
+
+∥f (A) |ψ⟩ − fM (A) |ψ⟩∥ ≤ ∥ c∥1nϵ ′, (3.23) then combine these two equations together, we have 
+
+f (A) |ψ⟩ − 
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+|ψ⟩ ≤ 2∥c∥1nϵ ′, (3.24) and due to that ∥ u 
+
+> ∥u∥
+
+− v 
+
+> ∥v∥
+
+∥ ≤ 2 ∥u−v∥∥u∥ , we have 
+
+f (A) |ψ⟩∥f (A) |ψ⟩ ∥ −
+
+PM1−1 
+
+> k1=0
+
+· · · PMn−1 
+
+> kn=0
+
+ck
+
+Qnj=1 p⋄
+
+> j
+
+ zj,k j Im−Aj  
+
+> αj+|zj,k j|
+
+†
+
+|ψ⟩
+
+PM1−1 
+
+> k1=0
+
+· · · PMn−1 
+
+> kn=0
+
+ck
+
+Qnj=1 p⋄
+
+> j
+
+ zj,k j Im−Aj  
+
+> αj+|zj,k j|
+
+†
+
+|ψ⟩
+
+≤ 4∥c∥1nϵ ′
+
+∥f (A) |ψ⟩ ∥ . (3.25) Therefore, we can let 
+
+ϵ′ = ∥f (A) |ψ⟩ ∥ ϵ
+
+4n∥c∥1
+
+.
+
+As ∥c∥1 ≤ B Qnj=1 2γj lj (1+ Rj /α j )3π , we have 1
+
+ϵ′ = O B Qnj=1 2γj lj (1+ Rj /α j )3π
+
+n∥f (A) |ψ⟩ ∥ ϵ
+
+!
+
+,
+
+since the spectral radius of A is no greater than ∥A∥, the total number of calls to UAj by eUkj is 
+
+O
+
+ 1
+
+δj
+
+log 1
+
+ϵ′
+
+
+
+= O γj (αj + Rj )log B Qnj=1 lj γj
+
+∥f (A) |ψ⟩ ∥ ϵ
+
+!
+
+. (3.26) As the whole circuit is given by Eq. (3.18), we should consider C, eC and SEL respectively when calculating complexity. For any given unit vector |ψ⟩, the success probability of Eq. (3.18) is 
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+|ψ⟩
+
+> 2
+
+/∥c∥21.
+
+Therefore, with amplitude amplification, 
+
+O
+
+∥c∥1/
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+|ψ⟩
+
+
+
+18 calls to Eq. (3.18) can make the algorithm succeed with probability at least 1 /2. According to Theorem 11, in order to suit Eq. (3.23) we need to choose M so that 1(2 π)n
+
+> n
+
+Y
+
+> ℓ=1
+
+lℓγℓ
+
+! 
+
+> n
+
+X
+
+> j=1
+
+lj (Bγ j + BK Γj + L)
+
+Mj
+
+ ≤ ϵ′ = ∥f (A) |ψ⟩ ∥ ϵ
+
+4n∥c∥1
+
+, (3.27) Therefore we can let 
+
+Mj ≥ nl j
+
+(Bγ j + BK Γj + L) · (Qnℓ=1 lℓγℓ) · 4n∥c∥1
+
+(2 π)n∥f (A) |ψ⟩ ∥ ϵ (3.28) so that (Bγ j + BK Γj + L) Qnℓ=1 lℓγℓ
+
+(2 π)n · lj
+
+Mj
+
+≤ ϵ′
+
+n (3.29) for each j. In this situation, log Mj =O
+
+
+
+log 
+
+
+
+nl j
+
+(Bγ j + BK Γj + L) · Qnℓ=1 lℓγℓ · 4n∥c∥1
+
+(2 π)n∥f (A) |ψ⟩ ∥ ϵ
+
+ 
+
+=O
+
+
+
+log n(Bγ j + BK Γj + L) Qnℓ=1 lℓγℓ
+
+∥f (A) |ψ⟩ ∥ ϵ
+
+
+
+.
+
+(3.30) So we need a total of w = O
+
+Pnj=1 log (Bγ j +BK Γj +L) Qnℓ=1 lℓγℓ 
+
+> ∥f(A)|ψ⟩∥ ϵ
+
+
+
++ log n + a + 3 ancilla qubits and Eq. (3.18) is a ( ∥c∥1, w, 2∥c∥1nϵ ′)-block-encoding of f (A). Suppose that ϵ is small enough, then PM1−1 
+
+> k1=0
+
+· · · PMn−1 
+
+> kn=0
+
+ck
+
+Qnj=1 p⋄
+
+> j
+
+ zj,k j Im−Aj  
+
+> αj+|zj,k j|
+
+†
+
+|ψ⟩ and f (A) |ψ⟩
+
+have the same order. In other words, 
+
+∥c∥1/
+
+> M1−1
+
+X
+
+> k1=0
+
+· · · 
+
+> Mn−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+|ψ⟩ = O B Qnj=1 2γj lj (1+ Rj /α j )3π
+
+∥f (A) |ψ⟩∥ 
+
+!
+
+.
+
+Summarizing these calculations, we can get the following result. 
+
+Theorem 12 (Complexity of the contour integral approach) . Let UAj be an (αj , a, 0) -block-encoding of Aj for j = 1 , · · · , n . Γj is a piecewise C1,1 simple closed curve covering all eigenvalues of Aj
+
+and KΓj is an upper bound on the tangent variation rate of Γj . Under the assumption that for any 
+
+z ∈ Γj , (zI m − Aj )−1 ≤ γj , we can solve the problem defined by Definition 2 using a quantum circuit with 
+
+O B Qnr=1 2γr lr (1+ Rr /α r )3π
+
+∥f (A) |ψ⟩∥ · γj (αj + Rj )log B Qnℓ=1 lℓγℓ
+
+∥f (A) |ψ⟩ ∥ ϵ
+
+!
+
+queries to UAj ,
+
+O B Qnr=1 2γr lr (1+ Rr /α r )3π
+
+∥f (A) |ψ⟩∥ 
+
+!
+
+19 queries to Uψ and 
+
+O
+
+
+
+> n
+
+X
+
+> j=1
+
+log n(Bγ j + BK Γj + L) Qnℓ=1 lℓγℓ
+
+∥f (A) |ψ⟩ ∥ ϵ
+
+ + log n + a + 3 
+
+ancilla qubits. 
+
+In addition to the select oracle, another part of the computation is to construct prepare oracles 
+
+C and eC. Notice that the prepare oracles C and eC prepare superpositions of cM = Qnj=1 Mj basis states. In general, we can prepare an cM -dimensional quantum state with cost O( cM ) [SBM06], but this might incur a gate complexity that is polynomial in the inverse error 1  
+
+> ∥f(A)|ψ⟩∥ ϵ
+
+, as cM scales polynomially in 1 
+
+> ϵ
+
+. However, since the amplitudes of the states are known integrable functions evaluated at discrete points, the state preparation circuits can be constructed more efficiently, in time only O(polylog cM ) [GR02, MGB26]. 
+
+3.3 Ancilla-efficient algorithm 
+
+The version in the previous section achieves good results in terms of query complexity, but used many ancilla qubits and a complex control circuit Eq. (3.12), which could be a huge challenge for early fault-tolerant quantum computers. On the other hand, Section 2.2 gives us a method to simplify the circuit and reduce the number of ancilla qubits. This method no longer gets an approximation of the target state f (A) |ψ⟩ /∥f (A) |ψ⟩ ∥ , but the observation value of the target state under O. The question is defined by Definition 3. In this method, for any j we no longer use complex control gate Vj , but for every kj , we implement 
+
+Vj,k j |0⟩Vj = 1
+
+q
+
+αj + |zj,k j |
+
+ √zj,k j |0⟩ + i √αj |1⟩ , (3.31) then follow the steps above. We can get Uj,k j to be an (1 , a + 2)-block-encoding of p⋄
+
+> j
+
+ zj,k j Im−Aj  
+
+> αj+|zj,k j|
+
+†
+
+for each kj respectively. Then with compression gadget Theorem 9, we can get a block encoding of 
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+with a + 3 + log n ancilla qubits, and we name this block encoding Uk.[JA26] shows that we can let | eψ⟩ = |0a+3+log n⟩ ⊗ | ψ⟩ and eO = |0a+3+log n⟩ ⟨ 0a+3+log n| ⊗ O, then 
+
+⟨ eψ| U † 
+
+> k
+
+eOU k | eψ⟩ = ⟨ψ|
+
+
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+
+
+> †
+
+O
+
+> n
+
+Y
+
+> ℓ=1
+
+p⋄
+
+> ℓ
+
+ zℓ,k ℓ Im − Aℓ
+
+αℓ + |zℓ,k ℓ |
+
+†
+
+|ψ⟩ . (3.32) Therefore, we can use the algorithm in Section 2.2 with | eψ⟩ be the initial state and eO be the observable. In the second step of Algorithm 1, we can sample V1, V 2 from distribution 
+
+n
+
+Uk, |ck|∥c∥1
+
+o
+
+with absorbing global phase. After the following steps in Algorithm 1, we would get μ with 
+
+E(μ) ≈ ⟨ ψ| f †(A)Of (A) |ψ⟩ , (3.33) and the following theorem holds. 20 Theorem 13. Let ϵ, ξ 1, ξ 2 ∈ (0 , 1) be some parameters. Uk is a (1 , a + 2 + log n, 0) -block-encoding of Qnj=1 p⋄
+
+> j
+
+ zj,k j Im−Aj  
+
+> αj+|zj,k j|
+
+†
+
+. Let |ψ⟩ be the initial state and | eψ⟩ = |0a+2+log n⟩⊗| ψ⟩, O be an observable and eO = |0a+3+log n⟩ ⟨ 0a+3+log n|⊗ O. Suppose that f (A) |ψ⟩ − P 
+
+> k
+
+ck
+
+Qnj=1 p⋄
+
+> j
+
+ zj,k j Im−Aj  
+
+> αj+|zj,k j|
+
+†
+
+|ψ⟩ ≤
+
+ξ1, where 
+
+ξ1 ≤ ϵ
+
+6∥O∥∥ f (A)∥ .
+
+Furthermore, let 
+
+T ≥ ∥O∥2 ln(2 /ξ 2)∥c∥41
+
+ϵ2 .
+
+Then, Algorithm 1 estimates μ such that 
+
+μ − ⟨ ψ| f (A)†Of (A) |ψ⟩ ≤ ϵ, 
+
+with probability at least (1 − ξ2)2, using one ancilla qubit and T repetitions of the quantum circuit in Algorithm 1, Step 3. 
+
+We choose M and ϵ′ such that 1(2 π)n
+
+> n
+
+Y
+
+> ℓ=1
+
+lℓγℓ
+
+! 
+
+> n
+
+X
+
+> j=1
+
+lj (Bγ j + BK Γj + L)
+
+Mj
+
+ ≤ ξ1
+
+2 ,
+
+and 
+
+fM (A) |ψ⟩ − X
+
+> k
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+p⋄
+
+> j
+
+ zj,k j Im − Aj
+
+αj + |zj,k j |
+
+†
+
+|ψ⟩ ≤ ξ1
+
+2 .
+
+That means the degree of polynomial pj is 
+
+O
+
+ 1
+
+δj
+
+log n · ∥ c∥1
+
+ξ1
+
+
+
+= O
+
+
+
+γj (αj + Rj )log nB Qnℓ=1 lℓγℓ∥O∥∥ f (A)∥
+
+ϵ
+
+
+
+.
+
+The degree of polynomial p is the same as the number of times QSVT visits UA. For each time we need a ancilla qubits for UA, 1 for inner layer LCU, 1 for QSVT, log n + 1 for compression gadget, and 1 for outer layer random LCU. Therefore, we have the following theorem: 
+
+Theorem 14. Let UAj be an (αj , a, 0) -block-encoding of Aj for j = 1 , · · · , n . Under the assumption that for every j = 1 , . . . , n and every z ∈ Γj , ∥(zI m − Aj )−1∥ ≤ γj , let 
+
+T = O
+
+
+
+∥O∥2 ln(1 /ξ 2)
+
+
+
+B Qnj=1 2γj lj (1+ Rj /α j )3π
+
+4
+
+ϵ2
+
+ ,
+
+we can solve the problem defined by Definition 3 with probability at least (1 − ξ2)2 using a quantum circuit with 
+
+O
+
+
+
+γj (αj + Rj )log nB Qnℓ=1 lℓγℓ∥O∥∥ f (A)∥
+
+ϵ
+
+
+
+queries to UAj , 1 query to Uψ and a + log n + 4 ancilla qubits, and repeat this circuit T times. 
+
+21 4 Fourier transform 
+
+In this section, we introduce a quantum algorithm on multi matrix function based on Fourier trans-form for high-dimensional functions. Suppose f (x) ∈ Hs(Rn)∩L1(Rn), where x = ( x1, x 2, · · · , x n) ∈
+
+Rn and s > n 
+
+> 2
+
+. Define the Fourier transform by 
+
+bf (λ) = 1(2 π) n
+
+> 2
+
+Z
+
+> Rn
+
+f (x)e −iλ·x dx. (4.1) Then we have the Fourier inversion formula 
+
+ bf (λ)
+
+∨
+
+= lim  
+
+> M→+∞
+
+1(2 π) n
+
+> 2
+
+Z
+
+> |λ|∞≤M
+
+bf (λ)e iλ·x dλ = f (x). (4.2) It can be proved that this conclusion holds for the commutative Hermitian matrices. In fact, we have the following theorem. 
+
+Theorem 15. Suppose H = ( H1, H 2, · · · , H n) is an n-tuple of commuting Hermitian matrices. Then for any f (x) ∈ Hs(Rn) ∩ L1(Rn) with its Fourier transform bf (λ) given by Eq. (4.1) , we have that the function defined in Theorem 1 can be implemented by 
+
+f (H) = lim  
+
+> M→+∞
+
+1(2 π) n
+
+> 2
+
+Z
+
+> |λ|∞≤M
+
+bf (λ)e iλ·H dλ. (4.3) 
+
+Proof. Since H1, H 2, · · · , H n are commuting Hermitian matrices, they can be diagonalized by the same unitary. Suppose that Hj = U †Dj U , where U is a unitary matrix and Dj = diag( dj1, d j2, · · · , d jm )then eiλ·H =e i Pnj=1 λj Hj =
+
+> n
+
+Y
+
+> j=1
+
+eiλj Hj =
+
+> n
+
+Y
+
+> j=1
+
+U †eiλj Dj U = U †
+
+
+
+> n
+
+Y
+
+> j=1
+
+eiλj Dj
+
+ U
+
+=U †
+
+> n
+
+Y
+
+> j=1
+
+diag 
+
+
+
+eiλj dj1 , eiλj dj2 , · · · , eiλj djm 
+
+
+
+U
+
+=U † diag 
+
+
+
+> n
+
+Y
+
+> j=1
+
+eiλj dj1 ,
+
+> n
+
+Y
+
+> j=1
+
+eiλj dj2 , · · · ,
+
+> n
+
+Y
+
+> j=1
+
+eiλj djm 
+
+ U
+
+=U † diag 
+
+
+
+eiλ·d1 , eiλ·d2 , · · · , eiλ·dm
+
+
+
+U. 
+
+(4.4) Here dk = ( d1k, d 2k, · · · , d nk ) ∈ Rn. Therefore, the RHS of Eq. (4.3) can be written as lim  
+
+> M→+∞
+
+1(2 π) n
+
+> 2
+
+Z
+
+> |λ|∞≤M
+
+bf (λ)e iλ·H dλ
+
+= lim  
+
+> M→+∞
+
+1(2 π) n
+
+> 2
+
+Z
+
+> |λ|∞≤M
+
+bf (λ)U † diag 
+
+
+
+eiλ·d1 , eiλ·d2 , · · · , eiλ·dm
+
+
+
+U dλ
+
+=U † diag lim  
+
+> M→+∞
+
+1(2 π) n
+
+> 2
+
+Z
+
+> |λ|∞≤M
+
+bf (λ)e iλ·d1 dλ, · · · , lim  
+
+> M→+∞
+
+1(2 π) n
+
+> 2
+
+Z
+
+> |λ|∞≤M
+
+bf (λ)e iλ·dm dλ
+
+!
+
+U
+
+=U † diag ( f (d1), · · · , f (dm)) U
+
+=f (H) .
+
+(4.5) 22 We can propose a quantum algorithm through this formula. However, when we use discrete point summation to approximate the integral, we cannot truly make M infinite. Therefore, we give the error bound between the global integral and the local integral when the Fourier transform of Dαf is integrable on Rn for any |α| ≤ k, k ∈ N+. A sufficient condition for this assumption is f (x) ∈ Hs(Rn) ∩ L1(Rn) and s > k + n 
+
+> 2
+
+. When k = 1, we can control the error by choosing a sufficiently large M . As k becomes larger, the requirements for the value of M become less stringent. 
+
+Lemma 16. Suppose f (x) ∈ Hs(Rn) ∩ L1(Rn) and s > k + n 
+
+> 2
+
+. For Eq. (4.3) , we have the following error estimate: 
+
+f (H) − 1(2 π) n
+
+> 2
+
+Z
+
+> |λ|∞≤M
+
+bf (λ)e iλ·H dλ ≤ 1(2 π) n
+
+> 2
+
+· 1
+
+M knX
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1(Rn)
+
+. (4.6) 
+
+Proof. By the Cauchy–Schwarz inequality, 
+
+∂kf∂x kj
+
+!∧
+
+> L1(Rn)
+
+=
+
+Z
+
+> Rn
+
+|λj |k| bf (λ)| dλ
+
+≤
+
+Z 
+
+> Rn
+
+(1 + ∥λ∥2)−(s−k) dλ
+
+1/2
+
+∥f ∥Hs(Rn) < ∞, s > k + n
+
+2 .
+
+(4.7) According to the property of high-dimensional Fourier transform, 
+
+∂kf∂x kj
+
+!∧
+
+= (i λj )k bf . (4.8) Therefore, 
+
+Z 
+
+> |λj|≥ M
+
+bf (λ) dλ =
+
+Z 
+
+> |λj|≥ M
+
+1
+
+λkj
+
+∂kf∂x kj
+
+!∧
+
+(λ) dλ ≤ 1
+
+M k
+
+Z 
+
+> |λj|≥ M
+
+∂kf∂x kj
+
+!∧
+
+(λ) dλ, (4.9) and we can have the bound as 
+
+f (H) − 1(2 π) n
+
+> 2
+
+Z
+
+> |λ|∞≤M
+
+bf (λ)e iλ·H dλ
+
+≤ 1(2 π) n
+
+> 2
+
+Z 
+
+> R
+
+Z
+
+> R
+
+· · · 
+
+Z
+
+> R
+
+−
+
+Z M
+
+> −M
+
+Z
+
+> R
+
+· · · 
+
+Z
+
+> R
+
+bf (λ)e iλ·H dλ +1(2 π) n
+
+> 2
+
+Z M
+
+> −M
+
+Z
+
+> R
+
+· · · 
+
+Z
+
+> R
+
+−
+
+Z M
+
+> −M
+
+Z M
+
+> −M
+
+· · · 
+
+Z
+
+> R
+
+bf (λ)e iλ·H dλ + · · · +1(2 π) n
+
+> 2
+
+Z M
+
+> −M
+
+· · · 
+
+Z M
+
+> −M
+
+Z
+
+> R
+
+−
+
+Z M
+
+> −M
+
+· · · 
+
+Z M
+
+> −M
+
+Z M
+
+> −M
+
+bf (λ)e iλ·H dλ
+
+≤ 1(2 π) n
+
+> 2
+
+
+
+> n
+
+X
+
+> j=1
+
+Z 
+
+> [−M,M ]j−1
+
+Z 
+
+> |λj|≥ M
+
+Z
+
+> Rn−j
+
+| bf (λ)| dλ
+
+
+
+23 ≤ 1(2 π) n
+
+> 2
+
+
+
+nX
+
+j=1 
+
+1
+
+M k
+
+Z
+
+[−M,M ]j−1
+
+Z
+
+|λj |≥ M
+
+Z
+
+Rn−j
+
+∂kf∂x kj
+
+!∧
+
+(λ) dλ
+
+
+
+≤ 1(2 π) n
+
+> 2
+
+· 1
+
+M knX
+
+j=1 
+
+∂kf∂x kj
+
+!∧
+
+L1(Rn)
+
+. (4.10) Next, we take N discrete points equally spaced in each interval [ −M, M ], and approximate 
+
+f (H) by its Riemann sum fN (H) defined as 
+
+fN (H) = (2 M )n
+
+(2 π) n 
+
+> 2
+
+N nN −1X
+
+k1=0 
+
+· · · 
+
+N −1X
+
+kn=0 
+
+bf (λ1,k 1 , · · · , λ n,k n )
+
+nY
+
+j=1 
+
+eiλj,k j Hj . (4.11) Here λj,k j = −M + 2kj MN . Discrete error can be given by the following lemma: 
+
+Lemma 17. Suppose f (x) ∈ Hs(Rn) ∩ L1(Rn), s > k + n
+
+2 and for j = 1 , · · · , n , xj f (x) ∈ L1(Rn)
+
+then we have the bound 
+
+1(2 π) n
+
+> 2
+
+Z
+
+|λ|∞≤M
+
+bf (λ)e iλ·H dλ − fN (H) ≤ (2 M )n+1 
+
+(2 π)nN
+
+∥f ∥L1
+
+nX
+
+j=1 
+
+∥Hj ∥ +
+
+nX
+
+j=1 
+
+∥xj f ∥L1
+
+ . (4.12) 
+
+Proof. We can provide an estimate of the discrete error 
+
+1(2 π) n
+
+> 2
+
+Z
+
+|λ|∞≤M
+
+bf (λ)e iλ·H dλ − (2 M )n
+
+(2 π) n 
+
+> 2
+
+N nN −1X
+
+k1=0 
+
+· · · 
+
+N −1X
+
+kn=0 
+
+bf (λ1,k 1 , · · · , λ n,k n )
+
+nY
+
+j=1 
+
+eiλj,k j Hj
+
+≤
+
+N −1X
+
+k1=0 
+
+· · · 
+
+N −1X
+
+kn=0 
+
+1(2 π) n
+
+> 2
+
+Z λ1,k 1+1 
+
+λ1,k 1
+
+· · · 
+
+Z λn,kn +1 
+
+λn,kn 
+
+ b f (λ)e iλ·H − bf (λ1,k 1 , · · · , λ n,k n )
+
+nY
+
+j=1 
+
+eiλj,k j Hj
+
+ dλ
+
+≤
+
+N −1X
+
+k1=0 
+
+· · · 
+
+N −1X
+
+kn=0 
+
+1(2 π) n
+
+> 2
+
+Z λ1,k 1+1 
+
+λ1,k 1
+
+· · · 
+
+Z λn,kn +1 
+
+λn,kn 
+
+bf (λ)
+
+eiλ·H −
+
+nY
+
+j=1 
+
+eiλj,k j Hj
+
+ dλ+
+
+N −1X
+
+k1=0 
+
+· · · 
+
+N −1X
+
+kn=0 
+
+1(2 π) n
+
+> 2
+
+Z λ1,k 1+1 
+
+λ1,k 1
+
+· · · 
+
+Z λn,kn +1 
+
+λn,kn 
+
+ bf (λ) − bf (λ1,k 1 , · · · , λ n,k n )
+
+ nY
+
+j=1 
+
+eiλj,k j Hj dλ
+
+≤
+
+N −1X
+
+k1=0 
+
+· · · 
+
+N −1X
+
+kn=0 
+
+1(2 π) n
+
+> 2
+
+Z λ1,k 1+1 
+
+λ1,k 1
+
+· · · 
+
+Z λn,kn +1 
+
+λn,kn 
+
+sup 
+
+λ
+
+bf (λ)
+
+nX
+
+j=1 
+
+2MN ∥Hj ∥ +
+
+nX
+
+j=1 
+
+2MN sup 
+
+λ
+
+∂∂λ j
+
+bf (λ)
+
+ dλ
+
+= (2 M )n+1 
+
+(2 π) n 
+
+> 2
+
+N
+
+sup 
+
+λ
+
+bf (λ)
+
+nX
+
+j=1 
+
+∥Hj ∥ +
+
+nX
+
+j=1 
+
+sup 
+
+λ
+
+∂∂λ j
+
+bf (λ)
+
+
+
+= (2 M )n+1 
+
+(2 π)nN
+
+sup 
+
+λ
+
+Z
+
+Rn
+
+f (x)e−iλ·x dx
+
+nX
+
+j=1 
+
+∥Hj ∥ +
+
+nX
+
+j=1 
+
+sup 
+
+λ
+
+Z
+
+Rn
+
+(−ix j )f (x)e−iλ·x dx
+
+
+
+24 ≤ (2 M )n+1 
+
+(2 π)nN
+
+∥f ∥L1
+
+> n
+
+X
+
+> j=1
+
+∥Hj ∥ +
+
+> n
+
+X
+
+> j=1
+
+∥xj f ∥L1
+
+ . (4.13) Combining Theorem 17 and Theorem 16, We can give the error bound between the function 
+
+f (H) and its discrete estimation fN (H). 
+
+∥f (H) − fN (H)∥ ≤ (2 M )n+1 
+
+(2 π)nN
+
+∥f ∥L1
+
+> n
+
+X
+
+> j=1
+
+∥Hj ∥ +
+
+> n
+
+X
+
+> j=1
+
+∥xj f ∥L1
+
++ 1(2 π) n
+
+> 2
+
+· 1
+
+M knX
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1(Rn)
+
+.
+
+(4.14) 
+
+4.1 Quantum algorithm 
+
+In this part, we introduce a quantum algorithm to approximate fN (H). Note that for j = 1 , · · · , n 
+
+we have block encoding UHj of the matrix Hj . Then 
+
+UHj |0a⟩ | ψ⟩ = 1
+
+αj
+
+|0a⟩ Hj |ψ⟩ + |⊥⟩ . (4.15) Recall that λj,k j = −M + 2kj MN , |λj,k j | ≤ M for any j and kj . Let Vj be controlled rotations satisfying 
+
+Vj |kj ⟩ | 0⟩Vj = |kj ⟩
+
+ λj,k j
+
+M |0⟩ +
+
+s
+
+1 −
+
+ λj,k j
+
+M
+
+2
+
+|1⟩
+
+ , (4.16) then (Vj ⊗ Ia ⊗ Im) ( Ikj ⊗ IVj ⊗ UHj ) |kj ⟩ | 0⟩Vj |0a⟩ | ψ⟩ = |kj ⟩ | 0⟩Vj |0a⟩ λj,k j
+
+αj M Hj |ψ⟩ + | e⊥⟩ , (4.17) This is an ( αj , a + 1)-block-encoding of Hamiltonian λj,k j 
+
+> M
+
+Hj controlled by |kj ⟩, where | e⊥⟩ means vectors where the second or third register is not zero. For any Hamiltonian H, let UH be an (αj , a +1)-block-encoding of H and t ∈ R, then [GSLW18, Corollary 60] shows that we can construct an (1 , a + 3 , ϵ ′)-block-encoding of eitH with using the unitary UH a total number of times 
+
+O
+
+
+
+αj |t| + log(1 /ϵ ′)log( e + log(1 /ϵ ′)/(αj |t|)) 
+
+
+
+.
+
+The construction of this circuit has nothing to do with the information of H, therefore similar to Fig. 2, we can apply the control circuit Eq. (4.17) to UH and let t = M to get an (1 , a + 3 , ϵ ′)-block-encoding of eiλj,k j Hj controlled by |kj ⟩.Considering this controlled block encoding as eUkj , we can also get a block encoding of Qnj=1 eiλj,k j Hj
+
+with compression gadget according to Fig. 3, and it can also be the select oracle SEL in LCU al-gorithm. The prepare oracle C is a unitary such that 
+
+C |0⟩ · · · | 0⟩ = 1
+
+p∥c∥1 
+
+> N−1
+
+X
+
+> k1=0
+
+· · ·  
+
+> N−1
+
+X
+
+> kn=0
+
+√ck |k1⟩ · · · | kn⟩ , (4.18) 25 where c = ( c(0 ,··· ,0) , c (0 ,··· ,1) , · · · , c (N −1,··· ,N −1) ), and 
+
+ck = c(k1,··· ,k n) = (2 M )n
+
+(2 π) n 
+
+> 2
+
+N n
+
+bf (λ1,k 1 , · · · , λ n,k n ). (4.19) Then by Theorem 8, the operator  eC ⊗ I
+
+
+
+SEL ( C ⊗ I) (4.20) gives a block encoding of  
+
+> N−1
+
+X
+
+> k1=0
+
+· · ·  
+
+> N−1
+
+X
+
+> kn=0
+
+(2 M )n
+
+(2 π) n 
+
+> 2
+
+N n
+
+bf (λ1,k 1 , · · · , λ n,k n )
+
+> n
+
+Y
+
+> j=1
+
+eiλj,k j Hj ,
+
+which is an approximation of fN (H). 
+
+4.2 Complexity analysis 
+
+This part we analyze the complexity the algorithm given in Section 4.1. In the previous discussion, we showed that in order to construct eUkj , which is an (1 , a + 3 , ϵ ′)-block-encoding of e iλj,k j Hj controlled by kj , we need 
+
+O
+
+
+
+αj M + log(1 /ϵ ′)log( e + log(1 /ϵ ′)/(αj M )) 
+
+
+
+. (4.21) calls to UHj . Suppose 
+
+eUkj |kj ⟩ | 0a+3 ⟩ | ψ⟩ = |kj ⟩ | 0a+3 ⟩ gλj,k j (Hj ) |ψ⟩ + |⊥⟩ , (4.22) then ∥gλj,k j (Hj )∥ ≤ 1 and ∥gλj,k j (Hj ) − eiλj,k j Hj ∥ ≤ ϵ′. Let 
+
+efN (H) =  
+
+> N−1
+
+X
+
+> k1=0
+
+· · ·  
+
+> N−1
+
+X
+
+> kn=0
+
+ck
+
+> n
+
+Y
+
+> j=1
+
+gλj,k j (Hj ), (4.23) we know that 
+
+efN (H) − fN (H) ≤
+
+ 
+
+> N−1
+
+X
+
+> k1=0
+
+· · ·  
+
+> N−1
+
+X
+
+> kn=0
+
+∥ck∥
+
+
+
+> n
+
+Y
+
+> j=1
+
+gλj,k j (Hj ) −
+
+> n
+
+Y
+
+> j=1
+
+eiλj,k j Hj ≤ ∥ c∥1nϵ ′. (4.24) Also choose proper M , N so that (2 M )n+1 
+
+(2 π)nN
+
+∥f ∥L1
+
+> n
+
+X
+
+> j=1
+
+∥Hj ∥ +
+
+> n
+
+X
+
+> j=1
+
+∥xj f ∥L1
+
+ + 1(2 π) n
+
+> 2
+
+· 1
+
+M knX
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1(Rn)
+
+≤ ∥ c∥1nϵ ′,
+
+then together with Eq. (4.14), 
+
+efN (H) − f (H) ≤ 2∥c∥1nϵ ′. (4.25) 26 Due to that ∥ u 
+
+> ∥u∥
+
+− v 
+
+> ∥v∥
+
+∥ ≤ 2 ∥u−v∥∥u∥ , we need 
+
+f (H) |ψ⟩∥f (H) |ψ⟩ ∥ − efN (H) |ψ⟩∥ efN (H) |ψ⟩ ∥ ≤ 4∥c∥1nϵ ′
+
+∥f (H) |ψ⟩ ∥ ≤ ϵ. (4.26) Therefore let 
+
+ϵ′ = ∥f (H) |ψ⟩ ∥ ϵ
+
+4∥c∥1n (4.27) and (2 M )n+1 
+
+(2 π)nN
+
+∥f ∥L1
+
+> n
+
+X
+
+> j=1
+
+∥Hj ∥ +
+
+> n
+
+X
+
+> j=1
+
+∥xj f ∥L1
+
+ + 1(2 π) n
+
+> 2
+
+· 1
+
+M knX
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1(Rn)
+
+≤ ∥f (H) |ψ⟩ ∥ ϵ
+
+4 ,
+
+(4.28) then Eq. (4.20) is a block encoding of f (H) with block encoding factor ∥c∥1 and error ϵ. A possible choice of M, N is 
+
+M ≥
+
+ 1(2 π) n
+
+> 2
+
+· 8
+
+∥f (H) |ψ⟩ ∥ ϵ ·
+
+> n
+
+X
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1(Rn)
+
+
+
+> 1
+> k
+
+, (4.29) 
+
+N ≥ (2 M )n+1 
+
+(2 π)n ·
+
+∥f ∥L1
+
+> n
+
+X
+
+> j=1
+
+∥Hj ∥ +
+
+> n
+
+X
+
+> j=1
+
+∥xj f ∥L1
+
+ · 8
+
+∥f (H) |ψ⟩ ∥ ϵ . (4.30) According to Fig. 3, we need n log N + log n + a + 4 ancilla qubits. The successful probability of this circuit is ∥ efN (H) |ψ⟩ ∥ 2/∥c∥21, therefore with amplitude amplification, O(∥c∥1/∥ efN (H) |ψ⟩ ∥ )calls to Eq. (4.20) can make the algorithm succeed with probability at least 1 /2. On the other hand, 
+
+∥c∥1 = 
+
+> N−1
+
+X
+
+> k1=0
+
+· · ·  
+
+> N−1
+
+X
+
+> kn=0
+
+(2 M )n
+
+(2 π) n 
+
+> 2
+
+N n
+
+bf (λ1,k 1 , · · · , λ n,k n ) = O
+
+ 1(2 π) n
+
+> 2
+
+Z
+
+> Rn
+
+bf (λ) dλ
+
+
+
+, (4.31) and we use efN (H) to approximate f (H). For numerical format of sufficiently high precision, 
+
+∥c∥1 ≲ 1(2 π) n
+
+> 2
+
+Z
+
+> Rn
+
+bf (λ) dλ = 1(2 π) n
+
+> 2
+
+∥ bf ∥L1(Rn) ≤ 1(2 π) n
+
+> 2
+
+Z 
+
+> Rn
+
+(1 + |ξ|2)−s dξ 
+
+1/2
+
+∥f ∥Hs(Rn)
+
+= 1(2 π) n
+
+> 2
+
+πn/ 2 Γ s − n
+
+> 2
+
+
+
+Γ( s)
+
+!1/2
+
+∥f ∥Hs(Rn), s > n
+
+2 .
+
+(4.32) Therefore, 
+
+O(∥c∥1/∥ efN (H) |ψ⟩ ∥ ) = O
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+ ,
+
+27 and 1
+
+ϵ′ = O
+
+
+
+2n
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ ϵ
+
+ (4.33) Summarizing these results, we can get the following theorem. 
+
+Theorem 18 (Complexity of the Fourier transform approach) . Let UHj be an (αj , a, 0) -block-encoding of Hj for j = 1 , · · · , n . Under the assumption that f (x) ∈ Hs(Rn) ∩ L1(Rn), s > k + n
+
+> 2
+
+and xj f (x) ∈ L1(Rn) for j = 1 , · · · , n , we can solve the problem defined by Definition 2 using a quantum circuit with 
+
+O
+
+
+
+αj M + log(1 /ϵ ′)log( e + log(1 /ϵ ′)/(αj M )) 
+
+
+
+·
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+
+
+queries to UHj ,
+
+O
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+
+
+queries to Uψ and n log N + log n + a + 4 ancilla qubits, where ϵ′ is given in Eq. (4.33) , M in Eq. (4.29) and N in Eq. (4.30) .
+
+It is worth noting that although in this theorem the query complexity contains terms relating to the exponential dependence of n, when the properties of f are sufficiently good, the actual query complexity doesn’t have the exponential dependence of n, see Section A. 
+
+4.3 Ancilla-efficient algorithm 
+
+Similar to Section 3.3, for any j and kj we would implement eiλj,k j Hj with QSVT separately, and with compression gadget, we can get a block encoding of Qnj=1 eiλj,k j Hj with a + 3 + log n ancilla qubits, and we name this block encoding Uk.Same as above, we can let | eψ⟩ = |0a+3+log n⟩ ⊗ | ψ⟩ and eO = |0a+3+log n⟩ ⟨ 0a+3+log n| ⊗ O, then 
+
+⟨ eψ| U † 
+
+> k
+
+eOU k | eψ⟩ = ⟨ψ|
+
+
+
+> n
+
+Y
+
+> j=1
+
+eiλj,k j Hj
+
+
+
+> †
+
+O
+
+> n
+
+Y
+
+> j=1
+
+eiλj,k j Hj |ψ⟩ . (4.34) Therefore, we can use the algorithm in Section 2.2 with | eψ⟩ be the initial state and eO be the observable. In the second step of Algorithm 1, we can sample V1, V 2 from distribution 
+
+n
+
+Uk, |ck|∥c∥1
+
+o
+
+with absorbing global phase. After the following steps in Algorithm 1, we would get μ with 
+
+E(μ) ≈ ⟨ ψ| f †(H)Of (H) |ψ⟩ , (4.35) 28 and Theorem 13 holds. We choose M, N and ϵ′ such that 
+
+∥f (H) − fN (H)∥≤ (2 M )n+1 
+
+(2 π)nN
+
+∥f ∥L1
+
+> n
+
+X
+
+> j=1
+
+∥Hj ∥ +
+
+> n
+
+X
+
+> j=1
+
+∥xj f ∥L1
+
+ + 1(2 π) n
+
+> 2
+
+· 1
+
+M knX
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1(Rn)
+
+≤ ξ1
+
+2 ,
+
+and 
+
+efN (H) − fN (H) ≤ ∥ c∥1nϵ ′ ≤ ξ1
+
+2 .
+
+Then we need 
+
+O
+
+
+
+αj M + log(1 /ϵ ′)log( e + log(1 /ϵ ′)/(αj M )) 
+
+
+
+. (4.36) calls to UHj . For each time we need a ancilla qubits for UHj , 2 for QSVT, log n + 1 for compression gadget, and 1 for LCU. Therefore, we have the following theorem. 
+
+Theorem 19. Let UHj be an (αj , a, 0) -block-encoding of Hj for j = 1 , · · · , n . Let 
+
+T = O
+
+
+
+∥O∥2 ln(1 /ξ 2) 1(2 π) n
+
+> 2
+
+
+
+πn/ 2 Γ(s− n 
+
+> 2
+
+)
+
+> Γ( s)
+
+1/2
+
+∥f ∥Hs(Rn)
+
+!4
+
+ϵ2
+
+
+
+,
+
+we can solve the problem defined by Definition 3 with probability at least (1 − ξ2)2 using a quantum circuit with 
+
+O
+
+
+
+αj M + log(1 /ϵ ′)log( e + log(1 /ϵ ′)/(αj M )) 
+
+
+
+queries to UHj , 1 query to Uψ and a + log n + 4 ancilla qubits, and repeat this circuit T times. 
+
+# 5 Application of matrix polynomial 
+
+In this section, we discuss quantum algorithms for multivariable matrix polynomials. A straight-forward implementation of a multivariable matrix polynomial constructs block-encodings of its monomials by multiplication and combines them using LCU. For example, given an ( α1, a, 0)-block-encoding of A1, multiplying d copies with separate ancilla registers yields an ( αd
+
+> 1
+
+, ad, 0)-block-encoding of Ad
+
+> 1
+
+. The compression gadget Theorem 9 reduces the ancilla requirement to a+O(log d), while preserving the normalization factor αd
+
+> 1
+
+. Applying this construction to |ψ⟩ gives the success probability psucc = ∥Ad
+
+> 1
+
+|ψ⟩∥ 2/α 2d 
+
+> 1
+
+. Since each application of the product requires d queries to UA1 ,amplitude amplification gives a total query cost of O d α d
+
+> 1
+
+/∥Ad
+
+> 1
+
+|ψ⟩∥  . Thus, even when ∥A1∥ ≤ 1, a fixed normalization factor α1 > 1 introduces an exponential overhead in d for this construction. The complexities of our methods are expressed in terms of global analytic quantities, including B,
+
+L, and the Fourier norms of the smoothly truncated polynomial and its derivatives, together with 29 the output norm. Their dependence on the polynomial degree is implicit through these parameters. These quantities may themselves grow with the degree; for example, f (z) = zd satisfies B = Rd
+
+on the contour |z| = R > 1. However, when these global variables are controlled, both of our methods have nothing to do with the degree, number of terms and coefficients of monomials of the polynomial, which is a great benefit for polynomials that perform well but with many terms with large coefficients that cancel each other out, such as Chebyshev polynomials. For general polynomials, even if their degree d is not high, when n is large, describing their behavior requires  n+dd
+
+ terms. If we simply use LCU to sum the block encodings of each term, the LCU coefficients ∥c∥1 will be very large, even if this polynomial sometimes performs well on the joint spectrum of the matrices we are interested in. Similarly, our method can overcome this problem. 
+
+5.1 Contour integral 
+
+Consider the problem of implementing a general multivariable matrix polynomial. Suppose that our aim is f (A), while f is a multivariable complex polynomial and A = ( A1, · · · , A n) ∈ A n
+
+is an n-tuple of commuting matrices. Suppose the spectral radius of Aj is ρ(Aj ), then all the eigenvalues of Aj are covered by the disk {z : |z| ≤ ρ(Aj )}, and we can choose Γ j as the boundary of {z : |z| ≤ ρ(Aj ) + aj }, with lj = 2 π(ρ(Aj ) + aj ). Assume that for any j, Aj can be diagonalized, then linear algebra concludes that they can be diagonalized by the same invertible matrix. Let Aj = SD j S−1, each element on the diagonal of 
+
+zI − Dj is not less than aj , then 
+
+(zI − Aj )−1 = S(zI − Dj )−1S−1 ≤ ∥ S∥ S−1 (zI − Dj )−1 ≤ κS
+
+aj
+
+, (5.1) where κS ≥ ∥ S∥∥ S−1∥ is the condition number of S. Therefore, we can let γj = κS 
+
+> aj
+
+so that according to Theorem 12, we need 
+
+O B Qnj=1 2π(ρ(Aj ) + aj ) κS
+
+> aj
+
+∥f (A) |ψ⟩∥ · κS
+
+aj
+
+(ρ(Aj ) + αj )log B Qnj=1 2π(ρ(Aj ) + aj ) κS
+
+> aj
+
+∥f (A) |ψ⟩ ∥ ϵ
+
+!
+
+queries to UAj ,
+
+O B Qnj=1 2π(ρ(Aj ) + aj ) κS
+
+> aj
+
+∥f (A) |ψ⟩∥ 
+
+!
+
+queries to Uψ and 
+
+O
+
+
+
+> n
+
+X
+
+> j=1
+
+log n(Bγ j + BK Γj + L) Qnj=1 2π(ρ(Aj ) + aj ) κS
+
+> aj
+
+∥f (A) |ψ⟩ ∥ ϵ
+
+ + log n + a + 3 ancilla qubits to implement f (A). Because ρ(Aj ) ≤ ∥ Aj ∥ ≤ αj , we can choose aj = O(αj ) so that we need 
+
+O Kn
+
+Bκ n+1 
+
+> S
+
+∥f (A) |ψ⟩∥ · log B Qnj=1 κS
+
+∥f (A) |ψ⟩ ∥ ϵ
+
+!
+
+30 queries to UAj ,
+
+O Kn
+
+B Qnj=1 κS
+
+∥f (A) |ψ⟩∥ 
+
+!
+
+queries to Uψ and 
+
+O
+
+
+
+> n
+
+X
+
+> j=1
+
+log n(Bγ j + BK Γj + L) Qnj=1 κS
+
+∥f (A) |ψ⟩ ∥ ϵ
+
+ + log n + a + 3 ancilla qubits, where Kn is a constant raised to the power of n. It is only related to the maximum value of f in the disk, and has nothing to do with the degree of f or the coefficient of the monomial in f .
+
+5.2 Fourier transform 
+
+In this part we suppose that our aim is f (H), while f is a multivariable real polynomial and 
+
+H = ( H1, · · · , H n) is an n-tuple of commuting Hermitian matrices. Since for j = 1 , · · · , n , Hj
+
+is Hermitian, all of its eigenvalues are real numbers. To apply the Fourier transform approach to a polynomial f , we first construct a smooth, integrable function that agrees with f on the joint spectrum of H. This is necessary because a nonzero polynomial is not integrable over Rn.Since f (H) depends only on the values of f on the joint spectrum, we can modify f outside a neighborhood of this spectrum without changing the target operator. Assume that the absolute values of its eigenvalues are all less than K − ξ, then let 
+
+ϕ(x) = 
+
+
+
+1 for |x| ≤ K − ξ
+
+h
+
+1 + exp 
+
+ ξK−| x| − ξ
+
+> |x|− K+ξ
+
+i −1
+
+for K − ξ < |x| < K 
+
+0 for |x| ≥ K, (5.2) and define the kernel function 
+
+k(x) = 
+
+> n
+
+Y
+
+> i=1
+
+ϕ(xi). (5.3) Then due to that f ∈ C∞(Rn), k ∈ C∞ 
+
+> c
+
+(Rn), we know that 
+
+g(x) := f (x) · k(x) ∈ C∞ 
+
+> c
+
+(Rn), (5.4) and g(x) is supported in [ −K, K ]n. For any x with |x|∞ ≤ K − ξ, g(x) = f (x). Due to that [−K +ξ, K −ξ]n covers the joint spectrum of H, we have g(H) = f (H). According to Theorem 18, we need 
+
+O
+
+ 
+
+αj M + log(1 /ϵ ′)log( e + log(1 /ϵ ′)/(αj M )) 
+
+
+
+·
+
+R 
+
+> Rn
+
+|bg(λ)| dλ
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+
+
+queries to UHj ,
+
+O
+
+ R 
+
+> Rn
+
+|bg(λ)| dλ
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+
+
+31 queries to Uψ and n log N + log n + a + 4 ancilla qubits, where 
+
+ϵ′ ≤ (2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ ϵ
+
+2n R 
+
+> Rn
+
+|bg(λ)| dλ , (5.5) 
+
+M ≥
+
+ 1(2 π) n
+
+> 2
+
+· 8
+
+∥f (H) |ψ⟩ ∥ ϵ ·
+
+> n
+
+X
+
+> j=1
+
+∂kg∂x kj
+
+!∧
+
+> L1(Rn)
+
+
+
+> 1
+> k
+
+, (5.6) and 
+
+N ≥ (2 M )n+1 
+
+(2 π)n ·
+
+∥g∥L1
+
+> n
+
+X
+
+> j=1
+
+∥Hj ∥ +
+
+> n
+
+X
+
+> j=1
+
+∥xj g∥L1
+
+ · 8
+
+∥f (H) |ψ⟩ ∥ ϵ . (5.7) 
+
+# References 
+
+[ACLY26] Dong An, Andrew M. Childs, Lin Lin, and Lexing Ying. Laplace transform-based quantum eigenvalue transformation via linear combination of Hamiltonian simulation. SIAM Journal on Computing , 55(2):376–409, 2026. https://doi.org/10.1137/24M1720160 .[ALL23] Dong An, Jin-Peng Liu, and Lin Lin. Linear combination of Hamiltonian simulation for nonuni-tary dynamics with optimal state preparation cost. Physical Review Letters , 131(15):150603, 2023. https://doi.org/10.1103/PhysRevLett.131.150603 .[CGJ19] Shantanav Chakraborty, Andr´ as Gily´ en, and Stacey Jeffery. The power of block-encoded matrix powers: Improved regression techniques via faster Hamiltonian simulation. In 46th International Colloquium on Automata, Languages, and Programming (ICALP 2019) , volume 132 of Leibniz International Proceedings in Informatics (LIPIcs) , pages 33:1–33:14. Schloss Dagstuhl – Leibniz-Zentrum f¨ ur Informatik, 2019. https://doi.org/10.4230/LIPIcs.ICALP.2019.33 .[Cha24] Shantanav Chakraborty. Implementing any linear combination of unitaries on intermediate-term quantum computers. Quantum , 8:1496, 2024. https://doi.org/10.22331/ q-2024-10-10-1496 .[CW12] Andrew M. Childs and Nathan Wiebe. Hamiltonian simulation using linear combinations of unitary operations. Quantum Information and Computation , 12(11–12):901–924, 2012. https: //doi.org/10.26421/QIC12.11-12-1 .[DLT22] Yulong Dong, Lin Lin, and Yu Tong. Ground-state preparation and energy estimation on early fault-tolerant quantum computers via quantum eigenvalue transformation of unitary matrices. 
+
+PRX Quantum , 3(4):040305, 2022. https://doi.org/10.1103/PRXQuantum.3.040305 .[FLT23] Di Fang, Lin Lin, and Yu Tong. Time-marching based quantum solvers for time-dependent linear differential equations. Quantum , 7:955, 2023. https://doi.org/10.22331/ q-2023-03-20-955 .[GR02] Lov Grover and Terry Rudolph. Creating superpositions that correspond to efficiently integrable probability distributions, 2002. arXiv:quant-ph/0208112. [GSLW18] Andr´ as Gily´ en, Yuan Su, Guang Hao Low, and Nathan Wiebe. Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics, 2018. arXiv:1806.01838. [HL24] Luiz Hartmann and Matthias Lesch. Divided differences and multivariate holomorphic calculus, 2024. arXiv:2411.05484. 
+
+32 [JA26] Shan Jiang and Dong An. Contour-integral based quantum eigenvalue transformation: analysis and applications, 2026. arXiv:2601.11959v1. [Lan26] Lorenzo Laneve. An adversary bound for quantum signal processing. Quantum , 10:2025, 2026. 
+
+https://doi.org/10.22331/q-2026-03-13-2025 .[LC17] Guang Hao Low and Isaac L. Chuang. Optimal Hamiltonian simulation by quantum sig-nal processing. Physical Review Letters , 118(1):010501, 2017. https://doi.org/10.1103/ PhysRevLett.118.010501 .[LS26] Guang Hao Low and Yuan Su. Quantum eigenvalue processing. SIAM Journal on Computing ,55(1):135–215, 2026. https://doi.org/10.1137/24M1689363 .[LW25] Lorenzo Laneve and Stefan Wolf. On multivariate polynomials achievable with quantum signal processing. Quantum , 9:1641, 2025. https://doi.org/10.22331/q-2025-02-20-1641 .[MGB26] Sam McArdle, Andr´ as Gily´ en, and Mario Berta. Quantum state preparation without coher-ent arithmetic. Physical Review Letters , 136(24):240603, 2026. https://doi.org/10.1103/ ntvs-c48s .[MMF24] Hitomi Mori, Kaoru Mizuta, and Keisuke Fujii. Comment on “multivariable quantum signal processing (M-QSP): prophecies of the two-headed oracle”. Quantum , 8:1512, 2024. https: //doi.org/10.22331/q-2024-10-29-1512 .[MRTC21] John M. Martyn, Zane M. Rossi, Andrew K. Tan, and Isaac L. Chuang. Grand unifica-tion of quantum algorithms. PRX Quantum , 2(4):040203, 2021. https://doi.org/10.1103/ PRXQuantum.2.040203 .[NKK +23] Bal´ azs N´ emeth, Blanka K¨ ov´ er, Bogl´ arka Kulcs´ ar, Roland Botond Mikl´ osi, and Andr´ as Gily´ en. On variants of multivariate quantum signal processing and their characterizations, 2023. arXiv:2312.09072. [RBMS +25] Matthias Rosenkranz, Eric Brunner, Gabriel Marin-Sanchez, Nathan Fitzpatrick, Silas Dilkes, Yao Tang, Yuta Kikuchi, and Marcello Benedetti. Quantum state preparation for multivariate functions. Quantum , 9:1703, 2025. https://doi.org/10.22331/q-2025-04-09-1703 .[RC22] Zane M. Rossi and Isaac L. Chuang. Multivariable quantum signal processing (M-QSP): prophecies of the two-headed oracle. Quantum , 6:811, 2022. https://doi.org/10.22331/ q-2022-09-20-811 .[SBM06] Vivek V. Shende, Stephen S. Bullock, and Igor L. Markov. Synthesis of quantum-logic circuits. 
+
+IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems , 25(6):1000– 1010, 2006. https://doi.org/10.1109/TCAD.2005.855930 .[TOSU20] Souichi Takahira, Asuka Ohashi, Tomohiro Sogabe, and Tsuyoshi S. Usuda. Quantum algorithm for matrix functions by Cauchy’s integral formula. Quantum Information and Computation ,20(1–2):14–36, 2020. https://doi.org/10.26421/QIC20.1-2-2 .[TOSU22] Souichi Takahira, Asuka Ohashi, Tomohiro Sogabe, and Tsuyoshi S. Usuda. Quantum algo-rithms based on the block-encoding framework for matrix functions by contour integrals. Quan-tum Information and Computation , 22(11–12):965–979, 2022. https://doi.org/10.26421/ QIC22.11-12-4 .[WBC22] Kianna Wan, Mario Berta, and Earl T. Campbell. Randomized quantum algorithm for statis-tical phase estimation. Physical Review Letters , 129(3):030503, 2022. https://doi.org/10. 1103/PhysRevLett.129.030503 .[WMB24] Samson Wang, Sam McArdle, and Mario Berta. Qubit-efficient randomized quantum algorithms for linear algebra. PRX Quantum , 5(2):020324, 2024. https://doi.org/10.1103/PRXQuantum. 5.020324 .
+
+33 [WW25] James D. Watson and Jacob Watkins. Exponentially reduced circuit depths using Trotter error mitigation. PRX Quantum , 6(3):030325, 2025. https://doi.org/10.1103/kw39-yxq5 .[WZD +26] Chao Wang, Xi-Ning Zhuang, Menghan Dou, Zhao-Yun Chen, and Guo-Ping Guo. A uni-fied Poisson summation framework for generalized quantum matrix transformations, 2026. arXiv:2604.02874. 
+
+# A Non-exponential dependence of Fourier transform 
+
+In this section, we show how the results given by Theorem 18 behave when the properties of f are good. Let f (x) be the n-dimensional standard normal density: 
+
+f (x) = 1(2 π) n
+
+> 2
+
+exp 
+
+
+
+− ∥x∥2
+
+2
+
+
+
+, x ∈ Rn.
+
+Using the Fourier transform convention 
+
+bf (λ) = 1(2 π) n
+
+> 2
+
+Z
+
+> Rn
+
+f (x)e −iλ·xdx,
+
+we obtain 
+
+bf (λ) = 1(2 π) n
+
+> 2
+
+exp 
+
+
+
+− ∥λ∥2
+
+2
+
+
+
+.
+
+The L1-norm of bf is 
+
+Z
+
+> Rn
+
+bf (λ) dλ = 1(2 π) n
+
+> 2
+
+Z
+
+> Rn
+
+e−∥ λ∥2/2 dλ = 1(2 π) n
+
+> 2
+
+· (2 π) n 
+
+> 2
+
+= 1 ,
+
+Therefore, if H is a tuple of 0 matrix, then f (H) = (2 π)− n 
+
+> 2
+
+· I, and ∥f (H) |ψ⟩ ∥ = (2 π)− n 
+
+> 2
+
+.Substituting the result, we have 
+
+O
+
+R 
+
+> Rn
+
+bf (λ) dλ
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+ = O(1) ,
+
+this means the query complexity of Uψ is a constant, and 1
+
+ϵ′ = O
+
+ 2n R 
+
+> Rn
+
+bf (λ) dλ
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ ϵ
+
+ = O
+
+ nϵ
+
+
+
+.
+
+The differentiation property under this convention is 
+
+∂kf∂x kj
+
+!∧
+
+(λ) = ( iλ j )k bf (λ) = (iλ j )k
+
+(2 π) n
+
+> 2
+
+e−∥ λ∥2/2.
+
+Hence 
+
+∂kf∂x kj
+
+!∧
+
+> L1
+
+= 1(2 π) n
+
+> 2
+
+Z
+
+> Rn
+
+|λj |ke−∥ λ∥2/2dλ.
+
+34 By symmetry, nX
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1
+
+= n
+
+(2 π) n
+
+> 2
+
+Z
+
+> Rn
+
+|λ1|ke−∥ λ∥2/2 dλ.
+
+Using separability, 
+
+Z
+
+> Rn
+
+|λ1|ke−∥ λ∥2/2 dλ =
+
+Z 
+
+> R
+
+|λ|ke−λ2/2 dλ
+
+ Z 
+
+> R
+
+e−λ2/2 dλ
+
+ n−1
+
+.
+
+Now Z
+
+> R
+
+e−λ2/2 dλ = √2π, 
+
+Z
+
+> R
+
+|λ|ke−λ2/2 dλ = 2 
+
+Z ∞
+
+> 0
+
+λke−λ2/2 dλ = 2 (k+1) /2 Γ
+
+ k + 1 2
+
+
+
+.
+
+Combining these yields 
+
+> n
+
+X
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1
+
+= n
+
+(2 π) n
+
+> 2
+
+· 2(k+1) /2Γ
+
+ k + 1 2
+
+
+
+· (2 π) n−12
+
+For k = 1, we have Γ(1) = 1 ,
+
+> n
+
+X
+
+> j=1
+
+∂kf∂x kj
+
+!∧
+
+> L1
+
+= n
+
+r 2
+
+π .
+
+Still assume that H is a tuple of 0 matrix, then ∥f (H) |ψ⟩ ∥ = (2 π)−n/ 2 and the condition that 
+
+M needs to satisfy is: 
+
+M ≥ 1(2 π) n
+
+> 2
+
+· 8
+
+∥f (H) |ψ⟩ ∥ ϵ ·
+
+> n
+
+X
+
+> j=1
+
+ ∂f ∂x j
+
+∧
+
+> L1(Rn)
+
+= O
+
+ nϵ
+
+
+
+.
+
+Therefore, when we estimate c using the intermediate inequality ∥c∥1 ≲ 1(2 π) n
+
+> 2
+
+R 
+
+> Rn
+
+bf (λ) dλ,the query complexity of UHj is 
+
+O
+
+
+
+αj M + log(1 /ϵ ′)log( e + log(1 /ϵ ′)/(αj M )) 
+
+ R 
+
+> Rn
+
+bf (λ) dλ
+
+(2 π) n 
+
+> 2
+
+∥f (H) |ψ⟩ ∥ 
+
+ = eO
+
+ αj nϵ
+
+
+
+which means the query complexity of UHj depends approximately linearly on n. Since 
+
+> n
+
+X
+
+> j=1
+
+sup 
+
+> λ
+
+∂∂λ j
+
+bf (λ) =
+
+> n
+
+X
+
+> j=1
+
+1(2 π) n
+
+> 2
+
+sup 
+
+> λ
+
+
+
+|λj |e−∥ λ∥2/2
+
+= n
+
+(2 π) n
+
+> 2
+
+e− 12 ,
+
+we can use the conclusion given in Eq. (4.13) to get the bound of N and further bound the number of ancilla qubits, the condition of N is 
+
+N ≥ (2 M )n+1 
+
+(2 π) n
+
+> 2
+
+sup 
+
+> λ
+
+bf (λ)
+
+> n
+
+X
+
+> j=1
+
+∥Hj ∥ +
+
+> n
+
+X
+
+> j=1
+
+sup 
+
+> λ
+
+∂∂λ j
+
+bf (λ)
+
+ · 8
+
+∥f (H) |ψ⟩ ∥ ϵ = 8n(2 M )n+1 
+
+(2 π) n 
+
+> 2
+
+e 12 ϵ ,
+
+and the amount of ancilla qubits n log N + log n + a + 4 = O(n2 log nϵ + a) which is polynomial, rather than exponential, in the dimension n.35

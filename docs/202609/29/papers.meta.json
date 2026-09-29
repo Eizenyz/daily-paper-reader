@@ -1,0 +1,54 @@
+{
+  "label": "2026-09-29",
+  "date": "2026-09-29",
+  "generated_at": "2026-09-29T23:05:44",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202609/29/2609.32310v1-conserved-and-relaxing-modes-enable-polynomial-success-coherent-carleman-lattice-boltzmann-evolution",
+      "section": "deep",
+      "title_en": "Conserved and relaxing modes enable polynomial-success coherent Carleman lattice Boltzmann evolution",
+      "authors": "Hua-Dong Yao, Sauro Succi",
+      "date": "2026-09-26",
+      "pdf": "https://arxiv.org/pdf/2609.32310v1",
+      "score": "8.0",
+      "evidence": "Carleman量子块编码提升非线性动力学成功概率",
+      "tldr": "Carleman线性化可将非线性格子Boltzmann碰撞动力学编码到量子线路，但现有粒子数空间编码后选择概率低，使多步相干演化成功概率随步数指数衰减。本文在加权Hermite矩基下采用多松弛时间碰撞算子，将提升后的算子分解为小耦合块，利用守恒模与松弛模耦合实现范数可达块编码。该结构使单步成功概率接近1，按步数缩放配对扇区后总开销仅多项式增长。百步演化成功率较粒子数空间编码高多个数量级，数十步内以百分之几误差复现基准流动的非线性生成模。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Carleman linearization represents nonlinear lattice Boltzmann collision dynamics in a form amenable to quantum block encoding, but low postselection probabilities in existing population-space encodings make coherent multi-step evolution exponentially unlikely to succeed. We present a quantum Carleman lattice Boltzmann scheme based on the multi-relaxation-time collision operator in a weighted Hermite moment basis. In this basis, the lifted collision operator separates into small coupled blocks whose norm exceeds unity because of the coupling between conserved and relaxing modes. This block structure enables a norm-attaining block encoding with a single-step success probability close to unity. Crucially, scaling the pair sector for a prescribed evolution horizon makes the combined encoding and sector-selection overhead grow polynomially rather than exponentially with the number of steps. For a hundred-step evolution, the resulting complete-run success probability exceeds that of population-space encodings by orders of magnitude. Over horizons of several tens of steps, the truncated dynamics reproduces the nonlinearly generated modes of a benchmark flow to within a few percent. We verify the combined preparation, evolution and readout protocol as a single unitary circuit and give a complete gate-level resource estimate for extracting a nonlinear observable of the benchmark flow from a coherent Carleman evolution. The block structure of conserved and relaxing modes holds equally on three-dimensional lattices and provides a constructive route to norm-attaining encodings for lattice Boltzmann models with quadratic equilibria.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/29/2609.32262v1-contour-integral-and-fourier-transform-based-multivariable-quantum-eigenvalue-transformation-for-commuting-matrices",
+      "section": "quick",
+      "title_en": "Contour-integral and Fourier transform based multivariable quantum eigenvalue transformation for commuting matrices",
+      "authors": "Shan Jiang, Dong An",
+      "date": "2026-09-26",
+      "pdf": "https://arxiv.org/pdf/2609.32262v1",
+      "score": "6.0",
+      "evidence": "结合量子奇异值变换、压缩小工具与酉算符线性组合的多变量特征值变换",
+      "tldr": "多变量矩阵函数在量子计算中的实现尚缺通用框架。本文针对成对交换矩阵提出两类多变量矩阵特征值变换算法：基于多变量围道积分处理 C^n 上任一全纯函数，基于高维傅里叶变换处理交换厄米矩阵的光滑函数。算法结合量子奇异值变换、压缩 gadget 与单位线性组合分析复杂度，并给出混合量子-经典变体。该变体将辅助量子比特降至随变量数对数增长，代价是查询复杂度增加；还表明多变量矩阵多项式可实现且无额外显式次数依赖。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "We study the problem of implementing multivariable matrix-valued functions on a quantum computer and propose two quantum algorithms for multivariable matrix eigenvalue transformations acting on tuples of pairwise commuting matrices. The first algorithm is based on multivariable contour integrals and applies to arbitrary holomorphic functions on $\\mathbb{C}^n$. The second algorithm is based on high-dimensional Fourier transforms and designed for smooth functions of commuting Hermitian matrices. For both algorithms, we discuss and analyze the complexity of their quantum implementation leveraging quantum singular value transformation, compression gadgets, and linear combination of unitaries. We additionally study their hybrid quantum--classical variants that reduce the number of required ancilla qubits to logarithmic dependence on the number of variables, at the cost of increased query complexity. As an application, we show that multivariable matrix polynomials can be implemented with no additional explicit degree dependence, depending only on global properties of the polynomials.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/29/2609.34623v1-trotterisation-thresholds-and-dissipative-quantum-chaos-in-open-system-digital-quantum-simulation",
+      "section": "quick",
+      "title_en": "Trotterisation Thresholds and Dissipative Quantum Chaos in Open-System Digital Quantum Simulation",
+      "authors": "Angsar Manatuly, Lukas M. Sieberer, Cahit Kargi, Nathan K. Langford",
+      "date": "2026-09-28",
+      "pdf": "https://arxiv.org/pdf/2609.34623v1",
+      "score": "6.0",
+      "evidence": "开系统耗散动力学的数字量子模拟与Trotter阈值",
+      "tldr": "数字量子模拟用Trotter步分解演化，步长过大会因量子混沌导致精度骤降，但此前仅针对无噪声闭系统。本文研究实验相关开系统模型，发现含耗散时Trotter化阈值仍存在，长时稳态亦然；阈值前开系统模拟可准确复现目标动力学，阈值后突然失效。作者基于随机矩阵理论提出统计方法，刻画近似幺正与真实耗散量子混沌的起始，并表明耗散与底层幺正混沌平衡时才出现耗散量子混沌。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Digital quantum simulation (DQS) is one of the most promising applications of quantum computing. Trotterised DQS models quantum dynamics by decomposing the evolution into a sequence of gate-based Trotter steps. Using larger Trotter steps reduces the required gate count, but it is now understood that the Trotterisation step size cannot be increased beyond a certain threshold value, beyond which there is a sudden breakdown in simulation accuracy, due to the onset of quantum chaos. To date, this behaviour has only been studied for closed systems not subjected to the environmental noise and decoherence to which real-world quantum computers are highly sensitive. In this work, we study a range of experimentally relevant open-system quantum simulator models and show that Trotterisation thresholds persist even when open-system effects are included, even in the long-time, steady-state limit, once all coherence has been lost. We show that open DQS can accurately reproduce the dynamics of open target systems prior to the threshold, but still exhibits a sudden performance breakdown beyond it. We introduce new, statistical techniques to rigorously characterise the onset of quantum chaos beyond the Trotterisation threshold for both approximately unitary and genuine dissipative quantum chaos, based on random matrix theory (RMT), building on techniques developed for closed systems. Finally, we demonstrate that dissipative quantum chaos emerges when the dissipation is in balance with the presence of underlying unitary quantum chaos; the dissipation must be strong enough to induce genuinely dissipative behaviour, yet not so strong as to suppress the underlying chaotic structure.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

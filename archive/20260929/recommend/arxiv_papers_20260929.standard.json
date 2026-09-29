@@ -1,0 +1,137 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-29T23:03:12.449739+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 1,
+    "deep_cap": 7,
+    "deep_selected": 1,
+    "quick_candidates": 2,
+    "quick_skim_target": 12,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2609.32310v1",
+      "source": "arxiv",
+      "title": "Conserved and relaxing modes enable polynomial-success coherent Carleman lattice Boltzmann evolution",
+      "abstract": "Carleman linearization represents nonlinear lattice Boltzmann collision dynamics in a form amenable to quantum block encoding, but low postselection probabilities in existing population-space encodings make coherent multi-step evolution exponentially unlikely to succeed. We present a quantum Carleman lattice Boltzmann scheme based on the multi-relaxation-time collision operator in a weighted Hermite moment basis. In this basis, the lifted collision operator separates into small coupled blocks whose norm exceeds unity because of the coupling between conserved and relaxing modes. This block structure enables a norm-attaining block encoding with a single-step success probability close to unity. Crucially, scaling the pair sector for a prescribed evolution horizon makes the combined encoding and sector-selection overhead grow polynomially rather than exponentially with the number of steps. For a hundred-step evolution, the resulting complete-run success probability exceeds that of population-space encodings by orders of magnitude. Over horizons of several tens of steps, the truncated dynamics reproduces the nonlinearly generated modes of a benchmark flow to within a few percent. We verify the combined preparation, evolution and readout protocol as a single unitary circuit and give a complete gate-level resource estimate for extracting a nonlinear observable of the benchmark flow from a coherent Carleman evolution. The block structure of conserved and relaxing modes holds equally on three-dimensional lattices and provides a constructive route to norm-attaining encodings for lattice Boltzmann models with quadratic equilibria.",
+      "authors": [
+        "Hua-Dong Yao",
+        "Sauro Succi"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "physics.comp-ph"
+      ],
+      "published": "2026-09-26T07:10:55+00:00",
+      "link": "https://arxiv.org/pdf/2609.32310v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "quantum Carleman block encoding for nonlinear dynamics with near-unity success probability",
+      "llm_evidence_cn": "Carleman量子块编码提升非线性动力学成功概率",
+      "llm_evidence": "Carleman量子块编码提升非线性动力学成功概率",
+      "canonical_evidence": "Carleman量子块编码提升非线性动力学成功概率",
+      "llm_tldr_en": "Presents a quantum Carleman lattice Boltzmann scheme in a weighted Hermite moment basis, where the lifted collision operator splits into small blocks enabling a near-unity single-step success probability block encoding.",
+      "llm_tldr_cn": "Carleman线性化可将非线性格子Boltzmann碰撞动力学化为适合量子块编码的形式，但现有粒子空间编码的后选择概率极低，使相干多步演化几乎必然失败。本文在加权Hermite矩基下基于多弛豫时间碰撞算子提出量子Carleman格子Boltzmann方案。该基下提升的碰撞算子分解为若干小耦合块，从而构造出范数达到且单步成功概率接近1的块编码。这为非线性动力学的高效相干量子模拟提供了多项式成功率的可行路径。",
+      "llm_tldr": "Carleman线性化可将非线性格子Boltzmann碰撞动力学化为适合量子块编码的形式，但现有粒子空间编码的后选择概率极低，使相干多步演化几乎必然失败。本文在加权Hermite矩基下基于多弛豫时间碰撞算子提出量子Carleman格子Boltzmann方案。该基下提升的碰撞算子分解为若干小耦合块，从而构造出范数达到且单步成功概率接近1的块编码。这为非线性动力学的高效相干量子模拟提供了多项式成功率的可行路径。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.32262v1",
+      "source": "arxiv",
+      "title": "Contour-integral and Fourier transform based multivariable quantum eigenvalue transformation for commuting matrices",
+      "abstract": "We study the problem of implementing multivariable matrix-valued functions on a quantum computer and propose two quantum algorithms for multivariable matrix eigenvalue transformations acting on tuples of pairwise commuting matrices. The first algorithm is based on multivariable contour integrals and applies to arbitrary holomorphic functions on $\\mathbb{C}^n$. The second algorithm is based on high-dimensional Fourier transforms and designed for smooth functions of commuting Hermitian matrices. For both algorithms, we discuss and analyze the complexity of their quantum implementation leveraging quantum singular value transformation, compression gadgets, and linear combination of unitaries. We additionally study their hybrid quantum--classical variants that reduce the number of required ancilla qubits to logarithmic dependence on the number of variables, at the cost of increased query complexity. As an application, we show that multivariable matrix polynomials can be implemented with no additional explicit degree dependence, depending only on global properties of the polynomials.",
+      "authors": [
+        "Shan Jiang",
+        "Dong An"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.NA"
+      ],
+      "published": "2026-09-26T05:33:28+00:00",
+      "link": "https://arxiv.org/pdf/2609.32262v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Multivariable eigenvalue transformation via QSVT, compression gadgets and LCU",
+      "llm_evidence_cn": "结合量子奇异值变换、压缩小工具与酉算符线性组合的多变量特征值变换",
+      "llm_evidence": "结合量子奇异值变换、压缩小工具与酉算符线性组合的多变量特征值变换",
+      "canonical_evidence": "结合量子奇异值变换、压缩小工具与酉算符线性组合的多变量特征值变换",
+      "llm_tldr_en": "Two quantum algorithms implement multivariable matrix functions of commuting matrices via contour integrals and Fourier transforms, leveraging QSVT, compression gadgets and LCU with complexity analysis.",
+      "llm_tldr_cn": "针对量子计算机上实现多变量矩阵值函数的问题，该文提出两种作用于两两交换矩阵元组的多变量量子特征值变换算法。第一种基于多变量围道积分，适用于任意全纯函数；第二种基于高维傅里叶变换，面向光滑厄米矩阵函数。论文利用量子奇异值变换、压缩小工具与酉算符线性组合分析其量子实现复杂度。该工作将量子特征值变换推广至多变量场景，为矩阵函数的高效实现提供新工具。",
+      "llm_tldr": "针对量子计算机上实现多变量矩阵值函数的问题，该文提出两种作用于两两交换矩阵元组的多变量量子特征值变换算法。第一种基于多变量围道积分，适用于任意全纯函数；第二种基于高维傅里叶变换，面向光滑厄米矩阵函数。论文利用量子奇异值变换、压缩小工具与酉算符线性组合分析其量子实现复杂度。该工作将量子特征值变换推广至多变量场景，为矩阵函数的高效实现提供新工具。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum singular value transformation for matrix functions and polynomial approximation",
+      "matched_requirement_id": "req-14",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.34623v1",
+      "source": "arxiv",
+      "title": "Trotterisation Thresholds and Dissipative Quantum Chaos in Open-System Digital Quantum Simulation",
+      "abstract": "Digital quantum simulation (DQS) is one of the most promising applications of quantum computing. Trotterised DQS models quantum dynamics by decomposing the evolution into a sequence of gate-based Trotter steps. Using larger Trotter steps reduces the required gate count, but it is now understood that the Trotterisation step size cannot be increased beyond a certain threshold value, beyond which there is a sudden breakdown in simulation accuracy, due to the onset of quantum chaos. To date, this behaviour has only been studied for closed systems not subjected to the environmental noise and decoherence to which real-world quantum computers are highly sensitive. In this work, we study a range of experimentally relevant open-system quantum simulator models and show that Trotterisation thresholds persist even when open-system effects are included, even in the long-time, steady-state limit, once all coherence has been lost. We show that open DQS can accurately reproduce the dynamics of open target systems prior to the threshold, but still exhibits a sudden performance breakdown beyond it. We introduce new, statistical techniques to rigorously characterise the onset of quantum chaos beyond the Trotterisation threshold for both approximately unitary and genuine dissipative quantum chaos, based on random matrix theory (RMT), building on techniques developed for closed systems. Finally, we demonstrate that dissipative quantum chaos emerges when the dissipation is in balance with the presence of underlying unitary quantum chaos; the dissipation must be strong enough to induce genuinely dissipative behaviour, yet not so strong as to suppress the underlying chaotic structure.",
+      "authors": [
+        "Angsar Manatuly",
+        "Lukas M. Sieberer",
+        "Cahit Kargi",
+        "Nathan K. Langford"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cond-mat.mes-hall",
+        "nlin.CD"
+      ],
+      "published": "2026-09-28T08:45:22+00:00",
+      "link": "https://arxiv.org/pdf/2609.34623v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "digital quantum simulation of open-system dissipative dynamics with Trotter thresholds",
+      "llm_evidence_cn": "开系统耗散动力学的数字量子模拟与Trotter阈值",
+      "llm_evidence": "开系统耗散动力学的数字量子模拟与Trotter阈值",
+      "canonical_evidence": "开系统耗散动力学的数字量子模拟与Trotter阈值",
+      "llm_tldr_en": "Studies Trotterisation thresholds and dissipative quantum chaos in open-system digital quantum simulation, showing that step sizes beyond a critical value cause abrupt accuracy breakdown under noise and decoherence.",
+      "llm_tldr_cn": "数字量子模拟中，增大Trotter步长可减少门数，但超过阈值后量子混沌会导致模拟精度突然崩溃，此前该现象仅在闭系统中研究。本文将研究扩展到含环境噪声与退相干的实验相关开系统，考察耗散量子混沌下的Trotter化行为。结果表明开系统同样存在步长阈值，且噪声会改变精度崩溃的边界。该结果对真实量子计算机上耗散动力学模拟的步长与精度设定具有指导意义。",
+      "llm_tldr": "数字量子模拟中，增大Trotter步长可减少门数，但超过阈值后量子混沌会导致模拟精度突然崩溃，此前该现象仅在闭系统中研究。本文将研究扩展到含环境噪声与退相干的实验相关开系统，考察耗散量子混沌下的Trotter化行为。结果表明开系统同样存在步长阈值，且噪声会改变精度崩溃的边界。该结果对真实量子计算机上耗散动力学模拟的步长与精度设定具有指导意义。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

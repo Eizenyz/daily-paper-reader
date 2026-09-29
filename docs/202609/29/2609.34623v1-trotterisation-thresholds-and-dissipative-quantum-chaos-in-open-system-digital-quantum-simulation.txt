@@ -1,0 +1,1232 @@
+Title: Trotterisation Thresholds and Dissipative Quantum Chaos in Open-System Digital Quantum Simulation
+
+URL Source: https://arxiv.org/pdf/2609.34623v1
+
+Published Time: Tue, 29 Sep 2026 03:18:41 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# Trotterisation Thresholds and Dissipative Quantum Chaos in Open-System Digital Quantum Simulation 
+
+A. Manatuly 1,2
+
+> 1
+
+Centre for Quantum Software & Information, Mathematical & Physical Sciences, University of Technology Sydney, Sydney, Australia. 2Sydney Quantum Academy, Sydney, Australia. 
+
+L. M. Sieberer 3,4
+
+> 3
+
+Institute for Theoretical Physics, University of Innsbruck, 6020 Innsbruck, Austria. 4PlanQC GmbH, 85748 Garching, Germany. 
+
+C. Kargi 1,2,†
+
+> 1
+
+Centre for Quantum Software & Information, School of Mathematical & Physical Sciences, University of Technology Sydney, Sydney, Australia. 2Sydney Quantum Academy, Sydney, Australia. (†Current affiliation: Quantinuum, Cambridge, United Kingdom.) 
+
+N. K. Langford 1,∗
+
+> 1
+
+Centre for Quantum Software & Information, School of Mathematical & Physical Sciences, University of Technology Sydney, Sydney, Australia 
+
+(Dated: September 29, 2026) Digital quantum simulation (DQS) is one of the most promising applications of quantum computing. Trotterised DQS models quantum dynamics by decomposing the evolution into a sequence of gate-based Trotter steps. Using larger Trotter steps reduces the required gate count, but it is now understood that the Trotterisation step size cannot be increased beyond a certain threshold value, beyond which there is a sudden breakdown in simulation accuracy, due to the onset of quantum chaos. To date, this behaviour has only been studied for closed systems not subjected to the environmental noise and decoherence to which real-world quantum computers are highly sensitive. In this work, we study a range of experimentally relevant open-system quantum simulator models and show that Trotterisation thresholds persist even when open-system effects are included, even in the long-time, steady-state limit, once all coherence has been lost. We show that open DQS can accurately reproduce the dynamics of open target systems prior to the threshold, but still exhibits a sudden performance breakdown beyond it. We introduce new, statistical techniques to rigorously characterise the onset of quantum chaos beyond the Trotterisation threshold for both approximately unitary and genuine dissipative quantum chaos, based on random matrix theory (RMT), building on techniques developed for closed systems. Finally, we demonstrate that dissipative quantum chaos emerges when the dissipation is in balance with the presence of underlying unitary quantum chaos; the dissipation must be strong enough to induce genuinely dissipative behaviour, yet not so strong as to suppress the underlying chaotic structure. 
+
+I. INTRODUCTION 
+
+Digital quantum simulation (DQS) is a powerful ap-plication of quantum computers, enabling the simulation of physical phenomena that are classically intractable [1– 5]. The Trotter-Suzuki decomposition approximates the continuous time-evolution of a quantum system by dis-cretising it into a sequence of quantum gates, each corre-sponding to evolution over a finite time interval known as the Trotter step size [6, 7]. It is one of the most widely used approaches to DQS as it provides leading perfor-mance compared to other methods [8]. The Trotter step size is a key parameter in optimising DQS protocols, as it is a crucial factor in determining the accuracy of the sim-ulation and the required computational resources. As real world systems are invariably affected by environmental  
+
+> ∗Corresponding author: nathan.langford@uts.edu.au
+
+noise, smaller step sizes also lead to increased errors and ultimately higher resource requirements, as more gates are required to simulate the same total evolution time. On the other hand, it has also been shown that, at large step sizes, DQS systems experience a breakdown in the accuracy of the simulation due to the onset of quantum chaos [9–11]. Although the Trotterisation threshold has been stud-ied in detail in closed-system quantum simulators [9–11], its behaviour in open-system settings remains largely unexplored. Real-world digital quantum simulators are inevitably affected by environmental noise and decoher-ence, which can significantly influence the performance of DQS protocols [12, 13]. It is therefore important to determine whether the Trotterisation threshold survives in the presence of environmental noise and decoherence, and how these effects influence the onset of quantum chaos in open-system DQS. The Trotterisation thresh-old in closed-system DQS has been studied using various quantities that are experimentally accessible, such as the arXiv:2609.34623v1 [quant-ph] 28 Sep 2026 2time evolution of local observables [9–11], out-of-time-ordered correlators [9, 10], fidelity [10, 11], and inverse participation ratio [9–11]. Digital quantum simulation has also been studied experimentally in the presence of hardware noise and decoherence [14]. However, no sys-tematic study has been conducted to characterise the Trotterisation threshold in open-system DQS, and little is known about how the threshold is affected by environ-mental noise and decoherence. Furthermore, dissipation does not necessarily only arise in the context of noise and decoherence that is detrimental to performance in digital quantum simulation. Engineered dissipative processes can also be exploited to prepare and stabilise non-trivial quantum states, including entangled and squeezed states, as well as many-body steady states [15–23]. It is therefore also highly pertinent to study Trotterisation threshold and performance behaviours in open-system DQS where dissipation is being used as a resource for quantum pro-cessing. In this work, we show that the Trotterisation threshold persists under dissipative dynamics across a broad range of dissipation rates, disappearing only when dissipation becomes so strong as to completely dominate the system dynamics, even on the time-scale of a single Trotter step. Remarkably, the threshold survives even in the steady state regime, making it experimentally discoverable even through steady-state expectation values of local observ-ables. We further demonstrate that, in the presence of environmental noise, digital quantum simulators can faith-fully reproduce open-system target dynamics, providing a potential route to the preparation and stabilisation of useful states for quantum information processing. We in-troduce new, quantitatively rigorous statistical measures of quantum chaos based on random matrix theory (RMT) that are applicable in both approximately unitary and genuinely dissipative regimes. Using these measures, we show that the threshold for residual unitary quantum chaos coincides with the conventional unitary quantum chaos threshold. Furthermore, we find that genuinely dis-sipative quantum chaos also emerges beyond a threshold located at the same Trotter step size. Specifically, dissipa-tive quantum chaos arises when the dissipation is strong enough to induce genuinely dissipative behaviour, but not so strong as to completely suppress the underlying chaotic structure of the unitary dynamics.   
+
+> II. MODELS AND OPEN-SYSTEM DYNAMICS A. Open-System Framework
+
+We consider open quantum systems subject to Marko-vian dissipation, a widely relevant and applicable model of environmental noise in quantum systems [12]. Theo-retically, this approximation is generally valid when the system-environment coupling is weak and the environ-ment has a correlation time that is short compared with the characteristic timescales of the system dynamics, con-ditions that are also almost always true in practice [12]. Under these conditions, the system dynamics can be accu-rately modelled by a Lindblad master equation [13, 24]: ˙ρ = Lρ = −i [H, ρ ] + X
+
+> k
+
+γkD(Ok)ρ, (1) where ρ is the density matrix, H is the Hamiltonian gen-erating the coherent part of the evolution, Ok are the jump operators associated with each dissipation channel, and D(O)ρ := OρO † − 12
+
+O†O, ρ denotes the dissipator, with γk the corresponding decay rate. Each gate in the Trotterised evolution is modelled by a propagator gener-ated by the corresponding master equation. The resulting Floquet superoperator EF can therefore be written as 
+
+EF = Y
+
+> i
+
+eLiτ ≈ eP  
+
+> iLiτ
+
+, (2) where Li describes the open-system evolution for the ith 
+
+gate. The Floquet superoperator EF is not, in general, guaranteed to admit an equivalent description in terms of a Lindblad master equation of the form EF (ρ) = eLeff τ (ρ), where Leff is an effective Lindbladian. This is because, while the product of completely positive trace-preserving (CPTP) maps is itself a CPTP map, it may not corre-spond to the exponential of a Lindbladian [25, 26]. As we will see, however, in many cases of practical interest the Trotterised evolution generated by EF provides an accu-rate approximation to the target dynamics, particularly when the Trotter step size τ is small, as evidenced by the high fidelity between the Trotterised and target evolutions shown later in this work. This is relevant to the context of simulating open-system target models. However, re-gardless of whether an effective Lindbladian exists, the spectral properties of the Floquet superoperator EF can be analysed directly to investigate signatures of quantum chaos in the open-system dynamics [27–30].  
+
+> B. Physical Models
+
+To develop a comprehensive understanding of digital quantum simulation and investigate Trotterisation thresh-olds and quantum chaos, we consider three paradigmatic models with diverse structural features, including differ-ent symmetries, interaction ranges, and Hilbert space dimensions: (i) the quantum kicked top, (ii) the nearest-neighbour Heisenberg spin chain, and (iii) the Rabi model. These are the same models previously employed to study closed-system DQS in Ref. [11]. Here, we extend each model to the open-system setting by introducing physi-cally motivated dissipative channels, while retaining the same closed-system Hamiltonians and Trotterisation pro-tocols as in our previous work. The subscript “dig” and “ide” refers to the digitised (Trotterised) and ideal (non-digitised) target models, respectively, and we use ψ or 
+
+ρ to indicate whether the subscripts refer to the closed-or open-system models. A detailed description of the 3models and their open-system extensions is provided in the Appendix A. Note, in this paper, we define for each of these models a set of reference dissipation rates, chosen for relevance to current circuit QED implementations. Our results are not restricted to these reference dissipation rates, how-ever: they serve only to identify values representative of the general behaviour of open-system quantum chaos under physically relevant noise conditions. Throughout the paper, we then vary overall dissipation levels by mul-tiplying all reference dissipation rates by a scaling factor according to γk → fγ γk, where γk is the decay rate of the kth channel. The qualitative features identified in our analysis persist across a range of dissipation strengths, provided that the system remains in the weak-coupling regime where the Markovian approximation is valid.  
+
+> III. PERSISTENCE OF THE TROTTERISATION THRESHOLD IN OPEN-SYSTEM DIGITAL QUANTUM SIMULATION
+
+To determine whether the Trotterisation threshold per-sists in open-system DQS and how it depends on the dis-sipation strength, we first examine experimentally acces-sible dynamical and steady-state observables. Results for our three representative models—the kicked top, Heisen-berg chain, and Rabi model—are shown in the first, sec-ond, and third columns of Fig. 1, respectively. The exam-ple observables are the spin magnetisation ⟨ ¯Jz ⟩ = 1 
+
+> j
+
+⟨Jz ⟩
+
+for the kicked top, the polarisation of the first qubit ⟨σ1 
+
+> z
+
+⟩
+
+for the Heisenberg chain, and the normalised photon num-ber ⟨n⟩/n j (where nj = 7 × dim j ) for the Rabi model, where dim j = 2 j + 1 = 2 denotes the Hilbert-space di-mension of a spin- 12 qubit [see Ref. [11] for more details about the photon number normalisation]. The first five rows of Fig. 1 show the evolution of these observables under open-system DQS for different dissipation strengths as functions of the Trotter step size τ (horizontal axis) and simulation time (vertical axis) chosen to illustrate different dynamical regimes. The final two rows present representative time traces in the pre- and post-threshold regimes. Similar results for simulation fidelity are given in Appendix B.  
+
+> A. Universal Behaviours
+
+Three distinct regimes remain visible in the time evolu-tion of the observables even in the presence of dissipation, as shown in Fig. 1. When the Trotter step size is small, the Trotterised evolution exhibits periodic or quasi-periodic revivals, which decay faster as the dissipation strength is increased; this behaviour is also visible in the time traces of the observables at pre-threshold Trotter step sizes, shown in Fig. 1 (p-r). This quasi-periodicity indi-cates that the Trotterised evolution closely approximates the exact dynamics [see Fig. 7]. As the Trotter step size is increased, the period of the quasi-periodic revivals al-ters, and the revivals become less pronounced, as seen in the corresponding pre-threshold time traces in Fig. 1 (a-f). The simulation fidelity also shows transition to lower values at these step sizes [see Fig. 7]. After a certain point, this quasi-periodicity is completely lost and the time evolution of the observables becomes irregular, as seen in the corresponding post-threshold time traces in Fig. 1 (s-u). This loss of regularity signals a breakdown of the Trotterised approximation previously shown to stem from an onset of quantum chaos [11], and is accompanied by a sharp drop in the simulation fidelity [see Fig. 7]. The transition between these regimes is sharp enough to be identified by visual inspection alone, indicating the presence of a well-defined Trotterisation threshold in open-system DQS. Visual comparison between the rows in Fig. 1 shows that the position of the Trotterisation threshold does not change obviously with the dissipation strength and matches the position of the threshold in closed-system DQS. This indicates that the position of the Trotterisa-tion threshold is determined by the underlying unitary dynamics, and is not significantly affected by the pres-ence of dissipation. However, as the dissipation strength becomes stronger, the Trotterisation threshold becomes less pronounced or even vanishes in the presence of strong dissipation as can be seen in Fig. 1 (m-o). This occurs earlier for the Rabi model, due to the amplified impact of dissipation rates in the cavity. The persistence of the Trotterisation threshold at the same position for different dissipation strengths illustrates that it should be relatively straightforward to observe and locate it experimentally even in the presence of substantial dissipation, as long as it is not too strong. The fact that the Trotterisation threshold persists in open-system DQS well beyond the timescale over which coherent dynamics decay [Fig. 1] suggests that it may be interesting to study the threshold in the long-time limit. In fact, looking at the system steady-state regime in Fig. 2, all three models still show a sharp transition in the steady-state values of the observables, provided the dissipation rate scaling factor is not too large. When the dissipation is sufficiently weak, all three models exhibit the same qualitative behaviour: over a broad range of dis-sipation strengths, the Trotterisation threshold remains nearly unchanged; beyond a critical dissipation strength, the threshold shifts to larger Trotter step sizes, before eventually disappearing once dissipation becomes strong enough to dominate the dynamics; in the post-threshold regime, the larger the Trotter step size, the smaller the dissipation strength required for the post-threshold pat-terns to vanish. The post-threshold regime also exhibits signatures of stable island behaviours (manifesting as ver-tical stripes in local observables and fidelity), identified previously in Ref. [11]. The consistent behaviour observed across all three mod-els indicates that these post-threshold features are generic to open-system DQS, rather than being specific to a partic-40510 Time (2 πg −1) (a) Kicked top 〈 ¯Jz,ρ dig 〉
+
+(b) Heisenberg 〈σ1 
+
+> z,ρ dig
+
+〉
+
+> fγ = 0
+
+(c) Rabi 〈nρdig 〉/n j
+
+0510 Time (2 πg −1) (d) (e) 
+
+> fγ = 1
+
+(f) 
+
+0510 Time (2 πg −1) (g) (h) 
+
+> fγ = 10
+
+(i) 
+
+0510 Time (2 πg −1) (j) (k) 
+
+> fγ = 30
+
+(l) 
+
+10 −2 10 −1 10 0
+
+Step Size (2 πg −1)0510 Time (2 πg −1) (m) 
+
+10 −2 10 −1 10 0
+
+Step Size (2 πg −1)(n) 
+
+10 −2 10 −1
+
+Step Size (2 πg −1)
+
+> fγ = 100
+
+(o) 
+
+−101 τ = 0.01 
+
+fγ
+
+(p) 〈 ¯Jz,ρ dig 〉
+
+0 1 10 30 100 
+
+τ = 0.01 (q) 〈σ1 
+
+> z,ρ dig
+
+〉
+
+0.00 0.05 0.10 
+
+τ = 0.01 (r) 〈nρdig 〉/n j
+
+0 10 20 30 Time (2 πg −1)
+
+−101 τ = 0.6 
+
+fγ
+
+(s) 0 1 10 30 100 0 2 4 6 8 10 Time (2 πg −1)
+
+τ = 0.21 (t) 0 2 4 6 8 10 Time (2 πg −1)0.00.1
+
+τ = 0.18 (u) 
+
+−1.0 −0.5 0.0 0.5 1.0
+
+FIG. 1. Time-evolution of local observable expectation values in open-system DQS for the kicked top (with j = 10), Heisenberg (chain of N = 5 qubits), and Rabi (with cavity truncation dimension dim c = 20) models, corresponding to the first, second, and third columns, with the corresponding local observables magnetisation ⟨ ¯Jz ⟩ = 1 
+
+> j
+
+⟨Jz ⟩, polarisation of the first qubit ⟨σ1 
+
+> z
+
+⟩, and normalised photon number ⟨n⟩/n j , respectively. Initialisation: in the kicked top model, the spin is initially in a maximal spin state; in the Heisenberg model, only the first qubit in the chain is excited, and the rest are in ground state; in the Rabi model, the qubit is initially excited with zero cavity photons. The first five rows show the time evolution of the observables under open-system DQS at different dissipation strength scaling factors fγ = 0 .01 , 1, 10 , 30 , 100 respectively, plotted as a function of the Trotter step size τ (x-axes) and simulation time (y-axes). The time traces of the observables for different dissipation strengths (p-r) at pre-threshold and (s-u) post-threshold Trotter step sizes. 510 −1                     
+
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> fγ
+> Kicked top (a) 〈¯Jz,ρ dig 〉steady
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> fγ
+> Heisenberg (b) 〈σ1
+> z,ρ dig 〉steady
+> 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> fγ
+> Rabi (c) 〈nρdig 〉steady /n j
+> 10 −210 −110 0
+> Step Size (2 πg −1)
+> −1.0
+> −0.50.0
+> 〈 ¯Jz,ρ dig  〉steady
+> (d)
+> fγ
+> 0.11 1.0 10.12 100.04 1031.98 10 −210 −110 0
+> Step Size (2 πg −1)
+> −0.2
+> −0.10.0
+> 〈σ1
+> z,ρ dig  〉steady
+> (e)
+> fγ
+> 0.1 1.0 10.12 100.04 1042.91 10 −310 −210 −1
+> Step Size (2 πg −1)0.00.20.4
+> 〈nρdig  〉steady  /n j
+> (f)
+> fγ
+> 0.02 0.1 1.0 10.12 100.04
+> −101−0.25 0.00 0.25 0.00.5
+
+FIG. 2. Steady-state values of local observable expectation values in open-system DQS for the Kicked top, Heisenberg, and Rabi models with the same parameters as in Fig. 1, corresponding to the first, second, and third columns, with the corresponding local observables magnetisation ⟨ ¯Jz ⟩ = 1 
+
+> j
+
+⟨Jz ⟩, polarisation of the first qubit ⟨σ1 
+
+> z
+
+⟩, and normalised photon number ⟨n⟩/n j , respectively. Panels (a–c) show the steady-state values as a function of the Trotter step size τ and dissipation rate scaling factor fγ , while (d–f) show traces at selected values of fγ .
+
+ular model or dissipation channel. Observing the thresh-old in the steady-state regime also shows that coherence is not required to observe the Trotterisation threshold even though the threshold is determined by the underlying unitary dynamics. This demonstrates that the visibility of the threshold is a matter of the balance between the unitary and dissipative parts of the dynamics, rather than the presence of coherence in the system. The presence of π/ 2 rotation gates in a Trotterised evolution can lead to a change in the orientation of the dissipation operators, which affects the steady-state prop-erties of the system. At very large dissipation rates, the Trotterisation threshold vanishes for the kicked top and Rabi models, as shown in Fig. 2 (a) and (c). However, the Heisenberg model exhibits qualitatively different be-haviour: the threshold persists even at very large dissipa-tion rates, although it shifts towards smaller Trotter step sizes, as shown in Fig. 2 (b) and (e). This difference arises because the Trotterised Heisenberg evolution contains ro-tation gates that effectively change the orientation of the dissipation operators during the evolution. In contrast to the kicked top and Rabi models, where sufficiently strong dissipation drives the system towards a simple ground state, the Heisenberg model retains a non-trivial steady state even at very large dissipation rates. This steady state is determined by the competition between dissipa-tion channels acting along different axes throughout the Trotterised evolution. 
+
+B. Noisy Unitary DQS vs Open Target Models: Two Open DQS Paradigms 
+
+There are two complementary ways of viewing the role of dissipation in DQS. In the first, the target dynamics are those of a closed system, and dissipation constitutes an unwanted source of noise that reduces the fidelity of the simulation. In the second, the target dynamics are themselves open-system dynamics, with dissipation form-ing an intrinsic part of the model. A prominent example is engineered dissipation, where dissipative processes are exploited as a resource to prepare and stabilise non-trivial quantum states. Although the dissipation described in the models in Appendix A is of a form typically associated with unwanted experimental noise, it is instructive to also consider the implications of our results in the context of the second paradigm, and compare our digitised open-system models with non-digitized open-system targets. Taking this perspective, the results in Appendix Figures 7 and 8—which illustrate high fidelities between digitised dynamics and open-system target models—illustrate that DQS platforms can accurately reproduce non-digitised open-system dynamics. Figure 3 shows the illustrative example comparing the fidelity of the open-system DQS with respect to the open-and closed-system target dynamics. The presence of dis-sipation unsurprisingly causes rapid decay in fidelity rela-tive to a unitary target model, which simply reflects the usual challenges associated with simulating closed-system dynamics using a real-world quantum processor affected 6020 40 Time (2 πg −1)Kicked top (a) F(ρide (t), ρ dig (t))                
+
+> 0.02.55.07.510 .0Heisenberg (b) F(ρide (t), ρ dig (t))
+> 0.02.55.07.510 .0Rabi (c) F(ρide (t), ρ dig (t))
+> 10 −210 −110 0
+> Step Size (2 πg −1)020 40 Time (2 πg −1)(d) F(ψide (t), ρ dig (t))
+> 10 −210 −110 0
+> Step Size (2 πg −1)0.02.55.07.510 .0 (e) F(ψide (t), ρ dig (t))
+> 10 −210 −1
+> Step Size (2 πg −1)0.02.55.07.510 .0 (f) F(ψide (t), ρ dig (t))
+> 0.00.20.40.60.81.0
+
+FIG. 3. Comparison of simulation fidelities of the open-system DQS with respect to the open-system target dynamics and the closed-system target dynamics. The subscripts ide and dig denote the ideal and digital evolutions, respectively. Panels (a–c) show the simulation fidelity F(ρide (t), ρ dig (t)) between the open-system target dynamics and the open-system DQS, while panels (d–f) show the simulation fidelity F(ψide (t), ρ dig (t)) between the closed-system target dynamics and the open-system DQS. The columns correspond, from left to right, to the kicked top, Heisenberg, and Rabi models with the same parameters as in Fig. 1. For all open system models, the dissipation rate scaling factor is fγ = 1. 
+
+by unavoidable decoherence. By contrast, and consistent across all models studied here, fidelities remained high for long times relative to an effective Lindblad open target sys-tem, despite there being no guarantee that open Floquet systems have an effective Floquet Lindbladian [25, 26]. When appropriately designed, open-system DQS can not only accurately simulate open-system target dynamics but also prepare and stabilise non-trivial quantum states, including entangled and squeezed states, as well as many-body steady states [15–23]. Such approaches can require correlated dissipative processes that may be challenging to implement, and may not map readily onto natural dissipation channels, but they can reduce or eliminate constraints associated with the coherent elements involved, in exchange for short-time coherence requirements. Never-theless, these results illustrate that real-world decoherence may not always present an insuperable barrier to the re-alisation of high-fidelity DQS for complex systems, and though there are obviously challenges associated with implementing dissipation in a controllable way, digitisa-tion does offer ways to achieve this. Indications of this kind of correspondence have previously been observed in experimental DQS implementations [31]. Finally, these results also illustrate the significant potential differences that can arise between the two paradigms of open DQS. 
+
+IV. QUANTUM CHAOS IN OPEN-SYSTEM DIGITAL QUANTUM SIMULATION 
+
+In the previous section, we identified the Trotterisation threshold in open-system DQS by analysing the time evo-lution of local observables and the steady-state properties of the system. In closed-system DQS, the breakdown of the Trotterised evolution beyond the threshold has been identified as resulting from the onset of quantum chaos [9– 11]. In our previous work [11], first indications of that quantum chaos were observed through the destruction of quasi-periodic revivals in the time evolution of local observables, accompanied by a sudden transition in the full dynamics of simulation fidelity, and our new results show the same is also observable in open-system DQS. As in the closed-system case, however, while indicative signatures of quantum chaos like these are useful for iden-tifying the Trotterisation threshold, they are not sufficient to rigorously characterise the onset of quantum chaos in open-system DQS. Taking an analogous approach to our previous work [11], a more rigorous characterisation of quantum chaos can be obtained by analysing the statistical properties of the eigenvalues and eigenvectors of the system’s evolution operator, which can be compared with the predictions of RMT [27]. The main advantage of RMT as a diagnostic of quantum chaos is that it provides a universal framework in which the microscopic details of the system are less important than its underlying symmetries, such as time-reversal symmetry, which determine the corresponding 7random-matrix universality class (e.g., COE, CUE, or CSE). In the closed-system case, the evolution operator is unitary, and its eigenvalues lie on the unit circle in the complex plane. Both level-spacing [32] and eigenvec-tor statistics [33] of unitary operators have been used to identify the onset of quantum chaos in closed-system DQS by comparing them to the predictions of Gaussian or Circular random matrix theory ensembles [11, 34]. The open-system evolution operator, on the other hand, is a superoperator with its eigenvalues lying inside the unit circle in the complex plane, and eigenvectors forming a bi-orthogonal set [27]. Here, we show how the statistical properties of the complex eigenvalues and eigenvectors of the open-system superoperators can be analysed rig-orously and quantitatively to identify the presence of quantum chaos, by comparing them with the RMT pre-dictions of non-Hermitian Ginibre ensembles [30, 35–40].  
+
+> A. Quantum Chaos in “Noisy” Unitary DQS
+
+Although open-system evolution is inherently non-unitary, DQS traditionally and most commonly aims to simulate Hamiltonian dynamics while minimising un-wanted dissipative effects. In this context, it is therefore still valuable to study closed-systems behaviours of quan-tum chaos and to understand how they survive in and are affected by the presence of dissipation. Challengingly, however, the rigorous RMT signatures of quantum chaos we introduced in [11] are explicitly defined in terms of the statistical properties of a unitary matrix, which are, at first glance, immediately violated at a fundamental math-ematical level once even small amounts of dissipation are introduced. Here, we introduce a new statistical approach to characterise how the statistical properties of unitary 
+
+quantum chaos survive in an open-system superoperator, motivated by the recognition that successful implemen-tation of the traditional “approximately unitary” DQS paradigm requires any dissipation to be small compared with the coherent evolution. Under an assumption that the unitary part of a Trotterised evolution captures the dominant features of the system’s dynamics, the onset of quantum chaos in open-system DQS can be charac-terised by isolating the main unitary component from the open-system evolution, and applying our established closed-system statistical techniques to that [11].  
+
+> 1. Residual Unitary Quantum Chaos
+
+To isolate the main unitary component of an open-system evolution, we use the minimal Kraus or operator-sum representation of the open-system Floquet superoper-ator EF (ρ), which, for open quantum processes, is analo-gous to the minimal pure-state decomposition (or spectral decomposition) of a mixed quantum state. This is a com-pletely positive trace-preserving (CPTP) map [41, 42]: 
+
+EF (ρ) = 
+
+> D2
+
+X
+
+> i=1
+
+di
+
+D KiρK † 
+
+> i
+
+, (3) where D is the dimension of the Hilbert space, and Ki are the (ordered) canonical Kraus operators ( d1 > d 2 > · · · >dD2 ) satisfying the completeness relation P 
+
+> idi
+> D
+
+K† 
+
+> i
+
+Ki = I,which ensures normalisation of the output state. When we choose the Kraus operators to be normalised according to Tr( K† 
+
+> i
+
+Ki) = D, the coefficients di obey P 
+
+> i
+
+di = D.With these definitions, each Kraus operator Ki can be interpreted as a different probabilistic branch of the evo-lution, with the probability di/D determining the weight of that branch in the overall evolution. When the dissipation is weak and the Trotter step size is not too large, the Kraus operator K1 is expected to dominate the evolution, with its relative probabilistic weight d1/D being close to unity. In this regime, K1 is also expected to be approximately unitary, in the sense that K† 
+
+> 1
+
+K1 ≈ I. These two properties provide complemen-tary measures of how close the full open-system evolution is to an effective unitary equivalent. Conversely, devia-tion of d1/D from unity quantifies the degree to which the open evolution is probabilistic in nature (carried by other Kraus components Kj̸ =1 ), while the operator er-ror norm ∥K† 
+
+> 1
+
+K1 − I∥/D quantifies the degree to which the dominant Kraus operator, K1, itself deviates from unitarity. When d1/D ≈ 1 and K† 
+
+> 1
+
+K1 ≈ I, the dynam-ics are therefore well approximated by a single, almost unitary Kraus component, allowing its eigenvalues and eigenvectors to be analysed using established methods for identifying the onset of quantum chaos in closed-system DQS [11]. In this work, we analyse the eigenvector statis-tics of K1 [33, 43, 44] relative to the predictions of unitary RMT for the appropriate universal RMT ensemble. The agreement between the eigenvector statistics of the dominant Kraus operator K1 and RMT predictions can be quantified using the X2RMT goodness-of-fit test intro-duced in Ref. [11], and we follow the procedure for binning the eigenvector components and calculating X2RMT as de-scribed there. Since the X2RMT test statistic quantifies statistical consistency with RMT, and since the under-lying reduced χ2r probability density which governs the expected distribution of X2RMT outcomes is not sharply peaked (the standard deviation ∆ χ2r (k) = p2/k scaling only as 1 /√k relative to a mean of 1 for k degrees of free-dom), there is a finite range of values around X2RMT = 1 that is consistent with RMT. To identify whether the dy-namics produced by K1 are quantum chaotic, we therefore assess whether observed X2RMT (K1) outcomes consistently fall within the (full width) 99% confidence region for a reduced chi-squared distribution with the appropriate 
+
+k, over a finite region of random samples. Finding too many values of X2RMT (K1) ≫ 1 (judged relative to the chosen confidence region) conclusively indicates disagree-ment with unitary RMT, noting that deviations of K18from unitarity are also expected to result in deviations from RMT statistical predictions. Consequently, as long as K1 dominates the evolution, X2RMT (K1) provides a meaningful diagnostic of residual unitary quantum chaos. Once the full evolution deviates too far from unitarity, 
+
+X2RMT (K1) cannot be interpreted reliably in isolation [34]. When comparing system dynamics with RMT, it is im-portant to properly account for any symmetries present, as they can affect the statistical properties of the dy-namics [11, 27, 45]. For closed-system dynamics, random Hamiltonians and unitaries exhibit different generic statis-tical characteristics depending on their RMT universality class, defined by whether they possess an anti-unitary time-reversal symmetry (and which type). They can also exhibit additional internal structure due to possessing geo-metric (physical) symmetries, defined under unitary trans-formations, which constrain dynamical randomness in relation to internal symmetry blocks. A detailed overview of methods for analysing quantum chaos in closed sys-tems with different symmetries is provided in our previous work [11]. While closed-system symmetries do not necessarily per-sist in the presence of dissipation, the Kraus operators of an open system’s evolution can inherit both statistical characteristics and internal structure from its underlying closed-system dynamics, to the extent that these survive the dissipative perturbation. This is particularly relevant for the dominant Kraus operator in the weak-dissipation limit relevant to the “noisy unitary” paradigm we are studying here. For example, all the models considered in this work possess time-reversal symmetry in their Hamilto-nian limit [11], and we find that an inherited time-reversal symmetry is reflected in the eigenvector statistics of K1,as discussed below. The Heisenberg and Rabi models also possess unitary parity symmetries in their Hamilto-nian limit [11]. When dissipation is introduced, unitary symmetries can be completely broken, or can be either weakly preserved or strongly preserved [46]. An open-system model has a weakly preserved unitary symmetry when the symmetry operator commutes with the full open-system dynamics, including both Hamiltonian terms and dissipators (covariance): 
+
+EF (SρS †) = SEF (ρ)S†. (4) A strongly preserved symmetry requires, in addition to the covariance of a weak symmetry, that all Lindblad jump operators Ok satisfy unitary invariance for the sym-metry operator, [ S, O k] = 0. For both Heisenberg and Rabi models, parity is preserved as a weak symmetry of their ideal (non-Trotterised) open-system dynamics, but not as a strong symmetry. For Trotterised open-system dynamics, that weak parity symmetry is then only re-tained in the Rabi model, but we find the Trotterised Heisenberg model still inherits an approximate weak par-ity symmetry from its underlying Hamiltonian dynamics. We discuss below how this is reflected in the structure of the dominant Kraus operator K1.Figure 4 shows example eigenvector component his-tograms and matrix element norms for the dominant Kraus operator K1 from each Trotterised open-system model at moderate dissipation in the post-threshold regime: (a) at τ = 0 .5 and fγ = 1 for the kicked top model; (b, c) at τ = 0 .2 and fγ = 1 for the Heisenberg model; and (d) at τ = 0 .1 and fγ = 0 .1 for the Rabi model. As shown previously, each of these models exhibits COE symmetry in the Hamiltonian limit [11], and Fig. 4(a), (b) and (d) show that the K1 eigenvector statistics for each model most closely match the COE distributions consis-tent with the symmetry of their corresponding unitary models. However, while direct analysis of the kicked-top 
+
+K1 matrix, shown in Fig. 4(e), is straightforward, ad-ditional processing is required for both Heisenberg and Rabi models, due to the impact of their underlying parity symmetries. In the Trotterised Heisenberg model, the combination of dissipation with π/ 2 single-qubit rotations breaks the weak parity symmetry which remains present in the ideal case. Despite this symmetry being broken in the full Floquet superoperator, however, an examination of the matrix elements of the dominant Kraus operator K1 re-veals a residual, approximate block-diagonal structure [Fig. 4 (f)]—where the off-diagonal block components are small, but nonzero—also inherited by its eigenvectors. Be-cause only dissipation breaks the parity symmetry, some residual block-diagonality persists in the Kraus opera-tors until dissipation becomes large enough to wash out the underlying parity-conserving unitary dynamics. If it is not handled properly, this residual parity-conserving structure skews the K1 eigenvector statistics away from the anticipated COE distribution, which creates a barrier to using a X2COE test statistic to detect residual unitary quantum chaos. If we just ignore the fact that parity symmetry is broken, and simply discard the (small) com-ponents from the off-diagonal blocks, Fig. 4 (b) shows that the statistics of the K1 eigenvector components from the diagonal parity-conserving blocks are indeed roughly COE-distributed. As dissipation increases, however, while 
+
+K1’s full-matrix statistics still skew away from COE, it becomes difficult to justify ignoring the discrepancy in-troduced by this Hilbert-space truncation. In the current context, the primary aim of our RMT analysis of Kraus operators is to identify where any resid-ual unitary quantum chaos (agreement with RMT predic-tions) is present—not which (if any) symmetry it satisfies— and we can adapt our approach to characterisation accord-ingly. In [11], we discuss how analysis of COE statistics in a rotated basis obscures the underlying time-reversal sym-metry, and results in eigenvector statistics which match the non-time-reversal symmetric CUE statistics. Here, we exploit this fact and instead analyse both the Flo-quet superoperator and the dominant Kraus operator in a rotated basis: specifically, rotated from the standard (computational) σz tensor product basis [Fig. 4 (f)], into the (incompatible) rotated σx product basis [Fig. 4 (g)]. This erases the information available about any residual parity symmetry structure in the system dynamics, elimi-9010 20 20 10 0(e) 0.00 0.03 0.06       
+
+> η
+> 040 80
+> P (η)(a)
+> COE CUE CSE
+> 015 31 31 15 0(f)
+> 015 31 (g) 0.00 0.03 0.06
+> η
+> 040 80 (b) 0.00 0.03 0.06
+> η
+> 040 80 (c)
+> g0 e1 g2 e3 g4 e5 e0 g1 e2 g3 e4 g5 g0 e1 g2 e3 g4 e5 e0 g1 e2 g3 e4 g5
+> (h) 0.00 0.25 0.50
+> η
+> 0816 (d)
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> |K1i,j  |
+
+FIG. 4. Example K1 Kraus operators and their eigenvector statistics illustrating the different symmetries which arise in each open-system model. (a–d) Eigenvector statistics histograms for the (dominant) K1 Kraus operators compared against COE and CUE distributions, for the Trotterised (a) kicked-top model with τ = 0 .5 and fγ = 1; (b, c) Heisenberg model with τ = 0 .2 and 
+
+fγ = 1; and (d) Rabi model with τ = 0 .1 and fγ = 0 .1. (e) Matrix elements of the dominant Kraus operator K1 of the Kicked top model in the computational basis. (f),(g) Matrix elements of the dominant Kraus operator K1 of the Heisenberg model in two different bases. (h) Matrix elements of the dominant Kraus operator K1 of the Rabi model in the computational basis. 
+
+nating the approximate block-diagonal structure without discarding the information contained in the off-diagonal blocks of the superoperator or Kraus operators. This does also erase any COE-like symmetry that may still techni-cally be present in the eigenvector statistics, which are now more consistent with the CUE distribution [Fig. 4 (c)]; as noted above, this difference is largely irrelevant to the aim of detecting residual unitary quantum chaos. In contrast, the Trotterised Rabi model does retain its weak parity symmetry, even in the Trotterised dissipa-tive case, so it is still always possible to find a canoni-cal Kraus representation with Kraus operators that re-spect a definite parity-block structure. The parity op-erator Π = eiπ (a†a+σz + 12 ) commutes with the qubit de-phasing operator ([Π , σ z ] = 0). And while it only anti-commutes with both qubit and cavity decay operators, Πa(a†)Π † = −a(a†) and Π σ±Π† = −σ±, it commutes with their associated dissipators, because the sign changes from the pair of anti-commuting operators in each dis-sipator term cancel. This is why the Rabi model parity symmetry is weakly preserved under dissipation (but not strongly), and Fig. 4 (h) illustrates the corresponding, exact parity-block structure in K1’s computational basis matrix elements (indicated by the dotted horizontal and vertical lines). When analysing the eigenvector statis-tics of the dominant Kraus operator K1 in the Rabi model, following the method described in [11], we form the eigenvector statistics histogram for K1 from only the components in the non-zero blocks and compare this with the relevant RMT distributions for D → D/ 2. Fig. 4 (d) shows that the Rabi model Kraus operator eigenvector components do still follow the COE distribution, as ex-pected for a system with time-reversal symmetry. Here, we also use the cavity-specific analysis methods developed for the Rabi model’s qubit-cavity system in our previous work, and truncate the Rabi model cavity dimension at dim c = 4 for X2RMT analyses (as explained in [11]). 
+
+2. Analysis of Approximate Unitary DQS 
+
+We now use this technique to analyse our three mod-els for different time discretisation and dissipation rates. Figure 5 (a-c) shows the contribution d1/D of K1 to the evolution versus Trotter step size τ (x-axes) and dissi-pation strength scaling factor fγ (y-axes) for the kicked top, Heisenberg, and Rabi models, respectively. Fig-ures 5 (d-f) show the corresponding unitarity measure 
+
+∥K† 
+
+> 1
+
+K1 − I∥/D . When the dissipation is weak and the Trotter step size is small, d1/D approaches unity, indicat-ing that K1 dominates the evolution. In these regime, K1
+
+is also approximately unitary, as indicated by the close to zero value of ∥K† 
+
+> 1
+
+K1 − I∥/D . This demonstrates that open-system DQS is well approximated by the dominant Kraus operator in the weak-dissipation, pre-threshold regime, enabling the analysis of residual unitary quantum chaos through the eigenvector statistics of K1.When the net dissipation per Trotter step is large enough, however, the open DQS superoperator deviates from unitarity in relation to both measures, the intrin-sic unitarity of K1 and K1’s probabilistic weight d1/D .They each decrease with both dissipation strength and 10 Trotter step size, until reaching a saturation value in the dissipation-dominant regime. These decreases orient relatively consistently along the direction defined by con-stant ratio fγ /τ . The contours of constant d1/D and 
+
+∥K† 
+
+> 1
+
+K1 − I∥/D , on the other hand, run approximately diagonally across this direction, parallel to the dashed lines in Figs 5 and 6, defined by a constant product of fγ τ ,and selected to align with the boundaries of quantum chaotic regions in the eigenvector statistics of the Floquet superoperator [Fig. 5 (j-o) and Fig. 6] (discussed further in Sec. IV B 2). In Figure 5 (g-i), we analyse the eigenvector statistics of K1 using the RMT-based X2RMT goodness-of-fit test with equal-probability bins [See Ref. [11] for more de-tails], for the kicked top, the Heisenberg, and the Rabi models, respectively. The three-colour diverging scale indicates the goodness-of-fit X2RMT between the eigenvec-tor statistics of K1 and RMT predictions, with darker colours indicating stronger disagreement. The lighter central colour region corresponds to the 99% confidence regions of the X2RMT test, within which the statistics are considered consistent with RMT predictions. A clear threshold can be seen in the eigenvector statistics of the dominant Kraus operator K1 for all three models, con-sistent with the Trotterisation threshold identified from the dynamical and steady-state observables [Figs. 1 and 2] and from closed-system DQS. Before the threshold, the eigenvector statistics exhibit large X2RMT ≫ 1 values, indicating strong disagreement with RMT predictions. Beyond the threshold, the statistics become consistent with RMT within the 99% confidence region, indicating the emergence of quantum chaotic behaviour.  
+
+> B. Full Open-System Quantum Chaos
+
+The dominant Kraus operator K1 provides a good ap-proximation of the full evolution in the weak-dissipation regime. However, as the dissipation strength increases, the contribution of other Kraus operators becomes sig-nificant, and the quantum chaotic behaviour of the full open-system evolution can no longer be characterised solely through K1. Even if individual Kraus components still match RMT predictions for unitary quantum chaos, competition between Kraus components will tend to wash out the coherent effects which distinguish unitary quan-tum chaos from noise and decoherence. As additional Kraus components become significant, however, this could signal a transition to full open-system quantum chaotic dynamics. Answering this possibility makes it necessary to investigate the full open Floquet superoperator.  
+
+> 1. Statistical Comparison Against Ginibre RMT
+
+The superoperators of open quantum systems can also be analysed using open-system analogues of the RMT statistics used to characterise unitary quantum chaos in closed quantum systems [11]. Under quantum chaotic conditions, if closed quantum system unitary operators exhibit circular RMT statistics [27], then open quan-tum system superoperators exhibit Ginibre RMT statis-tics [27, 35]. Ginibre matrices form Gaussian ensembles of non-Hermitian random matrices with generally complex eigenvalues [35]. It is important to note that Ginibre matrices do not represent physical generators of dissipa-tive quantum dynamics, as they fail to satisfy the con-straints of Hermiticity preservation, trace preservation, and complete positivity required of CPTP superopera-tors. Nevertheless, in the open-system quantum-chaotic regime, in the limit of large system size, and under ap-propriate preselection of the eigenvalues and eigenvectors (discussed below [34]), it is generally assumed that the overall statistical properties of physical CPTP superoper-ators converge towards those of the corresponding Ginibre ensembles [27, 36–38]. The key differences of open quantum system superop-erators from unitary operators that need to be taken into consideration when analysing their RMT statistics are that their complex eigenvalues are not constrained to lie on the unit circle, and they have both left and right eigen-vectors. Similar to the closed-system case, both complex level-spacing, and left and right eigenvector statistics, as well as additional eigenvector overlap statistics, can be used to identify quantum chaos by comparing against the corresponding Ginibre RMT statistics [36–38, 47]. In this work, we again focus mainly on eigenvector statis-tics, which provides better statistics due to quadratically more components, but we study both approaches more comprehensively in Ref. [34]. When the system exhibits dissipative quantum chaos, both left and right eigenvec-tor components, η = |cin |—where {cin } are the ith left or right eigenvector components in the computational basis—are distributed according to [38]: 
+
+P (η) = 2( N − 1) η(1 − η2)N −2, (5) where N is the dimension, either of the superoperator or of the symmetry subspaces if the system has a unitary symmetry. Since the Trotterised Rabi model has weak parity symmetry, the Ginibre matrix used for the RMT comparison is half the size of the superoperator, whereas for the Trotterised kicked top and Heisenberg models the Ginibre matrix is the same size as the superoperator. A superoperator’s eigenvectors also need to be properly selected to ensure an apples-to-apples comparison against Ginibre statistics. Firstly, conservation of the Hermiticity of a density matrix under the evolution of a CPTP map implies that the eigenvalues of the Floquet superoperator are either real, or come in complex conjugate pairs [27], and the eigenmatrices of the corresponding complex con-jugate eigenvalues are Hermitian conjugates of each other. To avoid double counting of identical components (and hence introducing correlations that would skew statisti-cal comparisons), only components from one eigenmatrix of each complex-conjugage pair of eigenvalues should be included. This is implemented most straightforwardly by 11 10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+> fγ
+
+Kicked top (a) d1/D 
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+Heisenberg (b) d1/D 
+
+10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+Rabi (c) d1/D 
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+> fγ
+
+(d) ‖K† 
+
+> 1
+
+K1 − I‖/D 
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4 (e) ‖K† 
+
+> 1
+
+K1 − I‖/D 
+
+10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+(f) ‖K† 
+
+> 1
+
+K1 − I‖/D 
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+> fγ
+
+(g) X2RMT for K1
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4 (h) X2RMT for K1
+
+10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+(i) X2RMT for K1
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+> fγ
+
+(j) Left Eigenvector X2RMT 
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4 (k) Left Eigenvector X2RMT 
+
+10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+(l) Left Eigenvector X2RMT 
+
+10 −2 10 −1 10 0
+
+Step Size (2 πg −1)10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+> fγ
+
+(m) Right Eigenvector X2RMT 
+
+10 −2 10 −1 10 0
+
+Step Size (2 πg −1)10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4 (n) Right Eigenvector X2RMT 
+
+10 −3 10 −2 10 −1
+
+Step Size (2 πg −1)10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+(o) Right Eigenvector X2RMT 
+
+01
+
+01
+
+01
+
+01
+
+01
+
+01
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+FIG. 5. Characterising quantum chaos in open-system DQS. The first, second, and third columns correspond to the kicked top (with j = 10), Heisenberg (chain of N = 5 qubits), and Rabi (with cavity truncation dimension dim c = 4) models, respectively. The x-axes and y-axes of all panels correspond to the Trotter step size τ and dissipation strength scaling factor fγ , respectively. (a-c) Contribution d1/D of the dominant Kraus operator K1 to the evolution. (d-f) Deviation from the unitarity of the dominant Kraus operator K1 quantified using the Frobenius norm as ∥K† 
+
+> 1
+
+K1 − I∥/D . (g-i) Goodness-of-fit X2RMT of the eigenvector statistics of the dominant Kraus operator K1 to RMT predictions. Goodness-of-fit X2RMT of the (j-l) left and (m-o) right eigenvector statistics of the Floquet superoperator to Ginibre RMT predictions. The light-coloured part of the colour bars corresponds to the 99% confidence regions of the X2RMT test to determine whether the eigenvector statistics are consistent with RMT predictions. The dashed lines show the boundaries of the dissipative quantum chaotic regions in the eigenvector statistics of the Floquet superoperator found heuristically from the individual eigenvector statistics of the Floquet superoperator in Fig. 6. 12 filtering a superoperator’s eigenvectors on whether their eigenvalues have either positive or negative imaginary components. We then follow standard methods for identi-fying and analysing only eigenmatrices corresponding to “bulk” eigenvalues [27, 38]. A detailed procedure for select-ing and analysing eigenvector components, as required for our chi-squared statistical RMT tests, is discussed in [34].  
+
+> 2. Analysis of Full Open Quantum Chaos in DQS
+
+We now study the onset of genuine dissipative quantum chaos in open-system DQS using the same DQS models and the eigenvector statistics of the full Floquet super-operator. Figure 5 (j-o) shows the left and right eigen-vector statistics of the Floquet superoperator of (j),(m) the kicked top model, (k),(n) the Heisenberg model, and (l),(o) the Rabi model as a function of the Trotter step size τ (x-axes) and dissipation strength scaling factor fγ
+
+(y-axes). Again, the light-coloured part of the colour bar corresponds to the 99% confidence regions of the X2RMT 
+
+test to determine whether the eigenvector statistics are consistent with RMT predictions, and the dark regions corresponds to large values of the X2RMT signifying regular dynamics. Since the number of eigenvector components varies with the parameters, the 99% confidence region is defined in terms of the number of eigenvector components of the eigenvectors selected for the RMT comparison. The white regions in the colour maps correspond to values where no valid eigenvectors are identified. When both the dissipation rate and the Trotter step size are large, the eigenvalues of the Floquet superoperator collapse to the origin, and when the dissipation is small, the eigen-values are located near the unit circle and are almost one dimensional. In both cases, it becomes challenging to identify valid eigenvectors for the RMT comparison, and therefore the corresponding regions are left white in the colour maps. All the models exhibit a similar pattern: when the Trotter step sizes are small, the X2RMT statistic values are large for all dissipation rate scaling factors. As the Trotter step size is increased, at sufficiently large dissipation rates, the X2RMT test statistics exhibit drastic changes, showing that all models transition towards close agreement with the predictions of Ginibre RMT, and thus indicating dis-sipative quantum chaos. Importantly, for all models, the Trotter step size where this transition occurs coincides with the threshold of the dominant Kraus operator eigen-vector statistics observed in Fig. 5 (g-i). The transition in the Heisenberg model is not as sharp as in the other two models, consistent with the fact that fewer eigenvectors become random (as will be discussed further below). An important feature of the X2RMT results for the left and right eigenvectors is that the dissipative quantum chaotic regions in the eigenvector statistics show a down-ward trend with increasing Trotter step size. The bound-aries of these regions are highlighted with dashed lines, provided as “guides to the eye”, showing constant-value contours of the product fγ τ , in locations chosen to align roughly with the boundaries of the region where the eigen-vectors become random (again, discussed below). These results show that, for step sizes beyond the threshold for unitary quantum chaos, the onset of genuine dissi-pative quantum chaos requires a sufficiently large total dissipation per Trotter step , fγ τ , as determined by both dissipation strength and Trotter step size. Once the dis-sipation becomes too strong, however, the X2RMT test statistic again increases to large values, indicating that too much dissipation also prevents the system exhibiting full dissipative quantum chaos, even on the time-scale of a single Trotter step. The dashed lines in Figs 5(g, i) suggest that this occurs the same dissipation rate that the residual unitary quantum chaos in K1 disappears [34]. Since the eigenvector statistics of the Floquet super-operator in Fig. 5 (j-o) are analysed for the selected eigenvectors, it is important to ensure that the number of random eigenvectors is sufficiently large to be represen-tative of the full dynamics of the system. Fig. 6 shows the fraction of left and right RMT eigenvectors of the Floquet superoperator of (a),(d) the kicked top model, (b),(e) the Heisenberg model, and (c),(f) the Rabi model as a function of the Trotter step size τ (x-axes) and dissi-pation strength scaling factor fγ (y-axes). The fraction of eigenvectors agreeing with Ginibre RMT is defined in terms of the half of the total number of eigenvectors of the Floquet superoperator, since only half the eigenvectors (corresponding to one of each complex-conjugate pair of eigenvalues) are independent, as discussed above. An individual eigenvector is considered random if its X2RMT 
+
+statistic value is within the 99% confidence region of the RMT predictions. The dashed lines correspond to the constant values of the product fγ τ and empirically illus-trate the boundaries of the region where the eigenvectors become random. The patterns are similar to those in Fig. 5 (j-o), and show that, beyond the threshold and at large enough dissipation rates, a significant portion of the eigenvectors of the Floquet superoperator exhibit RMT statistics. The fraction of random eigenvectors is fewer for the Heisenberg model compared to the other two models, which explains the less sudden transition observed in Fig. 5 (k,n). These results demonstrate that studying individual eigenvector statistics of the Floquet superoperators can provide valu-able additional information for identifying the dissipative quantum chaotic dynamics in open quantum systems, as contribution of random eigenvectors may be washed out by non-random eigenvectors if the statistics are analysed together in the full collective X2RMT . For example, on a technical level, the fraction of RMT eigenvectors, particu-larly for systems like the Heisenberg model, may increase for larger system sizes. Due to the computational com-plexity of modelling open-system quantum evolution, the system dimensions considered in this paper are signifi-cantly smaller than the sizes we previously analysed for closed systems [11]. More fundamentally, the fact that not all eigenvectors become random may also be connected 13 10 −1                 
+
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> fγ
+> Kicked Top (a) Left eigenvectors
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> Heisenberg (b) Left eigenvectors
+> 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> Rabi (c) Left eigenvectors
+> 10 −210 −110 0
+> Step Size (2 πg −1)10 −1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> fγ
+> (d) Right eigenvectors
+> 10 −210 −110 0
+> Step Size (2 πg −1)10 −1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4(e) Right eigenvectors
+> 10 −210 −1
+> Step Size (2 πg −1)10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> (f) Right eigenvectors
+> 00.5 1
+> FIG. 6. Fraction of random eigenvectors of the Floquet superoperator. The first, second, and third columns correspond to the kicked top (with j= 10), Heisenberg (chain of N= 5 qubits), and Rabi (with cavity truncation dimension dim c= 4) models, respectively. The x-axes and y-axes of all panels correspond to the Trotter step size τand dissipation strength scaling factor fγ, respectively. The dashed lines are the constant dissipation lines and highlight the boundaries of the region where the eigenvectors become random.
+
+to the fact that open-system quantum chaos is a more complex phenomenon than unitary quantum chaos, with open-system superoperators having more physical con-straints than (and therefore representing strictly only a subset of) the Ginibre matrices used for the RMT com-parison [34].  
+
+> V. DISCUSSION
+
+In our previous work, we demonstrated the universality of Trotterisation performance and threshold behaviours in closed-system DQS [11], and our results here provide strong evidence that this universality can be extended to open-system DQS. This shows that the Trotterisa-tion threshold—driven by underlying unitary quantum chaos—is a robust feature of DQS, even in the presence of dissipation. This is supported by the fact that similar to the closed-system DQS, the open-system DQS also exhibits periodic or quasi-periodic behaviour in the pre-threshold regime [Fig. 1], where the simulation fidelity is high in both the full dynamics [Fig. 7] and steady state regime [Fig. 8], and a sharp transition to irregular dynam-ics and low fidelity in the post-threshold regime. This illustrates that Trotter errors remain well-behaved in the pre-threshold regime, while they become large and uncon-trollable in the post-threshold regime, even in the presence of dissipation, consistent with the behaviour of Trotter errors in closed-system DQS [10, 11]. Furthermore, the fact that open-system DQS also exhibits signatures of quantum chaos beyond the threshold, in addition to con-sistent dynamical threshold and pre-threshold behaviours before it, illustrates that the onset of quantum chaos is a universal feature of both open- and closed-system DQS. And regardless of whether the system is open or closed, our results show that the threshold is driven by the underlying unitary quantum chaos in the system. The observation of persistent Trotterisation thresholds in open-system DQS effectively identifies the operating limit for open-system DQS—the usable range of Trot-ter step sizes that avoids the breakdown of simulation performance—and highlights the necessity for doing so. This applies to any DQS algorithms that employ dissipa-tion [21, 48], such as dissipative state preparation [16, 24], simulation of dynamical maps and quantum channels [49], and simulation of non-equilibrium dynamics [50]. As demonstrated in [11], the emergence of quantum chaos leads to rapid proliferation of Trotter errors which are not correctable or controllable, as they are at pre-threshold step sizes. Furthermore, because the open DQS threshold can still be observed even in the steady state regime, and is still coincident with the closed-system threshold, this allows noisy digital quantum simulators to be used to identify fundamental performance limits that will still apply to much higher-fidelity quantum processors. This could potentially translate into direct resource savings by avoiding carrying out tasks taking up valuable runtime and running costs on expensive large-scale error-corrected, fault-tolerant quantum processors. The persistence of the Trotterisation threshold in the presence of dissipaton also has other potentially impor-tant implications for the practical implementation of DQS, 14 where dissipation is unavoidable. At the simplest level, it is important to distinguish that the threshold loca-tion does not depend on dissipation, because while errors arising from dissipative processes can in principle be sup-pressed through quantum error correction, Trotter errors are intrinsic to the algorithm and cannot be eliminated in this way. This is particularly relevant for resource optimisation in DQS, as it could be an important con-sideration in identifying an optimal Trotter step size to balance the trade-off between simulation accuracy and computational overhead, which increases in the presence of dissipation due to the need for error correction and mitigation techniques [51–54]. In all three models studied in this paper, the emergence of dissipative quantum chaos, demonstrated by X2RMT ∼ 1values in the left and right eigenvector statistics [Fig. 5 (j-o)], occurs at roughly the same Trotter step size as where the eigenvectors of the dominant Kraus operator begin to agree with the RMT distribution [Fig. 5 (g-i)]. This shows that dissipative quantum chaos emerges only if the underlying unitary part of the dynamics is itself quantum chaotic. The chaos observed, via its eigenvector statistics, beyond the threshold in the open system, corresponds closely to closed-system chaos when the dissipation is weak, because the evolution of the system is well approxi-mated by a single, dominant Kraus operator. True dissi-pative quantum chaos emerges only when the dissipation rate is sufficiently strong, and provided the underlying unitary contributions to the dynamics still exhibit the properties of closed-system quantum chaos. Our results also highlight the need for further investiga-tion into the interplay between dissipation and quantum chaos in open-system DQS. On the one hand, our work provides a deeper understanding of the fundamental limits of different paradigms of open-system DQS, and how that relates to both unitary and dissipative quantum chaos. This could help inform the design of both more robust uni-tary DQS algorithms, and also more sophisticated DQS algorithms where dissipation is exploited as a beneficial resource [21–24, 48, 49]. But perhaps this can also be pushed further. For example, in the simulation of complex quantum systems, the presence of dissipation can lead to rich and non-trivial dynamics that are difficult to capture using classical methods. Does dissipative quantum chaos flag the presence of open-system dynamics that are classi-cally intractable to simulate, or even sample, in the same way that unitary quantum chaos and RMT dynamics have been used to define classically prohibitively com-plex computational tasks [55–58]? Could this be directly exploited to provide a novel pathway towards quantum advantage for open-system DQS, even in the presence of dissipation? Overall, our results provide new insights that are important not only for the fundamental under-standing of quantum chaos in open systems, but could also help develop a better understanding about potential applications of both open quantum chaos and open DQS, and novel opportunities for quantum advantage to be derived from each. 
+
+> ACKNOWLEDGMENTS
+
+The authors thank T Srivipat and DW Berry for useful discussions. This work has been funded by NKL’s Australian Re-search Council Future Fellowship (FT170100399) and Dis-covery Project (DP210101367). AM and CK acknowledge support from UTS President’s scholarships, international research scholarships, and Sydney Quantum Academy. LS acknowledges support from the Austrian Science Fund (FWF) through the project 10.55776/COE1, and from the European Union - NextGenerationEU.  
+
+> Appendix A: Physical Models 1. Quantum Kicked Top Model
+
+Kicked top models serve as canonical examples of sys-tems that display chaotic dynamics in both the classical and quantum regimes [10, 27, 44, 59]. Quantum-chaotic behaviour emerges in this single-body system [10, 27], which has been experimentally realised using a single nuclear spin [60] and superconducting qubits [61]. For the kicked top model, we consider the following Trotterisation: 
+
+F (τ ) = e−iHτ ≈ e−iH z τ e−iH xτ , (A1) where HKT = Hz + Hx is the effective Hamiltonian of the kicked top model, with 
+
+Hμ = ωμJμ + gμJ2
+
+> μ
+
+2j + 1 , μ = x, z. (A2) For clarity, the Trotterisation above is written in its purely unitary form; in the open-system setting considered in this work, each factor e−iH μτ is instead replaced by a dissipative channel that includes both the unitary evolu-tion generated by Hμ and associated dissipation, which is discussed further below. Here, the term proportional to 
+
+J2 
+
+> μ
+
+represents the kick in Hμ, while the term proportional to Jμ represents a uniform field along the μ-axis. We use the same simulation parameters as in Refs. [10, 11] to facilitate direct comparison with previous results: gz := g,
+
+gx = 0 .7g, ωz = 0 .3g, and ωx = 0 .1g. Numerical simula-tions of open quantum systems are challenging, because the dimension of the associated superoperators scales as the square of the Hilbert space dimension, and hence the number of elements scales as the fourth power. This scaling makes simulating large systems computationally expensive. Here, we analyse the system up to a moder-ate spin size of j = 10, which is large enough to exhibit quantum chaotic behaviour [11]. Both decay D(J−) and dephasing D(Jz ) dissipators are included in the evolution generated by Hμ, with dissipa-tion rates γ1/(2 j) and γ2/(2 j) respectively. The operator 
+
+J− is the spin-lowering operator, defined as J− = Jx −iJ y .15 The factor 1 /(2 j) ensures that, for j = 1 /2, the dis-sipation rates reduce to those of a single qubit. This allows γ1 and γ2 to be set to representative values for superconducting transmon devices: specifically, with a relaxation time of T1 = 22 μs [24], and a dephasing time to T2 = T1/1.5 ≈ 14 .67 μs, chosen to be moderately shorter than T1, consistent with typical transmon be-haviour [24, 62]. To convert these physical timescales into the dimensionless units used in our simulations, we as-sume a coupling strength of g = 40 MHz [24], from which 
+
+γ1 and γ2 are obtained relative to T1 and T2, respectively. For j̸ = 1 /2, the scaling 1 /(2 j) is required to ensure the dissipator terms scale consistently with the unitary part of the dynamics. The kicked-top Hamiltonian scales linearly with spin size, HKT ∼ j, whereas the dissipators, which are quadratic in the jump operators J− and Jz ,scale as j2. Scaling of dissipation rates inversely with j
+
+therefore compensates for this discrepancy, resulting in dissipative terms, γ 
+
+> 2j
+
+D(J), that also scale linearly with j.
+
+2. Nearest-Neighbour Heisenberg Model 
+
+The Heisenberg model has been widely studied in condensed-matter physics as a model for interacting spins on a lattice [63]. In this work, we consider a one-dimensional chain of N qubits with open boundary con-ditions subject to a uniform field and nearest-neighbour interactions, which has already been experimentally im-plemented using superconducting qubits [64]. The Hamil-tonian of the system is given by: 
+
+HH = ω
+
+2
+
+> N
+
+X
+
+> j=1
+
+σjz +g 
+
+> N−1
+
+X
+
+> j=1
+
+(σjxσj+1  
+
+> x
+
++σjy σj+1  
+
+> y
+
++σjz σj+1  
+
+> z
+
+), (A3) where σjα (α = x, y, z ) are the Pauli operators acting on the j-th qubit, ω is the uniform field strength, and 
+
+g is the nearest-neighbour coupling strength. The to-tal Hamiltonian can be decomposed into HH = Hz +
+
+Hxy + Hxz + Hyz [64, 65], where Hz = ω
+
+> 2
+
+PNj=1 σjz ,
+
+Hxy = g
+
+> 2
+
+PN −1 
+
+> j=1
+
+(σjxσj+1  
+
+> x
+
++ σjy σj+1  
+
+> y
+
+), and similarly for Hxz 
+
+and Hyz . Hz can be implemented using single-qubit z-rotation phase gates, and Hxy corresponds to implement-ing standard two-qubit exchange gates. Hxz and Hyz are then realised by applying appropriate single-qubit rota-tions before and after the two-qubit exchange gates [64]: 
+
+Hxz = R∀kx, π
+
+> 2
+
+Hxy R∀k†
+
+> x, π
+> 2
+
+= g′ 
+
+> N−1
+
+X
+
+> k=1
+
+ σkx σk+1  
+
+> x
+
++ σkz σk+1 
+
+> z
+
+ ,
+
+(A4) and 
+
+Hyz = R∀ky, π
+
+> 2
+
+Hxy R∀k†
+
+> y, π
+> 2
+
+= g′ 
+
+> N−1
+
+X
+
+> k=1
+
+ σky σk+1  
+
+> y
+
++ σkz σk+1 
+
+> z
+
+ ,
+
+(A5) where g′ = g/ 2, and R∀kμ,θ = QNk=1 e−i θ  
+
+> 2σkμ
+
+(for μ ∈{x, y, z }) are locally applied, single-qubit rotations by an angle θ around the μ axis. The Trotterised Floquet unitary for one time step is given by: 
+
+F = Y 
+
+> jeven
+
+U j,j +1  
+
+> yz
+
+(τ ) Y 
+
+> jodd
+
+U j,j +1  
+
+> yz
+
+(τ )
+
+× Y 
+
+> jeven
+
+U j,j +1  
+
+> xz
+
+(τ ) Y 
+
+> jodd
+
+U j,j +1  
+
+> xz
+
+(τ )
+
+× Y 
+
+> jeven
+
+U j,j +1  
+
+> xy
+
+(τ ) Y 
+
+> jodd
+
+U j,j +1  
+
+> xy
+
+(τ ) e−iH z τ ,
+
+(A6) where U j,j +1  
+
+> xy
+
+(τ ) = e−iH j,j +1   
+
+> xy τ
+
+, U j,j +1  
+
+> xz
+
+(τ ) = e−iH j,j +1   
+
+> xz τ
+
+,and U j,j +1  
+
+> yz
+
+(τ ) = e−iH j,j +1   
+
+> yz τ
+
+are two-qubit exchange gates acting on qubits j and j + 1, for a Trotter step size 
+
+τ . Here, the products over even and odd j run over all valid nearest-neighbour bonds ( j, j + 1) within the chain, so that each pair of neighbouring qubits is coupled exactly once per product. The reason for this choice of Trotterisation is that the Hamiltonians Hj,j +1  
+
+> ab
+
+, for all 
+
+ab ∈ { xy, xz, yz }, commute with each other when the corresponding indices j are either all even or all odd. This allows each coupling type to be activated in only two steps, even and odd, rather than sequentially across all bonds. Such parallel activation is important in the presence of dissipation, since it reduces the total duration of each Trotter step compared to sequential activation, hence also the accumulated dissipation. Each qubit experiences both decay D(σ−) and dephas-ing 12 D(σz ), with dissipation rates γ1 and γ2 respec-tively. We use the same experimentally relevant dissi-pation timescales and coupling strength as in the kicked top model discussed above: T1 = 22 μs, T2 = T1/1.5 ≈
+
+14 .67 μs, and g = 40 MHz [24]. In our numerical simula-tions, both ω and g are set to 1 in dimensionless units, with g = 40 MHz setting the physical scale from which the numerical values of γ1 and γ2 are obtained relative to T1
+
+and T2, respectively. The number of qubits is chosen to be 
+
+N = 5, low enough to make the computational complexity manageable, but still large enough that the closed-system unitary exhibits quantum chaotic behaviour [11]. 
+
+3. Rabi Model 
+
+The Rabi model describes light-matter interaction [66, 67], and consists of a single qubit coupled to a single bosonic mode. This model is fundamental in quantum op-tics and has been extensively studied in various contexts, including cavity quantum electrodynamics, quantum in-formation processing, and many-body physics [68, 69]. The Hamiltonian of the Rabi model is given by: 
+
+HR = ωca†a + ωq
+
+2 σz + g(a + a†)( σ+ + σ−), (A7) where a (a†) are the annihilation (creation) operators for the bosonic mode with frequency ωc, σz is the Pauli-z16 operator, ωq is the qubit transition frequency, σ± are the raising and lowering operators, and g is the coupling strength between the qubit and the bosonic mode. When the coupling strength g is much smaller than the qubit and bosonic mode frequencies ( g ≪ ωq , ω c), the rotating-wave approximation (RWA) can be applied, leading to the Jaynes-Cummings (JC) model [70], which conserves the total excitation number. The Hamiltonian under the RWA becomes: 
+
+HJC = ωca†a + ωq
+
+2 σz + g(aσ + + a†σ−). (A8) While physical systems are almost always restricted to the JC regime, the full Rabi model can be recon-structed from the JC model using digital quantum simu-lation [71]. In particular, the Rabi Hamiltonian can be decomposed into two parts, HR = HJC (g, ∆c, ∆JC  
+
+> q
+
+) + 
+
+HAJC (g, ∆c, ∆AJC  
+
+> q
+
+), where the anti-Jaynes-Cummings (AJC) Hamiltonian is given by: 
+
+HAJC = Rx,π HJC R†
+
+> x,π
+
+= ∆ ca†a − ∆AJC 
+
+> q
+
+2 σz + g(a†σ+ + aσ −),
+
+(A9) and is obtained by applying a global π rotation, Rx,π , to the qubit [71]. Here, ∆ μ = ωμ − ωRF (μ = c, q ) represent the instantaneous lab-frame detunings of the bosonic mode and the qubit from the reference frequency ωRF 
+
+in the rotating frame. By independently tuning this lab-frame qubit detuning during each simulation phase, we set the specific values for ∆ JC  
+
+> q
+
+and ∆ AJC  
+
+> q
+
+. If the durations of the JC and AJC evolutions are equal, the effective cavity and qubit frequencies in the Rabi model are given by ωeff  
+
+> c
+
+= 2∆ c and ωeff  
+
+> q
+
+= ∆ JC  
+
+> q
+
+− ∆AJC  
+
+> q
+
+, respectively. In our simulations we set ∆ JC  
+
+> q
+
+= ∆ c = 3 .5g and ∆ AJC  
+
+> q
+
+=0, consistent with the target model being non-quantum chaotic [see Ref. [11]]. The digital quantum simulation of the Rabi model can be performed by Trotterising the evolution under the JC and AJC Hamiltonians [71]: 
+
+F (τ ) = UJC (τ / 2) UAJC (τ )UJC (τ / 2) = = e−iH JC τ / 2Rx,π e−iH JC τ R† 
+
+> x,π
+
+e−iH JC τ / 2, (A10) where τ is the Trotter step size. The experimental reali-sation of the Rabi model using superconducting circuits has been demonstrated in [31]. Since we are considering open-system DQS, dissipators are added to the evolution generated by the JC Hamil-tonian in Eq. A10. The qubit experiences decay D(σ−)and dephasing 12 D(σz ), while the cavity mode experiences decay D(a). The qubit is assigned the same decay and dephasing rates as those used in the Heisenberg model. The qubit-cavity coupling strength is set to g = 2 MHz, and the cavity mode is taken to have a photon decay time of Tr = 4 μs; these parameters are chosen to be consistent with Ref. [31]. This relatively weak coupling strength is required to enable accurate digital quantum simulation of the Rabi model using Trotterisation [31]. For the RMT analyses, the cavity mode is truncated to a maximum of dim c = 4 photons, consistent with the analysis in Ref. [11], which is sufficient to provide enough eigenvector compo-nents for a meaningful comparison with RMT predictions. For dynamical simulations, however, the cavity mode is truncated to a maximum of dim c = 20 photons to ensure that the dynamics are accurately captured, as the photon number can increase during the evolution. 
+
+> Appendix B: Persistence of the Trotterisation Threshold in Fidelity Dynamics
+
+The fidelity F(ρide (t), ρ dig (t)) of the Trotterised evo-lution with respect to the target open-system evolu-tion can be used to quantify the accuracy of the dig-ital quantum simulation. The fidelity is defined as 
+
+F(ρide (t), ρ dig (t)) = 
+
+
+
+Tr 
+
+q pρide (t)ρdig (t)pρide (t)
+
+ 2
+
+,where ρide (t) and ρdig (t) are the density matrices of the ideal and digital evolutions, respectively. The Trotteri-sation threshold can be identified by analysing the time evolution of the fidelity for different Trotter step sizes and dissipation strengths. Figure 7 shows the time evolution of the fidelity for the kicked top, Heisenberg, and Rabi models in the first, second, and third columns, respectively. The first five rows show the time evolution of the fidelity under open-system DQS at different dissipation strength scaling factors fγ =0.01 , 1, 10 , 30 , 100 respectively, plotted as a function of the Trotter step size τ (x-axes) and simulation time (y-axes). The last two rows show the pre-threshold and post-threshold time traces of the fidelity for different dissipation strengths. The initial state of the kicked top model is a maximal spin state, the initial state of the Heisenberg model has only the first qubit in the chain excited, and the initial state of the Rabi model has an excited qubit, with the cavity mode in the vacuum. A clear threshold can be observed in the time evolu-tion of the fidelity for all three models and for dissipa-tion strengths less than fγ ≲ 30 [Fig. 7 (a-k)], which is consistent with the Trotterisation threshold identified in the time-evolution of local observables. In pre-threshold regimes, the fidelity remains close to 1 for all dissipation strengths, indicating that the Trotterised evolution ac-curately approximates the target open-system evolution [Fig. 7 (p-r)], and beyond the threshold, the fidelity decays rapidly. However, as the dissipation rate increases, the fi-delity beyond the threshold improves [Fig. 7 (s-u)] because the dissipative processes begin to dominate the dynamics, and the Trotterisation errors become less significant in comparison. The persistence of the Trotterisation threshold in the fidelity dynamics suggests that the threshold may be present even in the steady-state regime. Figure 8 shows the steady-state fidelity F(ρide , ρ dig )steady of the Trot-terised evolution with respect to the target open-system 17 0510 Time (2 πg −1) (a) Kicked top F(ρide (t), ρ dig (t)) 
+
+(b) Heisenberg F(ρide (t), ρ dig (t)) 
+
+> fγ = 0
+
+(c) Rabi F(ρide (t), ρ dig (t)) 
+
+0510 Time (2 πg −1) (d) (e) 
+
+> fγ = 1
+
+(f) 
+
+0510 Time (2 πg −1) (g) (h) 
+
+> fγ = 10
+
+(i) 
+
+0510 Time (2 πg −1) (j) (k) 
+
+> fγ = 30
+
+(l) 
+
+10 −2 10 −1 10 0
+
+Step Size (2 πg −1)0510 Time (2 πg −1) (m) 
+
+10 −2 10 −1 10 0
+
+Step Size (2 πg −1)(n) 
+
+10 −2 10 −1
+
+Step Size (2 πg −1)
+
+> fγ = 100
+
+(o) 0.00.51.0
+
+> F(ρide (t), ρ dig (t))
+
+fγ
+
+(p) τ = 0.01 0110 30 100 (q) τ = 0.01 (r) τ = 0.01 0 10 20 30 Time (2 πg −1)0.00.51.0
+
+> F(ρide (t), ρ dig (t))
+
+fγ
+
+(s) τ = 0.6 0110 100 1000 0 2 4 6 8 10 Time (2 πg −1)(t) τ = 0.21 0 2 4 6 8 10 Time (2 πg −1)(u) τ = 0.18 
+
+0.0 0.2 0.4 0.6 0.8 1.0
+
+FIG. 7. Simulation fidelity F(ρide (t), ρ dig (t)) of the Trotterised evolution with respect to the target open-system evolution for the kicked top, Heisenberg, and Rabi models, corresponding to the first, second, and third columns, respectively. The parameters are the same as in Fig. 1. The first five rows show the time evolution of the fidelity under open-system DQS at different dissipation strength scaling factors fγ = 0 .01 , 1, 10 , 30 , 100 respectively, plotted as a function of the Trotter step size 
+
+τ (x-axes) and simulation time (y-axes). (p-r) Pre-threshold and (s-u) post-threshold time traces of the fidelity for different dissipation strengths. 18 10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+> fγ
+
+(a) F (ρide , ρ dig )steady 
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4 (b) F (ρide , ρ dig )steady 
+
+10 −2
+
+10 −1
+
+10 0
+
+10 1
+
+10 2
+
+(c) F (ρide , ρ dig )steady 
+
+10 −2 10 −1 10 0
+
+Step Size (2 πg −1)0.40.60.81.0
+
+> F (ρide , ρ dig )steady
+
+(d) 
+
+> fγ
+
+0.11 1.0 10.12 100.04 1031.98 10 −2 10 −1 10 0
+
+Step Size (2 πg −1)0.51.0(e) 
+
+> fγ
+
+0.1 1.0 10.12 100.04 1042.91 10 −3 10 −2 10 −1
+
+Step Size (2 πg −1)0.25 0.50 0.75 1.00 (f) 
+
+> fγ
+
+0.02 0.1 1.0 10.12 100.04 
+
+0 1
+
+FIG. 8. Steady-state values of simulation fidelity F(ρide , ρ dig )steady in open-system DQS for the kicked top ( j = 10), Heisenberg (chain of N = 5 qubits), and Rabi (cavity truncation dimension dim c = 20) models, corresponding to the first, second, and third columns. Panels (a–c) show the fidelity as a function of τ and fγ , while (d–f) show traces at selected values of fγ .
+
+evolution for the kicked top, Heisenberg, and Rabi models in the first, second, and third columns, respectively. Fig-ures 8 (a-c) show the steady-state fidelity as a function of the Trotter step size τ (x-axes) and dissipation rate scaling factors fγ (y-axes), and Figs. 8 (d-f) show traces of the steady-state fidelity at different dissipation rate scaling factors fγ . The figure shows a clear threshold in the steady-state fidelity for all three models, which is consistent with the Trotterisation threshold identified in the time-evolution of local observables and the time evolution of the fidelity. The threshold vanishes as the dissipation rate increases, illustrating that the dissipa-tive processes begin to dominate the coherent part of the dynamics completely. 
+
+[1] R. P. Feynman, Simulating physics with computers, in 
+
+Feynman and computation (cRc Press, 2018) pp. 133–153. [2] S. Lloyd, Universal Quantum Simulators, Science 273 ,1073 (1996). [3] D. S. Abrams and S. Lloyd, Simulation of many-body fermi systems on a universal quantum computer, Phys. Rev. Lett. 79 , 2586 (1997). [4] I. M. Georgescu, S. Ashhab, and F. Nori, Quantum simu-lation, Reviews of Modern Physics 86 , 153 (2014). [5] A. J. Daley, I. Bloch, C. Kokail, S. Flannigan, N. Pearson, M. Troyer, and P. Zoller, Practical quantum advantage in quantum simulation, Nature 607 , 667 (2022). [6] H. F. Trotter, On the product of semi-groups of operators, Proceedings of the American Mathematical Society 10 ,545 (1959). [7] M. Suzuki, Fractal decomposition of exponential operators with applications to many-body theories and monte carlo simulations, Physics Letters A 146 , 319 (1990). [8] A. M. Childs, Y. Su, M. C. Tran, N. Wiebe, and S. Zhu, Theory of Trotter Error with Commutator Scaling, Phys-ical Review X 11 , 011020 (2021). [9] M. Heyl, P. Hauke, and P. Zoller, Quantum localization bounds Trotter errors in digital quantum simulation, Sci-ence Advances 5, aau8342 (2019). [10] L. M. Sieberer, T. Olsacher, A. Elben, M. Heyl, P. Hauke, F. Haake, and P. Zoller, Digital quantum simulation, Trotter errors, and quantum chaos of the kicked top, npj Quantum Information 5, 78 (2019). [11] C. Kargi, A. Manatuly, L. M. Sieberer, J. P. Dehollain, F. Henriques, T. Olsacher, P. Hauke, M. Heyl, P. Zoller, and N. K. Langford, Quantum chaos and universal trotter-isation behaviours in digital quantum simulations, Quan-tum 9, 1924 (2025). [12] H.-P. Breuer and F. Petruccione, The theory of open quantum systems (OUP Oxford, 2002). [13] A. Blais, A. L. Grimsmo, S. M. Girvin, and A. Wallraff, Circuit quantum electrodynamics, Rev. Mod. Phys. 93 ,025005 (2021). [14] K. W. Kuper, J. P. Pajaud, K. Chinni, P. M. Poggi, and P. S. Jessen, Trotter errors and the emergence of chaos in quantum simulation (2022), arXiv:2212.03843 [quant-ph]. [15] J. Poyatos, J. I. Cirac, and P. Zoller, Quantum reservoir engineering with laser cooled trapped ions, Physical review letters 77 , 4728 (1996). [16] B. M. Terhal and D. P. DiVincenzo, Problem of equili-bration and the computation of correlation functions on a quantum computer, Phys. Rev. A 61 , 022301 (2000). [17] S. Diehl, A. Micheli, A. Kantian, B. Kraus, H. B¨ uchler, 19 
+
+and P. Zoller, Quantum states and phases in driven open quantum systems with cold atoms, Nature Physics 4, 878 (2008). [18] B. Kraus, H. P. B¨ uchler, S. Diehl, A. Kantian, A. Micheli, and P. Zoller, Preparation of entangled states by quantum markov processes, Phys. Rev. A 78 , 042307 (2008). [19] C. A. Ryan, O. Moussa, J. Baugh, and R. Laflamme, Spin based heat engine: Demonstration of multiple rounds of algorithmic cooling, Phys. Rev. Lett. 100 , 140501 (2008). [20] F. Verstraete, M. M. Wolf, and J. Ignacio Cirac, Quantum computation and quantum-state engineering driven by dissipation, Nature physics 5, 633 (2009). [21] J. T. Barreiro, M. M¨ uller, P. Schindler, D. Nigg, T. Monz, M. Chwalla, M. Hennrich, C. F. Roos, P. Zoller, and R. Blatt, An open-system quantum simulator with trapped ions, Nature 470 , 486 (2011). [22] H. Krauter, C. A. Muschik, K. Jensen, W. Wasilewski, J. M. Petersen, J. I. Cirac, and E. S. Polzik, Entanglement generated by dissipation and steady state entanglement of two macroscopic objects, Phys. Rev. Lett. 107 , 080503 (2011). [23] P. M. Harrington, E. J. Mueller, and K. W. Murch, Engi-neered dissipation for quantum information science, Na-ture Reviews Physics 4, 660 (2022). [24] X. Mi, A. Michailidis, S. Shabani, K. Miao, P. Klimov, J. Lloyd, E. Rosenberg, R. Acharya, I. Aleiner, T. Ander-sen, et al. , Stable quantum-correlated many-body states through engineered dissipation, Science 383 , 1332 (2024). [25] A. Schnell, A. Eckardt, and S. Denisov, Is there a floquet lindbladian?, Phys. Rev. B 101 , 100301(R) (2020). [26] A. Schnell, S. Denisov, and A. Eckardt, High-frequency expansions for time-periodic lindblad generators, Phys. Rev. B 104 , 165414 (2021). [27] F. Haake, S. Gnutzmann, and M. Ku´ s, Quantum Signa-tures of Chaos , 4th ed. (Springer, 2018). [28] D. Braun, Dissipative quantum chaos and decoherence 
+
+(Springer, 2000). [29] G. Akemann, M. Kieburg, A. Mielke, and T. c. v. Prosen, Universal signature from integrability to chaos in dissipa-tive open quantum systems, Phys. Rev. Lett. 123 , 254101 (2019). [30] L. S´ a, P. Ribeiro, and T. Prosen, Complex spacing ratios: A signature of dissipative quantum chaos, Physical Review X 10 , 021019 (2020). [31] N. K. Langford, R. Sagastizabal, M. Kounalakis, C. Dickel, A. Bruno, F. Luthi, D. J. Thoen, A. Endo, and L. DiCarlo, Experimentally simulating the dynamics of quantum light and matter at deep-strong coupling, Nature Communica-tions 8, 1715 (2017). [32] O. Bohigas, M. J. Giannoni, and C. Schmit, Characteriza-tion of chaotic quantum spectra and universality of level fluctuation laws, Phys. Rev. Lett. 52 , 1 (1984). [33] F. Haake and K. ˙Zyczkowski, Random-matrix theory and eigenmodes of dynamical systems, Phys. Rev. A 42 , 1013 (1990). [34] A. Manatuly, L. M. Sieberer, and N. K. Langford, Manuscript in preparation (2026). [35] J. Ginibre, Statistical ensembles of complex, quaternion, and real matrices, Journal of Mathematical Physics 6,440 (1965). [36] R. Grobe, F. Haake, and H.-J. Sommers, Quantum dis-tinction of regular and chaotic dissipative motion, Phys. Rev. Lett. 61 , 1899 (1988). [37] R. Grobe and F. Haake, Universality of cubic-level repul-sion for dissipative quantum chaos, Phys. Rev. Lett. 62 ,2893 (1989). [38] P. Peplowski and F. Haake, Random-matrix theory and eigenvector statistics of dissipative dynamical systems, Journal of Physics A: Mathematical and General 26 , 3473 (1993). [39] L. S´ a, P. Ribeiro, and T. c. v. Prosen, Symmetry clas-sification of many-body lindbladians: Tenfold way and beyond, Phys. Rev. X 13 , 031019 (2023). [40] K. Kawabata, A. Kulkarni, J. Li, T. Numasawa, and S. Ryu, Symmetry of open quantum systems: Classifi-cation of dissipative quantum chaos, PRX Quantum 4,030328 (2023). [41] N. K. Langford, Encoding, manipulating and measuring quantum information in optics , Ph.D. thesis (2007). [42] M. A. Nielsen and I. L. Chuang, Quantum computation and quantum information (Cambridge university press, 2010). [43] F. Izrailev, Chaotic stucture of eigenfunctions in systems with maximal quantum chaos, Physics Letters A 125 , 250 (1987). [44] M. Kus, J. Mostowski, and F. Haake, Universality of eigenvector statistics of kicked tops of different symme-tries, Journal of Physics A: Mathematical and General 
+
+21 , L1073 (1988). [45] F. J. Dyson, Statistical theory of the energy levels of complex systems. i, Journal of Mathematical Physics 3,140 (1962). [46] B. Buca and T. Prosen, A note on symmetry reduc-tions of the Lindblad equation: Transport in constrained open spin chains, New J. Phys. 14 , 073007 (2012), arXiv:1203.0943 [quant-ph]. [47] J. T. Chalker and B. Mehlig, Eigenvector statistics in non-hermitian random matrix ensembles, Phys. Rev. Lett. 
+
+81 , 3367 (1998). [48] H. Kamakari, S.-N. Sun, M. Motta, and A. J. Minnich, Digital quantum simulation of open quantum systems using quantum imaginary–time evolution, PRX Quantum 
+
+3, 010320 (2022). [49] P. Schindler, M. M¨ uller, D. Nigg, J. T. Barreiro, E. A. Martinez, M. Hennrich, T. Monz, S. Diehl, P. Zoller, and R. Blatt, Quantum simulation of dynamical maps with trapped ions, Nature Physics 9, 361 (2013). [50] B. Fauseweh and J.-X. Zhu, Digital quantum simula-tion of non-equilibrium quantum many-body systems: B. fauseweh, j. zhu, Quantum Information Processing 20 ,138 (2021). [51] P. W. Shor, Fault-tolerant quantum computation, in Pro-ceedings of 37th conference on foundations of computer science (IEEE, 1996) pp. 56–65. [52] J. Preskill, Fault-tolerant quantum computation, Intro-duction to quantum computation and information 213 
+
+(1998). [53] D. Gottesman, Theory of fault-tolerant quantum compu-tation, Phys. Rev. A 57 , 127 (1998). [54] J. Roffe, Quantum error correction: an introductory guide, Contemporary Physics 60 , 226 (2019). [55] S. Boixo, S. V. Isakov, V. N. Smelyanskiy, R. Babbush, N. Ding, Z. Jiang, M. J. Bremner, J. M. Martinis, and H. Neven, Characterizing quantum supremacy in near-term devices, Nature Physics 14 , 595 (2018). [56] F. Arute, K. Arya, R. Babbush, D. Bacon, J. C. Bardin, R. Barends, R. Biswas, S. Boixo, F. G. S. L. 20 
+
+Brandao, D. A. Buell, B. Burkett, Y. Chen, Z. Chen, B. Chiaro, R. Collins, W. Courtney, A. Dunsworth, E. Farhi, B. Foxen, A. Fowler, C. Gidney, M. Giustina, R. Graff, K. Guerin, S. Habegger, M. P. Harrigan, M. J. Hartmann, A. Ho, M. Hoffmann, T. Huang, T. S. Humble, S. V. Isakov, E. Jeffrey, Z. Jiang, D. Kafri, K. Kechedzhi, J. Kelly, P. V. Klimov, S. Knysh, A. Korotkov, F. Kostritsa, D. Landhuis, M. Lind-mark, E. Lucero, D. Lyakh, S. Mandr` a, J. R. Mc-Clean, M. McEwen, A. Megrant, X. Mi, K. Michielsen, M. Mohseni, J. Mutus, O. Naaman, M. Neeley, C. Neill, M. Y. Niu, E. Ostby, A. Petukhov, J. C. Platt, C. Quin-tana, E. G. Rieffel, P. Roushan, N. C. Rubin, D. Sank, K. J. Satzinger, V. Smelyanskiy, K. J. Sung, M. D. Tre-vithick, A. Vainsencher, B. Villalonga, T. White, Z. J. Yao, P. Yeh, A. Zalcman, H. Neven, and J. M. Martinis, Quan-tum supremacy using a programmable superconducting processor, Nature 574 , 505 (2019). [57] Y. Wu, W.-S. Bao, S. Cao, F. Chen, M.-C. Chen, X. Chen, T.-H. Chung, H. Deng, Y. Du, D. Fan, M. Gong, C. Guo, C. Guo, S. Guo, L. Han, L. Hong, H.-L. Huang, Y.-H. Huo, L. Li, N. Li, S. Li, Y. Li, F. Liang, C. Lin, J. Lin, H. Qian, D. Qiao, H. Rong, H. Su, L. Sun, L. Wang, S. Wang, D. Wu, Y. Xu, K. Yan, W. Yang, Y. Yang, Y. Ye, J. Yin, C. Ying, J. Yu, C. Zha, C. Zhang, H. Zhang, K. Zhang, Y. Zhang, H. Zhao, Y. Zhao, L. Zhou, Q. Zhu, C.-Y. Lu, C.-Z. Peng, X. Zhu, and J.-W. Pan, Strong quantum com-putational advantage using a superconducting quantum processor, Phys. Rev. Lett. 127 , 180501 (2021). [58] Q. Zhu, S. Cao, F. Chen, M.-C. Chen, X. Chen, T.-H. Chung, H. Deng, Y. Du, D. Fan, M. Gong, C. Guo, C. Guo, S. Guo, L. Han, L. Hong, H.-L. Huang, Y.-H. Huo, L. Li, N. Li, S. Li, Y. Li, F. Liang, C. Lin, J. Lin, H. Qian, D. Qiao, H. Rong, H. Su, L. Sun, L. Wang, S. Wang, D. Wu, Y. Wu, Y. Xu, K. Yan, W. Yang, Y. Yang, Y. Ye, J. Yin, C. Ying, J. Yu, C. Zha, C. Zhang, H. Zhang, K. Zhang, Y. Zhang, H. Zhao, Y. Zhao, L. Zhou, C.-Y. Lu, C.-Z. Peng, X. Zhu, and J.-W. Pan, Quantum computational advantage via 60-qubit 24-cycle random circuit sampling, Science Bulletin 67 , 240 (2022). [59] F. Haake, M. Ku´ s, and R. Scharf, Classical and quantum chaos for a kicked top, Zeitschrift f¨ ur Physik B Condensed Matter 65 , 381 (1987). [60] V. Mourik, S. Asaad, H. Firgau, J. J. Pla, C. Holmes, G. J. Milburn, J. C. McCallum, and A. Morello, Exploring quantum chaos with a single nuclear spin, Phys. Rev. E 
+
+98 , 042206 (2018). [61] C. Neill, P. Roushan, M. Fang, Y. Chen, M. Kolodru-betz, Z. Chen, A. Megrant, R. Barends, B. Campbell, B. Chiaro, A. Dunsworth, E. Jeffrey, J. Kelly, J. Mutus, P. J. J. O’Malley, C. Quintana, D. Sank, A. Vainsencher, J. Wenner, T. C. White, A. Polkovnikov, and J. M. Mar-tinis, Ergodic dynamics and thermalization in an isolated quantum system, Nature Physics 12 , 1037 (2016). [62] H. Paik, D. I. Schuster, L. S. Bishop, G. Kirchmair, G. Catelani, A. P. Sears, B. R. Johnson, M. J. Reagor, L. Frunzio, L. I. Glazman, S. M. Girvin, M. H. Devoret, and R. J. Schoelkopf, Observation of high coherence in josephson junction qubits measured in a three-dimensional circuit qed architecture, Phys. Rev. Lett. 107 , 240501 (2011). [63] A. Auerbach, Interacting electrons and quantum mag-netism (Springer Science & Business Media, 2012). [64] Y. Salath´ e, M. Mondal, M. Oppliger, J. Heinsoo, P. Kurpiers, A. Potoˇ cnik, A. Mezzacapo, U. Las Heras, L. Lamata, E. Solano, S. Filipp, and A. Wallraff, Digital quantum simulation of spin models with circuit quantum electrodynamics, Phys. Rev. X 5, 021027 (2015). [65] U. L. Heras, A. Mezzacapo, L. Lamata, S. Filipp, A. Wall-raff, and E. Solano, Digital quantum simulation of spin systems in superconducting circuits, Phys. Rev. Lett. 112 ,200501 (2014). [66] I. I. Rabi, On the process of space quantization, Phys. Rev. 49 , 324 (1936). [67] I. I. Rabi, Space quantization in a gyrating magnetic field, Phys. Rev. 51 , 652 (1937). [68] S. Haroche and J.-M. Raimond, Exploring the quantum: atoms, cavities, and photons (Oxford university press, 2006). [69] C. Gardiner and P. Zoller, Quantum noise: a handbook of Markovian and non-Markovian quantum stochastic meth-ods with applications to quantum optics (Springer Science & Business Media, 2004). [70] E. Jaynes and F. Cummings, Comparison of quantum and semiclassical radiation theories with application to the beam maser, Proceedings of the IEEE 51 , 89 (1963). [71] A. Mezzacapo, U. Las Heras, J. S. Pedernales, L. Di-Carlo, E. Solano, and L. Lamata, Digital Quantum Rabi and Dicke models in superconducting circuits, Scientific Reports 4, 7482 (2014).
