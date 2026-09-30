@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-09-30 <!--dpr-date:20260930-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/30/2609.26769v1-on-the-complexity-of-finding-decoherence-free-subspaces" data-sidebar-item="{&quot;title&quot;: &quot;On the Complexity of Finding Decoherence Free Subspaces&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.26769v1-on-the-complexity-of-finding-decoherence-free-subspaces&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;开放量子系统与Lindblad耗散动力学的计算复杂度&quot;}">On the Complexity of Finding Decoherence Free Subspaces</a>
   * 2026-09-29 <!--dpr-date:20260929-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/29/2609.32310v1-conserved-and-relaxing-modes-enable-polynomial-success-coherent-carleman-lattice-boltzmann-evolution" data-sidebar-item="{&quot;title&quot;: &quot;Conserved and relaxing modes enable polynomial-success coherent Carleman lattice Boltzmann evolution&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.32310v1-conserved-and-relaxing-modes-enable-polynomial-success-coherent-carleman-lattice-boltzmann-evolution&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;Carleman量子块编码提升非线性动力学成功概率&quot;}">Conserved and relaxing modes enable polynomial-success coherent Carleman lattice Boltzmann evolution</a>

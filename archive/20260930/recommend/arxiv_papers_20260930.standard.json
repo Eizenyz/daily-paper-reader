@@ -1,0 +1,56 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-30T22:41:22.901917+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 0,
+    "deep_cap": 7,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 12,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.26769v1",
+      "source": "arxiv",
+      "title": "On the Complexity of Finding Decoherence Free Subspaces",
+      "abstract": "Decoherence free subspaces are a steady-state structure of the open quantum system which preserves quantum coherence between the states lying with in it and thus has found a variety of applications throughout quantum information science and technology. In this paper we study the computational complexity of deciding whether an open quantum system admits a decoherence free subspace or not. More specifically we study this problem with in the context of Markovian open quantum systems, governed by the time-independent Lindblad master equation. Along the way we introduce the $k$-Local Lindbladian problem, which captures the difficulty of computing purity decay rates under Lindbladian dynamics. We show that both problems are hard for the complexity class Quantum Merlin Arthur (QMA) when the locality $k \\geq 5$, with the first under perfect completeness and the second being complete for QMA. Our hardness construction generalizes Kitaev's clock Hamiltonian construction to the open quantum system setting by encoding the execution of a quantum circuit into the steady subspace of a Lindbladian containing both pure and mixed history states. This subspace is then mixed depending on the output of the encoded circuit. Our results suggest that deciding whether a generic Markovian open quantum system admits a decoherence free subspace is intractable even for quantum computation.",
+      "authors": [
+        "Evan Borras"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.CC",
+        "math-ph"
+      ],
+      "published": "2026-09-22T17:49:23+00:00",
+      "link": "https://arxiv.org/pdf/2609.26769v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "computational complexity of open quantum systems and Lindblad dissipative dynamics",
+      "llm_evidence_cn": "开放量子系统与Lindblad耗散动力学的计算复杂度",
+      "llm_evidence": "开放量子系统与Lindblad耗散动力学的计算复杂度",
+      "canonical_evidence": "开放量子系统与Lindblad耗散动力学的计算复杂度",
+      "llm_tldr_en": "Studies the computational complexity of deciding whether a Markovian open quantum system admits a decoherence free subspace; introduces the k-Local Lindbladian problem and shows both are QMA-hard.",
+      "llm_tldr_cn": "论文关注开放量子系统中退相干自由子空间的存在性判定问题。作者在马尔可夫近似下的时间无关Lindblad主方程框架内，引入k-Local Lindbladian问题以刻画纯度衰减率的计算难度。结果证明该判定问题与k-Local Lindbladian问题均属于QMA-hard。这一复杂性下界揭示了耗散与开放量子系统稳态结构计算的固有困难，为相关量子算法研究提供理论边界。",
+      "llm_tldr": "论文关注开放量子系统中退相干自由子空间的存在性判定问题。作者在马尔可夫近似下的时间无关Lindblad主方程框架内，引入k-Local Lindbladian问题以刻画纯度衰减率的计算难度。结果证明该判定问题与k-Local Lindbladian问题均属于QMA-hard。这一复杂性下界揭示了耗散与开放量子系统稳态结构计算的固有困难，为相关量子算法研究提供理论边界。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

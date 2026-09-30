@@ -1,0 +1,25 @@
+{
+  "date": "20260930",
+  "date_label": "",
+  "generated_at": "2026-09-30 22:41:43 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.26769v1",
+      "route": "202609/30/2609.26769v1-on-the-complexity-of-finding-decoherence-free-subspaces",
+      "title": "On the Complexity of Finding Decoherence Free Subspaces",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "开放量子系统与Lindblad耗散动力学的计算复杂度",
+      "first_seen_at": "2026-09-30 22:41:43 UTC",
+      "updated_at": "2026-09-30 22:41:43 UTC"
+    }
+  ]
+}

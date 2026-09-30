@@ -1,0 +1,24 @@
+{
+  "label": "2026-09-30",
+  "date": "2026-09-30",
+  "generated_at": "2026-09-30T22:41:47",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202609/30/2609.26769v1-on-the-complexity-of-finding-decoherence-free-subspaces",
+      "section": "quick",
+      "title_en": "On the Complexity of Finding Decoherence Free Subspaces",
+      "authors": "Evan Borras",
+      "date": "2026-09-22",
+      "pdf": "https://arxiv.org/pdf/2609.26769v1",
+      "score": "6.0",
+      "evidence": "开放量子系统与Lindblad耗散动力学的计算复杂度",
+      "tldr": "退相干自由子空间可保持量子相干性，但其存在性判定复杂度尚不清楚。本文在马尔可夫开放量子系统的Lindblad框架下研究该问题，并引入k-Local Lindbladian问题以刻画纯度衰减率计算难度。作者证明当局域性k≥5时，两问题均QMA难，且后者QMA完全。其构造推广Kitaev时钟哈密顿量，将量子电路执行编码进含纯态与混合历史态的稳态子空间，表明一般开放系统是否存在退相干自由子空间即使对量子计算也难解。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Decoherence free subspaces are a steady-state structure of the open quantum system which preserves quantum coherence between the states lying with in it and thus has found a variety of applications throughout quantum information science and technology. In this paper we study the computational complexity of deciding whether an open quantum system admits a decoherence free subspace or not. More specifically we study this problem with in the context of Markovian open quantum systems, governed by the time-independent Lindblad master equation. Along the way we introduce the $k$-Local Lindbladian problem, which captures the difficulty of computing purity decay rates under Lindbladian dynamics. We show that both problems are hard for the complexity class Quantum Merlin Arthur (QMA) when the locality $k \\geq 5$, with the first under perfect completeness and the second being complete for QMA. Our hardness construction generalizes Kitaev's clock Hamiltonian construction to the open quantum system setting by encoding the execution of a quantum circuit into the steady subspace of a Lindbladian containing both pure and mixed history states. This subspace is then mixed depending on the output of the encoded circuit. Our results suggest that deciding whether a generic Markovian open quantum system admits a decoherence free subspace is intractable even for quantum computation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
