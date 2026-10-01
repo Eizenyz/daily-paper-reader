@@ -1,0 +1,6057 @@
+Title: Dilation theorem for continuum quantum stochastic processes
+
+URL Source: https://arxiv.org/pdf/2609.35403v1
+
+Published Time: Tue, 29 Sep 2026 04:35:13 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+## Dilation theorem for continuum quantum stochastic processes 
+
+Jon´ aˇ s Fuksa, 1, ∗, # Clara Wassner, 1, †, # Jens Eisert, 1, 2, ‡ and Gregory A. L. White 1, §
+
+> 1
+
+Dahlem Center for Complex Quantum Systems, Freie Universit¨ at Berlin, 14195 Berlin, Germany 
+
+> 2
+
+Helmholtz-Zentrum Berlin f¨ ur Materialien und Energie, Berlin, Germany 
+
+(Dated: September 29, 2026) Connecting mathematical formalism in open quantum systems to its underlying physics necessi-tates the notion of a dilation, a way to bridge stochastic dynamics with deterministic Schr¨ odinger evolution on a larger space. Although dilations are well known in the literature for states, channels, and quantum combs, there is a substantial gap when it comes to the fully general setting of non-Markovian dynamics on a continuous interval. In an accompanying work, we introduce a continuous process tensor (cPT) framework wherein these processes are represented by vectors in multi-species bosonic Fock spaces of L2 functions. This accommodates all multi-time statistics of a quantum system on an interval. Here, we present a corresponding dilation theorem and show that all cPTs can be approximated arbitrarily well by an explicit closed description with system and environment coupled by a bounded Hamiltonian. As well as its physical appeal and demonstrating completeness of the framework, we show that such regular representations actually underpin the formalism, defin-ing a dense subspace of all cPTs that is easy to handle. This leads to a continuum-suitable version of Choi duality, and permits the rigorous treatment of continuum controls. 
+
+Open quantum systems represent one of the biggest frontiers within modern quantum mechanics. Noise in-duced by interactions between a system (S) and its en-vironment (E) can be complex [1, 2], and warrants com-prehensive understanding before it can be suppressed or corrected [3–8]. Recent years have seen many advances in understanding temporally correlated, or non-Markovian ,dynamics, particularly under the operational umbrella of process tensors [5, 9–12]. Nevertheless, this framework is valid only for discretised dynamics, a setting which neither reflects the underlying laws of physics, nor can be fully consistent with experiment. In an accompany-ing paper [13], we remedy this situation by introducing a comprehensive framework of continuous process tensors 
+
+(cPTs). Correspondingly, they enable an information-theoretic treatment of non-Markovian dynamics in the continuum, useful for understanding, simulating, and characterising such dynamics. Operationally, we define the set of physical cPTs purely in reference to all in-principle experimentally measurable quantities. But the broader structure of the theory and connection to under-lying physics require elucidation, and are the subject of the present work. Discrete process tensors admit a dilation in the form of Stinespring isometries [5, 14]. Every finite process tensor on the cPT interval can be hence individually understood as a collection of unitary operations on SE followed by discarding E. A stronger dilation, is a cPT form we term the process-canonical representation (PCR), and encodes an explicit time-dependent SE Hamiltonian within the continuous matrix product state (cMPS) ansatz as a si-multaneous dilation. A natural question is then, to what  
+
+> #These authors contributed equally to this work.
+
+extent can cPTs be understood within the guise of PCRs? In this work, we answer this question by proving a PCR density theorem (Theorem 1). Specifically, we prove the statement: given any cPT |Φ⟩ and approximation pa-rameter ε, one can always find a PCR representation |Υ⟩
+
+such that |Φ⟩ and |Υ⟩ are within distance ε of each other in the Fock space norm (see Fig. 1). Apart from simplifying the representation and con-necting to underlying physics, this theorem is a key el-ement to further results placing the framework on more mathematically rigorous grounds. Firstly, it enables the rigorous study of continuous instruments, which repre-sent experiments performed on the system. For example, some experiments access the process at a particular in-stant, which is only valid under regularity assumptions on the cPT. Hence, these instruments are strictly speak-ing not part of the theory. The PCR density theorem enables a Gelfand triple construction that allows us to treat these instruments in a rigorous way, delineating the conditions under which they are valid. Secondly, it is the key ingredient allowing the generalisation of the Choi-Jamiolkowski isomorphism [15–17] to the continuum. Dilation theorems of this kind have a lineage in the lit-erature: Stinespring for channels [18, 19], its multi-time analogue for process tensors [5, 12], and more recently in lifting one-parameter dynamical curves to analytic Stine-spring curves [20, 21]. Our work can be seen as a concep-tual continuation of these results, wherein a single time-dependent Hamiltonian must (approximately) reproduce an entire family of process tensors at once. 
+
+Continuous process tensors.— A controlled experiment on a system S with Hilbert space HS = CdS over a time interval [0 , T ] consists of a sequence of interventions. In the typical idealised setting, the experiment performs a finite number of instantaneous operations {A j }kj=1 ≡ AarXiv:2609.35403v1 [quant-ph] 28 Sep 2026 2(c) (b) 
+
+> time
+
+(a)   
+
+> Smooth for continuum
+> Coarse grain
+> Cannot pointwise evaluate
+> Arbitrary cPT Discrete PT with dilation Smooth cPT from one generator
+
+FIG. 1. Schematic of our main result (Theorem 1). (a) The class cPT contains processes with discontinuous wavefunctions; these cannot be exactly represented by any single dilation. (b) Nevertheless, we show that these can be arbitrarily approximated by first going to a discrete picture with a single dilation, and then (c) defining from that an appropriately smoothed cPT. 
+
+(described by CP maps) at times {tj }kj=1 , and the data returned are a snapshot of a discrete process tensor Υ k:0 ,the specifics of which will be made clear shortly. We work throughout in the Liouville space of S ∼= HS ⊗ H ∗
+
+> S
+
+and denote its elements by double-bracket notation |·⟩⟩ .
+
+We fix an orthonormal basis of superoperators {Pν }d4S−1 
+
+> ν=0
+
+,with P0 the identity. Writing ν ≡ (μ, μ ′) with P(μ,μ ′) =
+
+Pμ ⊗ P ∗ 
+
+> μ′
+
+for {Pμ}d2S−1 
+
+> μ=0
+
+the normalised Paulis on S, splits each label into a forward index μ and a backward index 
+
+μ′; this fully characterises a discrete process tensor since any control can then be expanded in this basis. 
+
+Definition 1 (Discrete process tensor) . Let t = ( t1 <
+
+· · · < tk) ∈ [0 , T ]k. A k-step process tensor is the multilinear functional Υk:0 mapping a sequence of CP maps applied to S at the times t to the probability of the associated outcome. It is fixed by the entries of its 
+
+Choi matrix , Υν (t) := Υ k:0 [Pνk , . . . , Pν1 ] = Υ (μ,μ′) with 
+
+ν ∈ { 0, . . . , d 4S − 1}k, and is physical if and only if it is (i) Positive: {Υ(μ,μ′)(t)}μ,μ′ ≽ 0 as an operator from 
+
+μ′ to μ; and (ii) Causal: it returns 1 on the trivial sequence and, for all ℓ ∈ [k], vanishes whenever a trace-annihilating linear map is applied to the ℓ-th input and the iden-tity is applied to all the inputs after that. 
+
+Causality is more conveniently phrased in the alternative superoperator basis |Pα⟩⟩⟨⟨ Pα′ | = P 
+
+> ν
+
+cνα,α ′ Pν : the trace-annihilating maps are exactly the linear combinations of these basis elements with α̸ = 0. Although this object describes a discrete quantum stochastic process, it fails to adequately describe the physics of the situation, since the strength of the interventions has no relation to the mathematical structure of the theory. We have extended the framework of discrete process tensors to the continuum in an accompanying paper [13] for finite-dimensional systems and briefly describe its el-ements here; a continuous-variable version has also re-cently been introduced [22]. A continuum framework must supply such an object for every k and every choice of times at once. Rather than positing a single dynam-ics that underlies different {Υk:0 (t)}k, t and deriving the resulting family, we ask for a single object that contains 
+
+all of these finite process tensors. With a fixed basis, this family can be thought of as a collection of coeffi-cient functions Υ (k) 
+
+> ν
+
+: ∆ k → C, one for each k and each string ν ∈ [q]k of non-identity labels, [ q] = {1, . . . , q } and 
+
+q := d4S − 1, where ∆ k ⊂ [0 , T ]k is the time-ordered sim-plex. The natural ansatz we arrive at is that the family as a whole be square-summable. This choice can be made lucid by expanding controlled dynamics as a Dyson series (see SM [23] and the companion work [13]) and places the cPT in the Fock space Γ(q) 
+
+> T
+
+:= M
+
+> k≥0
+
+Sym k L2([0 , T ]) ⊗ Cq  . (1) We shall denote this as just ‘Γ’ when the context is clear. This square-integrability condition is precisely the mathematical structure that relates to the physi-cality of interventions, a point we return to in Corol-lary 1. The generating functional we are after is there-fore a vector |Υ⟩ in a multi-species bosonic Fock space, with one species per non-identity Pauli Pν , vacuum |Ω⟩
+
+representing idle dynamics, and field operators obeying [ψν (t), ψ † 
+
+> ν′
+
+(t′)] = δνν ′ δ(t − t′). The relevant topology is the Fock norm ∥Υ∥2Γ = P
+
+> k≥0
+
+P
+
+> ν
+
+R T 
+
+> 0
+
+Dkt|Υ(k) 
+
+> ν
+
+(t)|2, with 
+
+R T 
+
+> 0
+
+Dkt the integral over ∆ k; we see later that it is an operationally meaningful metric on processes. Coefficients are read off |Υ⟩ by the intervention oper-ators ξν (t) := ψν (t) for ν̸ = 0, and ξ0(t) = 1. These implement an instantaneous Pν on S at time t, the case 
+
+ν = 0 being idling. Contracting k of them returns exactly the data of Definition 1, Υν (t) = ⟨Ω| ξνk (tk) · · · ξν1 (t1) |Υ⟩ . (2) But ⟨Ω| Q 
+
+> i
+
+ξνi (ti) has distribution-valued amplitudes and is not itself a Fock vector, reflecting the fact that instan-taneous control requires unbounded energy. Equation (2) is therefore meaningful only once smeared against a test 3function. Physicality of |Υ⟩ is then physicality of every finite process tensor contained in it. This leads us to the definition of a continuous process tensor. 
+
+Definition 2 (Continuous process tensor) . A vector 
+
+|ΥT ⟩ ∈ Γ with ⟨Ω|ΥT ⟩ = 1 is a continuous process tensor 
+
+(cPT) if for every k and every f ∈ L2(∆ k), f ≥ 0 with 
+
+R T 
+
+> 0
+
+Dkt|f (t)| = 1 , the smoothed marginals 
+
+Υf 
+
+> ν
+
+:= 
+
+Z T
+
+> 0
+
+Dktf (t)Υ ν (t), (3) 
+
+indexed by ν ∈ ({0} ∪ [d4S − 1]) k are the components of a discrete process tensor. We denote the set of all cPTs by 
+
+cPT .
+
+The raison d 'ˆetre of process tensors is to be an op-erational theory, mapping events to outcomes. In par-ticular, nothing in Definition 2 refers to an underlying dynamics; the conditions are imposed on the generated family of system-level quantities. What they do supply, on applying the dilation theorem for discrete process ten-sors [5, 12] to each marginal separately , is that for every 
+
+f and k there exists a finite-dimensional environment, a pure state |ψ0⟩⟩ and unitary channels {U j }kj=0 such that Υf 
+
+> ν
+
+= ⟨⟨ 1|U kPνk Uk−1 · · · Pν1 U0|ψ0⟩⟩ . (4) Whether a single dilation can generate the whole family at once, a property which we term a strong dilation, is the main topic of this work. Vectors in Γ that are generated by a single explicit dilation with a bounded generator take a distinguished form, which we term the process-canonical representation (PCR), and which are represented by a cMPS. Multi-species cMPS [24–27] are parametrised by a drift matrix 
+
+Q, jump matrices {Rν } and a boundary matrix B each acting on an auxiliary bond space of dimension χ. Writ-ing K(t) := Q(t) ⊗ 1 + P 
+
+> ν
+
+Rν (t) ⊗ ψ† 
+
+> ν
+
+(t), this object is defined as 
+
+|ΦT [Q, {Rν }, B ]⟩ := Tr 
+
+h
+
+B T eR T 
+
+> 0dt K (t)
+
+i
+
+|Ω⟩ . (5) In the case when χ = d2Sd2E, the drift matrix is a valid SE Liouvillian generator of dynamics, the jump matrices are 
+
+Pν ⊗ 1E and B = |ρSE ⟩⟩⟨⟨ 1SE | with ρSE a quantum state, the cMPSs provide a natural dilation of cPTs: comput-ing the coefficients of Eq. (5) and comparing with Eq. (4) identifies the bond space with some SE dynamics. Specif-ically, this leads to the following. 
+
+Definition 3 (Process-canonical representation) . A con-tinuous process tensor on a dS-dimensional system for the interval [0 , T ] is in the process-canonical representation 
+
+(PCR) if it can be written as the cMPS 
+
+|ΥT ⟩ = |ΦT [HSE , {Pν }, |ρSE ⟩⟩⟨⟨ 1SE |]⟩ , (6) 
+
+where HSE (t) = −iH(t) ⊗ 1 + i 1 ⊗ H(t)∗ for H an SE 
+
+operator-valued function on [0 , T ] that is (i) self-adjoint and (ii) bounded measurable, with the operator norm 
+
+∥H∥∞ ∈ L∞([0 , T ]) ; and ρSE is pure. We denote the set of cPTs admitting such a representation by PCR .
+
+We identify this representation as a noteworthy sub-class of the cPTs, owing to the facts that they are mani-festly physical, have finite-dimensional bond spaces, and have coefficients that may be pointwise evaluated. It is natural to first ask whether all cPTs admit this explicit form. We show this in the negative, i.e., that it is not possible to find an exact dilation for every cPT, as for-malised by the following result. 
+
+Proposition 1 (PCR ⊊ cPT ). Every PCR is a contin-uous process tensor, but there exist continuous process tensors with no exact process-canonical representative. Proof sketch. Inclusion is immediate: Eq. (6) generates every smoothed marginal by unitary dynamics, so Eq. (4) holds. For strictness, consider Brownian motion B(t) as a stochastic process. Fix τ ∈ (0 , T ) and drive S for a given path ω with the path-dependent qubit unitary Vt(ω) = 
+
+Xσt(ω)⊕σ0(ω), where σt(ω) is 1 if B(t, ω ) > B (τ, ω ) and 0 otherwise. Defining process tensors Υ (ω)(t, s ) with re-spect to the propagator from s to t, and then averaging over paths yields a positive, causal vector. Self-similarity of B at τ makes the limit of Υ (k) 
+
+> ν
+
+(t) as ti, t j → τ de-pend on the approach: the cones {ti < t j < τ } and 
+
+{ti < τ < t j } give different values, and both have positive measure. Hence no continuous function agrees with Υ (k)
+
+> ν
+
+almost everywhere, and |ΥT ⟩ is L2-inequivalent to every PCR. We discuss this more explicitly in the SM [23]. Apart from showing a separation between PCR and cPT ,this example shows that probing the process at the dis-continuity – e.g. performing a positive operator-valued measurement (POVM) at τ – is ill defined in general. We will return to this point at a later stage. 
+
+Continuum controls.— Process tensors, by themselves, are not meaningful objects without a well-defined notion of a dual, provided by the experimental control opera-tions [12]. Here, we introduce the notion of a process statistic: a positive L1 functional on cPTs. 
+
+Definition 4 (Process statistics and their effects) . A
+
+process statistic is a pair (X , IX ) of a measure space 
+
+X = (X, F, μ ) with outcome set X, σ-algebra F, σ-finite reference measure μ together with a linear map IX :Γ → L1(X ) assigning to each process a probability density 
+
+p|Υ⟩(x) = ⟨I (x)|Υ⟩ such that for all |Υ⟩ ∈ cPT it is non-negative μ-a.e. and normalised R 
+
+> X
+
+dμ(x) ⟨I (x)|Υ⟩ = 1 .For any E ∈ F the outcome functionals ⟨I (E)| : cPT →
+
+[0 , 1] , defined by ⟨I (E)| Υ⟩ := R 
+
+> E
+
+dμ(x) ⟨I (x)| Υ⟩, are called effects of the continuous statistic. 4The function x 7 → ⟨I (x)|Υ⟩ is the Radon–Nikodym derivative (see, e.g., the Appendix of Ref. [28]) of the probability measure E 7 → ⟨I (E)|Υ⟩ governing the out-comes of the statistic with respect to μ. Note that the normalisation condition implies that ⟨I (X)| is a deter-ministic continuous statistic, having unit overlap with all cPTs. An example of such a statistic is coherent con-trol, discussed in more detail in the SM [23]. We intro-duce these statistics in order to have a means with which process observables can be discussed, but note that to be physically implementable one also requires a complete 
+
+positivity condition. Physical continuous statistics are called continuous instruments; we introduce and study them in our companion paper [13]. Continuous statis-tics (and thus also instruments) have a natural induced norm, which we now define. 
+
+Definition 5 (Instrument norm) . The instrument norm is the operator norm of the map IX induced by ∥ · ∥ Γ and 
+
+∥ · ∥ L1 ,
+
+∥I X ∥Γ→L1(X ) := sup  
+
+> |Φ⟩∈ Γ : ∥| Φ⟩∥ Γ≤1
+
+∥I X (|Φ⟩)∥L1 . (7) The connection to the operational resources needed to implement the instrument is particularly interesting in the context of distinguishability of processes. Indeed, for 
+
+|Υ1⟩ , |Υ2⟩ ∈ cPT with ∆ := |Υ1⟩ − | Υ2⟩, twice the to-tal variation distance of their outcome distributions with respect to a fixed statistic ( X , IX ) obeys 
+
+∥I X (∆) ∥1 =
+
+Z
+
+> X
+
+dμ(x) |⟨I (x)|∆⟩| ≤ ∥I X ∥Γ→L1 ∥∆∥Γ. (8) Thus, the Γ-norm distance governs how distinguishable two processes are by bounded statistics, and provides op-erational context to the approximation error ultimately required in our main theorem. In the SM [23] we bound the norms of various example controls from our compan-ion paper [13] in terms of the Frobenius norm of the rele-vant generator or jump matrix characterising the statis-tic. We thus make the observation – to be a subject of future work – that there is a direct connection between instrument norms and the energetic cost of their imple-mentation. Notably, we find that the diffusive measure-ment, which requires an infinite-energy local oscillator, has a diverging instrument norm. 
+
+Dilations for cPTs.— With our framework in place, we may now assemble the pieces to connect these continuum non-Markovian processes back to the underlying physics. The following theorem is the main result of the paper. It certifies that the conditions of Definition 2 are complete :any vector satisfying them is generated, to arbitrary ac-curacy, by a single SE Hamiltonian. 
+
+Theorem 1 (PCR density) . Suppose that |Ψ⟩ ∈ Γ sat-isfies the physicality conditions for a cPT. Then, for any 
+
+ε > 0, there exists a process-canonical representation 
+
+|Φ[ Hε, {Pν }, |ψε⟩⟩⟨⟨ 1|]⟩, such that 
+
+∥ | Φ[ Hε, {Pν }, |ψε⟩⟩⟨⟨ 1|]⟩ − | Ψ⟩ ∥ Γ < ε, (9) 
+
+where Hε is the Liouvillian generated by Hε satisfying 
+
+sup t∈[0 ,T ] ∥Hε(t)∥∞ < ∞, ψε is a pure state and the PCR has a finite-dimensional environment. Proof sketch (see also Fig. 1). The core idea is to project 
+
+|Ψ⟩ onto vectors with wavefunctions that are piece-wise constant on the grid Λ Nε := {0, TNε , . . . , T }, where 
+
+Nε is sufficiently large. This projection can be un-derstood as computing an Nε-step discrete marginal ΨfNε  
+
+> ν
+
+of |Ψ⟩ with respect to a test function fNε (t) = 
+
+  Nε
+
+> T
+
+Nε
+
+1I1 (t1) . . . 1INε (tNε ), where 1I is the indicator function on I ⊂ [0 , T ] and Ik = (( k − 1) TNε , k TNε ). By physicality of |Ψ⟩ we can find a dilation ΨfNε  
+
+> ν
+
+= ⟨⟨ 1|PνNε UNε−1PνNε −1 . . . Pν1 U0|ψNε ⟩⟩ (10) with a finite environment. Defining for each k the Liou-villian Hk such that Uk = e Hk . We let ˜HNε (t) := 
+
+> Nε−1
+
+X
+
+> k=0
+
+Hkδ
+
+
+
+t − T k Nε
+
+
+
+(11) be the Liouvillian generated by the distribution-valued Hamiltonian ˜HNε . The formal cMPS 
+
+|Φ[ ˜HNε , {Pν }, |ψNε ⟩⟩⟨⟨ 1|]⟩ matches exactly the piece-wise constant projection of |Ψ⟩. The construction allows us to control the L2 error between the piecewise constant cMPS and |Ψ⟩. Lastly, we can smooth ˜HNε to Hε at controlled L2 cost, to satisfy ∥Hε(t)∥∞ < ∞.A few comments about this result are in order. Firstly, the PCR has a clear connection to the Schr¨ odinger equa-tion and can be implemented by coupling the system to a finite-dimensional environment via Hε, and evolving the pure initial state ψε. Theorem 1 is a strong dilation theo-rem in the approximate sense and shows that the claimed physicality conditions really do ensure that the process is physical. Due to Eq. (8) and the observed connection between the instrument norm and the corresponding en-ergy requirement, the result states that we can always find a PCR such that distinguishing it from the given 
+
+|Ψ⟩ would require arbitrarily large energy. We saw in Proposition 1 that sharp measurements are undefined for generic cPTs. But frequently in quantum information, it is useful to think of instantaneous and idealised measurements – similar to position eigenstates in standard quantum mechanics [29]. As it turns out, Theorem 1 allows us to make such idealised instruments rigorously meaningful in a rigged Hilbert space construc-tion [30, 31], exploiting the regularity properties of PCRs. 
+
+Corollary 1 (Process Gelfand triple, informal) . Regular processes generated by a bounded-energy environment sit 5
+
+inside the space of all cPTs, which in turn sits inside the space of idealised instruments: 
+
+Λreg 
+
+|{z} 
+
+> PCRs
+
+,→ Λ|{z} 
+
+> all cPTs
+
+,→ Λ∗
+
+> reg
+
+|{z} 
+
+> idealised instruments
+
+. (12) 
+
+An instantaneous measurement at time t gives well-defined statistics on every regular process, but for generic cPTs instantaneous-instrument statistics are undefined. Idealised instruments are therefore made meaningful on the dense set of bounded-energy processes, which we for-malise rigorously by a Gelfand triple in the SM [23]. 
+
+Our PCR density theorem hence enables a rigorous for-mulation of instantaneous POVMs inside our framework. But, as we shall see, it is even more central to the overall formalism by allowing us to connect cPTs with operators and thus formulate a Choi duality in the continuum. 
+
+Choi duality.— In the discrete setting, the Choi matrix of a process tensor and its vectorisation are related by the isomorphism between operators on a finite-dimensional space and vectors in the doubled space. Loosely speak-ing, to each process tensor Υ and effect A (e.g. a se-quence of CP maps) one associates positive operators ˆΥand ˆA such that Υ[ A] = Tr[ ˆΥ ˆAT]. At a formal level, this exploits the relation B(Cd) ∼= Cd ⊗ Cd; physically this corresponds to the cut between the time-forwards and the time-backwards contour. In the continuum how-ever, such an isomorphism does not exist, because while the physical cut runs between the two Pauli labels μ, μ ′,the Fock structure Γ (d4S−1)  
+
+> T
+
+does not factorise along this axis. But on the subspace of Γ where the cross-species (neither Pμ nor Pμ′ equal to the identity) are unpopu-lated, the isomorphism can be restored. As it turns out, the cross-species amplitudes of physical processes are in fact fully determined by the remaining amplitudes. Con-sequently, projecting them away retains all relevant in-formation while circumventing the non-factorisability ob-stacle. Theorem 1 allows us to make this point rigorous and hence formulate a Choi duality in the continuum. We present here briefly the main ingredients and defer the details to the SM [23]. We write γ := Γ(d2S−1)  
+
+> T
+
+for the single-contour Fock space. We use a caret to denote the Choi operator of a cPT ˆΥT : γ → γ and ˇI for the object dual to it (Def-inition 4) – with the explicit maps P : |ΥT ⟩ 7 → ˆΥT and 
+
+V : ⟨I| 7 → ˇI, elaborated on in the SM [23]. The Choi map 
+
+P retains only wavefunctions not containing the cross species, such that the integral kernel of ˆΥT becomes: ( ˆΥT )(k;k′) 
+
+> μ;μ′
+
+(t; t′) := Υ (k+k′)(μ,0),(0,μ′)(t, t′), (13) which is a Hilbert–Schmidt (HS) operator by construc-tion. On the other hand, the instrument map V retains by necessity all cross-species information. Consequently, the dual object ˇI is in general not an operator on γ but instead a sesquilinear form defined via an integral kernel. With this context in hand, we now present a theorem formalising the Choi duality in the continuum, enabled by Theorem 1. In particular, the separate forward and backward Stinespring curves of a PCR make explicit that the cross species factorise, which allows them to be re-constructed from the Choi operator. 
+
+Theorem 2 (Choi duality in the continuum) . There ex-ists a reconstruction map R, such that for every |ΥT ⟩ ∈ 
+
+cPT , the Choi operator ˆΥT satisfies R ˆΥT = |ΥT ⟩ and it is a positive-semidefinite trace-class operator. Hence, for any ⟨I| ∈ Γ∗ it satisfies 
+
+⟨ˇI, ˆΥT ⟩ker = ⟨I| ΥT ⟩ , (14) 
+
+with the left hand side being a HS-like sesquilinear form between integral kernels. Proof sketch. We introduce the operator R such that 
+
+R◦P (|Υ⟩) = |Υ⟩ directly follows for all |Υ⟩ ∈ PCR . The-orem 1 and the bounded linear transformation theorem extend this identity to all cPTs, after which Eq. (14) then follows by direct computation using the definitions of R
+
+and V. Positive semidefiniteness of ˆΥT follows from the positivity of |ΥT ⟩. Lastly, the trace of a PCR can be computed as a constant and hence, using Theorem 1 and Fatou’s lemma, we can upper bound the trace of ˆΥT .We remark that for sufficiently well-behaved |I⟩ , ˇI is a bounded operator on γ and then ⟨ˇI, ˆΥT ⟩ker ≡ Tr ˇI† ˆΥT ]exactly is the trace of the operator product ˇI† ˆΥT . Fur-ther, note that since R◦P acts as the identity on all cPTs, the causality condition can be equivalently defined in the Choi operator picture, see the SM [23]. 
+
+Discussion.— In this work, we have clarified the struc-ture of continuous non-Markovian processes, linking the operational framework introduced in an accompanying work [13] to its underlying physical setting, while proving several key results pertaining to mathematical represen-tation. Most importantly, we proved a dilation theorem for cPTs, connecting the abstract conditions of positivity and causality on Fock vectors to a clear dynamical ap-proximation in the Γ-norm. A natural next step would be to formalise this connection and understand whether it is meaningful to go beyond this norm in some scenarios, while linking our formalism to the literature on quantum stochastic processes [32, 33]. While the main focus of this paper has been on the processes, finding a structural theorem analogous to Theorem 1 for instruments would solidify the mathematical understanding of the process dual. Further, we have motivated the Γ-norm as the nat-ural approximation metric for processes by linking the instrument norm to the energy requirements of instru-ments by means of examples. We thus pave the way for information-theoretic treatments which respect the phys-ical constraint of finite energy. 6
+
+Acknowledgements.— This work has been supported by the BMFTR (DAQC, MuniQC-Atoms, QuSol, Hy-brid++, PasQuops), Clusters of Excellence (ML4Q, MATH+), the Munich Quantum Valley, Berlin Quan-tum, the Quantum Flagship (Millenion, Pasquans2), the DFG (CRC 183, SPP 2514), the QuantERA (SDP-Code), the European Research Council (DebuQC), and the Alexander-von-Humboldt Foundation. 
+
+AI statement.— AI tools supported us with fundamen-tal mathematical analysis concepts when carrying out the detailed steps of the proofs and we have used them as a final check. The main ideas, steps and writing were all done without the use of AI.  
+
+> ∗
+
+jonas.fuksa@fu-berlin.de  
+
+> †
+
+c.wassner@fu-berlin.de  
+
+> ‡
+
+jense@zedat.fu-berlin.de  
+
+> §
+
+gregory.white@fu-berlin.de [1] I. A. Aloisio, G. A. L. White, C. D. Hill, and K. Modi, On the sampling complexity of open quantum systems, PRX Quantum 4, 020310 (2022), 2209.10870. [2] N. Dowling, K. Modi, R. N. Mu˜ noz, S. Singh, and G. A. L. White, Capturing long-range memory structures with tree-geometry process tensors, Physical Review X 
+
+14 , 041018 (2024). [3] C. Addis, F. Ciccarello, M. Cascio, G. M. Palma, and S. Maniscalco, Dynamical decoupling efficiency versus quantum non-Markovianity, New Journal of Physics 17 ,123004 (2015). [4] G. D. Berk, S. Milz, F. A. Pollock, and K. Modi, Ex-tracting quantum dynamical resources: Consumption of non-Markovianity for noise reduction, npj Quantum In-formation 9, 1 (2023). [5] F. A. Pollock, C. Rodr´ ıguez-Rosario, T. Frauenheim, M. Paternostro, and K. Modi, Non-Markovian quantum processes: Complete framework and efficient characteri-zation, Physical Review A 97 , 012127 (2018). [6] D. Gribben, A. Strathearn, G. E. Fux, P. Kirton, and B. W. Lovett, Using the environment to understand non-Markovian open quantum systems, Quantum 6,2106.04212 (2022), arXiv:2106.04212. [7] ´A. Rivas, S. F. Huelga, and M. B. Plenio, Quantum Non-Markovianity: characterization, quantification and de-tection, Reports on Progress in Physics 77 , 1405.0303 (2014), arXiv:1405.0303. [8] B. Bylicka, D. Chru´ sci´ nski, and S. Maniscalco, Non-Markovianity and reservoir memory of quantum chan-nels: A quantum information theory perspective, Scien-tific Reports 4, 5720 (2014). [9] G. A. L. White, C. D. Hill, F. A. Pollock, L. C. L. Hol-lenberg, and K. Modi, Demonstration of non-Markovian process characterisation and control on a quantum pro-cessor, Nature Communications 11 , 6301 (2020). [10] J. Keeling, E. M. Stoudenmire, M.-C. Ba˜ nuls, and D. R. Reichman, Process tensor approaches to non-Markovian quantum dynamics, Physical Review X 16 ,020502 (2026). [11] G. White, F. Pollock, L. Hollenberg, K. Modi, and C. Hill, Non-Markovian quantum process tomography, PRX Quantum 3, 020344 (2022). [12] S. Milz and K. Modi, Quantum stochastic processes and Quantum non-Markovian phenomena, PRX Quantum 2,030201 (2021). [13] C. Wassner, J. Fuksa, J. Eisert, and G. A. L. White, An operational continuum limit of quantum combs (2026), arXiv:2601.16974. [14] G. A. L. White, P. Jurcevic, C. D. Hill, and K. Modi, Unifying non-Markovian characterization with an effi-cient and self-consistent framework, Physical Review X 
+
+15 , 021047 (2025). [15] M.-D. Choi, Completely positive linear maps on complex matrices, Lin. Alg. Appl. 10 , 285 (1975). [16] A. Jamiolkowski, Linear transformations which preserve trace and positive semidefiniteness of operators, Rep. Math. Phys. 3, 275 (1972). [17] M. Frembs and E. G. Cavalcanti, Variations on the Choi– Jamiolkowski isomorphism, Journal of Physics A 57 ,265301 (2024). [18] D. Kretschmann, D. Schlingemann, and R. F. Werner, A continuity theorem for Stinespring’s dilation, Journal of Functional Analysis 255 , 1889 (2008). [19] M. A. Nielsen and I. L. Chuang, Quantum computation and quantum information , 10th ed. (Cambridge Univer-sity Press, Cambridge ; New York, 2010). [20] D. Burgarth, P. Facchi, and R. Hillier, Control of quan-tum noise: on the role of dilations, Annales Henri Poincar´ e 24 , 325 (2023). [21] F. vom Ende, Finite-dimensional Stinespring curves can approximate any dynamics, Open Systems & Information Dynamics 31 , 2306.03667 (2024), arXiv:2306.03667. [22] F. Costa and J. Yang, Continuous operations on non-Markovian processes (2025), arXiv:2512.05884. [23] (2026), see Supplemental Material at URL-will-be-inserted-by-publisher for details of the cPT framework and the proof of the dilation theorem. [24] F. Verstraete and J. I. Cirac, Continuous matrix product states for quantum fields, Physical Review Letters 104 ,1002.1824 (2010), arXiv:1002.1824. [25] T. J. Osborne, J. Eisert, and F. Verstraete, Holographic quantum states, Physical Review Letters 105 , 260401 (2010). [26] J. Haegeman, J. I. Cirac, T. J. Osborne, and F. Ver-straete, Calculus of continuous matrix product states, Physical Review B 88 , 085118 (2013). [27] E. Tjoa and J. I. Cirac, Continuous matrix-product op-erators for quantum fields, Physical Review Research 8,L022013 (2026). [28] A. Barchielli and M. Gregoratti, Quantum trajectories and measurements in continuous time: The diffusive case , Lecture Notes in Physics, Vol. 782 (Springer Berlin Heidelberg, Berlin, Heidelberg, 2009). [29] R. de la Madrid, The role of the rigged Hilbert space in quantum mechanics, European Journal of Physics 26 ,quant (2005), arXiv:quant-ph/0502053. [30] I. M. Gel’fand and N. Y. Vilenkin, Generalized func-tions: applications of harmonic analysis (Elsevier Sci-ence, Burlington, 2014). [31] J. Wloka, Partial Differential Equations , 1st ed. (Cam-bridge University Press, 1987). [32] L. Accardi, A. Frigerio, and J. T. Lewis, Quantum stochastic processes, Publ. Res. Inst. Math. Sc. 18 , 97 (1982). 7
+
+[33] H. I. Nurdin and J. Gough, From the Heisenberg to the Schr¨ odinger picture: Quantum stochastic processes and process tensors, in 2021 60th IEEE Conference on Deci-sion and Control (CDC) (IEEE, 2021) p. 4164–4169. [34] A. Arai, Infinite-dimensional Dirac operators and super-symmetric quantum fields: An introduction to analysis on boson–fermion Fock spaces , SpringerBriefs in Math-ematical Physics, Vol. 46 (Springer Nature Singapore, Singapore, 2022). [35] E. De Faria and W. De Melo, Mathematical aspects of quantum field theory , 1st ed. (Cambridge University Press, 2010). [36] C. Benedetti, F. Buscemi, P. Bordone, and M. G. Paris, Dynamics of quantum correlations in colored-noise envi-ronments, Physical Review A 87 , 052328 (2013). [37] A. Udupa, T. Hillmann, R. G. Ahmed, A. Smirne, and G. Ferrini, Performance of rotation-symmetric bosonic codes in the presence of non-Markovian effects induced by random telegraph noise, Physical Review Research 8,023007 (2026). [38] H. M. Wiseman and G. J. Milburn, Quantum measure-ment and control , first paperback edition ed. (Cambridge University Press, Cambridge, 2014). [39] P. Guilmin, P. Rouchon, and A. Tilloy, Parameters es-timation by fitting correlation functions of continuous quantum measurement (2024), arXiv:2410.11955. [40] A. J. B. Rosal, P. P. Potts, and G. T. Landi, Deter-ministic equations for feedback control of open quantum systems (2025), arXiv:2507.01934. [41] C. Gardiner and P. Zoller, Quantum noise: a handbook of Markovian and non-Markovian quantum stochastic meth-ods with applications to quantum optics (Springer Science & Business Media, 2004). [42] C. W. Gardiner, Stochastic methods: A handbook for the natural and social sciences , 4th ed., Springer Series in Synergetics No. 13 (Springer, Berlin Heidelberg, 2009). [43] P.-A. Meyer, Quantum probability for probabilists , Lec-ture Notes in Mathematics, Vol. 1538 (Springer Berlin Heidelberg, Berlin, Heidelberg, 1995). [44] S. Janson, Gaussian Hilbert spaces , 1st ed. (Cambridge University Press, 1997). [45] P. Guilmin, P. Rouchon, and A. Tilloy, Time-averaged continuous quantum measurement (2025), arXiv:2505.20382. [46] M. Reed and B. Simon, Methods of modern mathemati-cal physics. 2, Fourier Analysis, Self-Adjointness , 4th ed. (Acad. Pr, 1979). 8
+
+## Dilation theorem for continuum quantum stochastic processes Supplemental Material 
+
+> CONTENTS
+
+A. Background on Fock spaces, continuous process tensors and notational conventions 81. Fock spaces 82. Continuous process tensors as elements of a bosonic Fock space 10 B. Bounds on norms of cPT wavefunctions 10 C. Example of a cPT not exactly representable as a PCR 11 D. Examples of continuous instruments and their norms 13 1. Coherent control 13 2. Jump measurement 14 3. Diffusive measurement 17 E. Gelfand triple 23 F. Proof of Theorem 1 in the main text 24 G. Proofs of lemmata from PCR theorem proof 27 1. Proof of Lemma 1 and Lemma 2 27 2. Proof of Lemma 3 29 H. Choi duality in the continuum 30 1. Choi operator of a cPT 31 2. Choi duality inner product 34 
+
+> Appendix A: Background on Fock spaces, continuous process tensors and notational conventions
+
+In this appendix, we provide a basic introduction to analysis on Fock spaces, introduce our notation, and show how cPTs naturally become elements of these spaces. For a more thorough introduction to Fock spaces, many standard texts are available; we recommend the excellent texts [34, 35].  
+
+> 1. Fock spaces
+
+As presented in the main text and introduced in detail in the accompanying work [13], continuous process tensors on a continuous time-interval [0 , T ] can be described by vectors |Υ⟩ in a bosonic free scalar quantum field theory. Mathematically, the relevant space is a bosonic Fock space. Bosonic Fock spaces are built from a base Hilbert space 
+
+H as follows: Γ( H) := 
+
+> ∞
+
+M
+
+> n=0
+
+Sym ⊗n(H), (A1) where the notation Sym ⊗n(H) is the symmetrisation of the n-fold tensor product of H. The subspace labeled by n is called the n-particle subspace, while the subspace labeled by n = 0 is one-dimensional and is spanned by the vacuum. Given the inner product ⟨· , ·⟩ H on the base space, we can define the inner product on H⊗n by sesquilinearly extending 
+
+⟨f1 ⊗ · · · ⊗ fn, g 1 ⊗ · · · ⊗ gn⟩n := 
+
+> n
+
+Y
+
+> i=1
+
+⟨fi, g i⟩H , (A2) 9which also defines an inner product on Sym ⊗n(H). The inner product on Γ( H) becomes 
+
+⟨f, g ⟩Γ( H) := 
+
+> ∞
+
+X
+
+> n=0
+
+⟨f (n), g (n)⟩n , (A3) where f (n) ∈ Sym ⊗n(H) is the n-particle sector component of f , which in physics-related discussions is often called the n-particle wavefunction or amplitude . We adopt this terminology here. This inner product makes Γ into a Hilbert space since direct sums of complete Hilbert spaces are complete. The inner product also defines a norm and a topology on Γ( H) via ∥f ∥Γ( H) := p⟨f, f ⟩ for any f ∈ Γ( H). This topology is also how the infinite direct sum in Eq. (A1) should be understood: It is the closure of the span of all vectors with support in a finite number of sectors under this 
+
+∥ · ∥ Γ( H).In this work, the base Hilbert spaces are either multiple copies of the square-integrable functions H = L2([0 , T ]) ⊗
+
+Cq ∼= Lqi=1 L2([0 , T ]) or of the Sobolev functions H = H1([0 , T ]) ⊗ Cq , where the relevant inner products are 
+
+⟨f, g ⟩L2 := 
+
+> q
+
+X
+
+> ν=1
+
+Z T
+
+> 0
+
+f ∗ 
+
+> ν
+
+(t)gν (t)d t, ⟨f, g ⟩H1 := ⟨f, g ⟩L2 + ⟨f ′, g ′⟩L2 , (A4) where ′ labels the weak derivative. The Fock space built from L2 is the standard multi-species bosonic Fock space describing a scalar bosonic theory with q particle species. In our case, to describe cPTs on a dS-dimensional system, the space Γ has q = d4S − 1 particle species. We can introduce a particle annihilation operator a(u) for any element u ∈ H , which maps the vacuum to zero and the n-particle component to an n − 1-particle component by linearly extending 
+
+a(u) : 1
+
+n!
+
+X
+
+> π∈Sn
+
+fπ(1) ⊗ · · · ⊗ fπ(n) 7 →√nn!
+
+X
+
+> π∈Sn
+
+⟨u, f π(1) ⟩ fπ(2) ⊗ · · · ⊗ fπ(n). (A5) The associated creation operator a†(u) is the adjoint of the annihilation operator. These operators satisfy the com-mutation relation [a(u), a †(v)] = ⟨u, v ⟩H . (A6) For the standard multispecies bosonic Fock space Γ it is common to introduce the field operators ψν (x), which satisfy [ψν (x), ψ † 
+
+> ν′
+
+(x′)] = δν,ν ′ δ(x − x′), (A7) which can be thought of as annihilation operators corresponding to the Dirac delta function δx. Hence, they are operator-valued densities and they only make sense when integrated over a non-zero measure subset of the domain [0 , T ]. In fact, for any u in L2([0 , T ]) we can write 
+
+aν (u) = 
+
+Z T
+
+> 0
+
+dt u (t)∗ψν (t). (A8) With the field operators in place, we can define the wavefunctions Υ (n) 
+
+> ν
+
+(t) of any |Υ⟩ ∈ Γ via 
+
+|Υ⟩ =
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν∈[q]n
+
+Z T
+
+> 0
+
+Dnt Υ(n) 
+
+> ν
+
+(t)
+
+> n
+
+Y
+
+> i=1
+
+ψ† 
+
+> νi
+
+(ti) |Ω⟩ . (A9) The inner product on Γ can now be written in terms of the wavefunctions via 
+
+⟨Φ|Υ⟩ =
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν∈[q]n
+
+Z T
+
+> 0
+
+Dnt
+
+
+
+Φ(n) 
+
+> ν
+
+(t)
+
+∗
+
+Υ(n) 
+
+> ν
+
+(t). (A10) The n-particle subspace is hence spanned by square-integrable functions, where the inner product is defined with time ordering. We can equivalently define the wavefunctions to be symmetric and replace the time-ordered integral with an integral over [0 , T ]n, obtaining a rescaled inner product between the wavefunctions, which is more standard in describing non-relativistic particles. For processes, however, it is useful to impose the time-ordering. 10 
+
+2. Continuous process tensors as elements of a bosonic Fock space 
+
+In this subsection we motivate physically why the Fock space Γ from Equation (1) in the main text is the natural space to host continuum process tensors of finite-dimensional systems. Consider a system S coupled to its environment E by a CPTP generator LSE (t) throughout a time interval of interest [0 , T ]. Suppose that SE starts in an initial state 
+
+ρSE . We want to perform an experiment on S, yielding an outcome from an outcome set X and we assume that for every x ∈ X we know the corresponding generator Ax(t) of CP dynamics on S. That is P 
+
+> x∈X
+
+Ax(t) is a CPTP map. The associated probability density of obtaining the experimental outcome x ∈ X is given by 
+
+p(x|A ) := Tr SE 
+
+
+
+T
+
+
+
+e  
+
+> RT
+> 0dt
+
+LSE (t)+ Ax(t)
+
+ 
+
+(ρSE )
+
+
+
+, (A11) where T is the time-ordering operator. The goal of the continuous process tensor framework is to compute the associated probability density as a contraction between the continuous process tensor , which depends on ρSE and 
+
+LSE , and the continuous instrument , which depends on Ax(t). To achieve this separation, we switch to the Liouville space and use the orthonormal generalised Pauli basis {Pν }ν=0 ,...,d 4S−1 for operators on its system part, such that 
+
+Ax(t) = Pd4S−1 
+
+> ν=0
+
+cxν (t)Pν , see the accompanying work [13]. Now, the separation can be achieved through the Dyson series as 
+
+p(x|A ) = 
+
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt⟨⟨ 1SE |Λ( T, t n)Ax(tn)Λ( tn, t n−1) . . . Ax(t1)Λ( t1, 0) |ρSE ⟩⟩ 
+
+=
+
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν∈{ 1,...,d 4S−1}n
+
+eR T  
+
+> 0dt c x
+> 0(t)
+
+cxνn (tn) . . . c xν1 (t1)⟨⟨ 1SE |Λ( T, t n)1E ⊗ Pνn Λ( tn, t n−1) . . . . . . Λ( t2, t 1)1E ⊗ Pν1 Λ( t1, 0) |ρSE ⟩⟩ 
+
+(A12) where R T 
+
+> 0
+
+Dnt is the integral over t ∈ [0 , T ]n with the time-ordering restriction t1 < · · · < t n, Λ( t′, t ) = T eR t′  
+
+> tdsLSE (s)
+
+,and we label vectors in the Liouville space with the double bra-ket notation. In the following we will suppress 1E when it is clear from the context. Note that we use the notation LSE both for the GKSL operator and for its vectorisation, but which one is meant should be clear from the context. Notice that the expression Eq. (A12) is an inner product in the space Γ (d4S−1)  
+
+> T
+
+, the ( d4S − 1)-species bosonic Fock space of the L2 functions on [0 , T ], where one of the vectors becomes the cPT and the other represents the instrument (see Definition 4 in the main text). Focusing on the cPTs here, this approach encompasses all processes that have a generator. In fact, these are exactly the processes that are described by a PCR vector. But, as we have seen in the main text, the space span( PCR ) is not complete under the Fock space norm. Hence, to obtain a Hilbert space for the cPTs, we complete the space under ∥ · ∥ Γ, which is the starting point of the theory. The Dyson series illustrates that the L2 inner product is the natural inner product on cPTs and hence completing under the L2 Fock norm is the 
+
+natural completion of the space. However, we can complete the space under other norms, such as the Sobolev norms, which is, for instance, useful to obtain the Gelfand triple construction described in the main text, allowing us to make certain useful instruments rigorous. 
+
+Appendix B: Bounds on norms of cPT wavefunctions 
+
+The Γ norm can be written as a sum of time-ordered L2 norms of the wavefunctions as 
+
+∥| ΥT ⟩∥ Γ =
+
+vuut ∞X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν
+
+|Υ(n) 
+
+> ν
+
+(t)|2 =
+
+vuut ∞X
+
+> n=0
+
+X
+
+> ν
+
+∥Υ(n) 
+
+> ν
+
+∥22 (B1) In this appendix we will obtain a general upper bound on each ∥Υ(n) 
+
+> ν
+
+∥2.Using the variational definition of the time-ordered L2 norm we have 
+
+∥Υ(n) 
+
+> ν
+
+∥2 = sup   
+
+> f∈L2(∆ n):
+> ∥f∥2=1
+
+Z T
+
+> 0
+
+Dnt f (t)Υ (n) 
+
+> ν
+
+(t) . (B2) 11 We can write any function f ∈ L2(∆ n) as 
+
+f (t) = 1
+
+π
+
+Z 2π
+
+> 0
+
+dθ eiθ |f (t)| [1 + cos( θ − ϕ(t))] =: 
+
+Z 2π
+
+> 0
+
+dθ eiθ f θ (t), (B3) where ϕ(t) is the complex argument of f (t). This identity can be verified by a direct calculation using the orthogonality properties of sin and cos. The crucial observation is that f θ (t) ≥ 0 for all t ∈ ∆n. Therefore, we can write 
+
+∥Υ(n) 
+
+> ν
+
+∥2 = sup   
+
+> f∈L2(∆ n):
+> ∥f∥2=1
+
+Z 2π
+
+> 0
+
+dθ eiθ 
+
+Z T
+
+> 0
+
+Dnt f θ (t)Υ (n) 
+
+> ν
+
+(t) . (B4) Since f θ (t) ≥ 0, whenever R 
+
+> ∆n
+
+dtf θ (t) > 0, the definition of a cPT implies that Υf θ 
+
+> ν
+
+:= 1
+
+R T 
+
+> 0
+
+Dnt′ f θ (t′)
+
+Z T
+
+> 0
+
+Dnt f θ (t)Υ (n) 
+
+> ν
+
+(t) (B5) is an element of a valid n-step process tensor. Therefore, we can dilate this object [5] and write 
+
+∥Υ(n) 
+
+> ν
+
+∥2 = sup   
+
+> f∈L2(∆ n):
+> ∥f∥2=1
+
+Z 2π
+
+> 0
+
+dθ e iθ ⟨⟨ 1SE |Pνn Un−1 . . . U 1Pν1 |ρ⟩⟩ 
+
+Z T
+
+> 0
+
+Dntf θ (t) , (B6) where the Ui and ρ depend in general on f and θ, and the Ui are vectorised unitary channels on a d2n 
+
+> S
+
+dimensional quantum system and ρ is a quantum state. Using the definition of the operator norm we can upper bound 
+
+|⟨⟨ 1SE |Pνn Un−1 . . . U 1Pν1 |ρ⟩⟩| ≤ ∥⟨⟨ 1SE |∥∥ Pν1 ∥∞ . . . ∥Pνn ∥∞∥| ρ⟩⟩∥ ≤ dn
+
+> S
+
+1
+
+dn
+
+> S
+
+= 1 . (B7) Using the Cauchy–Schwarz inequality, we get 
+
+Z T
+
+> 0
+
+Dnt f θ (t) ≤ 2
+
+π
+
+Z T
+
+> 0
+
+Dnt|f (t)| ≤ 2
+
+π ∥1∥2∥f ∥2 = 2
+
+π
+
+r T n
+
+n! (B8) and hence 
+
+∥Υ(n) 
+
+> ν
+
+∥2 ≤ 4
+
+r T n
+
+n! . (B9) From the normalisation condition ⟨Ω|ΥT ⟩ = 1 we hence get 1 ≤ ∥| ΥT ⟩∥ Γ =
+
+vuut ∞X
+
+> n=0
+
+X
+
+> ν
+
+∥Υ(n) 
+
+> ν
+
+∥22 ≤
+
+vuut ∞X
+
+> n=0
+
+16( d4S − 1) n T n
+
+n! = 4 e T (d4S−1) /2 . (B10) 
+
+Appendix C: Example of a cPT not exactly representable as a PCR 
+
+In the main text, we briefly described a motivating example of a cPT |ΥT ⟩ satisfying all the criteria of physicality, but for which no |Φ⟩ ∈ PCR could be exactly L2-equivalent. The purpose of this example is twofold: first, we wish to emphasise that the approximation error in our main theorem is necessary; it is not through lack of imagination that a PCR cannot be found for every cPT, the former is indeed strictly contained within the latter. Second, this example is geared towards the essential distinction between these two sets, which is (non-)continuity of the wavefunction amplitudes. To this effect, we exploit properties of Brownian motion, whose sign-transformed increments exhibit the type of discontinuity that we are after. Although the example is somewhat contrived, this is a matter of exposition and the stochastic dynamics from which it stems appear as a valid mathematical model in many physically relevant settings [36, 37]. 12 To begin, let B(t) be the continuous-time self-similar stochastic process Brownian motion. This has zero expectation for all t ∈ [0 , T ] and the covariance function over paths ω
+
+cov[ B(t), B (s)] = 12 (|t| + |s| − | t − s|). (C1) This process has stationary increments, which is to say that the distribution of B(t + s) − B(s) depends only on t.We define the cPT |ΥT ⟩ as follows. On the interval [0 , T ] pick a fixed τ ∈ (0 , T ). Draw a path ω ∼ B and let 
+
+B(t, ω ) be its value at some time t. Next, let σt(ω) be an indicator function for each t, relative to τ . We define it as 
+
+σt(ω) = 
+
+(
+
+1 B(t, ω ) > B (τ, ω ),
+
+0 otherwise . (C2) From this indicator we define the process as follows: for every t, check if σt(ω) has changed from its initial value 
+
+σ0(ω); if yes, apply an X gate to the system, and if no apply the identity. So the path-dependent propagator 
+
+Uω (t, s ) = Uω (t, s ) ⊗ U ∗ 
+
+> ω
+
+(t, s ) with Uω (t, s ) = Xσt(ω)⊕σs(ω). That is, conjugate the state by X if and only if the signal changes from s to t. Hence, every finite process tensor element is defined by this propagator averaged over paths: Υ(k) 
+
+> ν
+
+(t) = Eω Tr[ Uω (T, t k) ◦ Pνk ◦ U ω (tk, t k−1) ◦ Pνk−1 ◦ · · · ◦ Pν1 ◦ U ω (t1, 0)[ ρ0]] . (C3) For simplicity, we let ρ0 = 1/2 so that the initial propagator can be safely ignored. Now, to show separation from PCR , it suffices to show some discontinuity in the wavefunctions which can be made visible across sets of positive measure. In the simplest instance, this can be seen in the two-step process tensors. Concretely, for Υ (2)  
+
+> ν1,ν 2
+
+(t1, t 2), let Pν1 = Pν2 = 12 (Z ⊗ 1). Then Eq. (C3) reduces to Υ(2) (3 ,3) (t1, t 2) = 18 Eω Tr[ ZX σt2 (ω)⊕σt1 (ω)ZX σt2 (ω)⊕σt1 (ω)] = 14 Eω
+
+h
+
+(−1) σt1 (ω)⊕σt2 (ω)i
+
+. (C4) In evaluating this expression, we shift coordinates to be relative to τ , introducing u = t1 − τ and v = t2 − τ . Since 
+
+σt(ω) is just related to the sign of the increments, we define the random variable ∆ u := B(u + τ ) − B(τ ) and observe that ( −1) σt1 ⊕σt2 = sgn(∆ u)sgn(∆ v). Then Eq. (C4) becomes Υ(2) (3 ,3) (t1, t 2) = 14 Eω [sgn(∆ u)sgn(∆ v)] . (C5) Both ∆ u and ∆ v have zero mean and are jointly Gaussian with covariance given by Eq. (C1). Thus, their correlation coefficient ϱ(u, v ) := cov[∆ u, ∆v]/(σ∆u σ∆v ) is equal to 12 (|u| + |v| − | u − v|)/(p|u|| v|). Applying a standard Gaussian identity to the above, it then follows that for u, v ̸ = 0 we have Υ(2) (3 ,3) (t1, t 2) = 12π arcsin( ϱ(u, v )) = 12π arcsin( ϱ(t1 − τ, t 2 − τ )) . (C6) The scale invariance of Brownian motion increments means that ϱ(λu, λv ) = ϱ(u, v ) for all λ > 0. Thus, for any fixed (u0, v 0), the ray {(λu 0, λv 0) | λ > 0} has constant correlation ϱ(u0, v 0) terminating at ( u, v ) = (0 , 0) or, equivalently, (t1, t 2) = ( τ, τ ). For example, u0 = −1 and v0 = ± 12 give two constant-valued rays whose respective two-step process-tensor coefficients differ, namely 
+
+a− := lim  
+
+> λ→0
+
+Υ(2) (3 ,3) 
+
+
+
+τ − λ, τ − λ
+
+2
+
+̸
+
+= lim  
+
+> λ→0
+
+Υ(2) (3 ,3) 
+
+
+
+τ − λ, τ + λ
+
+2
+
+
+
+:= a+, a− = 18 , a+ = 0 . (C7) To see that there can be no PCR representative in the L2 class of |ΥT ⟩, one can grow these constant-valued rays to narrow cones which have positive two-dimensional Lebesgue measure. Consider C+ and C− to be sufficiently narrow cones around the above rays. For any sufficiently small ϵ > 0, the cones may be chosen such that 
+
+|Υ(2) (3 ,3) (τ + u, τ + v) − a±| < ϵ ∀ (u, v ) ∈ C±, with |a+ − a−| > 4ϵ. (C8) Next, suppose that there were a function g(u, v ), continuous up to (0 , 0) on the closed ordered domain, which agreed with Υ (2) (3 ,3) (τ + u, τ + v) for almost every ( u, v ). By continuity of g at the origin, there exists r > 0 such that 
+
+|g(u, v )−g(0 , 0) | < ϵ everywhere in Br (0) – the ball of radius r centred around (0 , 0). Since g(u, v ) = Υ (2) (3 ,3) (τ +u, τ +v)almost everywhere, and since each C± ∩ Br (0) has positive measure, there exist points in both cones at which the two functions agree. It follows that |g(0 , 0) −a±| < 2ϵ. By the triangle inequality, this implies however that |a+ −a−| < 4ϵ,contradicting our initial choice of ϵ. We conclude therefore that |ΥT ⟩ admits no representative in its L2 equivalence class that extends continuously to ( t1, t 2) = ( τ, τ ), and hence that |ΥT ⟩̸ ∈ PCR .13 
+
+Appendix D: Examples of continuous instruments and their norms 
+
+In the companion work [13], several examples of continuous instruments were presented, in particular for the scenarios of coherent control, weak measurements in the jump and diffusive regime and controlled coherent operations. The effects of these instruments were derived by computing the overlaps with PCRs, which are easy to interpret as quantum dynamics. Density of the set of PCRs in the set of cPTs, the main result of this work, implies that this consideration is enough to guarantee the correct action of these effects on all cPTs, provided the corresponding instrument norm is finite. In this appendix we formalise these instruments in terms of Definition 4 from the main text: we specify the associated measure space X = ( X, F, μ ) and compute an upper bound on the associated instrument norm. We will see that the norm is larger when the instrument requires more energy to implement. The diffusive measurement is a special case: as the idealised limit which requires an infinite-energy local oscillator, it has an infinite instrument norm. However, it is a well-defined map from the cPTs to L1 functions on the associated measure space. 
+
+1. Coherent control 
+
+The coherent control instrument Icoherent has a single effect ⟨ΦT [c0, {cν }, |ρA⟩⟩⟨⟨ 1A|]|, where A is an auxiliary system, 
+
+ρA is a quantum state and cν = Tr S[Pν LSA ]∗, where LSA is the generator of the control dynamics implemented on SA. This is an example of a deterministic instrument with no associated outcome. Hence, it is associated to the trivial measure space X with X = {0}, F = {∅ , X } and μ(∅) = 0 while μ(X) = 1. As discussed in the companion work [13], this instrument satisfies ⟨I coherent |Υ⟩ = 1 for all |Υ⟩ ∈ PCR , and since PCRs are dense in the cPTs, this is in fact the case for all |Υ⟩ ∈ cPT , showing that the coherent control satisfies the definition of an instrument in the main text. We will now upper bound its instrument norm. Consider 
+
+∥I coherent ∥2Γ→L1(X ) = ∥ | ΦT [c0, {cν }, |ρA⟩⟩⟨⟨ 1A|]⟩ ∥ 2Γ
+
+= ⟨⟨ 1A| ⊗ ⟨⟨ 1A′ |T eR T     
+
+> 0dt c 0⊗1+1⊗c∗
+> 0+P
+> νcν⊗c∗
+> ν
+
+|ρA⟩⟩ ⊗ | ρA′ ⟩⟩ ≤ dA eT sup t∈[0 ,T ] ∥c0⊗1+1⊗c∗     
+
+> 0+P
+> νcν⊗c∗
+> ν∥∞
+
+, (D1) where we label the backward contour using a prime ′. Here, we have used 
+
+∥T eR T 
+
+> 0A(t)d t
+
+∥∞ = ∥
+
+> ∞
+
+X
+
+> n=0
+
+Z
+
+DntA(tn) . . . A (t1)∥∞ ≤
+
+> ∞
+
+X
+
+> n=0
+
+T n
+
+n! sup  
+
+> t∈[0 ,T ]
+
+∥A(t)∥∞
+
+!n
+
+= e T sup t∈[0 ,T ] ∥A(t)∥∞ (D2) and the cMPS overlap formula [26]. Now notice 
+
+X
+
+> ν
+
+Pν ⊗ P∗ 
+
+> ν
+
+=
+
+
+
+|1SS ′ ⟩⟨ 1SS ′ | − 1
+
+d2S
+
+1S ⊗ 1S′
+
+
+
+⊗ 1A ⊗ 1A′ , (D3) which implies 
+
+X
+
+> ν
+
+cν ⊗ c∗
+
+> ν
+> ∞
+
+= ⟨1SS ′ | L SA ⊗ L S′A′ |1SS ′ ⟩ − 1
+
+d2S
+
+c0 ⊗ c∗
+
+> 0
+> ∞
+
+≤ (dS + 1) ∥L SA ∥2
+
+> ∞
+
+. (D4) Finally, we get sup  
+
+> t∈[0 ,T ]
+
+∥c0 ⊗ 1 + 1 ⊗ c∗ 
+
+> 0
+
++ X
+
+> ν
+
+cν ⊗ c∗ 
+
+> ν
+
+∥∞ ≤ 2∥L SA ∥∞ + ( dS + 1) ∥L SA ∥2 
+
+> ∞
+
+(D5) and hence 
+
+∥I coherent ∥Γ→L1(X ) ≤ pdA eT ((dS+1) ∥L SA ∥2
+
+> ∞+2 ∥L SA ∥∞
+
+), (D6) where ∥L SA ∥∞ := sup t∈[0 ,T ] ∥L SA (t)∥∞. Hence, the upper bound on the instrument norm is determined by the operator norm of the vectorised Lindbladian, which depends on the energy needed to implement it. It may seem that the units in the exponent do not align. This is due to the fact that we are working in natural units ℏ = 1. In fact, ℏ 
+
+> c0
+
+and ℏ
+
+> c2
+> ν
+
+both have units of time. 14 
+
+2. Jump measurement 
+
+The outcomes of jump measurements are sequences of times when a particular outcome, a “click”, has been observed. A prototypical example is a photon-counting experiment, where the click is the arrival of a photon. For an introduction to jump measurements see [38–41]. Often, a click is associated with a type (e.g. polarisation of the photon) from some type alphabet Ω, such that the outcome of the measurement is a sequence of times ti along with a list of types 
+
+xi ∈ Ω of clicks, such that a click of type xi has been observed at the time ti.To define the measure space for the jump measurement, consider for each non-negative integer n the space 
+
+Xn := ∆ n × Ωn, (D7) and let X := F∞ 
+
+> n=0
+
+Xn. The σ-algebra Fn on Xn is the product of the Borel σ-algebra on ∆ n and the discrete 
+
+σ-algebra on Ω n. The σ-algebra on X is F := {E ⊆ X : E ∩ Xn ∈ F n for every n}. The reference measure is the Poisson measure, induced by the Lebesgue measure on ∆ n.Each jump type x ∈ Ω is associated with a jump operator Lx acting on HS. The collection {Lx}x∈Ω defines the measurement. The effects of the associated instrument are the sums over n time-ordered Lebesgue integrals of 
+
+X
+
+> ν∈({0}∪ [q]) n
+
+⟨ΦT [c0, {cν }, 1] | Y
+
+> j∈[n]
+
+dxj 
+
+> νj
+
+ξνj (tj ), (D8) where cν := − 12 Tr Pν
+
+ P  
+
+> x∈Ω
+
+L†
+
+> x
+
+Lx ⊗ 1 + 1 ⊗ LTx L∗
+
+> x
+
+ ∗ and dxν := Tr[ Pν Lx ⊗ L∗
+
+> x
+
+]∗. We can compute the associated deterministic instrument 
+
+⟨I jump (X)| =
+
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> x∈Ωn
+
+X
+
+> ν∈({0}∪ [q]) n
+
+⟨ΦT [c0, {cν }, 1] | Y
+
+> j∈[n]
+
+dxj 
+
+> νj
+
+ξνj (tj )=
+
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt eT P 
+
+> x∈Ωdx
+> 0
+
+X
+
+> x∈Ωn
+
+X
+
+> ν∈[q]n
+
+⟨ΦT [c0, {cν }, 1] | Y
+
+> j∈[n]
+
+dxj 
+
+> νj
+
+ψνj (tj )=
+
+*
+
+ΦT
+
+"
+
+c0 + X
+
+> x∈Ω
+
+dx 
+
+> 0
+
+, {cν + X
+
+> x∈Ω
+
+dxν }, 1
+
+#
+
+, (D9) as can be verified by computing the wavefunctions of the resulting cMPS [26]. We recognise this cMPS from the previous section as the effect of the coherent control with no auxiliary system, which is implementing the Lindbladian 
+
+LS = X
+
+> x∈Ω
+
+h
+
+Lx ⊗ L∗ 
+
+> x
+
+− 12
+
+ L†
+
+> x
+
+Lx ⊗ 1S′ + 1S ⊗ LTx L∗
+
+> x
+
+i
+
+, (D10) which is the usual backaction associated to this jump measurement. We have seen in the previous section that coherent control is an example of a deterministic instrument, having unit overlap with all cPTs. This verifies that the jump instrument as defined above is correctly normalised. We will now upper bound the instrument norm for the jump process. Consider 
+
+∥I jump ∥Γ→L1(X ) = sup 
+
+> |Υ⟩∈ Γ:
+> ∥| Υ⟩∥ Γ≤1
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> x∈Ωn
+
+X
+
+> ν∈({0}∪ [q]) n
+
+⟨ΦT [c0, {cν }, 1] | Y
+
+> j∈[n]
+
+dxj 
+
+> νj
+
+ξνj (tj )|Υ⟩
+
+= sup   
+
+> f:∥f∥∞=1
+
+sup 
+
+> |Υ⟩∈ Γ:
+> ∥| Υ⟩∥ Γ=1
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> x∈Ωn
+
+f (n) 
+
+> x
+
+(t) X
+
+> ν∈({0}∪ [q]) n
+
+⟨ΦT [c0, {cν }, 1] | Y
+
+> j∈[n]
+
+dxj 
+
+> νj
+
+ξνj (tj )|Υ⟩
+
+= sup   
+
+> f:∥f∥∞=1
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> x∈Ωn
+
+f (n) 
+
+> x
+
+(t) X
+
+> ν∈({0}∪ [q]) n
+
+⟨ΦT [c0, {cν }, 1] | Y
+
+> j∈[n]
+
+dxj 
+
+> νj
+
+ξνj (tj )
+
+> Γ
+
+≤ sup   
+
+> f:∥f∥∞=1
+> ∞
+
+X
+
+> n=0
+> ∞
+
+X
+
+> m=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν∈({0}∪ [q]) n
+
+X
+
+> x∈Ωn
+
+
+
+f (n) 
+
+> x
+
+(t)
+
+∗ Y
+
+> j∈[n]
+
+
+
+dxj
+
+> νj
+
+∗
+
+ξ† 
+
+> νj
+
+(tj ) |Φm⟩
+
+> Γ
+
+, (D11) 15 where |Φm⟩ is the m-particle component of |Φ[ c0, {cν }, 1] ⟩. Direct computation shows that 
+
+∥ | Φm⟩ ∥ Γ =
+
+r T m
+
+m! eT ℜ(c0) ∥c⊥∥m 
+
+> 2
+
+, (D12) where ∥c⊥∥22 := P 
+
+> ν∈[q]
+
+|cν |2. We now define 
+
+|Φn,m ⟩ := 
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν∈({0}∪ [q]) n
+
+X
+
+> x∈Ωn
+
+
+
+f (n) 
+
+> x
+
+(t)
+
+∗ Y
+
+> j∈[n]
+
+
+
+dxj
+
+> νj
+
+∗
+
+ξ† 
+
+> νj
+
+(tj ) |Φm⟩ . (D13) The vector |Φn,m ⟩ has support only in sectors with m + k particles for 0 ≤ k ≤ n. Let |Φkn,m ⟩ be the m + k-particle component of |Φn,m ⟩ and write 
+
+∥I jump ∥Γ→L1(X ) ≤ sup   
+
+> f:∥f∥∞=1
+> ∞
+
+X
+
+> n=0
+> ∞
+
+X
+
+> m=0
+
+∥ | Φn,m ⟩ ∥ Γ ≤ sup   
+
+> f:∥f∥∞=1
+> ∞
+
+X
+
+> n=0
+> ∞
+
+X
+
+> m=0
+> n
+
+X
+
+> k=0
+
+∥ | Φkn,m ⟩ ∥ Γ. (D14) Note that the vectors |Φn,m ⟩ depend on the function f . We will now upper bound the norm of |Φkn,m ⟩.Without loss of generality we can restrict each f (n) 
+
+> x
+
+(t) to be symmetric under simultaneous permutations of the time–outcome pairs ( ti, x i). Hence, labelling Φ (m) the wavefunction of |Φm⟩, we have 
+
+|Φkn,m ⟩ = Π k+m
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν∈({0}∪ [q]) n
+
+X
+
+> x∈Ωn
+
+
+
+f (n) 
+
+> x
+
+(t)
+
+∗ Y
+
+> j∈[n]
+
+
+
+dxj
+
+> νj
+
+∗
+
+ξ† 
+
+> νj
+
+(tj ) |Φm⟩
+
+= Π k+m
+
+1
+
+n!
+
+Z T
+
+> 0
+
+dnt X
+
+> ν∈({0}∪ [q]) n
+
+X
+
+> x∈Ωn
+
+
+
+f (n) 
+
+> x
+
+(t)
+
+∗ Y
+
+> j∈[n]
+
+
+
+dxj
+
+> νj
+
+∗
+
+ξ† 
+
+> νj
+
+(tj ) |Φm⟩
+
+= 1
+
+n!
+
+nk
+
+ Z T
+
+> 0
+
+dkt X
+
+> ν∈[q]k
+
+X
+
+> x∈Ωk
+
+(n − k)! g(n,k ) 
+
+> x
+
+(t) Y
+
+> j∈[k]
+
+
+
+dxj
+
+> νj
+
+∗
+
+ψ† 
+
+> νj
+
+(tj ) |Φm⟩
+
+=
+
+Z T
+
+> 0
+
+Dkt X
+
+> ν∈[q]k
+
+X
+
+> x∈Ωk
+
+g(n,k ) 
+
+> x
+
+(t) Y
+
+> j∈[k]
+
+
+
+dxj
+
+> νj
+
+∗
+
+ψ† 
+
+> νj
+
+(tj )
+
+Z T
+
+> 0
+
+Dmt′ X
+
+> ν′∈[q]m
+
+Φ(m) 
+
+> ν′
+
+(t′) Y
+
+> i∈[m]
+
+ψ†
+
+> ν′
+> i
+
+(t′
+
+> i
+
+) |Ω⟩
+
+= 1(k + m)! 
+
+Z T
+
+> 0
+
+dk+mt X
+
+> s∈{ 0,1}k+m
+> ∥s∥=k
+
+X
+
+> ν∈[q]k+m
+
+X
+
+> x∈Ωk
+
+g(n,k ) 
+
+> x
+
+(ts=1 )Φ (m) 
+
+> νs=0
+
+(ts=0 ) Y
+
+> j∈[k]
+
+
+
+dxj
+
+> (νs=1 )j
+
+∗ Y
+
+> i∈[k+m]
+
+ψ† 
+
+> νi
+
+(ti) |Ω⟩
+
+=
+
+Z T
+
+> 0
+
+Dk+mt X
+
+> ν∈[q]k+m
+
+X
+
+> s∈{ 0,1}k+m
+> ∥s∥=k
+
+X
+
+> x∈Ωk
+
+g(n,k ) 
+
+> x
+
+(ts=1 )Φ (m) 
+
+> νs=0
+
+(ts=0 ) Y
+
+> j∈[k]
+
+
+
+dxj
+
+> (νs=1 )j
+
+∗ Y
+
+> i∈[k+m]
+
+ψ† 
+
+> νi
+
+(ti) |Ω⟩ (D15) where Π k+m is the projector to the k + m-particle subspace, indexing a vector with s = 0 , 1 throws away all the elements j where sj = 1 , 0 respectively, and for t ∈ [0 , T ]k and x ∈ Ωk we define the symmetric function 
+
+g(n,k ) 
+
+> x
+
+(t) := 1(n − k)! 
+
+X
+
+> x′∈Ωn−k
+
+Z T
+
+> 0
+
+dn−kt′ 
+
+f (n) 
+
+> x,x′
+
+(t, t′)
+
+∗ Y
+
+> j∈[n−k]
+
+
+
+dx′
+
+> j
+> 0
+
+∗
+
+. (D16) 16 For ∥f ∥∞ ≤ 1 we have ∥g(n,k )
+
+x ∥∞ ≤ T n−k
+
+(n−k)! | P
+
+x∈Ω dx
+
+0 |n−k. The norm of |Φkn,m ⟩ is hence upper bounded by 
+
+∥ | Φkn,m ⟩ ∥ Γ =
+
+vuuuutX
+
+ν∈[q]k+m
+
+Z T
+
+0
+
+Dk+mt X
+
+s∈{ 0,1}k+m
+
+∥s∥=k
+
+X
+
+x∈Ωk
+
+g(n,k )
+
+x (ts=1 )Φ (m)
+
+νs=0 (ts=0 ) Y
+
+j∈[k]
+
+
+
+dxj
+
+(νs=1 )j
+
+∗ 2
+
+=
+
+vuuuut
+
+1(k + m)! 
+
+X
+
+ν∈[q]k+m
+
+Z T
+
+0
+
+dk+mt X
+
+s∈{ 0,1}k+m
+
+∥s∥=k
+
+X
+
+x∈Ωk
+
+g(n,k )
+
+x (ts=1 )Φ (m)
+
+νs=0 (ts=0 ) Y
+
+j∈[k]
+
+
+
+dxj
+
+(νs=1 )j
+
+∗ 2
+
+≤
+
+k + mk
+
+vuuut 1(k + m)! 
+
+X
+
+ν∈[q]k
+
+X
+
+ν′∈[q]m
+
+Z T
+
+0
+
+dkt dmt′ X
+
+x∈Ωk
+
+g(n,k )
+
+x (t) Y
+
+j∈[k]
+
+ dxj
+
+νj
+
+∗ Φ(m)
+
+ν′ (t′)
+
+2
+
+≤
+
+k + mk
+
+ T n−k
+
+(n − k)! 
+
+X
+
+x∈Ω
+
+dx
+
+0
+
+n−k  X 
+
+x∈Ω
+
+∥dx
+
+⊥∥2
+
+k
+
+vuut m!(k + m)! T k X
+
+ν′∈[q]m
+
+Z T
+
+0
+
+Dmt′ |Φ(m)
+
+ν′ (t′)|2
+
+=
+
+k + mk
+
+ T n− k
+
+> 2
+
+(n − k)! 
+
+s
+
+m!(k + m)! 
+
+X
+
+x∈Ω
+
+dx
+
+0
+
+n−k  X 
+
+x∈Ω
+
+∥dx
+
+⊥∥2
+
+k∥ | Φm⟩ ∥ Γ
+
+≤ eT ℜ(c0) T n+ m−k
+
+> 2
+
+p(k + m)! 
+
+k!m!( n − k)! 
+
+X
+
+x∈Ω
+
+dx
+
+0
+
+n−k  X 
+
+x∈Ω
+
+∥dx
+
+⊥∥2
+
+k∥c⊥∥m
+
+2 . (D17) Finally, we obtain a bound on the instrument norm 
+
+∥I jump ∥Γ→L1(X ) ≤ sup 
+
+f :∥f ∥∞=1 
+
+∞X
+
+n=0 
+
+∞X
+
+m=0 
+
+nX
+
+k=0 
+
+∥ | Φkn,m ⟩ ∥ Γ
+
+≤
+
+∞X
+
+n=0 
+
+∞X
+
+m=0 
+
+nX
+
+k=0 
+
+eT ℜ(c0) T n+ m−k
+
+> 2
+
+p(k + m)! 
+
+k!m!( n − k)! 
+
+X
+
+x∈Ω
+
+dx
+
+0
+
+n−k  X 
+
+x∈Ω
+
+∥dx
+
+⊥∥2
+
+k∥c⊥∥m
+
+2
+
+≤ eT ℜ(c0)
+
+∞X
+
+n=0 
+
+∞X
+
+m=0 
+
+T n+ m
+
+> 2
+
+p(n + m)! 
+
+n!m! ∥c⊥∥m
+
+2
+
+X
+
+x∈Ω
+
+dx
+
+0 +
+
+ P 
+
+x∈Ω ∥dx
+
+⊥∥2
+
+
+
+√T
+
+!n
+
+= e T ℜ(c0)
+
+∞X
+
+p=0 
+
+pX
+
+q=0 
+
+T p+q
+
+> 2
+
+√p!
+
+pq
+
+
+
+∥c⊥∥p−q
+
+2
+
+X
+
+x∈Ω
+
+dx
+
+0 +
+
+ P 
+
+x∈Ω ∥dx
+
+⊥∥2
+
+
+
+√T
+
+!q
+
+= e T ℜ(c0)
+
+∞X
+
+p=0 
+
+T p
+
+> 2
+
+√p! ∥c⊥∥2 +  X 
+
+x∈Ω
+
+∥dx
+
+⊥∥2
+
+ + √T X
+
+x∈Ω
+
+dx
+
+0
+
+!p
+
+≤ √2 exp 
+
+T
+
+ℜ(c0) + ∥c⊥∥2 +  X 
+
+x∈Ω
+
+∥dx
+
+⊥∥2
+
+ + √T X
+
+x∈Ω
+
+dx
+
+0
+
+!2 , (D18) where in the final line we have used the Cauchy–Schwarz inequality: for any a ≥ 0
+
+∞X
+
+p=0 
+
+ap
+
+√p! ≤
+
+vuut
+
+∞X
+
+p=0 
+
+12p
+
+vuut
+
+∞X
+
+q=0 
+
+(2 a2)q
+
+q! = √2 e a2
+
+. (D19) 17 We can express the coefficients in terms of the jump operators using Eq. (D3) to obtain 
+
+c0 = − Tr X
+
+> x∈Ω
+
+L†
+
+> x
+
+Lx (D20) 
+
+∥c⊥∥22 = 12
+
+dS Tr 
+
+"X
+
+> x∈Ω
+
+L†
+
+> x
+
+Lx
+
+X
+
+> x′∈Ω
+
+L† 
+
+> x′
+
+Lx′
+
+#
+
+− Tr X
+
+> x∈Ω
+
+L†
+
+> x
+
+Lx
+
+> 2
+
+ (D21) 
+
+X
+
+> x∈Ω
+
+dx 
+
+> 0
+
+= 1
+
+dS
+
+X
+
+> x∈Ω
+
+| Tr Lx|2 (D22) 
+
+X
+
+> x∈Ω
+
+∥dx
+
+> ⊥
+
+∥22 = X
+
+> x∈Ω
+
+∥Lx∥4 
+
+> F
+
+− 1
+
+d2S
+
+| Tr Lx|4 (D23) 
+
+3. Diffusive measurement 
+
+Diffusive measurements output continuous functions C([0 , T ]), which can be real or complex. An example of this measurement is the measurement of photocurrents in homodyne and heterodyne detection [28, 38]. Just like the jump measurements, they are associated with measurement operators {Lx}x∈Ω on HS for a finite alphabet Ω. As in the companion work [13] we will consider here only the case of independent heterodyne detection in each mode corresponding to complex-valued outcome functions with independent complex Wiener reference noises. Hence, we have X = C([0 , T ], C)|Ω| and the σ-algebra is generated by all the cylinder sets 
+
+{c ∈ X : ( c(t1), . . . , c (tn)) ∈ A} , (D24) where n ≥ 1, 0 ≤ t1 < · · · < t n ≤ T , and A is a Borel subset of ( C|Ω|)n. The measure μW is the product measure of |Ω| =: k complex Wiener measures. We denote the derivative in a distributional sense of the outcome functions (Yx)x ∈ X by ⃗ J = ( Jx)x. Under the complex Wiener measure μ the white noises Jx, J ∗ 
+
+> x
+
+, x ∈ [k] are centred, jointly Gaussian, and obey 
+
+E[Jx(t)J∗ 
+
+> y
+
+(s)] = δxy δ(t − s), E[J∗ 
+
+> x
+
+(t)J∗ 
+
+> y
+
+(s)] = E[Jx(t)Jy (s)] = 0 . (D25) The diffusive measurement is an idealised limit of a physical measurement protocol, where S interacts continuously with an optical mode, which is then mixed with a local oscillator and heterodyne measurement is performed. The diffusive limit is obtained by letting the strength of the local oscillator diverge. Hence, strictly speaking, the diffusive measurement requires infinite energy and cannot be actually performed in the lab, despite being a useful approximation in many scenarios. We will see in this section that while our framework is well capable of accommodating this instrument, its instrument norm diverges. In other words, the infinite energy required to perform it gives this instrument unphysical distinguishing power in the sense of Eq. (8) in the main text. The associated instrument effects are built from particle-sector integrals of [13] 
+
+⟨I diffusive (⃗J)| = ⟨ΦT [c0 + d0 + χ⃗ J 
+
+> 0
+
+, {cν + dν + χ⃗ Jν }ν , 1] | (D26) with 
+
+cν := − 12 Tr 
+
+h
+
+Pν
+
+  X 
+
+> x∈[k]
+
+L†
+
+> x
+
+Lx ⊗ 1 + 1 ⊗ LTx L∗
+
+> x
+
+i∗
+
+dν := X
+
+> x∈[k]
+
+dxν = Tr 
+
+h
+
+Pν
+
+  X 
+
+> x∈[k]
+
+Lx ⊗ L∗
+
+> x
+
+i∗
+
+χ⃗ Jν (t) := Tr 
+
+Pν
+
+X
+
+> x∈[k]
+
+ J∗ 
+
+> x
+
+(t)Lx ⊗ 1 + 1 ⊗ Jx(t)L∗
+
+> x
+
+
+
+> ∗
+
+. (D27) We note that ⟨I diffusive (⃗ J)| = ⟨ΦT [c0 + d0 + χ⃗ J 
+
+> 0
+
+, {cν + dν + χ⃗ Jν }ν , 1] | is of cMPS form with linear functionals of the noise as its wavefunctions, so it is not a vector in Γ. All stochastic integrals encountered are of Itˆ o type [42, 43]. 18 It is helpful to think of Itˆ o stochastic integrals in terms of the Wick product [43, 44]. The Wick product : Y1Y2 · · · Yn :of centred, jointly Gaussian random variables Y1, Y 2, · · · , Y n (here linear functionals of the noise) is the polynomial obtained from the ordinary product by deleting all self-contractions: : Y1Y2 · · · Yn : = X
+
+> P
+
+(−1) |P | Y
+
+> {i,j }∈ P
+
+E[YiYj ] Y
+
+> i / ∈∪ P
+
+Yi, (D28) where the sum runs over all sets P of disjoint pairs in [ n] (including P = ∅). For X, Y 1, · · · , Y n centred jointly Gaussian random variables and constants a, a 1, · · · , a n ∈ C, the Wick product satisfies : ( a + a1Y1 + · · · + anYn) : = a + a1 : Y1 : + · · · + an : Yn : , (D29) : e XnY
+
+> i=1
+
+(ai + Yi) : = e X− 12 E[X2] :
+
+> n
+
+Y
+
+> i=1
+
+(ai − E[XY i] + Yi) : , (D30) 
+
+E[ : Y1 · · · Yn : ] = 0 (n ≥ 1) , and (D31) : e X : = e X− 12 E[X2] . (D32) Using the Wick product, the contraction of the instrument density with |Φ⟩ ∈ Γ is expressible as the formal series 
+
+⟨I diffusive (⃗J)|Φ⟩ =
+
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν
+
+ϕ(n) 
+
+> ν
+
+(t) e T (c0+d0) : e R T  
+
+> 0dsχ ⃗J
+> 0(s)∗
+> n
+
+Y
+
+> i=1
+
+(cνi + dνi + χ⃗ Jνi (ti)) ∗ : . (D33) To obtain the corresponding deterministic instrument or analyse the instrument norm we have to consider expectation values with respect to μW of the above expression and its absolute value, respectively. For this it is convenient to collect all white noises in the vector ξ = ( ξα)α∈[2 k] with ξx := J∗ 
+
+> x
+
+and ξk+x := Jx such that 
+
+χ⃗ Jν (t)∗ = X
+
+> α∈[2 k]
+
+Cν,α ξα(t), Cν,x := Tr[ Pν (Lx ⊗ 1)] , C ν,x +k := Tr[ Pν (1 ⊗ L∗
+
+> x
+
+)] , (D34) where ν = 0 , 1, · · · , d 4S − 1 and C ∈ Cd4S×2k. Then, we can express the contraction of two random coefficients as 
+
+E[χ⃗Jν (t)∗χ⃗Jν′ (s)∗] = ( CΣCT )
+
+| {z } 
+
+> =:Ξ
+> ν,ν ′
+
+δ(t − s), with Σ = 
+
+ 0 1k
+
+1k 0
+
+
+
+. (D35) With this we start manipulating the formal series in Eq. (D33), term by term in n. First we use Eq. (D30) with 
+
+X = R T 
+
+> 0
+
+dsχ ⃗J 
+
+> 0
+
+(s)∗ and Yi = χ⃗Jνi (ti)∗ such that we get 
+
+⟨I diffusive (⃗J)|Φ⟩ =eT (c0+d0) e      
+
+> RT
+> 0dsχ ⃗J
+> 0(s)∗−12TΞ0,0
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν
+
+ϕ(n) 
+
+> ν
+
+(t) : 
+
+> n
+
+Y
+
+> i=1
+
+ (cνi + dνi )∗ − Ξ0,ν i + X
+
+> α
+
+Cνiαξα(ti) : . (D36) Since X is real and Gaussian, the expression eX− 12 E[X2] = e        
+
+> RT
+> 0dsχ ⃗J
+> 0(s)∗−12TΞ0,0
+
+(D37) can be interpreted as a probability density with respect to μW (the Cameron-Martin-Girsanov density [28, 43]). This means that under e X− 12 E[X2] dμ the noise ξ has the law of ξ + λ under μ, where λ ∈ C2k is a constant drift λα =
+
+E[ξα(t)X] which evaluates to λx = Tr[ Lx]∗, λx+k = Tr[ Lx]. The Wick polynomial in ξ evaluated on deterministically shifted noise is again a Wick polynomial in ξ with the shift entering additively as a constant. Because ( Cλ )ν = Ξ 0,ν ,the deterministic shift cancels inside the Wick polynomial after the change of measure. Define 
+
+FΦ(ξ) := 
+
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν
+
+ϕ(n) 
+
+> ν
+
+(t) : 
+
+> n
+
+Y
+
+> i=1
+
+ (cνi + dνi )∗ + X
+
+> α
+
+Cνiαξα(ti) : . (D38) 19 Then, whenever the expressions are integrable, EμW ⟨I diffusive |Φ⟩ = eT (c0+d0) EμW FΦ and EμW |⟨I diffusive |Φ⟩| =eT (c0+d0) EμW |FΦ|. By the linearity of the Wick product, Eq. (D29), it holds that 
+
+FΦ(ξ) = 
+
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν
+
+ϕ(n) 
+
+> ν
+
+(t) : 
+
+> n
+
+Y
+
+> i=1
+
+(cνi + dνi + χ⃗ Jνi (ti)) ∗ :=
+
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν
+
+ϕ(n) 
+
+> ν
+
+(t) X
+
+> S⊂[n]
+
+X
+
+> α∈[2 k]|S|
+
+Y
+
+> i / ∈S
+
+(cνi + dνi )∗ Y 
+
+> i∈S
+
+Cνiαi
+
+ : Y
+
+> i∈S
+
+ξαi (ti) : .
+
+(D39) where the sum over subsets S ⊂ [n] also includes the empty set. Now, to obtain the deterministic instrument associated to the diffusive measurement, we perform the integration of Eq. (D38) with respect to the Wiener measure over the full space X. Using Eq. (D39) and Eq. (D31) we get 
+
+Z
+
+dμW ⟨I diffusive (⃗ J)|Φ⟩ =
+
+Z
+
+dμW eT (c0+d0)
+
+> ∞
+
+X
+
+> n=0
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν
+
+ϕ(n) 
+
+> ν
+
+(t)
+
+> n
+
+Y
+
+> i=1
+
+(cνi + dνi )∗ (D40) We recognise this as ⟨I diffusive (X)| Φ⟩ with 
+
+|I diffusive (X)⟩ = |ΦT [c0 + d0, {cν + dν }ν , 1] ⟩ . (D41) We see that the deterministic instrument of a diffusive measurement coincides with the one from the jump measurement case in Eq. (D9). This is expected because the diffusive and the jump measurement constitute two different unravellings of the same master equation [38]. We now turn to the examination of the instrument norm. We use the variational characterisation of the L1 norm to write 
+
+Z
+
+dμW | ⟨I diffusive (⃗J)|Φ⟩ | = e T (c0+d0)
+
+Z
+
+dμW |FΦ(ξ)|
+
+= e T (c0+d0) sup   
+
+> f∈L∞(μ): ∥f∥∞=1
+
+Z
+
+dμW f (ξ)FΦ(ξ) . (D42) We remark that on a finite measure space L∞(μ) ⊂ L2(μ). To proceed we want to make use of the Wiener-Chaos decomposition [43, 44]. This is an explicit isomorphism between the space L2(μ) and the symmetric Fock space over 
+
+L2([0 , T ]) ⊗ C2k. We will denote it as Γ diff in the following. For a symmetric kernel h ∈ L2([0 , T ]m) ⊗ (C2k)⊗m, the multiple Wiener-Ito integral is defined as 
+
+Im(h) := 
+
+Z 
+
+> [0 ,T ]m
+
+dt X
+
+> α
+
+hα(t) : 
+
+> m
+
+Y
+
+> i=1
+
+ξαi (ti) : . (D43) It holds that 
+
+E[Im(h)Im′ (h′)∗] = δmm ′ m!
+
+Z 
+
+> [0 ,T ]m
+
+dt X
+
+> α
+
+h′
+
+> α
+
+(t)∗hα(t)
+
+| {z }
+
+> =: ⟨h′,h ⟩
+
+. (D44) The Wiener-Chaos decomposition associates with any random variable f ∈ L2(μ) an element of Γ diff characterised by a series of kernels ( h(m))m, such that 
+
+f =
+
+> ∞
+
+X
+
+> m=0
+
+Im(h(m)), (D45) with ∥f ∥2 
+
+> L2(μ)
+
+= P∞ 
+
+> m=0
+
+m!∥h(m)∥2, and ∥h(m)∥2 = ⟨h(m), h (m)⟩. We will now show that as a formal series 
+
+FΦ =
+
+> ∞
+
+X
+
+> m=0
+
+1
+
+m! Im(g(m)) (D46) 20 with 
+
+g(m) 
+
+> α
+
+(t) := X
+
+> ν
+
+ψ(m) 
+
+> ν
+
+(t)
+
+> m
+
+Y
+
+> i=1
+
+Cνi,α i , and 
+
+ψ(m) 
+
+> ν
+
+(t) := 
+
+> ∞
+
+X
+
+> r=0
+
+1
+
+r!
+
+Z 
+
+> [0 ,T ]r
+
+ds X
+
+> ν′
+
+ϕ(m+r) 
+
+> νν ′
+
+(t, s)( cν′ 
+
+> 1
+
++ dν′ 
+
+> 1
+
+)∗ · · · (cν′ 
+
+> r
+
++ dν′ 
+
+> r
+
+)∗.
+
+(D47) Starting from Eq. (D39) we use the symmetry of ϕ(n) 
+
+> ν
+
+(t) under the joint permutations of t and ν to write 
+
+FΦ =
+
+> ∞
+
+X
+
+> n=0
+
+1
+
+n!
+
+Z 
+
+> [0 ,T ]n
+
+dt X
+
+> ν
+
+ϕ(n) 
+
+> ν
+
+(t)
+
+> n
+
+X
+
+> m=0
+
+ nm
+
+ nY
+
+> i=m+1
+
+(cνi + dνi )∗ :
+
+> m
+
+Y
+
+> i=1
+
+(χ⃗Jνi (ti)) ∗ : . (D48) Denoting with μ = ( νm+1 , · · · , ν n) and ν′ = ( ν1, · · · , ν m) and changing variables r = n − m we get as a formal manipulation that 
+
+FΦ =
+
+> ∞
+
+X
+
+> m=0
+> ∞
+
+X
+
+> r=0
+
+1
+
+m!
+
+X
+
+> ν′
+
+Z 
+
+> [0 ,T ]m
+
+dt 1
+
+r!
+
+Z 
+
+> [0 ,T ]r
+
+ds X
+
+> μ
+
+ϕ(r+m) 
+
+> ν′μ
+
+(t, s)
+
+> r
+
+Y
+
+> i=1
+
+(cμi + dμi )∗ :
+
+> m
+
+Y
+
+> i=1
+
+(χ⃗Jν′ 
+
+> i
+
+(ti)) ∗ : , (D49) which shows the claimed Eq. (D46). As a consequence, we get together with using Eq. (D44) that 
+
+Z
+
+dμW f (ξ)FΦ(ξ) = 
+
+> ∞
+
+X
+
+> m=0
+
+Z 
+
+> [0 ,T ]m
+
+dt X
+
+> α
+
+ h(m) 
+
+> α
+
+(t)∗g(m) 
+
+> α
+
+(t) (D50) Note that the boundedness of f implies ∥f ∥2 
+
+> L2(μ)
+
+= P∞ 
+
+> m=0
+
+m!∥h(m)∥2 ≤ 1. This together with two applications of Cauchy–Schwarz gives 
+
+Z
+
+dμW f (ξ)FΦ(ξ) ≤
+
+> ∞
+
+X
+
+> m=0
+
+∥h(m)∥ ∥ g(m)∥≤
+
+ ∞X
+
+> m=0
+
+1
+
+m! ∥g(m)∥21/2
+
+. (D51) The matrix C defined in Eq. (D34) informally converts from the α basis to the ν basis. It contains the information about the measured operators Lx, x ∈ [k]. We can proceed by bounding this expression from above by considering its restriction to the submatrix C⊥ where ν̸ = 0. Then 
+
+Z
+
+dμW f (ξ)FΦ(ξ) ≤
+
+ ∞X
+
+> m=0
+
+1
+
+m! ∥C⊥∥2m∥ψ(m)∥21/2
+
+. (D52) Here, ∥C⊥∥ denotes the operator norm, or largest singular value, of C⊥. To bound ∥ψ(m)∥2 we apply Cauchy–Schwarz to get 
+
+∥ψ(m)∥2 =
+
+Z 
+
+> [0 ,T ]m
+
+dt X
+
+> ν∈[d4S−1] m
+
+|
+
+> ∞
+
+X
+
+> r=0
+
+1
+
+r!
+
+X
+
+> ν′∈[d4S−1] r
+
+Z 
+
+> [0 ,T ]r
+
+dsϕ(m+r) 
+
+> νν ′
+
+(t, s)( cν′ 
+
+> 1
+
++ dν′ 
+
+> 1
+
+)∗ · · · (cν′ 
+
+> r
+
++ dν′ 
+
+> r
+
+)∗|2
+
+≤
+
+Z 
+
+> [0 ,T ]m
+
+dt X
+
+> ν∈[d4S−1] m
+> ∞
+
+X
+
+> r=0
+
+1
+
+r!
+
+vuut X
+
+> ν′∈[d4S−1] r
+
+Z 
+
+> [0 ,T ]r
+
+ds|ϕ(m+r) 
+
+> νν ′
+
+(t, s)|2
+
+s
+
+T r X
+
+> ν′∈[d4S−1] r
+
+Y
+
+> i
+
+|cν′ 
+
+> i
+
++ dν′ 
+
+> i
+
+|2 2
+
+≤
+
+Z 
+
+> [0 ,T ]m
+
+dt X
+
+> ν∈[d4S−1] m
+> ∞
+
+X
+
+> r=0
+
+1
+
+r!
+
+X
+
+> ν′∈[d4S−1] r
+
+Z 
+
+> [0 ,T ]r
+
+ds|ϕ(m+r) 
+
+> νν ′
+
+(t, s)|2
+
+> ∞
+
+X
+
+> r=0
+
+T r
+
+r! (X 
+
+> ν̸=0
+
+|cν + dν |2)r
+
+≤ eT P    
+
+> ν̸=0 |cν+dν|2
+> ∞
+
+X
+
+> r=0
+
+1
+
+r!
+
+Z 
+
+> [0 ,T ]m
+
+dt
+
+Z 
+
+> [0 ,T ]r
+
+ds X
+
+> ν∈[d4S−1] m
+
+X
+
+> ν′∈[d4S−1] r
+
+|ϕ(m+r) 
+
+> νν ′
+
+(t, s)|2. (D53) 21 Putting things together, changing the summation variables and using the binomial theorem we get 
+
+∥I diffusive ∥Γ→L1(X ) ≤ eT (c0+d0+∥c⊥+d⊥∥22 /2) sup 
+
+> |Φ⟩∈ Γ:
+> ∥| Φ⟩∥ Γ≤1
+
+ ∞X
+
+> n=0
+> n
+
+X
+
+> r=0
+
+nr
+
+
+
+∥C⊥∥2( n−r)1r
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν
+
+|ϕ(n) 
+
+> ν
+
+(t)|21/2
+
+= e T (c0+d0+∥c⊥+d⊥∥22/2) sup 
+
+> |Φ⟩∈ Γ:
+> ∥| Φ⟩∥ Γ≤1
+
+ ∞X
+
+> n=0
+
+(1 + ∥C⊥∥2)n
+
+Z T
+
+> 0
+
+Dnt X
+
+> ν
+
+|ϕ(n) 
+
+> ν
+
+(t)|21/2
+
+, (D54) where we abbreviated ∥c⊥ + d⊥∥22 := P  
+
+> ν̸=0
+
+|cν + dν |2.After these manipulations we are ready to deduce some properties of the diffusive instrument. The series in Eq. (D54) is finite precisely when P
+
+> n≥0
+
+(1+ ∥C⊥∥2)n∥Φ(n)∥2Γ < ∞. This gives a sufficient condition on the particle wavefunctions for the displayed bound to establish integrability; super-exponential decay suffices but decay merely proportional to (1+ ∥C⊥∥2)−n does not. This excludes perfectly admissible vectors in Γ: for R T 
+
+> 0
+
+Dnt P 
+
+> ν
+
+|ϕ(n) 
+
+> ν
+
+(t)|2 ∝ 1/n 2, for example, the series diverges. Our upper bound can therefore only show that the diffusive instrument for general measurement operators Lx, x ∈ [k] is well defined on a dense subspace of Γ, e.g. on vectors with finite particle number or with sufficiently rapidly decaying particle-number distribution. By virtue of the bounds obtained in Section B, we know that the domain of the instrument contains all the cPTs, which are hence mapped to functions with uniformly bounded 
+
+L1 norm. However, we will now show that for a general Fock vector the bound inside the supremum Eq. (D54) is attainable and hence the instrument norm of the diffusive instrument diverges. We consider for any z ∈ C the exponential vector |Φz ⟩ ∈ Γ with n-particle wavefunctions 
+
+ϕ(n) 
+
+> ν
+
+(t) = e −| z|2/2 znnY
+
+> i=1
+
+u(ti)vνi , (D55) where u ∈ L2([0 , T ]) satisfies 
+
+Z 
+
+> [0 ,T ]
+
+dt |u(t)|2 = 1 
+
+Z 
+
+> [0 ,T ]
+
+dt u (t) = 
+
+Z 
+
+> [0 ,T ]
+
+dt u 2(t) = 0 , (D56) and the normalised vectors v ∈ Cd4S−1, ˜v ∈ C2k are such that CT 
+
+> ⊥
+
+v = ∥C⊥∥˜v. Then |Φz ⟩ lies in the domain of the diffusive instrument map and ∥ | Φz ⟩ ∥ 2Γ = e −| z|2 P 
+
+> n
+
+|z|2n/n ! = 1. Furthermore, with these choices ψ(m) 
+
+> ν
+
+= ϕ(m) 
+
+> ν
+
+in Eq. (D47) and the corresponding g(m) 
+
+> α
+
+is 
+
+g(m) 
+
+> α
+
+(t) = ∥C⊥∥m e−| z|2/2 zmmY
+
+> i=1
+
+u(ti)˜ vαi (D57) such that we get 
+
+FΦz =
+
+> ∞
+
+X
+
+> m=0
+
+1
+
+m! Im(g(m))= e −| z|2/2
+
+> ∞
+
+X
+
+> m=0
+
+∥C⊥∥mzm
+
+m!
+
+Z 
+
+> [0 ,T ]m
+
+dt X
+
+> α
+
+ mY
+
+> i=1
+
+u(ti)˜ vαi
+
+
+
+:
+
+> m
+
+Y
+
+> i=1
+
+ξαi (ti) : = e −| z|2/2
+
+> ∞
+
+X
+
+> m=0
+
+∥C⊥∥mzm
+
+m! :
+
+Z 
+
+> [0 ,T ]
+
+dt X
+
+> α
+
+u(t)˜ vαξα(t)
+
+| {z }
+
+> =: X
+
+m
+
+: . (D58) 22 We recognise X as being a centred complex Gaussian variable. By the rules of the Wick product, Eq. (D32), we have 
+
+Z
+
+dμW FΦz = e −| z|2/2
+
+Z
+
+dμW : e ∥C⊥∥zX :
+
+= e −| z|2/2
+
+Z
+
+dμW e∥C⊥∥zX − 12 ∥C⊥∥2z2E[X2]
+
+= e −| z|2/2
+
+Z
+
+dμW e∥C⊥∥zX − 12 ∥C⊥∥2z2
+
+ 2 P  
+
+> x∈[k]˜vx˜vx+k
+
+(R T 
+
+> 0dtu 2(t))
+
+= e −| z|2/2
+
+Z
+
+dμW e∥C⊥∥zX , (D59) where in the second-to-last line we used that E[ξα(t)ξβ (s)] = Σ αβ δ(t − s) and the last line follows from Eq. (D56). Then using that for linear functionals Y of jointly Gaussian random variables E[e Y ] = e 12 E[Y 2], we get 
+
+Z
+
+dμW | ⟨I diffusive (⃗J)|Φz ⟩ | = e T (c0+d0) e−| z|2/2
+
+Z
+
+dμW e∥C⊥∥(zX +z∗X∗)/2
+
+= e T (c0+d0) e−| z|2/2 e∥C⊥∥2E[( zX +z∗X∗)2]/8
+
+= e T (c0+d0) e−| z|2/2 e∥C⊥∥2|z|2(P   
+
+> α|˜vα|2)( RT
+> 0dt|u|2(t)) /4
+
+= e T (c0+d0) e 14 |z|2(∥C⊥∥2−2) . (D60) Since ∥ | Φz ⟩ ∥ = 1 for all z ∈ C, letting |z| → ∞ shows that the diffusive instrument cannot be uniformly bounded on the dense domain of vectors with exponentially decaying particle distribution whenever ∥C⊥∥2 > 2. To see how 
+
+∥C⊥∥ depends on the measurement operators we use that {Pν }ν is Hermitian and orthonormal with P0 = 1/d S,so that Parseval’s identity gives, for any operators X, Y on the doubled space HS ⊗ H S, P  
+
+> ν̸=0
+
+Tr[ Pν X]∗ Tr[ Pν Y ] = Tr[ X†Y ]−Tr[ X]∗ Tr[ Y ]/d 2S. Applied to the columns Lx ⊗1 and 1⊗L∗ 
+
+> x
+
+of C⊥ (see Eq. (D34)), the mixed contributions cancel and the Gram matrix becomes block diagonal, 
+
+C†⊥C⊥ =
+
+A 00 AT
+
+
+
+, Axx ′ := dS Tr  ˜L† 
+
+> x
+
+˜Lx′
+
+, ˜Lx := Lx − Tr[ Lx]
+
+dS
+
+1, (D61) where A ≥ 0 is dS times the Gram matrix of the traceless parts of the measurement operators. Since A and AT have the same spectrum, we obtain 
+
+∥C⊥∥2 = ∥A∥ ≤ Tr A = dS
+
+X
+
+> x∈[k]
+
+˜Lx
+
+> 2HS
+
+. (D62) If the ˜Lx are Hilbert–Schmidt orthogonal it exactly holds that ∥C⊥∥2 = dS max x ∥ ˜Lx∥2HS . We see that the quantity controlling the instrument norm is therefore the Hilbert–Schmidt norm of the traceless part of the measurement operators, which quantifies the strength of the system-meter coupling. This is a further instance of the connection between the distinguishing power of an instrument and the cost of implementing it. As the form of the diffusive instrument has been obtained by considering its action only on the set of PCRs, the unbounded instrument norm implies that we cannot use density of PCRs in cPTs to extend its action to all cPTs. Intuitively, one can understand this as the consequence of the fact that every run of the diffusive instrument probes the process over the whole interval [0 , T ], making it sensitive to pointwise values of the cPT, which is not allowed due to the L2-like equivalence on Γ. Furthermore, the diverging instrument norm implies that the diffusive instrument has infinite distinguishing power: using the bounds obtained in Section B in Eq. (D54) we can evaluate an upper bound on the total variation distance between the diffusive instrument statistics evaluated on two cPTs |ΥT ⟩ and |Υ′ 
+
+> T
+
+⟩
+
+TV( |ΥT ⟩, |Υ′ 
+
+> T
+
+⟩) ≤ eT (c0+d0+ 12 ∥c+d∥22)
+
+∥| ΥT ⟩ − | Υ′ 
+
+> T
+
+⟩ ∥ 
+
+> ∞
+
+X
+
+> n=0
+
+(1 + ∥C⊥∥2)n32 T n
+
+n!
+
+! 12
+
+= 4√2 e T (c0+d0+ 12 (∥c+d∥22+∥C⊥∥2+1) )
+
+∥| ΥT ⟩ − | Υ′ 
+
+> T
+
+⟩ ∥ , (D63) where the difference in the denominator can be arbitrarily small. This is the case even if the cPTs are in the PCR. While it is not completely clear that this bound is attained by physical processes, since we have seen that it is tight for general Fock vectors this indicates unbounded distinguishing power of the diffusive instrument. 23 The infinite instrument norm is directly related to the idealised unphysical nature of the diffusive limit: the diffusive measurement can be understood as the, suitably rescaled, jump measurement in the limit of infinite rate. For homodyne detection this corresponds to interfering the output field with a local oscillator of diverging amplitude [38]. In this limit the measurement noise has a fixed intensity per unit time, independent of how many excitations have already been emitted. Since in the Fock space picture every particle corresponds to one emission time, this translates into a constant weight per particle, namely the factor ( ∥C⊥∥2 − 2) in Eq. (D60). The diffusive instrument thus probes a Fock state vector in any particle sector with the same sensitivity and no sector is suppressed. Any measurement that is actually implemented in the lab has a finite bandwidth and hence cannot access the currents Jx directly [45]. Instead, it resolves smoothed versions of the integrated records Yx(t) = R t 
+
+> 0
+
+Jx(s) d s, where the smoothening approximates the white-noise limit better as the strength of the local oscillator increases. As the strength of the local oscillator approaches the diffusive limit, the distinguishing power quantified by the instrument norm of the associated instrument diverges and so does the energy required to power such a measurement. We thus see, once more, that the distinguishing power of an instrument in our framework is tied to the energy required to implement it. 
+
+> Appendix E: Gelfand triple
+
+From the Dyson series Section A 2 we have seen that any process that has an associated (finite) Hamiltonian generator is a PCR. We have also seen in Section D that the instrument norm is physically connected to the energy needed to perform the measurement and we have seen that the Γ-norm quantifies the statistical distinguishability of cPTs under bounded energy instruments, rendering it a natural norm on cPTs. As the span of PCRs is not closed under the Γ-norm, we would like to take the closure under the Γ-norm to obtain a mathematically well-defined theory. Theorem 1 in the main text shows that this is precisely what the cPT definition ensures. But this places the wavefunctions of a cPT in the space of L2 functions, which renders probing them pointwise meaningless. This reflects the physical reality that nothing is truly instantaneous in nature and real physical measure-ments take a finite amount of time. However, in many practical situations it is a very good simplifying approximation to think of processes happening instantaneously: for instance, we often talk of measuring a POVM at a given time 
+
+τ ∈ [0 , T ]. We would like to include such approximations into our theory. The correct mathematical structure, unlocked by Theorem 1 of the main text, that allows us to do this is that of a rigged Hilbert space or a Gelfand triple [29–31]. This is the same structure that allows one to rigorously treat the eigenfunctions of the position and momentum operators when treating a quantum mechanical particle in space. Concretely, the Gelfand triple introduces the space of regular cPTs by closing the span of PCRs under a different norm: the Sobolev Fock norm on Γ( H1([0 , T ])). This imposes (weak) differentiability of the wavefunctions, placing the instantaneous instruments into the dual space of this closure. We now state and prove a rigorous version of Corollary 1 in the main text. 
+
+Corollary 1 (Process Gelfand triple) . Let ∥ · ∥ H1 be the norm on Γ( H1([0 , T ])) , the Fock space of the Sobolev space 
+
+H1([0 , T ]) . Let Λ∥·∥ H1 and Λ∥·∥ Γ be the closures of span( PCR ) under ∥·∥ H1 and ∥·∥ Γ respectively. Now, Λ∥·∥ H1 ⊊ Λ∥·∥ Γ
+
+and the inclusion map ı : Λ ∥·∥ H1 → Λ∥·∥ Γ defines a Gelfand triple 
+
+Λ∥·∥ H1 ,→ Λ∥·∥ Γ ,→ Λ∗∥·∥ H1 , (E1) 
+
+where the notation ,→ means that there exists a continuous injective map with a dense range between the two spaces. The space Λ∗∥·∥ H1 includes the effects of the instrument measuring a POVM at some t ∈ [0 , T ].Proof. The Sobolev Fock norm of a vector with wavefunctions ϕ(n) 
+
+> ν
+
+(t) is given by 
+
+∥ | ϕ⟩ ∥ 2 
+
+> H1
+
+=
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν∈[d4S−1] n
+
+X
+
+> α∈{ 0,1}n
+
+Z T
+
+> 0
+
+Dnt |∂αϕ(n) 
+
+> ν
+
+(t)|2, (E2) where ∂α takes the derivative with respect to all ti with αi = 1. If |ϕ⟩ is in the PCR, we can write 
+
+∂αϕ(n) 
+
+> ν
+
+(t) = ⟨⟨ 1|U (T, t n)Xαn,ν n (tn)U (tn, t n−1) . . . X α1,ν 1 (t1)U (t1, 0) |ψ⟩⟩ , (E3) where U (t′, t ) := T eR t′  
+
+> tdsH(s)
+
+and X0,ν (t) = Pν while X1,ν (t) = [ Pν , H(t)], such that we can bound 
+
+|∂αϕ(n) 
+
+> ν
+
+(t)| ≤ dSdE
+
+(2 ∥H∥∞)|α|
+
+dn
+
+> S
+
+, (E4) 24 where |α| is the number of non-zero elements of α. Therefore, for a PCR 
+
+∥ | ϕ⟩ ∥ 2 
+
+> H1
+
+≤
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν
+
+X
+
+> α
+
+Z T
+
+> 0
+
+Dnt d2Sd2E
+
+(2 ∥H∥∞)2|α|
+
+d2n
+
+> S
+
+=
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν
+> n
+
+X
+
+> k=0
+
+nk
+
+ T n
+
+n! d2Sd2E
+
+(2 ∥H∥∞)2k
+
+d2n
+
+> S
+
+= d2Sd2E
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν
+
+T n(4 ∥H∥2 
+
+> ∞
+
++ 1) n
+
+n!d2n
+
+> S
+
+= d2Sd2E
+
+> ∞
+
+X
+
+> n=0
+
+T n
+
+n! (4 ∥H∥2 
+
+> ∞
+
++ 1) n
+
+
+
+d2S − 1
+
+d2S
+
+n
+
+= d2Sd2E eT 
+
+> 
+> d2S−1
+> d2S
+> 
+> (4 ∥H∥2
+> ∞+1)
+
+(E5) and we find that the Sobolev norm increases with the operator norm of the Hamiltonian, but remains finite for all PCRs. Hence span( PCR ) can be closed under ∥ · ∥ H1 . Since the topology induced by ∥ · ∥ H1 is strictly stronger than the one induced by ∥ · ∥ Γ, and from the above calculation we know that there are sequences of PCRs with no uniform bound on ∥ · ∥ H1 , we know that Λ ∥·∥ H1 ⊊ Λ∥·∥ Γ .Now, consider the inclusion map ı : Λ ∥·∥ H1 → Λ∥·∥ Γ and its adjoint ı∗ : Λ ∗∥·∥ Γ → Λ∗∥·∥ H1 . The map ı has dense range because its range contains span( PCR ). Furthermore, Λ ∥·∥ H1 is a closed subspace of Γ( H1([0 , T ])) and therefore it is a reflexive Banach space. Hence, a standard result (see, e.g., section 17.1 in [31]) implies that the map ı∗ has a dense image, which allows us to obtain the entire Λ ∗∥·∥ H1 by the closure of the image. This completes the construction of the process Gelfand triple. Finally, as explained in the companion work [13], the effects of the instrument measuring a POVM {Ex}x at time 
+
+τ are ⟨I ({x})| = Pd4S−1 
+
+> ν=0
+
+χν (x) ⟨Ω| ξν (τ ), where χν (x) = Tr Pν Ex. These effects have only vacuum and one-particle components. Point evaluation at τ is a bounded functional on H1([0 , T ]), so each effect defines a continuous functional on the Sobolev Fock space and restricts to an element of Λ ∗∥·∥ H1 .
+
+Appendix F: Proof of Theorem 1 in the main text 
+
+Consider the intervals Ik := (k − 1) TN , k TN
+
+ with k ∈ [N ] and define the indicator function 
+
+1Ik (t) := 
+
+(
+
+1 t ∈ Ik
+
+0 t / ∈ Ik. (F1) Note that ∥1Ik ∥2 =
+
+q TN . Consider the annihilation operators on Γ corresponding to the normalised indicator functions 
+
+aν (k) := 
+
+r NT
+
+Z
+
+> Ik
+
+dt ψ ν (t), (F2) which satisfy the commutation relations [aν (k), a † 
+
+> ν′
+
+(k′)] = δν,ν ′ δk,k ′ . (F3) We introduce the projectors 
+
+PN := X 
+
+> m∈NN×(d4S−1) 0
+
+1
+
+m(1 ,1) ! · · · m(N,d 4S−1) !
+
+Y 
+
+> (k,ν )
+> k∈[N]
+> ν∈[d4S−1]
+
+ a† 
+
+> ν
+
+(k)m(k,ν ) |Ω⟩⟨ Ω| Y 
+
+> (k′,ν ′)
+> k′∈[N]
+> ν′∈[d4S−1]
+
+ aν′ (k′)m(k′,ν ′) (F4) 
+
+P (0 ,1)  
+
+> N
+
+:= 
+
+> N
+
+X
+
+> n=0
+
+X
+
+> ν∈[d4S−1] n
+
+X
+
+> 1≤ℓ1<··· <ℓ n≤N
+
+Y
+
+> k∈[n]
+
+a† 
+
+> νk
+
+(ℓk) |Ω⟩⟨ Ω| Y
+
+> k′∈[n]
+
+aνk′ (ℓk′ ). (F5) 25 Now consider a positive and causal vector |Ψ⟩ ∈ Γ(d4S−1)  
+
+> T
+
+. For all ˜ν ∈ ([ d4S − 1] ∪ { 0})N we define Υ˜ν := ( NT )∥˜ν∥0/2 ⟨Ω| Y
+
+> i∈supp( ˜ν)
+
+ a˜νi (i)P (0 ,1)  
+
+> N
+
+|Ψ⟩
+
+= ( NT )∥˜ν∥0/2 ⟨Ω| Y
+
+> i∈supp( ˜ν)
+
+ a˜νi (i) NX
+
+> n=0
+
+X
+
+> ν∈[d4S−1] n
+
+X
+
+> 1≤ℓ1<··· <ℓ n≤N
+
+Y
+
+> k∈[n]
+
+a† 
+
+> νk
+
+(ℓk) |Ω⟩⟨ Ω| Y
+
+> k′∈[n]
+
+aνk′ (ℓk′ ) |Ψ⟩
+
+= ( NT )∥˜ν∥0/2 ⟨Ω| Y
+
+> i∈supp( ˜ν)
+
+ a˜νi (i) |Ψ⟩
+
+= ( NT )∥˜ν∥0
+
+ Y
+
+> i∈supp( ˜ν)
+
+Z
+
+> Ii
+
+dti
+
+
+
+ψ(∥˜ν∥0)  
+
+> ˜ν̸=0
+
+(t)= ( NT )N  Y  
+
+> i∈[N]
+
+Z
+
+> Ii
+
+dti
+
+
+
+g˜ν (t), (F6) where ψ(∥˜ν∥0)  
+
+> ˜ν̸=0
+
+(t) is the ∥ ˜ν∥0-particle amplitude of |Ψ⟩ with the particle species given by the non-zero elements of the string ˜ν and 
+
+g˜ν (t) := ⟨Ω| ξ˜νN (tN )ξ˜νN −1 (tN −1) · · · ξ˜ν1 (t1) |Ψ⟩ . (F7) Because |Ψ⟩ is positive and causal we have by definition that the set {Υν }ν defined in Eq. (F6) are the elements of the Choi matrix of an N -step discrete process tensor Υ N . Therefore, we can dilate it as described in [12] and obtain 
+
+N unitary channels of dimension d4N 
+
+> S
+
+and a pure initial state |ψ⟩⟩ , such that for any α, α ′ ∈ { 0, . . . , d 2S − 1}
+
+X 
+
+> νN∈{ [d4S−1] ∪{ 0}}
+
+cνN 
+
+> 0,α ′
+
+Υν = ⟨⟨ 1S|P0⟩⟩⟨⟨ 1E ⊗ Pα′ |U N −1PνN −1 UN −2 · · · U 1Pν1 U0|ψ⟩⟩ , (F8) where Uk are the vectorisations of the unitary channels and cνα,α ′ is the basis transformation such that |Pα⟩⟩⟨⟨ Pα′ | =P 
+
+> ν
+
+cνα,α ′ Pν . For each Uk there exists Hk = −i(Hk ⊗ 1 − 1 ⊗ H∗ 
+
+> k
+
+) with a Hermitian matrix Hk such that Uk = exp( Hk). Due to the causality condition we can write that 
+
+X 
+
+> νN∈[d4S−1] ∪{ 0}
+
+cνN 
+
+> α,α ′
+
+Υν = ⟨⟨ 1S|Pα⟩⟩⟨⟨ 1E ⊗ Pα′ |U N −1PνN −1 UN −2 · · · U 1Pν1 U0|ψ⟩⟩ ⇔ X
+
+> α,α ′
+
+(cν′ 
+
+> N
+> α,α ′
+
+)∗ X 
+
+> νN∈{ [d4S−1] ∪{ 0}}
+
+cνN 
+
+> α,α ′
+
+Υν = X
+
+> α,α ′
+
+(cν′ 
+
+> N
+> α,α ′
+
+)∗⟨⟨ 1S|Pα⟩⟩⟨⟨ 1E ⊗ Pα′ |U N −1PνN −1 UN −2 · · · U 1Pν1 U0|ψ⟩⟩ ⇔ X 
+
+> νN∈{ [d4S−1] ∪{ 0}}
+
+δνN ,ν ′ 
+
+> N
+
+Υν = ⟨⟨ 1SE |Pν′ 
+
+> N
+
+UN −1PνN −1 UN −2 · · · U 1Pν1 U0|ψ⟩⟩ ⇔ Υν = ⟨⟨ 1SE |PνN UN −1PνN −1 UN −2 · · · U 1Pν1 U0|ψ⟩⟩ . (F9) We now consider the formal cMPS 
+
+Φ[  
+
+> N−1
+
+X
+
+> k=0
+
+δ(t − kT N )Hk, {Pν }ν , |ψ⟩⟩⟨⟨ 1SE |]
+
++
+
+≡ | Φ˜H⟩ ∈ Γ, (F10) which is up to the distribution-valued drift matrix, which we label ˜H, in the PCR. Both ˜H and ψ depend on N but for clarity we leave this dependence implicit. Writing 
+
+Z T
+
+> 0
+
+Dnt = X
+
+> n∈NN
+> 0
+> ∥n∥1=n
+
+Y 
+
+> k∈[N]
+
+Z     
+
+> (k−1) TN≤tPk−1
+> i=1 ni+1 ≤···≤ tPki=1 ni≤k TN
+
+dtPk−1  
+
+> i=1 ni+1
+
+· · · dtPki=1 ni
+
+≡ X
+
+> n∈NN
+> 0
+> ∥n∥1=n
+
+Y 
+
+> k∈[N]
+
+Z
+
+> Ik
+
+Dnk t (F11) 26 and M˜H(t, t ′) := T eR tt′ ds ˜H(s), we have 
+
+|Φ˜H⟩ =
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν
+
+X
+
+> n∈NN
+> 0
+> ∥n∥1=n
+
+Y 
+
+> k∈[N]
+
+Z
+
+> Ik
+
+Dnk t⟨⟨ 1SE |M˜H(T, t n)Pνn · · · Pν1 M˜H(t1, 0) |ψ⟩⟩ ψ† 
+
+> νn
+
+(tn) · · · ψ† 
+
+> ν1
+
+(t1) |Ω⟩
+
+=
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν
+
+X
+
+> n∈NN
+> 0
+> ∥n∥1=n
+
+⟨⟨ 1SE |Pνn · · · PνPN −1 
+
+> i=1 ni+1
+
+ Y 
+
+> j∈[N−1]
+
+Uj PνPji=1 ni
+
+· · · PνPj−1 
+
+> i=1 ni+1
+
+
+
+U0|ψ⟩⟩× 
+
+ Y  
+
+> k∈[N]
+
+Z
+
+> Ik
+
+Dnk t
+
+
+
+ψ† 
+
+> νn
+
+(tn) · · · ψ† 
+
+> ν1
+
+(t1) |Ω⟩ . (F12) We can rewrite the integrals as 
+
+Z
+
+> Ik
+
+Dnk t ψ † 
+
+> νPki=1 ni
+
+(tPki=1 ni ) · · · ψ† 
+
+> νPk−1
+> i=1 ni+1
+
+(tPk−1 
+
+> i=1 ni+1
+
+) = 1
+
+nk!
+
+ TN
+
+nk /2 Pki=1 ni
+
+Y 
+
+> j=Pk−1
+> i=1 ni+1
+
+a† 
+
+> νj
+
+(k)
+
+
+
+, (F13) and hence 
+
+|Φ˜H⟩ =
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν
+
+X
+
+> n∈NN
+> 0
+> ∥n∥1=n
+
+ TN
+
+ n 
+
+> 2
+
+⟨⟨ 1SE |Pνn · · · PνPN −1 
+
+> i=1 ni+1
+
+Q  
+
+> j∈[N−1]
+
+Uj PνPji=1 ni
+
+· · · PνPj−1 
+
+> i=1 ni+1
+
+
+
+U0|ψ⟩⟩ 
+
+nN ! · · · n1! ××
+
+ Y   
+
+> k∈[N]
+> Pki=1 ni
+
+Y 
+
+> j=Pk−1
+> i=1 ni+1
+
+a† 
+
+> νj
+
+(k)
+
+
+
+|Ω⟩ . (F14) Therefore we see that PN |Φ˜H⟩ = |Φ˜H⟩.We proceed by establishing that this construction implies P 0,1 
+
+> N
+
+|Φ˜H⟩ = P 0,1 
+
+> N
+
+|Ψ⟩. The projector P 0,1 
+
+> N
+
+annihilates all contributions in |Φ˜H⟩ with more than one a†(k) excitation in any interval Ik. We extend the summation index 
+
+ν ∈ [d4S − 1] n in Eq. (F14) to a string ˜ν ∈ { [d4S − 1] ∪ { 0}} N by inserting the value zero ˜ νk = 0 at those positions 
+
+k ∈ [N ] where nk = 0. For a given n the sum over ˜ ν then varies all the non-zero elements of ˜ ν in [ d4S − 1]. Now 
+
+P 0,1 
+
+> N
+
+|Φ˜H⟩ =
+
+> N
+
+X
+
+> n=0
+
+X
+
+> n∈{ 0,1}N
+> ∥n∥1=n
+
+X
+
+> ˜ν
+
+ TN
+
+ n 
+
+> 2
+
+⟨⟨ 1SE |P˜νN
+
+ Y 
+
+> j∈[N−1]
+
+Uj P˜νj
+
+
+
+U0|ψ⟩⟩ 
+
+ Y
+
+> k∈supp( ˜ν)
+
+a† 
+
+> ˜νk
+
+(k)
+
+
+
+|Ω⟩
+
+=
+
+> N
+
+X
+
+> n=0
+
+X
+
+> n∈{ 0,1}N
+> ∥n∥1=n
+
+X
+
+> ˜ν
+
+ TN
+
+ n 
+
+> 2
+
+Υ˜ν
+
+ Y
+
+> k∈supp( ˜ν)
+
+a† 
+
+> ˜νk
+
+(k)
+
+
+
+|Ω⟩
+
+=
+
+> N
+
+X
+
+> n=0
+
+X
+
+> n∈{ 0,1}N
+> ∥n∥1=n
+
+X
+
+> ˜ν
+
+  Y
+
+> k∈supp( ˜ν)
+
+a† 
+
+> ˜νk
+
+(k) |Ω⟩⟨ Ω|   Y
+
+> i∈supp( ˜ν)
+
+a˜νi (i)| {z } 
+
+> =P(0 ,1)
+> N
+
+P (0 ,1)  
+
+> N
+
+|Ψ⟩
+
+= P (0 ,1)  
+
+> N
+
+|Ψ⟩ , (F15) where we used Eq. (F9) and the definition of Υ ν .To obtain a Fock space vector in process-canonical representation with a bounded generator, we consider a smoothed version of the distribution-valued drift matrix ˜H(t) = PN −1 
+
+> k=0
+
+δ(t − kT N )Hk. Given any smoothening parameter η > 0, we define 
+
+Hη (t) = 12η 1[0 ,2η](t)H0 + 
+
+> N−1
+
+X
+
+> k=1
+
+1[ kT N −η, kT N +η](t)Hk
+
+!
+
+, (F16) 27 and the corresponding PCR |ΦHη ⟩ := |Φ[ Hη , {Pν }ν , |ψ⟩⟩⟨⟨ 1SE |]⟩. The distance of |ΦHη ⟩ to the positive and causal Fock space vector |Ψ⟩ can now be bounded by a series of triangle inequalities and using the previously shown properties: 
+
+∥ | Ψ⟩ − | ΦHη ⟩ ∥ ≤ ∥ | Ψ⟩ − PN |Φ˜H⟩ ∥ + ∥PN |Φ˜H⟩ − | Φ˜H⟩ ∥ 
+
+| {z }
+
+> =0
+
++∥ | Φ˜H⟩ − | ΦHη ⟩ ∥ ≤ ∥ | Ψ⟩ − P (0 ,1)  
+
+> N
+
+|Ψ⟩ ∥ + ∥P (0 ,1)  
+
+> N
+
+(|Ψ⟩ − | Φ˜H⟩)∥
+
+| {z }
+
+> =0
+
++∥P (0 ,1)  
+
+> N
+
+|Φ˜H⟩ − PN |Φ˜H⟩ ∥ + ∥ | Φ˜H⟩ − | ΦHη ⟩ ∥ 
+
+= ∥ | Ψ⟩ − P (0 ,1)  
+
+> N
+
+|Ψ⟩ ∥ + ∥(P (0 ,1)  
+
+> N
+
+− PN ) |Φ˜H⟩ ∥ + ∥ | Φ˜H⟩ − | ΦHη ⟩ ∥ . (F17) The following three lemmata provide a bound on each term in the final expression above, which can be made arbitrarily small by making N and η sufficiently large and small respectively. The lemmata are proven in Appendix Section G. The second term in Eq. (F17) is controlled by the following. 
+
+Lemma 1 (Arbitrarily small projector difference) . For an arbitrary Fock vector |ψ⟩ it holds that for any ϵ > 0 there exists an N0 ∈ N such that for all N > N 0
+
+∥(P (0 ,1)  
+
+> N
+
+− PN ) |ψ⟩ ∥ < ϵ
+
+3 . (F18) The first term in Eq. (F17) is controlled by the convergence of the projector P (0 ,1)  
+
+> N
+
+to the identity. 
+
+Lemma 2 (Convergence of projector P (0 ,1)  
+
+> N
+
+). The sequence of projectors  P (0 ,1) 
+
+> N
+
+  
+
+> N∈N
+
+converges in strong operator topology to the identity: For any vector |ψ⟩ ∈ Γ it holds that 
+
+lim   
+
+> N→∞
+
+∥P (0 ,1)  
+
+> N
+
+|ψ⟩ − | ψ⟩ ∥ = 0 . (F19) Lemma 2 is in fact a corollary of Lemma 1. Finally, the last term is dealt with by the following. 
+
+Lemma 3 (Closeness of relevant PCRs) . For a fixed N ∈ N and any ϵ > 0, there exists an ηϵ,N > 0 such that 
+
+∥ | Φ˜H⟩ − | ΦHηϵ,N ⟩ ∥ < ϵ
+
+3 . (F20) By the above lemmata, for any ϵ > 0, there exists a Nϵ ∈ N and an ηϵ,N ϵ > 0 such that 
+
+∥ | Ψ⟩ − | ΦHηϵ,Nϵ ⟩ ∥ < ϵ 
+
+> 3
+
++ ϵ 
+
+> 3
+
++ ϵ 
+
+> 3
+
+= ϵ. (F21) This proves Theorem 1 in the main text. 
+
+Appendix G: Proofs of lemmata from PCR theorem proof 1. Proof of Lemma 1 and Lemma 2 
+
+As we will show in more detail below, Lemma 2 essentially follows from two intuitions (and their generalisation): that (i) the Lebesgue measure on [0 , T ]2 of the set {(t, t ′) ∈ [0 , T ]2 : t = t′} is zero, and (ii) any continuous function on [0 , T ] can be arbitrarily well approximated by piecewise constant functions. Fact (i) will prove Lemma 1. We will be using the canonical unitary identification of the single-particle Hilbert space H = ⊕qj=1 L2([0 , T ]), where q = d4S − 1, with the tensor product 
+
+H ≃ L2([0 , T ]) ⊗ Cq
+
+(fν )qν=1 7 →
+
+> q
+
+X
+
+> ν=1
+
+fν ⊗ vν , (G1) where {vν }ν is an orthonormal basis of Cq . We denote 
+
+ek =
+
+q NT 1Ik , k ∈ [N ] (G2) 28 such that {ek}k∈[N ] is an orthonormal set in L2([0 , T ]). Let ΠN := X 
+
+> k∈[N]
+
+|ek⟩ ⟨ ek| ⊗ 1Cq (G3) be the single-particle orthogonal projector onto the step functions constant on the cells Ik. We will call |ek⟩ tensored with the particle species basis states the lattice basis states . The Fock space projector PN in Eq. (F4) is the second quantisation of Π N (see [46, Section X.7]). This means that PN acts on the n-particle subspace of Γ (q) 
+
+> T
+
+as Π ⊗nN .Because P (0 ,1)  
+
+> N
+
+is an orthogonal projector for every N , it is a bounded operator and it satisfies the uniform bound 
+
+∥P (0 ,1)  
+
+> N
+
+∥ = 1 on its operator norm. Therefore, to prove the lemma it is enough to show lim N →∞ ∥P (0 ,1)  
+
+> N
+
+|ϕ⟩ − | ϕ⟩ ∥ = 0 for |ϕ⟩ ∈ D being an element in a dense subset D ⊂ Γ. Let D be the set of finite-particle vectors, i.e. those vectors for which there exists n0 such that all n-particle amplitudes with n > n 0 vanish. This set is dense in Γ. As P (0 ,1) 
+
+> N
+
+does not mix the particle sectors, it is therefore enough to show lim N →∞ ∥P (0 ,1)  
+
+> N
+
+|ϕn⟩ − | ϕn⟩ ∥ = 0 for all elements 
+
+|ϕn⟩ of the n-particle sector. In fact, this is the case also for the orthogonal projectors PN and PN − P (0 ,1)  
+
+> N
+
+(this is an orthogonal projector since P (0 ,1)  
+
+> N
+
+≤ PN ), as will be useful below. We will denote by ϕn ∈ L2([0 , T ]n) ⊗ (Cq )⊗n the symmetric n-particle wavefunction of |ϕn⟩. By the triangle inequality we get that 
+
+∥P (0 ,1)  
+
+> N
+
+|ϕn⟩ − | ϕn⟩ ∥ ≤ ∥ (PN − P (0 ,1)  
+
+> N
+
+) |ϕn⟩ ∥ 
+
+| {z }
+
+> (i)
+
++ ∥ | ϕn⟩ − PN |ϕn⟩ ∥ 
+
+| {z }
+
+> (ii )
+
+. (G4) (i) We define the collision set 
+
+DN := (t1, . . . , t n) ∈ [0 , T ]n : ∃ i < j, such that ti, t j ∈ Ik for some k ∈ [N ] . (G5) The lattice basis states with n excitations are labelled by ( ℓ1, · · · , ℓ n) with 1 ≤ ℓ1, · · · , ℓ n ≤ N . The wavefunctions of the lattice basis states having all ℓj ’s distinct are supported on the complement DcN , while if some labels are repeated then the wavefunction is supported on DN . Therefore, when expanding Π ⊗nN ϕn in the lattice basis a multiplication by the indicator function 1DN precisely deletes the singly-occupied components in the expansion and preserves the ones which are multiply-occupied. But this is exactly the action of PN − P (0 ,1)  
+
+> N
+
+in every finite-particle sector. Hence, 
+
+∥(PN − P (0 ,1)  
+
+> N
+
+) |ϕn⟩ ∥ 2 = ∥1DN Π⊗nN ϕn∥2. (G6) Both operators on the right hand side act as the identity on ( Cq )⊗n, the particle species part of the n-particle subspace. Furthermore, the two operators 1DN and Π ⊗nN commute. To see this, consider their action on the box decomposition L2([0 , T ]n) = L  
+
+> ℓ∈[N]n
+
+L2(Bℓ), where Bℓ := Iℓ1 × · · · × Iℓn : the operator Π ⊗nN preserves each summand, acting on it as the rank-one projection onto the constant functions on the block, while 1DN acts on each summand as a scalar (1 if ℓ has a repeated index, 0 otherwise). A block-scalar operator commutes with any block-preserving one, so 1DN Π⊗nN = Π ⊗nN 1DN . Now, since Π ⊗nN is a projector, we get 
+
+∥(PN − P (0 ,1)  
+
+> N
+
+) |ϕn⟩ ∥ 2 = ∥Π⊗nN 1DN ϕn∥2
+
+≤ ∥ Π⊗nN ∥∥ 1DN ϕn∥2
+
+= 1
+
+n!
+
+Z
+
+> DN
+
+dnt∥ϕn(t1, · · · , t n)∥22, (G7) where ∥ · ∥ 2 refers to the Frobenius norm on the particle species part of the n-particle subspace ( Cq )⊗n. As N → ∞ ,the Lebesgue measure of the collision set vanishes. To see this, consider 
+
+Z
+
+> DN
+
+dnt =  N n − N !(N − n)! 
+
+| {z }  
+
+> number of ℓ∈[N]nwith repeated indices
+
+ TN
+
+n
+
+= T n 1 −
+
+> n−1
+
+Y
+
+> j=0
+
+(1 − jN )
+
+= T n
+
+
+
+> n−1
+
+X 
+
+> j=0
+> jN
+
++ O(N −2)
+
+ . (G8) 29 Therefore, there exists an N0 such that for all N ≥ N0 it holds that 
+
+Z
+
+> DN
+
+dnt ≤
+
+n
+
+2
+
+  
+
+> Tn
+> N
+
+, (G9) which means that the measure vanishes in the N → ∞ limit. Now, since ∥ϕn(·)∥22 ∈ L1([0 , T ]n) and ∥ϕn(t1, · · · , t n)∥22 ≥
+
+0, absolute continuity of the Lebesgue integral together with R 
+
+> DN
+
+dnt → 0 gives that 
+
+∥(PN − P (0 ,1)  
+
+> N
+
+) |ϕn⟩ ∥ − −−−→  
+
+> N→∞
+
+0. (G10) Because PN − P (0 ,1)  
+
+> N
+
+is an orthogonal projector which does not mix particle spaces this proves Lemma 1. (ii) Let EN := P  
+
+> k∈[N]
+
+|ek⟩⟨ ek|. We first show that EN → 1 strongly on L2([0 , T ]). We have for any t ∈ [0 , T ] that 
+
+|(EN f )( t) − f (t)| ≤ sup 
+
+> s∈Ik
+
+|f (s) − f (t)| (G11) where k is such that t ∈ Ik. The right hand side is known as the modulus of continuity . For a continuous function 
+
+f ∈ C([0 , T ]) it holds that |(EN f )( t) − f (t)| → 0 for any t and hence also ∥EN f − f ∥ → 0 in L2 norm. Since EN is a projector, its operator norm satisfies ∥EN ∥ = 1 for all N . From C([0 , T ]) being dense in L2([0 , T ]) it hence follows that EN → 1 strongly on all of L2([0 , T ]). Consequently, also Π N → 1 in strong operator topology on H. Since 
+
+∥ | ϕn⟩ − PN |ϕn⟩ ∥ = ∥ϕn − Π⊗nN ϕn∥, it remains to show that this convergence is lifted to the n-fold tensor power of H.Again, we do this by showing that Π ⊗nN → 1⊗n strongly on a dense subspace of H⊗n, which we choose to be the set of finite linear combinations of product vectors f1 ⊗ · · · ⊗ fn. For such a product vector we obtain, using a telescoping sum 
+
+∥(Π ⊗nN − 1⊗n)f1 ⊗ · · · ⊗ fn∥ = ∥
+
+> n
+
+X
+
+> j=1
+
+ 1⊗(j−1) ⊗ (Π N − 1) ⊗ Π⊗(n−j)
+
+> N
+
+f1 ⊗ · · · ⊗ fn∥≤
+
+> n
+
+X
+
+> j=1
+
+Y 
+
+> i̸=j
+
+∥fi∥
+
+
+
+∥(Π N − 1)fj ∥ − −−−→  
+
+> N→∞
+
+0, (G12) where the convergence follows from ∥fj ∥ < ∞. As before, this convergence extends to all of H⊗n and we get 
+
+∥ | ϕn⟩ − PN |ϕn⟩ ∥ − −−−→  
+
+> N→∞
+
+0. (G13) Combining Eqs. (G4), (G10) and (G13) concludes the proof of Lemma 2. 
+
+2. Proof of Lemma 3 
+
+We will show that ∥ | Φ˜H⟩ − | ΦHη ⟩ ∥ for η → 0+ is O(√η). We fix N , write W ηk := [ kT N − η, kT N + η] with k ∈ [N − 1] and W η 
+
+> 0
+
+= [0 , 2η], and assume that η < T 
+
+> 3N
+
+such that the small windows are mutually disjoint. With ˜H(t) = 
+
+PN −1 
+
+> k=0
+
+δ t − kT N
+
+Hk and Hη (t) = 12η
+
+PN −1 
+
+> k=0
+
+1W ηk (t) Hk, the associated cMPSs are 
+
+|ΦH ⟩ = ⟨⟨ 1SE | T exp 
+
+Z T
+
+> 0
+
+dt H(t) + P 
+
+> ν
+
+Pν ψ† 
+
+> ν
+
+(t)
+
+|ψ⟩⟩ | Ω⟩ , H ∈ { ˜H, Hη }. (G14) The particle wavefunctions of the two cMPSs are 
+
+φH, (n) 
+
+> ν
+
+(t) = ⟨⟨ 1SE |MH (T, t n)Pνn MH (tn, t n−1) · · · Pν1 MH (t1, 0) |ψ⟩⟩ , H ∈ { ˜H, Hη }, (G15) where MH (t, t ′) = T exp[ R tt′ dsH (s)]. Therefore, 
+
+∥ | ΦHη ⟩ − | Φ˜H⟩ ∥ 2 =
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν
+
+Z T
+
+> 0
+
+Dnt φHη ,(n) 
+
+> ν
+
+(t) − φ˜H,(n) 
+
+> ν
+
+(t) 2. (G16) 30 Since the drift matrix of both cMPSs is supported only in S 
+
+> k
+
+W ηk and the jump matrices are the same for both cMPSs, the integrand on the right-hand side in the equation above has support only on the set D(n) 
+
+> η
+
+:= t : ∃j ∈ [n], t j ∈
+
+S 
+
+> k
+
+W ηk . Then, 
+
+∥ | ΦHη ⟩ − | Φ˜H⟩ ∥ 2 =
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν
+
+Z  
+
+> D(n)
+> η∩{ 0<t 1<··· tn<T }
+
+dnt φHη ,(n) 
+
+> ν
+
+(t) − φ˜H,(n) 
+
+> ν
+
+(t) 2
+
+≤
+
+> ∞
+
+X
+
+> n=0
+
+X
+
+> ν
+
+  sup   
+
+> t∈D(n)
+> η∩{ 0<t 1<··· tn<T }
+
+φHη ,(n) 
+
+> ν
+
+(t) − φ˜H,(n) 
+
+> ν
+
+(t) 2 Z  
+
+> D(n)
+> η∩{ 0<t 1<··· tn<T }
+
+dnt. (G17) The pointwise difference in the amplitude functions is bounded by sup   
+
+> t∈D(n)
+> η∩{ 0<t 1<··· tn<T }
+
+φHη ,(n) 
+
+> ν
+
+(t) − φ˜H,(n) 
+
+> ν
+
+(t) 2 ≤  2∥| ψ⟩⟩⟨⟨ 1SE |∥ 1∥Pνn ∥∞ · · · ∥ Pν1 ∥∞
+
+2
+
+= 4 ∥| ψ⟩⟩∥ 2 ∥⟨⟨ 1SE |∥ 2 d−2n
+
+> S
+
+= 4 d2N −2n 
+
+> S
+
+, (G18) where we used that both Hη and ˜H are generators of unitary evolution and the normalisation of |ψ⟩⟩ . For the remaining integral we use that D(n) 
+
+> η
+
+= Snj=1 {t : tj ∈ S 
+
+> k
+
+W ηk } and a union bound then gives 
+
+Z  
+
+> D(n)
+> η∩{ 0<t 1<··· tn<T }
+
+dnt = 1
+
+n!
+
+Z
+
+> D(n)
+> η
+
+dnt
+
+≤ 1
+
+n!
+
+> n
+
+X
+
+> j=1
+
+Z    
+
+> {t:tj∈S
+> kWηk}
+
+dnt
+
+= 1
+
+n! n2ηN T n−1 (G19) Overall, we get 
+
+∥ | ΦHη ⟩ − | Φ˜H⟩ ∥ 2 ≤
+
+> ∞
+
+X
+
+> n=0
+
+4( d4S − 1) nd2N −2n
+
+> S
+
+1
+
+n! n2ηN T n−1
+
+≤ η 8N d 2+2 N 
+
+> S
+
+eT d 2S (G20) which proves the lemma. 
+
+Appendix H: Choi duality in the continuum 
+
+In this appendix we present the details on the Choi duality in the continuum and the proof of Theorem 2 in the main text. We recall that the difficulty in formulating a Choi duality in the continuum is that the Fock space Γ = Γ  L2([0 , T ]) ⊕(d4S−1)  = Γ  L2([0 , T ]) ⊗(d4S−1) (H1) does not naturally factor into forward- and backward-contour Fock spaces because it also contains cross species. In particular, labelling the particle species by ν = ( μ, μ ′), where ν = 1 , . . . , d 4S − 1 and μ, μ ′ = 0 , . . . , d 2S − 1 with the restriction ( μ, μ ′)̸ = (0 , 0), the part of the Fock space associated to the cross species is the problematic part. To remedy this issue we have to treat the effect |I⟩ of the continuous instrument and the cPT |Υ⟩ in the contraction 
+
+⟨I| Υ⟩ differently. We seek two distinct maps P : |Υ⟩ → ˆΥ and V : |I⟩ → ˇI which act on cPTs and instrument effects, respectively. The aim is to transfer the contraction ⟨I| Υ⟩ to the operator space in a sensible way: 
+
+⟨I| Υ⟩ = ⟨ˇI, ˆΥT ⟩ker . (H2) The rest of this Appendix contains the following. In the first section, we define the map P and a recovery map R,showing that it inverts the action of P on all cPTs. This is the content of the first part of Theorem 2 in the main text. In the second section we define the map V and elaborate how, together with P and R, it provides a sensible notion of the Choi duality for cPTs, giving a precise meaning to ⟨· , ·⟩ ker in Eq. (H2). We will find that when |I⟩ satisfies certain conditions, ˇI is a bounded operator on Γ (d2S−1)  
+
+> T
+
+≡ γ and then Eq. (H2) becomes the Hilbert–Schmidt inner product. If this is not the case, ˇI is a sesquilinear form on γ.31 
+
+1. Choi operator of a cPT 
+
+We specify the map P : Γ → HS( γ), where HS is the space of Hilbert–Schmidt operators, by defining the resulting operator in terms of its integration kernel . Given an integration kernel f (n;n′) 
+
+> μ;μ′
+
+(t; t′) the associated operator is defined via 
+
+> ∞
+
+X
+
+> n,n ′=0
+
+X
+
+> μ∈[d2S−1] n
+
+X
+
+> μ′∈[d2S−1] n′
+
+Z
+
+Dnt
+
+Z
+
+Dn′
+
+t′f (n;n′) 
+
+> μ;μ′
+
+(t; t′)ϕ† 
+
+> μ1
+
+(t1) . . . ϕ † 
+
+> μn
+
+(tn) | ˜Ω⟩⟨ ˜Ω| ϕμ′ 
+
+> 1
+
+(t′
+
+> 1
+
+) . . . ϕ μ′ 
+
+> n′
+
+(t′ 
+
+> n′
+
+). (H3) Here, we denote with | ˜Ω⟩ and ϕμ(t) the vacuum state and the field operators in the Fock space γ, respectively. In general, integration kernels can be distribution-valued: for instance, the integration kernel of the identity operator is 
+
+f (n;n′) 
+
+> μ;μ′
+
+(t; t′) := 
+
+(
+
+δμ,μ′
+
+Qni=1 δ(ti − t′
+
+> i
+
+) n = n′
+
+0 otherwise . (H4) However, Hilbert–Schmidt operators have L2-function-valued integration kernels. We define the integration kernel of 
+
+P(|Φ⟩) in terms of wavefunctions of |Φ⟩ by 
+
+P(|Φ⟩)(n;n′) 
+
+> μ;μ′
+
+(t; t′) := Φ n+n′
+
+> (μ,0),(0,μ′)
+
+(t, t′), (H5) for all n, n ′ ∈ N0 and μ ∈ [d2S − 1] n, μ′ ∈ [d2S − 1] n′
+
+. This places the output of P into HS( γ). Note that this definition discards the wavefunctions corresponding to cross species particles in Γ. Even though P is clearly not invertible, we will define a recovery operator 
+
+R : S → Γ, (H6) where S is a subspace (specified in a moment) of the space of trace-class operators TC( γ), which will invert the action of P on all cPTs. To define this operator, we will need the singular value decomposition (SVD): the kernel of any trace-class operator A can be written as 
+
+A(n;n′) 
+
+> μ;μ′
+
+(t; t′) = X
+
+> k
+
+σku(k,n ) 
+
+> μ
+
+(t)
+
+
+
+v(k,n ′) 
+
+> μ′
+
+(t′)
+
+∗
+
+, (H7) where v(k,n ) 
+
+> μ
+
+∈ L2([0 , T ]n), u(k,n ′) 
+
+> μ′
+
+∈ L2([0 , T ]n′
+
+) and P 
+
+> k
+
+σk < ∞. By the Cauchy–Schwarz inequality, the summability of ( σk)k implies that the sum converges absolutely almost everywhere. Using the SVD, we define the wavefunctions of R(A) for any trace class A by 
+
+R(A)(n+nℓ+nr )(μ,μ′),(μℓ,0),(0,μr )(t, tℓ, tr ) := X
+
+> k
+
+σku(k,n +nℓ) 
+
+> μ,μℓ
+
+(t, tℓ)
+
+
+
+v(k,n +nr ) 
+
+> μ′,μr
+
+(t, tr )
+
+∗
+
+, (H8) where n, n ℓ, n r ∈ N0, μ, μ′ ∈ [d2S − 1] n, μℓ ∈ [d2S − 1] nℓ
+
+and μr ∈ [d2S − 1] nr
+
+as well as t ∈ [0 , T ]n, tℓ ∈ [0 , T ]nℓ
+
+and 
+
+tr ∈ [0 , T ]nr
+
+. As the LHS is not guaranteed to be square-integrable in general for any A ∈ TC( γ), we define the domain S of R as exactly those trace-class operators for which Eq. (H8) are the wavefunctions of a vector in Γ. Suppose that a trace-class operator A happens to have continuous function-valued integration kernel. For such an operator Eq. (H8) simplifies 
+
+R(A)(n+nℓ+nr )(μ,μ′),(μℓ,0),(0,μr )(t, tℓ, tr ) = A(n+nℓ;n+nr ) 
+
+> μ,μℓ;μ′,μr
+
+(t, tℓ; t, tr ). (H9) The reason why we needed the SVD to define the action of R on a general trace class A is that the RHS of Eq. (H9) would not be well defined under L2 equivalence of the kernel functions. Now, we will see that R inverts the action of P on all PCR |Υ⟩ ∈ Γ. First, we compute their trace. 
+
+Lemma 4. Any |Υ⟩ ∈ Γ in the PCR satisfies Tr[ P(|Υ⟩)] = e T 
+
+> 
+> dS−1
+> dS
+> 
+
+.32 
+
+Proof. Since the Paulis are an orthonormal basis we have that 
+
+X
+
+> μ∈[d2S−1]
+
+Pμ ⊗ P ∗ 
+
+> μ
+
+= |1S⟩⟩⟨⟨ 1S| − 1
+
+dS
+
+1S. (H10) Hence, we get 
+
+X
+
+> μ∈[d2S−1] n
+
+Υ(n)(μ,μ)(t) = ⟨⟨ 1SE |T e  
+
+> RTtn Hdt
+
+
+
+|1S⟩⟩⟨⟨ 1S| − 1
+
+dS
+
+1S
+
+
+
+T e   
+
+> Rtn tn−1Hdt
+
+. . . 
+
+
+
+|1S⟩⟩⟨⟨ 1S| − 1
+
+dS
+
+1S
+
+
+
+eR t10 Hdt |ψ⟩⟩ 
+
+=
+
+> n
+
+X
+
+> k=0
+
+nk
+
+
+
+dk
+
+> S
+
+
+
+− 1
+
+dS
+
+n−k
+
+=
+
+
+
+dS − 1
+
+dS
+
+n
+
+, (H11) which follows because T e  
+
+> RtjtiHdt
+
+, 1 
+
+> dS
+
+|1S⟩⟩⟨⟨ 1S| and 1S are CPTP maps. Finally, because the PCR has continuous wavefunctions, we can write the trace as Tr[ P(|Υ⟩)] = 
+
+> ∞
+
+X
+
+> n=0
+
+Z
+
+Dnt X
+
+> μ∈[d2S−1] n
+
+Υ(n)(μ,μ)(t)=
+
+> ∞
+
+X
+
+> n=0
+
+Z
+
+Dnt
+
+
+
+dS − 1
+
+dS
+
+n
+
+=
+
+> ∞
+
+X
+
+> n=0
+
+T n
+
+n!
+
+
+
+dS − 1
+
+dS
+
+n
+
+= e T 
+
+> 
+> dS−1
+> dS
+> 
+
+. (H12) Since a cPT |Υ⟩ in the PCR has continuous wavefunctions, the kernel of P(|Υ⟩) is also continuous (in fact it is a 
+
+matrix product operator [27]) and we can evaluate the wavefunctions of | ˜Υ⟩ := R ◦ P (|Υ⟩) using Eq. (H9), obtaining ˜Υ(n+nℓ+nr )(μ,μ′),(μℓ,0),(0,μr )(t, tℓ, tr ) = Υ (2 n+nℓ+nr )(μ,0),(0,μ′),(μℓ,0),(0,μr )(t, t, tℓ, tr ). (H13) By evaluating the wavefunctions of a PCR and using P(μ,μ ′) = P(μ, 0) P(0 ,μ ′) we notice that this in fact implies that 
+
+| ˜Υ⟩ = |Υ⟩, showing that any PCR |Υ⟩ satisfies 
+
+R ◦ P (|Υ⟩) = |Υ⟩ . (H14) Furthermore, P(|Υ⟩) of a PCR is positive semidefinite, as follows from the fact that its integration kernel can be decomposed as 
+
+P(|Υ⟩)(n;n′) 
+
+> μ;μ′
+
+(t; t′) = ⟨⟨ 1|T e  
+
+> RT
+> ˜tn+n′Hdt
+
+Pνn+n′ . . . Pν1 T eR ˜t10 Hdt|ψ⟩⟩ (H15) = X
+
+> k
+
+⟨k| T e  
+
+> RTtn −iH dt
+
+Pμn . . . P μ1 T eR t10 −iH dt |ψ⟩ ⟨ ψ| T −eR t′ 
+
+> 10iH dt
+
+Pμ′ 
+
+> 1
+
+. . . T−Pμ′ 
+
+> n′
+
+e  
+
+> RTt′
+> n′iH dt
+
+|k⟩
+
+= X
+
+> k
+
+f (k,n ) 
+
+> μ
+
+(t)
+
+
+
+f (k,n ′) 
+
+> μ′
+
+(t′)
+
+∗
+
+,
+
+where ˜t is the ordered concatenation of t and t′ and ν is the concatenation of ( μ, 0) and ( 0, μ′) ordered according to the vector ˜t.We will use these observations along with Theorem 1 to show that the property Eq. (H14) is satisfied by all cPTs. 
+
+Proposition 2. All continuous process tensors |Υ⟩ ∈ Γ satisfy R ◦ P (|Υ⟩) = |Υ⟩. Furthermore, their Choi dual 
+
+ˆΥ = P(|Υ⟩) is positive semidefinite and trace class. 33 
+
+Proof. By Theorem 1 in the main text, the space span( PCR ) spanned by the PCR Fock vectors (all finite linear combinations) is dense in the closed space span( cPT ). Since P : Γ → HS( γ) is a bounded linear operator in the induced norm ∥ · ∥ Γ → ∥ · ∥ HS , the set P(span( PCR )) is dense in P(span( cPT ) ) in the HS norm. We have just seen that for any PCR Fock vector |Υ′⟩ it holds that R ◦ P (|Υ′⟩) = |Υ′⟩. Therefore, by linearity, the operator R has unit operator norm ∥ · ∥ HS → ∥ · ∥ Γ on P(span( PCR )). Consider the restriction eR of R to the domain P(span( PCR )). By the bounded linear transformation theorem there is a unique linear extension ˆR of eR to span( cPT ), the action of which on ˆΥ ∈ span( cPT ) is defined by any sequence ( ˆΥk ∈ P (span( PCR ))) k converging to ˆΥ as ˆR( ˆΥ) := lim 
+
+> k→∞
+
+eR( ˆΥk). (H16) As R is a linear extension of eR to span( cPT ) and ˆR is unique, we have R = ˆR. By Theorem 1 in the main text, take for any cPT |Υ⟩ ∈ Γ a sequence ( |Υk⟩)k where each |Υk⟩ ∈ PCR , such that lim k→∞ |Υk⟩ = |Υ⟩. Hence 
+
+R ◦ P (|Υ⟩) = ˆR ◦ P (|Υ⟩) := lim 
+
+> k→∞
+
+eR ◦ P (|Υk⟩) = lim  
+
+> k→∞
+
+|Υk⟩ = |Υ⟩ . (H17) As we have already seen that P(|Υk⟩) is positive semidefinite for all k, the Choi matrix ˆΥ = P(|Υ⟩) is too (as convergence in HS-norm implies convergence in the weak operator topology). Furthermore, for any orthonormal basis 
+
+|ei⟩ ∈ γ we get Tr[ ˆΥ] = X
+
+> i
+
+⟨ei|P (|Υ⟩)ei⟩
+
+= X
+
+> i
+
+lim  
+
+> k→∞
+
+⟨ei|P (|Υk⟩)ei⟩≤ lim inf 
+
+> k→∞
+
+X
+
+> i
+
+⟨ei|P (|Υk⟩)ei⟩
+
+= e T 
+
+> 
+> dS−1
+> dS
+> 
+
+, (H18) where the third line follows by Fatou’s lemma as P(|Υk⟩) ≥ 0 and the last line from Lemma 4. Therefore, P(|Υ⟩) is trace class. Proposition 2 proves the first part of Theorem 2 in the main text. Before turning to its second part in the next subsection we briefly discuss the causality condition. A finite-dimensional operator on 2 k copies of HS, i.e. , on Nkj=1 H(ij )S ⊗H (oj )S is said to be causal if when tracing over any ℓ ≤ k last output spaces Nkj=k+1 −ℓ H(oj )S , the operator becomes the identity tensor factor on the corresponding input spaces Nkj=k+1 −ℓ H(ij )S . If for all ℓ the operators on the remaining part j ≤ k − ℓ are additionally positive-semidefinite operators then the operator is the Choi matrix of a k-step process tensor [12]. In Definition 2 in the main text a Fock space vector was defined to be causal if all of its smoothed marginals are causal. In the same vein, with the map P at hand this causality condition can be directly transferred to the space of HS-operators on γ. By construction, the discrete marginals of a cPT |ΥT ⟩ are the values of the integral kernel of the operator ˆΥT = P(|ΥT ⟩). Let ζμ(t) = ϕμ(t) for μ ∈ [d2S − 1] and ζ0(t) = 1 and let | ˜Ω⟩ be the vacuum in γ. Then, Υν (t) = Υ (μ,μ′)(t) = ⟨ ˜Ω|ζμ1 (t1) . . . ζ μn (tn) ˆΥT ζ†
+
+> μ′
+> 1
+
+(t1) . . . ζ † 
+
+> μ′
+> n
+
+(tn)| ˜Ω⟩ =
+
+ ˆΥT
+
+(nℓ;nr )
+
+> μℓ;(μ′)r
+
+(tℓ; tr ), (H19) where μℓ (( μ′)r ) are all the non-zero elements of μ (μ′), tℓ (tr ) is t with times removed wherever μ (μ′) is zero, and 
+
+nℓ (nr ) are the number of elements in μℓ (( μ′)r ), respectively. Since we know that for a cPT the Choi operator is trace class, we can write this in terms of the SVD as Υν (t) = 
+
+> ∞
+
+X
+
+> k=0
+
+σkunℓ 
+
+> k, μℓ
+
+(tℓ)
+
+
+
+vnr 
+
+> k, (μ′)r
+
+(tr )
+
+∗
+
+. (H20) The causality and positivity condition from Definition 2 can then be expressed as that for all non-negative f ∈ L2(∆ n)with ∥f ∥1 = 1 Υf 
+
+> ν
+
+=
+
+Z T
+
+> 0
+
+Dnt f (t)Υ ν (t) = 
+
+Z T
+
+> 0
+
+Dnt f (t)
+
+> ∞
+
+X
+
+> k=0
+
+σkunℓ 
+
+> k, μℓ
+
+(tℓ)
+
+
+
+vnr 
+
+> k, (μ′)r
+
+(tr )
+
+∗
+
+(H21) 34 are elements of a completely positive and causal matrix, i.e. elements of a discrete process tensor. This leads us to the following conditions on a general HS-operator ˆΦ ∈ HS( γ) with integral kernel ˆΦ(nℓ;nr ) 
+
+> μℓ;(μ′)r
+
+(tℓ; tr ) = 
+
+> ∞
+
+X
+
+> k=0
+
+˜σk ˜unℓ 
+
+> k, μℓ
+
+(tℓ)
+
+
+
+˜vnr 
+
+> k, (μ′)r
+
+(tr )
+
+∗
+
+. (H22) The operator ˆΦ is the Choi operator of a cPT if 
+
+• it is trace-class, 
+
+• for all non-negative f ∈ L2(∆ n) with ∥f ∥1 = 1 the matrix with elements Φf 
+
+> (μ,μ′)
+
+=
+
+Z T
+
+> 0
+
+Dnt f (t)
+
+> ∞
+
+X
+
+> k=0
+
+˜σk ˜unℓ 
+
+> k, μℓ
+
+(tℓ)
+
+
+
+˜vnr 
+
+> k, (μ′)r
+
+(tr )
+
+∗
+
+, (H23) where μ, μ′ ∈ {{ 0} ∪ [d2S]}n and μℓ, μr , tℓ, tr as in Eq. (H19), is a discrete n-step process tensor. In particular, we demand that its matrix elements are finite. 
+
+2. Choi duality inner product 
+
+We have seen that the map P outputs HS-operators which are nicely behaved. It does so by forgetting about some of the information contained in the input vector. By contrast, the action of V should recover this information in order to obtain a sensible duality in terms of the trace-like pairing of integral kernels, as stated in the second part of Theorem 2 in the main text and in Eq. (H2). This makes the map V much more poorly behaved than P: it maps vectors |Φ⟩ ∈ Γ to sesquilinear forms on some QΦ × Q Φ, where QΦ is a suitable subspace of γ. The specifics of this subspace do not matter for us since we are here only interested in formalising Eq. (H2). The sesquilinear form V(|Φ⟩) is defined by its integration kernel as 
+
+V(|Φ⟩)(n;n′) 
+
+> μ;μ′
+
+(t; t′) := X
+
+> s∈{ 0,1}n
+> ∥s∥≤ min( n,n ′)
+
+X
+
+> s′∈{ 0,1}n′
+> ∥s′∥=∥s∥
+
+Y  
+
+> i,j :si=s′
+> j=1
+> ∥s≤i∥=∥s′
+> ≤j∥
+
+δ(ti − t′ 
+
+> j
+
+)Φ (n+n′−∥ s∥)(μs=1 ,μ′
+
+> s′=1 ),(μs=0 ,0),(0,μ′
+> s′=0 )
+
+(ts=1 , ts=0 , t′
+
+> s′=0
+
+), (H24) where ∥s≤i∥ := Pik=1 sk, ∥s∥ := Pnk=1 sk, and μs=0 and similar mean that we take the elements of μ at positions where s has the zero value. Note that on the RHS we have broken the time ordering constraint and extended the wavefunctions of |Φ⟩ to be symmetric under the simultaneous exchange of the times and the indices. The distribution-valued integration kernel reflects the fact that the output of V is generally not a Hilbert–Schmidt operator. In fact, for general |Φ⟩ it is not even bounded, as an operator on γ.We now define the sesquilinear form between integration kernels in Eq. (H2) by 
+
+⟨A, B ⟩ker := 
+
+> ∞
+
+X
+
+> n,n ′=0
+
+X
+
+> μ∈[d2S−1] n
+
+X
+
+> μ′∈[d2S−1] n′
+
+Z
+
+Dnt
+
+Z
+
+Dn′
+
+t′ 
+
+A(n′;n) 
+
+> μ′;μ
+
+(t′; t)
+
+∗
+
+B(n′;n) 
+
+> μ′;μ
+
+(t′; t). (H25) If A and B are Hilbert–Schmidt operators, ⟨· , ·⟩ ker reduces to the Hilbert–Schmidt inner product. With this definition we use Proposition 2 to show Eq. (H2) for any cPT |Υ⟩. Let P(|Υ⟩) = P 
+
+> k
+
+σk |u(k)⟩⟨ v(k)| and consider for any |I⟩ ∈ Γ
+
+⟨V (|I⟩ ), P(|Υ⟩)⟩ker =
+
+> ∞
+
+X
+
+> n,n ′=0
+
+X
+
+> μ∈[d2S−1] n
+
+X
+
+> μ′∈[d2S−1] n′
+
+Z
+
+Dnt
+
+Z
+
+Dn′
+
+t′ X
+
+> s∈{ 0,1}n
+> ∥s∥≤ min( n,n ′)
+
+X
+
+> s′∈{ 0,1}n′
+> ∥s′∥=∥s∥
+
+Y  
+
+> i,j :si=s′
+> j=1
+> ∥s≤i∥=∥s′
+> ≤j∥
+
+δ(ti − t′ 
+
+> j
+
+)
+
+X
+
+> k
+
+σk
+
+
+
+v(k,n ) 
+
+> μ
+
+(t)
+
+∗ 
+
+I(n+n′−∥ s∥)(μ′
+
+> s′=1 ,μs=1 ),(μ′
+> s′=0 ,0),(0,μs=0 )
+
+(ts=1 , t′
+
+> s′=0
+
+, ts=0 )
+
+∗
+
+u(k,n ′) 
+
+> μ′
+
+(t′)=
+
+> ∞
+
+X
+
+> n,n ′=0
+
+X
+
+> μ∈[d2S−1] n
+
+X
+
+> μ′∈[d2S−1] n′
+
+X
+
+> s∈{ 0,1}n
+> ∥s∥≤ min( n,n ′)
+
+X
+
+> s′∈{ 0,1}n′
+> ∥s′∥=∥s∥
+
+Z
+
+Dnt
+
+Z
+
+Dn′−∥ s∥t′ X
+
+> k
+
+σk
+
+
+
+v(k,n ) 
+
+> μ
+
+(t)
+
+∗
+
+
+
+I(n+n′−∥ s∥)(μ′
+
+> s′=1 ,μs=1 ),(μ′
+> s′=0 ,0),(0,μs=0 )
+
+(ts=1 , t′
+
+> s′=0
+
+, ts=0 )
+
+∗
+
+u(k,n ′)
+
+> μ′
+> s′=1 ,μ′
+> s′=0
+
+(ts=1 , t′).
+
+(H26) 35 Above we used Fubini-Tonelli to exchange the P 
+
+> k
+
+and the integrals where absolute integrability follows from P(|Υ⟩) = P 
+
+> k
+
+σk |u(k)⟩⟨ v(k)| being trace-class. Then, reordering the individual integration measures followed by an application of Eq. (H14) to |Υ⟩ we get that 
+
+⟨V (|I⟩ ), P(|Υ⟩)⟩ker =
+
+> ∞
+
+X 
+
+> n,n ℓ,n r=0
+
+X
+
+> μ,μ′∈[d2S−1] n
+
+X
+
+> μℓ∈[d2S−1] nℓ
+
+X 
+
+> μr∈[d2S−1] nr
+
+Z
+
+Dnt
+
+Z
+
+Dnℓ
+
+tℓ
+
+Z
+
+Dnr
+
+tr
+
+X
+
+> k
+
+σk
+
+
+
+v(k,n +nr ) 
+
+> μ′,μr
+
+(t, tr )
+
+∗ 
+
+I(n+nℓ+nr )(μ,μ′),(μℓ,0),(0,μr )(t, tℓ, tr )
+
+∗
+
+u(k,n +nℓ) 
+
+> μ,μℓ
+
+(t, tℓ)=
+
+> ∞
+
+X 
+
+> n,n ℓ,n r=0
+
+X
+
+> μ,μ′∈[d2S−1] n
+
+X
+
+> μℓ∈[d2S−1] nℓ
+
+X 
+
+> μr∈[d2S−1] nr
+
+Z
+
+Dnt
+
+Z
+
+Dnℓ
+
+tℓ
+
+Z
+
+Dnr
+
+tr
+
+
+
+I(n+nℓ+nr )(μ,μ′),(μℓ,0),(0,μr )(t, tℓ, tr )
+
+∗
+
+Υ(n+nℓ+nr )(μ,μ′),(μℓ,0),(0,μr )(t, tℓ, tr )= ⟨I| Υ⟩ .
+
+(H27) Intuitively, one can understand the two maps V and P as inducing a Gelfand-triple structure Q ⊂ HS( γ) ⊂ Q ∗. The map P is lossy but regularising: it outputs only Hilbert–Schmidt operators and for cPTs even trace-class operators. On the other side, V is faithful but rough: it takes values in the continuous maps Q → Q ∗ rather than in operators on γ. In the pairing of V and P by Eq. (H2), the roughness of V is absorbed by the regularity of P whenever P acts on a cPT such that Eq. (H14) holds. Whenever |I⟩ has finite particle number and bounded amplitudes, V(|I⟩ ) is a bounded operator. In this case, V(|I⟩ )†P(|Υ⟩) is of trace class and the pairing coincides with the Hilbert–Schmidt inner product: V(|I⟩ ), P(|Υ⟩) ker ≡ Tr( V(|I⟩ )†P(|Υ⟩)). Concluding, even though there is no genuine isomorphism between vectors in Γ and Hilbert–Schmidt operators on 
+
+γ, the operators P and V define a sensible notion of a Choi duality in the continuum. This duality is considerably more complex than its discrete counterpart, where especially V(|I⟩ ) is a difficult object to work with. However, the Choi operator P(|Υ⟩) actually contains less information than |Υ⟩ and hence could prove more useful in some applications. We would like to emphasise that we have already made use of it in calculating distance measures on cPTs (see the accompanying work [13]).

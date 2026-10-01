@@ -1,0 +1,25 @@
+{
+  "date": "20261001",
+  "date_label": "",
+  "generated_at": "2026-10-01 23:42:38 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.35403v1",
+      "route": "202610/01/2609.35403v1-dilation-theorem-for-continuum-quantum-stochastic-processes",
+      "title": "Dilation theorem for continuum quantum stochastic processes",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "将随机动力学与更大空间上确定性薛定谔演化相联系的膨胀，与Schrödingerization变换思想相通",
+      "first_seen_at": "2026-10-01 23:42:38 UTC",
+      "updated_at": "2026-10-01 23:42:38 UTC"
+    }
+  ]
+}

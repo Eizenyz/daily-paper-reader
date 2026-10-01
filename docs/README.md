@@ -48,7 +48,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-30</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-01</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 1 篇</strong>
@@ -58,7 +58,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>1</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-30 22:41:43 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-01 23:42:38 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今天速读1篇论文，聚焦量子计算中“寻找无退相干子空间”的计算复杂度问题。</p>
-<p>最值得看的是《On the Complexity of Finding Decoherence Free Subspaces》对退相干自由子空间搜索复杂度的探讨，评分6.0，属中等可读。</p>
-<p>普通读者可先了解量子退相干与纠错基础，再决定是否深入这类复杂度研究。</p>
+<p>今日速读1篇量子随机过程论文，精读挂零。唯一可看的是《Dilation theorem for continuum quantum stochastic processes》（6.0/10），关注连续量子随机过程的膨胀定理这一方向。普通读者若对量子概率基础感兴趣可先看它，否则建议等更高分文献再投入时间。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -96,7 +94,7 @@
     <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="On the Complexity of Finding Decoherence Free Subspaces">On the Complexity of Finding Decoherence Free Subspaces</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Dilation theorem for continuum quantum stochastic processes">Dilation theorem for continuum quantum stochastic processes</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">quantum-ode <strong>1</strong></span></div>
 </section>

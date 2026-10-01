@@ -1,0 +1,58 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-01T23:42:18.762088+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 0,
+    "deep_cap": 7,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 12,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.35403v1",
+      "source": "arxiv",
+      "title": "Dilation theorem for continuum quantum stochastic processes",
+      "abstract": "Connecting mathematical formalism in open quantum systems to its underlying physics necessitates the notion of a dilation, a way to bridge stochastic dynamics with deterministic Schrödinger evolution on a larger space. Although dilations are well known in the literature for states, channels, and quantum combs, there is a substantial gap when it comes to the fully general setting of non-Markovian dynamics on a continuous interval. In an accompanying work, we introduce a continuous process tensor (cPT) framework wherein these processes are represented by vectors in multi-species bosonic Fock spaces of $L^2$ functions. This accommodates all multi-time statistics of a quantum system on an interval. Here, we present a corresponding dilation theorem and show that all cPTs can be approximated arbitrarily well by an explicit closed description with system and environment coupled by a bounded Hamiltonian. As well as its physical appeal and demonstrating completeness of the framework, we show that such regular representations actually underpin the formalism, defining a dense subspace of all cPTs that is easy to handle. This leads to a continuum-suitable version of Choi duality, and permits the rigorous treatment of continuum controls.",
+      "authors": [
+        "Jonáš Fuksa",
+        "Clara Wassner",
+        "Jens Eisert",
+        "Gregory A. L. White"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math-ph"
+      ],
+      "published": "2026-09-28T15:24:58+00:00",
+      "link": "https://arxiv.org/pdf/2609.35403v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "dilation bridging stochastic dynamics with deterministic Schrodinger evolution on a larger space, conceptually aligned with Schrodingerization transforms",
+      "llm_evidence_cn": "将随机动力学与更大空间上确定性薛定谔演化相联系的膨胀，与Schrödingerization变换思想相通",
+      "llm_evidence": "将随机动力学与更大空间上确定性薛定谔演化相联系的膨胀，与Schrödingerization变换思想相通",
+      "canonical_evidence": "将随机动力学与更大空间上确定性薛定谔演化相联系的膨胀，与Schrödingerization变换思想相通",
+      "llm_tldr_en": "Dilations link stochastic open-system dynamics to deterministic Schrodinger evolution on a larger space. This work proves a dilation theorem for fully general non-Markovian dynamics on a continuous interval within a continuous process tensor framework.",
+      "llm_tldr_cn": "开放量子系统的形式化描述与其物理实现之间需要膨胀来连接随机动力学与更大空间上的确定性薛定谔演化，但连续区间上的非马尔可夫动力学长期缺乏一般性结论。本文在连续过程张量框架下提出相应的膨胀定理，将过程表示为多组分玻色福克空间中的向量，从而涵盖系统全部多时刻统计量。该结果为非马尔可夫动力学提供严格数学基础，与Schrödingerization类变换思想相通。",
+      "llm_tldr": "开放量子系统的形式化描述与其物理实现之间需要膨胀来连接随机动力学与更大空间上的确定性薛定谔演化，但连续区间上的非马尔可夫动力学长期缺乏一般性结论。本文在连续过程张量框架下提出相应的膨胀定理，将过程表示为多组分玻色福克空间中的向量，从而涵盖系统全部多时刻统计量。该结果为非马尔可夫动力学提供严格数学基础，与Schrödingerization类变换思想相通。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "Schrodingerization, Schrödingerization, Schrodingerisation, and Schrödingerisation transforms for simulating non-unitary dynamics and solving differential equations",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

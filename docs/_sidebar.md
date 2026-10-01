@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-10-01 <!--dpr-date:20261001-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202610/01/2609.35403v1-dilation-theorem-for-continuum-quantum-stochastic-processes" data-sidebar-item="{&quot;title&quot;: &quot;Dilation theorem for continuum quantum stochastic processes&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.35403v1-dilation-theorem-for-continuum-quantum-stochastic-processes&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;将随机动力学与更大空间上确定性薛定谔演化相联系的膨胀，与Schrödingerization变换思想相通&quot;}">Dilation theorem for continuum quantum stochastic processes</a>
   * 2026-09-30 <!--dpr-date:20260930-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/30/2609.26769v1-on-the-complexity-of-finding-decoherence-free-subspaces" data-sidebar-item="{&quot;title&quot;: &quot;On the Complexity of Finding Decoherence Free Subspaces&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.26769v1-on-the-complexity-of-finding-decoherence-free-subspaces&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;开放量子系统与Lindblad耗散动力学的计算复杂度&quot;}">On the Complexity of Finding Decoherence Free Subspaces</a>
