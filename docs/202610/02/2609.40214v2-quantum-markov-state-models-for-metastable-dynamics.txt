@@ -1,0 +1,4929 @@
+Title: Quantum Markov State Models for Metastable Dynamics
+
+URL Source: https://arxiv.org/pdf/2609.40214v2
+
+Published Time: Fri, 02 Oct 2026 02:04:52 GMT
+
+Number of Pages: 53
+
+Markdown Content:
+QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 
+
+HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+Abstract. Open quantum systems can rapidly lose most microscopic information, leaving only a few degrees of freedom to govern their long-time dynamics. Classical Markov state models (MSMs) describe such metastable dynamics as transitions among a few representative phases and are widely used to reduce complex-system dynamics in condensed matter and chemical physics. In quantum systems, however, phase labels alone are insufficient when coherence persists between metastable states. Even when the slow modes are known, their spectral projection need not produce valid quantum states. We construct quantum Markov state models (QMSMs) that describe the surviving information and its evolution on a small physical state space containing classical sectors and quantum matrix blocks. We quantify metastability by assuming that the evolution channel C
+
+changes little when applied a second time, with sufficiently small defect η = ∥C 2 − C∥ ⋄, and that the number of slow degrees of freedom is bounded independently of the full system size. Under these assumptions, we construct compression and reconstruction channels whose composition recovers every reduced state exactly, while the reverse composition gives an exactly idempotent channel approximating C, answering Kitaev’s exact-rounding question [Kit25]. Our constructions give an optimal diamond-norm bound of O(η1/3) on all input states, as well as an improved bound of 
+
+O(η1/2) on metastable states prepared by C, with constants depending only on the slow dimension. The reduced transition channel can be iterated to predict the microscopic dynamics with controlled error. We illustrate the QMSM through a weakly driven dissipative spin chain supporting either a metastable logical qubit or long-lived classical phases. 
+
+Contents 
+
+1. Introduction 12. Notations and preliminaries 43. Main results 64. Approximate encoding–decoding factorization and Stinespring representations 11 5. Surgery on the approximate idempotent factorization 15 6. QMSMs for weakly driven dissipative spin chains 27 Appendix A. Proof of Proposition 2.1 31 Appendix B. Technical proofs for the spin-chain examples 32 Appendix C. Sharpness and obstructions 44 References 52 1. Introduction 
+
+1.1. Metastability and quantum Markov state models. Metastability is ubiquitous in na-ture, especially for complex systems, and involves a separation of dynamical timescales. A system first relaxes rapidly in many directions and then evolves much more slowly within a small fam-ily of long-lived configurations. This intermediate regime is important for understanding phase-transition kinetics [Bin87, DS01], chemical reaction mechanisms [HTB90], and protein-folding dy-namics [NSVE +09, LLPDS11]. This separation of timescales naturally suggests a potential reduced 
+
+Date : October 2, 2026.   
+
+> 1arXiv:2609.40214v2 [quant-ph] 1 Oct 2026 2HAO-EN LI, LIN LIN, AND MICHAEL RAGONE Classical metastable dynamics MSM Quantum metastable dynamics QMSM
+> Figure 1. Classical and quantum Markov state models. Left: metastability in molecular dynamics is represented by transitions among a few classical states. Right: a driven dissipative spin chain can be reduced to a metastable logical qubit. The Bloch-sphere fan depicts dephasing.
+
+description: one could identify the degrees of freedom that survive the fast relaxation and then use them to model the effective slow evolution. For classical stochastic dynamics, Markov state models (MSMs) replace the microscopic state space with a huge number of degrees of freedom by a set of representative phases and describe their dynamics using a transition matrix [NHSS07, HP18]. In molecular-dynamics simulations, especially for macromolecules like proteins, such models allow long-time kinetics to be inferred from much shorter molecular trajectories. Successful applications of MSMs include the reconstruction of folding pathways [NSVE +09], ligand-binding kinetics [PN15], and protein–protein association [PDDFN17] (see also [CN14]). Rigorous mathematical approaches to classical metastability are also well-established to quantify the lifetimes of metastable states and the transitions between them [BdH15]. Open quantum systems can exhibit a similar separation of timescales, for instance, in driven many-body matter [LTN +17, SBMD25] and the preservation of quantum information [DKLP02, LVP +20]. In this setting, classical phase labels may be insufficient: coherence can persist between metastable states, and the slow degrees of freedom may encode an effective qubit [MGLG16, LCW98, LW03]. A quantum Markov state model (QMSM) should therefore generalize classical MSMs by identifying both the classical and quantum information that survives fast relaxation. A QMSM is expected to consist of a reduced state space, a reduced channel acting on it, and maps connecting the full and reduced state spaces. We use compression for the channel mapping full states to reduced states, and 
+
+reconstruction for the channel mapping reduced states to full states. We seek rigorous constructions and error bounds relating the reduced dynamics to the physical microscopic evolution. Figure 1 illustrates the classical and quantum reductions. To construct such a model, we start from the propagator in the metastable regime. We quantify the metastability of an evolution quantum channel by assuming that it is almost idempotent and that its slow spectral subspace has dimension bounded independently of the full system size. Under these assumptions, we construct an exactly idempotent channel and use it to define a QMSM. The reduced state space can contain classical sectors, corresponding to 1 × 1 blocks, and quantum matrix blocks, and iterating a reduced transition channel gives quantitative predictions for the full dynamics, just like the classical MSM. The decomposition into classical phases and quantum memories is physically natural. For instance, quantum coding theory uses noiseless subsystems and decoherence-free subspaces to store protected logical states [KLP05], and analogous structures can coexist with classical metastable phases in open quantum dynamics [MGLG16]. From this perspective, one may view the reduced state space as the logical state space. The difficulty here is to construct a QMSM realizing this structure when the original channel is only almost idempotent, QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 3
+
+with physical compression and reconstruction maps and controlled error in the reduced dynamics. This is summarized in the informal Theorem 1.1 below. 
+
+Theorem 1.1 (QMSM theorem, informal) . For any quantum channel C with sufficiently small idempotency defect and a bounded number of slow degrees of freedom, we can construct a QMSM with a compression channel Q, a reconstruction channel R, and a reduced transition channel M = QCR 
+
+on the reduced state space D⋆, such that: 
+
+• The transition channel M defines a valid effective quantum Markov process on the reduced quantum state space D⋆;
+
+• The QMSM identifies the structure of the reduced degrees of freedom, whose components may include both classical phases and quantum memories ;
+
+• The QMSM provides quantitative error bounds relating the reduced dynamics to the original physical evolution, uniformly in the full system size. 
+
+1.2. Relation to previous work. Quantum metastability is still a nascent field. To our knowledge, there is no general framework for constructing physical QMSMs from almost idempotent channels. Previous work includes spectral descriptions of slow dynamics [MGLG16, MRLG21], physical compression and reconstruction maps [GSTV26, Kit25], and structural results for long-lived states [BCV25, YSL25]. Table 1 compares their assumptions and conclusions with the requirements for constructing a physical QMSM. Here physicality means that the constructed effective dynamics can be described by a quantum channel. Generality means applicability to arbitrary channels with sufficiently small idempotency defect, without a prescribed perturbative reference dynamics. Our results additionally require bounded slow rank. Reduced dynamics means the method can be used to derive an effective evolution with quantitative approximation bounds. “Not addressed” means the corresponding QMSM question is outside the scope of the cited results.                  
+
+> Physicality Generality Reduced dynamics [MGLG16, MRLG21] Not guaranteed Yes Yes [GSTV26] Yes Perturbative regime Yes [Kit25] Yes Yes Not addressed [BCV25, YSL25] Not addressed State dependent Not addressed This work Yes Yes Yes
+
+Table 1. Physical reduction and effective dynamics in selected approaches to quantum metastability, under the criteria defined in the text. The spectral approach starts from a separation between fast and slow eigenmodes of a Lindblad generator. Macieszczak and collaborators use the slow modes to characterize metastable subspaces [MGLG16, RMLG16]. Their theory of classical metastability yields a stochastic dynamics between phases, together with quantitative approximation bounds, when the metastable manifold is approxi-mately simplex-like [MRLG21]. Brown, Macieszczak, and Jack study metastability at the level of quantum trajectories [BMJ24], while Jin, Qiu, and Ma develop a discrete-time formulation based on quantum channels [JQM24]. However, the slow spectral projection need not be completely positive and trace preserving (CPTP). Consequently, the compression and reconstruction maps derived from it are not guaranteed to define valid reduced quantum states or physical transitions between them, as required by the first item of Theorem 1.1. Grigoletto, Sarlette, Ticozzi, and Viola construct CPTP reduction and reconstruction maps and a reduced Lindblad generator [GSTV26]. Their reduction onto the center manifold is asymptotically exact and includes persistent oscillations. For analytic perturbations, they retain the unperturbed 4 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+center manifold as the reduced space and give finite-time error bounds. Thus their construction uses a Lindblad generator and, in the perturbative setting, a reference dynamics. Our assumptions apply directly to an almost idempotent channel, and our theorem guarantees a (discrete-time) reduced transition channel. Kitaev relates almost-idempotent quantum channels to approximate C∗-algebras and obtains an approximate encoding–decoding factorization through a finite-dimensional algebra [Kit25, Theo-rems 10.5 and 12.3]. Both factors are quantum channels, and their composition on the reduced state space approximates the identity. He also asks whether an almost-idempotent UCP map is close to an exactly idempotent UCP map on the same matrix algebra [Kit25, Section 1.2]. We find that such a dimensionally uniform approximation is not generally possible (see a counterexample in Appendix C.3). With the additional bounded slow rank assumption, we make the recovery relation exact while preserving complete positivity, obtaining a nearby idempotent channel. We use this channel to define a QMSM and bound the error in its iterated dynamics. This exact recovery relation connects to operator-algebra quantum error correction (OAQEC), which protects an algebra of logical observables [KLP05, BKK07]. Here the logical algebra is determined by the metastable dynamics. In an alternative direction, one can ask whether metastable states enjoy any structural properties. Bergamaschi, Chen, and Vazirani show that approximately stationary states of a family of detailed-balanced quasi-local Lindbladians are spatially Markovian, have mutual information area laws, and admit recovery maps which can correct local errors [BCV25]. Yin, Surace, and Lucas formulate metastability through local energetic stability of pure states in closed many-body systems and derive prethermal lifetime bounds [YSL25]. 
+
+Organization of the paper. Section 3 states the main operator-algebraic theorems, from which the QMSM construction and reduced transition dynamics follow. Section 4 develops Kitaev’s approximate encoding–decoding factorization and the Stinespring representation, the main tools used in our proofs, and provides an overview of the proof strategy. Section 5 proves the main theorems through a controlled surgery on the Stinespring dilations of the encoder and decoder. Section 6 presents a weakly driven dissipative spin-chain example illustrating the framework. The appendices contain the technical spin-chain calculations and estimates, as well as the sharpness analysis for the error bounds. These materials are supplementary to the main development and may be skipped by readers not interested in those details. 
+
+Acknowledgments. This material is based upon work supported by the U.S. Department of Energy, Office of Science, Accelerated Research in Quantum Computing Centers, Quantum Utility through Advanced Computational Quantum Algorithms, grant no. DE-SC0025572 (H.L., L.L.), and by the Challenge Institute for Quantum Computation (CIQC) funded by National Science Foundation (NSF) through grant number OMA-2016245 (L.L.). L.L. is a Simons Investigator in Mathematics. H.L. thanks the Department of Computing and Mathematical Sciences at Caltech, where part of this work was done, for its hospitality. The authors thank Garnet Chan, Zherui Chen, Zhiyan Ding, Srivatsav Kunnawalkam Elayavalli, Marc Rieffel, and Yilun Yang for insightful discussions. 
+
+AI statement. We used OpenAI GPT-5.5, GPT-5.6 Sol, and GPT-6 Astra to explore candidate proof strategies, examples, and counterexamples, and to assist with manuscript preparation. We checked the AI-assisted material and take full responsibility for the content of this work. 2. Notations and preliminaries 
+
+2.1. Notations. Let Md = B(Cd), where B(H) denotes the algebra of all the bounded linear operators on the Hilbert space H, and let the set of density matrices (or state space) be Dd =
+
+{ρ ∈ Md : ρ ≥ 0, Tr ρ = 1 }. Let A ⊂ Md denote a unital ∗-subalgebra of the matrix algebra QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 5
+
+Md, which is a finite-dimensional C∗-algebra. A quantum channel is a completely positive, trace-preserving (CPTP) linear map between finite-dimensional C∗-algebras. We denote by Tr A the trace on a finite-dimensional C∗-algebra A, and define the Hilbert–Schmidt inner product on A by 
+
+⟨X, Y ⟩HS := Tr A(X∗Y ), with the Frobenius norm induced by it denoted by ∥A∥HS := pTr( A∗A).We use T∗ : A2 → A 1 for the Hilbert–Schmidt adjoint of a linear map T : A1 → A 2, satisfying 
+
+⟨T (X), Y ⟩A2 = ⟨X, T ∗(Y )⟩A1 for all X ∈ A 1, Y ∈ A 2. We say T : A1 → A 2 is unital if T (IA1 ) = IA2 .A map is unital and completely positive (UCP) if and only if its adjoint T∗ is CPTP. Physically, the formalism of quantum states and quantum channels corresponds to the Schrödinger picture, and the Heisenberg picture corresponds to the formalism of observables and their evolution under the UCP maps. If a map T : A → A is UCP and idempotent, then the range Ran T is a C∗-algebra with the Choi–Effros product X ◦ Y := T (XY ) [CE77] (see also [Pau03, Exercise 4.5]). For any abstract finite-dimensional C∗-algebra A ∼= L 
+
+> j
+
+Mnj , the trace is the sum of the ordinary traces on its blocks (2.1) Tr A := X
+
+> j
+
+Tr Mnj , where Tr is the ordinary trace on each block Mnj .up to the isomorphism. Channels on states are adjoint to unital completely positive (UCP) maps on observables, and ∥T∗∥⋄ = ∥T ∥cb [Wat18, Pau03], where (2.2) ∥T ∥cb := sup 
+
+> n≥1
+
+∥ id Mn ⊗T ∥, ∥T∗∥⋄ := sup 
+
+> n≥1
+
+∥ id Mn ⊗T∗∥1→1.
+
+Here ∥·∥ denotes the operator norm and also denotes the induced operator norm for maps between finite-dimensional C∗-algebras, when the context is clear. ∥T ∥a→b := sup X̸ =0  
+
+> ∥T(X)∥b
+> ∥X∥a
+
+denotes the induced operator norm for maps between C∗-algebras by the norms ∥·∥ a and ∥·∥ b, and ∥X∥1 := Tr[( X∗X)1/2] denotes the trace norm. We say E : Md → A is a conditional expectation onto the unital ∗-subalgebra A if E is a UCP map and satisfies the bimodular property E(XAY ) = XE (A)Y
+
+for all X, Y ∈ Md and A ∈ A , and in particular E(A) = A for all A ∈ A and E is idempotent [Car25]. We sometimes denote Tn := id Mn ⊗T for a linear map T between finite-dimensional C∗-algebras. We write f = O(g) if ∥f ∥ ≤ Cg for some constant C independent of the varying parameters in the stated regime, with g ≥ 0 and the norm understood from context. The notation O•(g) allows the implicit constant to depend on the parameters indicated by •, but not on the remaining varying parameters. 2.2. Quantum metastability, almost idempotency and Riesz projections. We start with our motivating example of the quantum metastability, and briefly explain the spectral projection idea for the reduced description as considered in [MGLG16, MGLG16] (see also [Kit25, Section 1.2]) before introducing the general framework in Section 3. In the Schrödinger picture, a quantum Markov semigroup has the form Ct = etL∗ , with the generator (or Lindbladian) L∗. The Heisenberg-picture semigroup Tt = Ct, ∗ = etL is given by the dual. At a time t0 in the metastable regime, fast components have decayed while the slow components have only changed little. This motivates us to use the almost idempotency of a quantum channel to describe the quantitative metastability (2.3) C = Ct0 , Φ = C∗ = Tt0 , η := ∥C 2 − C∥ ⋄ = ∥Φ2 − Φ∥cb ≪ 1.
+
+Intuitively, a metastable evolution channel C that satisfies η-almost idempotency changes very little when applied a second time. Figure 2 illustrates the corresponding separation between slow and fast eigenmodes. To obtain a reduced description of the metastable behavior, we additionally assume that the slow subspace for the channel is of constant dimension independent of the full system size. This is a natural condition both in classical and quantum metastable systems, as this ensures that only a small number of degrees of freedom govern the long-time dynamics after the fast relaxation. Formally, let 
+
+PΦ denote the projection onto the slow eigenspace of Φ, and the assumption is rank PΦ ≤ r. PΦ is 6 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE Riesz contour Re z     
+
+> Im z|z|= 1 fast eigenmodes slow eigenmodes
+> z= 1
+> stationary mode
+
+Figure 2. Schematic spectrum of a metastable evolution C.defined via the Riesz projection associated with the cluster of spec(Φ) near 1, which corresponds to the slow eigenvalues of Φ. Specifically, the Riesz projection in the Heisenberg picture is given by (2.4) PΦ = 12πi
+
+I
+
+> |z−1|=1 /2
+
+(z id −Φ) −1dz, (assume η < 1/4) .
+
+The condition η < 1/4 separates the fast spectrum from this contour. The following proposition gives an explicit functional-calculus formula and its bound for approximating Φ.
+
+Proposition 2.1 (Riesz projection of an almost-idempotent map) . Let Φ : Md → Md be UCP and suppose Φ2 − Φ cb < 14 . Then the Riesz projection PΦ of Φ onto the spectral component near 1 is well-defined, and 
+
+∥P Φ − Φ∥cb = O  Φ2 − Φ cb 
+
+.
+
+The proof is deferred to Appendix A. 3. Main results 
+
+To construct a QMSM, we seek an exactly idempotent quantum channel Q approximating the metastable evolution C. Equivalently (by taking adjoints), we seek a UCP map E = Q∗ that satisfies 
+
+E2 = E and approximates Φ = C∗. We call such a map a UCP idempotent . The slow spectral projection in Proposition 2.1 provides a projection close to Φ, but need not be completely positive, as the examples in Section 6 demonstrate. The range of a UCP idempotent can be identified with a finite-dimensional C∗-algebra, 1 which decomposes into a direct sum of matrix blocks by the Wedderburn structure theorem [Car25, Chapter 4]. A reduced state assigns a classical probability to each block and a quantum state within each block. Blocks larger than 1 × 1 can therefore serve as quantum memories. We develop the construction mainly in the Heisenberg picture, where cb-norm estimates are equivalent by adjoint duality to diamond-norm estimates for channels on states. We first state the QMSM construction in the Schrödinger picture (Theorem 3.2).           
+
+> 1In general, this uses the Choi–Effros product x◦y=E(xy )on Ran E[CE77]. The range need not be closed under ordinary matrix multiplication. For a conditional expectation onto an ambient algebra, the two products coincide. We refer readers to Section 3.2 for details. QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 7
+
+3.1. The construction of QMSMs. A QMSM compresses the initial state (physical state) by Q,evolves the reduced state (logical state) by the transition channel M, and reconstructs a physical state by R, as in Equation (3.1). (3.1) 
+
+Md Md
+
+Ran Q Ran Q
+
+> CQRM
+
+Definition 3.1 (Quantum Markov state model) . Let C : Md → Md be a channel and Q : Md → Md
+
+a CPTP idempotent. We define the quantum Markov state model associated with (C, Q) to have compression Q : Md → Ran Q, reconstruction given by the inclusion R : Ran Q ,→ Md, and reduced state space and transition channel (3.2) D⋆ = Q(Dd), M = QCR .
+
+The compression map Q : Md → Ran Q is the corestriction of the ambient idempotent Md → Md,obtained by changing only its codomain from Md to Ran Q. We use the same symbol for both maps. Reconstruction is inclusion because reduced states in D⋆ ⊂ Ran Q can already be represented as physical density matrices, so R(σ) = σ. Since Q2 = Q, we have QR = id Ran Q. For an initial state 
+
+ρ ∈ Dd, we reconstruct a physical state after k reduced steps by 
+
+ρ(k) = RM kQ(ρ), k = 0 , 1, . . . . 
+
+We show that, for any metastable channel C that is η-almost idempotent ( η ≪ 1), one can construct a QMSM that has all the desired properties for a reduced description of the metastable dynamics C. We construct Q in two ways. The global construction Qg controls the diamond-norm error on arbitrary input states with order η1/3. The metastable construction Qm controls the error as measured by states prepared by C with the improved order √η.
+
+Theorem 3.2 (QMSM theorem, rigorous version of Theorem 1.1) . For every constant r ∈ N≥1,there are ηr > 0 and Cr < ∞, independent of d, with the following property. Let C : Md → Md be a channel with 
+
+η = ∥C 2 − C∥ ⋄ < η r, r0 := rank PC ≤ r. 
+
+Then the following QMSMs exist. 
+
+(1) There are CPTP idempotents Qg, Qm such that 
+
+(3.3) rank Qg = r0, ∥Q g − C∥ ⋄ ≤ Crη1/3,
+
+rank Qm ≤ r0 + 1 , ∥Q mC − C∥ ⋄ ≤ Cr
+
+√η. 
+
+(2) For each ν ∈ { g, m}, there exists a finite-dimensional C∗-algebra Aν whose state space D(Aμ)
+
+is CPTP-isomorphic to Dν⋆ = Qν (Dd), i.e. the identifying channel on their linear spans has a CPTP inverse. In block coordinates, 
+
+(3.4) D(Aν ) = 
+
+M
+
+> j
+
+pj ρj : pj ≥ 0, X
+
+> j
+
+pj = 1 , ρ j ∈ Dnν,j 
+
+ , Aν ∼= M
+
+> j
+
+Mnν,j ,
+
+where P 
+
+> j
+
+n2 
+
+> ν,j
+
+= rank Qν . The probabilities pj describe classical sectors, while blocks of dimension greater than one can retain quantum information. 
+
+(3) The reduced channels Mν = Qν CR ν satisfy 
+
+(3.5) ∥R gMk 
+
+> g
+
+Qg − C k∥⋄ ≤ 2Crkη 1/3, k ≥ 1,
+
+∥R mMk
+
+> m
+
+QmC − C k+1 ∥⋄ ≤ Cr(k + 1) √η, k ≥ 0.8 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+We next state the main UCP theorems in Section 3.2, and Theorem 3.2 follows from the UCP results and the reduced-transition corollary in Section 3.2. The proof of Theorem 3.2 will be given at the end of Section 3.3. 3.2. UCP theorems and the metastable seminorm. We now state the operator-algebraic results proved in this paper. Throughout, Φ = C∗ and Eν = Qν, ∗, for ν ∈ { g, m}, relate the Heisenberg and Schrödinger pictures. 
+
+Theorem 3.3 (Main theorem, cb-norm version) . For every r ≥ 1, there are constants ηr > 0 and 
+
+Cr < ∞ such that the following holds. If Φ : Md → Md is UCP and 
+
+Φ2 − Φ cb ≤ η < η r, rank PΦ ≤ r, 
+
+then there is a UCP idempotent Eg : Md → Md satisfying 
+
+∥Eg − Φ∥cb ≲r η1/3.
+
+The proof of Theorem 3.3 is given in Section 5.3. 
+
+Remark 3.4 (Sharpness and obstruction) . The exponent 1/3 is sharp. Without bounded slow rank, no such dimension-independent approximation modulus tending to zero exists. See Appendix C for details. This gives a quantitative answer to Kitaev’s exact-rounding question [Kit25, Section 1.2] under the fixed slow-rank condition: an almost-idempotent UCP map Φ is close to an exactly idempotent UCP map Eg, with the bound Crη1/3 vanishing with the idempotency defect η and the constant independent of the ambient dimension d. The resulting projection is UCP. In particular, it retains complete positivity, which the spectral-rounding construction in Section 2.2 fails to guarantee. Theorem 3.3 does not require Ran Eg to be closed under ordinary matrix multiplication on Md. The Choi–Effros product x ◦ y = Eg(xy ) supplies its reduced C∗-algebra structure [CE77]. There are two aspects in Theorem 3.3 that can be improved by replacing the global cb-norm estimate with the measurement that only concerns the metastable states. (1) The error bound can be tightened from cube-root dependence on η to square-root dependence on η. (2) The range of the idempotent UCP can be ensured to be a subalgebra with respect to the ambient multiplication inherited from 
+
+Md, removing the need for the Choi–Effros product structure. Motivated by the measurement on the metastable states Equation (3.3), we introduce the metastable seminorm Definition 3.5 by the duality argument. 
+
+Definition 3.5 (Metastable seminorm) . Let Φ : Md → Md be UCP and let D⋆, Φ = Φ ∗(Dd) be the metastable states prepared by Φ∗. For Y ∈ Md, set the seminorm weighted by all the metastable states as (3.6) ∥Y ∥2,D⋆, Φ := sup 
+
+> σ∈D⋆, Φ
+
+pTr( σY ∗Y ) = ∥Φ( Y ∗Y )∥1/2.
+
+Passing to the Heisenberg picture, for a linear map T : Md → Md, write Φm = id Mm ⊗Φ and 
+
+Tm = id Mm ⊗T . Its complete weighted seminorm is defined as (3.7) ∥T ∥cb Φ,2 := sup 
+
+> m≥1
+
+sup 
+
+> ∥X∥≤ 1
+
+∥Tm(X)∥2,D⋆, Φm = sup 
+
+> m≥1
+
+sup 
+
+> ∥X∥≤ 1
+
+∥Φm(Tm(X)∗Tm(X)) ∥1/2.
+
+We call this the metastable seminorm throughout. We have the following hierarchy of norms: 
+
+Proposition 3.6. Let T : Md → Md be a linear map. Then 
+
+∥ΦT ∥cb ≤ ∥ T ∥cb Φ,2 ≤ ∥ T ∥cb .QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 9
+
+Proof. Put Y = Tm(X). Since Φm is UCP, Kadison–Schwarz inequality [Pau03, Car25] and positivity give 
+
+Φm(Y )∗Φm(Y ) ≤ Φm(Y ∗Y ) ≤ ∥ Y ∥2 Φm(I) = ∥Y ∥2 I. 
+
+Using ∥A∗A∥ = ∥A∥2, taking square roots, and then taking suprema over m ≥ 1 and ∥X∥ ≤ 1 yields the desired proposition. □
+
+With Proposition 3.6, together with the duality argument, we see that the metastable seminorm controls the diamond-norm distance measured on metastable states, which will be discussed in detail in Section 3.3. We next give the main theorem in the metastable-seminorm version. 
+
+Theorem 3.7 (Main theorem, metastable-seminorm version) . For every r ≥ 1 there are constants 
+
+ηr > 0 and Cr < ∞, independent of d, such that, if 
+
+η = Φ2 − Φ cb < η r, rank PΦ ≤ r, 
+
+there are a projection q ∈ Md, an ambient algebra N0 ⊂ qM dq whose unit is q and dimension 
+
+rank PΦ, and a conditional expectation Em : Md → N close to Φ, satisfying 
+
+(3.8) N = N0 ⊕ C(I − q), ∥Em − Φ∥cb Φ,2 ≲r
+
+√η, ∥Φ( I − q)∥ ≲r η. 
+
+The scalar summand is omitted if q = I. Thus N is an ambient algebra with dim N ≤ rank PΦ + 1 ≤
+
+r + 1 . The inequality ∥Φ( I − q)∥ ≲r η implies that every metastable state has only Or(η) weight on the scalar summand C(I − q) of N .
+
+Here the projection q selects a physical subspace qCd in which the reduced model represents the classical and quantum information. Specifically, this subspace supports a faithful representation of the logical observable algebra as a physical subalgebra N0 ⊂ qM dq, as described in Section 4.3. For a metastable state σ = Φ ∗(ρ) prepared from any initial density matrix ρ, we bound the probability of the I − q outcome in the projective measurement {q, I − q} by 
+
+Tr( σ(I − q)) = Tr( ρΦ( I − q)) ≤ ∥ Φ( I − q)∥ ≲r η. 
+
+Thus this measurement finds the prepared system in qCd with probability at least 1 − O r(η).When q̸ = I, the sector C(I − q) records the total probability in the complementary subspace, and ensures that the reduced range is a unital ambient algebra. By contrast, Theorem 3.3 does not require this additional sector, since the idempotent range of Eg need not be closed under ordinary multiplication in general. The examples in Appendix C also show that the metastable square-root exponent is optimal for ambient expectations, and that global cb approximation by an ambient conditional expectation is generally not possible. The proof is given in Section 5.5. 3.3. Reduced dynamics. We construct the reduced dynamics first in the Heisenberg picture with the UCP idempotent E. Let AE = Ran E be the reduced algebra (equipped with the Choi–Effros product if necessary).We let Q = E∗ : Md → Md, and as before, we also denote the corestriction 
+
+Q : Md → Ran Q. The structure classification for AE then gives the classification of the classical and quantum degrees of freedom in Ran Q in Theorem 3.2 (2). Let R : Ran Q ,→ Md be inclusion. Then M = QCR gives the reduced channel acting on the state space D⋆ ⊂ Q . Using the error bounds for UCP idempotents, we have the corresponding error bound for the reduced transition: 
+
+Corollary 3.8 (Reduced transition) . With the notations in Theorem 3.2, we have 
+
+• With δ = ∥Q − C∥ ⋄ = ∥E − Φ∥cb , for every k ≥ 1,
+
+(3.9) RM kQ − C k 
+
+> ⋄
+
+≤ 2kδ. 10 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+• With η = C2 − C ⋄ and ϵ = ∥E − Φ∥cb Φ,2 as defined in Equation (3.7) , for every k ≥ 0,
+
+(3.10) RM kQC − C k+1  
+
+> ⋄
+
+≤ (k + 1)( ϵ + η).
+
+Equation (3.9) applies to arbitrary initial states, while Equation (3.10) includes one propagation step 
+
+C and gives the estimate for metastable states. Proof. The reduced-space identification gives QR = id Ran Q. For k ≥ 1, with Q interpreted as a map Md → Md in the products on the right, 
+
+RM kQ = ( QCQ )k, QCQ − C = Q(C − Q )Q + ( Q − C ).
+
+The second expression has diamond norm at most 2δ. Telescoping powers of channels yields 
+
+(QCQ )k − C k 
+
+> ⋄
+
+≤ 2kδ , proving Equation (3.9). By cb–diamond duality and Proposition 3.6, 
+
+∥(Q − C )C∥ ⋄ = ∥Φ( E − Φ) ∥cb ≤ ∥ E − Φ∥cb Φ,2 = ϵ. 
+
+Also QC − C = ( Q − C )C + ( C2 − C ), so ∥QC − C∥ ⋄ ≤ ϵ + η by the triangle inequality. Finally, 
+
+RM kQC = ( QC )k+1 when writing only with the ambient maps for k ≥ 0, so another telescoping argument proves Equation (3.10). □
+
+Proof of Theorem 3.2. Apply Theorems 3.3 and 3.7 to Φ = C∗. Their ambient adjoints Qν = Eν, ∗ are CPTP idempotents. In the global construction, Eg = ∆ 0Υ0 and Υ0∆0 = id A give Ran Eg = ∆ 0(A),so rank Eg = dim A = r. The metastable construction has rank at most r + 1 . Cb–diamond duality gives the first bound in (3.3); Proposition 3.6 gives the second: 
+
+∥Q mC − C∥ ⋄ ≤ ∥ (Em − Φ) ∗Φ∗∥⋄ + η ≤ ∥ Em − Φ∥cb Φ,2 + η. 
+
+For each ν ∈ { g, m}, write E = Eν and Q = Qν = E∗ as maps Md → Md. The range AE = Ran E,with the Choi–Effros product when necessary [CE77], is a finite-dimensional C∗-algebra. The structure theorem [Car25, Theorem 4.28] gives a unital ∗-isomorphism θ and thus θ is UCP: 
+
+θν : AE −→ A ν := 
+
+> sν
+
+M
+
+> j=1
+
+Mnν,j , where 
+
+> sν
+
+X
+
+> j=1
+
+n2 
+
+> ν,j
+
+= dim AE = rank Q.
+
+We now identify the structures of the states in Dν⋆ = Q(Dd), as desired in Theorem 3.2 (2), using the canonical block trace Tr Aν = P 
+
+> j
+
+Tr nν,j on the abstract Aν . A logical block density matrix σ ∈ A ν
+
+specifies a physical state Jν (σ) ∈ Md by evaluating a physical observable X ∈ Md through its logical image E(X) ∈ A E :
+
+Tr d(Jν (σ)X) = Tr Aν (σθ ν (E(X))) .
+
+Conversely, define a channel Dν : Md → A ν on all physical matrices by evaluating each logical observable a ∈ A ν through its physical representative θ−1 
+
+> ν
+
+(a) ∈ A Eιν
+
+,→ Md, where ιν : AE ,→ Md is inclusion. For a physical state ρ, its block density matrix is specified by 
+
+Tr Aν (Dν (ρ)a) = Tr d(ρ(ιν θ−1 
+
+> ν
+
+)( a)) .
+
+These maps are CPTP because they are the adjoints of the UCP maps θν E and ιν θ−1 
+
+> ν
+
+, respectively. For a ∈ A ν and X ∈ Md, the two defining formulas give 
+
+Tr Aν (Dν Jν (σ)a) = Tr d(Jν (σ)θ−1 
+
+> ν
+
+(a)) = Tr Aν (σθ ν (E(θ−1 
+
+> ν
+
+(a)))) = Tr Aν (σa ),
+
+using E|AE = id , and 
+
+Tr d(Jν Dν (ρ)X) = Tr Aν (Dν (ρ)θν (E(X))) = Tr d(ρE (X)) = Tr d(Q(ρ)X),
+
+using Q = E∗ (as maps from Md to Md). Arbitrariness of a and X therefore gives Dν Jν (σ) = σ and 
+
+Jν Dν (ρ) = Q(ρ). Thus Jν is a CPTP isomorphism from the block-matrix space Aν onto Ran Q, with inverse given by Dν |Ran Q, since Q is idempotent and thus acts on Ran Q as the identity. Restricting QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 11 
+
+to positive matrices of trace one gives Jν (D(Aν )) = Q(Dd) = Dν⋆ . This proves (3.4). Corollary 3.8 gives (3.5), after enlarging Cr and taking ηr ≤ 1. □
+
+Remark 3.9 . An ambient range algebra also follows when the UCP idempotent preserves a faithful state: suppose E∗(ρ) = ρ with D ∋ ρ > 0. For x ∈ Ran E, Schwarz inequality gives E(x∗x)−x∗x ≥ 0,and Tr( ρ[E(x∗x) − x∗x]) = 0 . Faithfulness forces equality, also for xx ∗, so every x ∈ Ran E lies in the multiplicative domain of E [Pau03, Theorem 3.18]. Thus Ran E is closed under ordinary multiplication and E(axb ) = aE (x)b for a, b ∈ Ran E. Hence E is a ρ-preserving conditional expectation. For a prescribed ambient subalgebra N , Takesaki’s theorem characterizes the existence of a ρ-preserving conditional expectation by modular invariance: ρitN ρ−it = N for every t ∈ R
+
+[Tak72]. The metastable-seminorm construction in Theorem 3.7 bypasses these assumptions and directly constructs N0 ⊂ qM dq and the ambient expectation onto N0 ⊕ C(I − q).4. Approximate encoding–decoding factorization and Stinespring representations 
+
+4.1. Kitaev’s approximate encoding–decoding factorization. The proof relies on Kitaev’s approximate physical factorization in Theorem 4.3 through a small logical algebra A for an almost-idempotent UCP map Φ [Kit25]. ∆ is the decoding map A → Md and Υ is the encoding map 
+
+Md → A for observables in the Heisenberg picture. The approximate factorization means that (4.1) Φ ≈ ∆Υ , Υ∆ ≈ id A .
+
+We aim to repair the recovery relation while keeping both Υ0 and ∆0 UCP: (4.2) Υ∆ ≈ id A → Υ0∆0 = id A .
+
+Once this surgery is complete, E := ∆ 0Υ0 is an exactly idempotent UCP map. Moreover, AE =Ran E equipped with the Choi–Effros product is canonically ∗-isomorphic to the logical algebra A,so Kitaev’s logical algebra is identified with the one discussed in Section 3.3. More precisely, 
+
+Proposition 4.1 (Logical algebra of the repaired idempotent) . Let Υ0 : Md → A , ∆0 : A → Md be UCP maps satisfying Υ0∆0 = id A, and E = ∆ 0Υ0 : Md → Md. Then AE = Ran E equipped with the Choi–Effros product is ∗-isomorphic to the logical algebra A via ∆0 : A → A E .Proof. We identify the logical algebra A with the range algebra AE = Ran E from Section 3.2 after surgery. We show that ∆0 : A → A E is a unital ∗-isomorphism for the Choi–Effros product, with inverse Υ0|AE . Indeed, E = ∆ 0Υ0 and Υ0∆0 = id A give E∆0 = ∆ 0, Ran E = ∆ 0(A), and 
+
+∆0 : A → Ran E. Applying Kadison–Schwarz to both maps gives 
+
+a∗a = [Υ 0(∆ 0(a))] ∗Υ0(∆ 0(a)) ≤ Υ0(∆ 0(a)∗∆0(a)) Υ0 is positive 
+
+≤ Υ0∆0(a∗a) = a∗a. 
+
+The same equality for aa ∗ places ∆0(a) in the multiplicative domain of Υ0 [Pau03, Theorem 3.18]. Hence, for a, b ∈ A , by the definition of the Choi–Effros product, 
+
+∆0(a) ◦ ∆0(b) := E(∆ 0(a)∆ 0(b)) = ∆ 0[(Υ 0∆0)( a)(Υ 0∆0)( b)] = ∆ 0(ab ).
+
+Thus ∆0 is a unital ∗-homomorphism. Together with bijectivity, this proves Proposition 4.1. □
+
+Remark 4.2 (Ambient identification in the metastable construction) . In the metastable construction of Theorem 3.7, the faithful representation w : A → N 0 ⊂ qM dq identifies the logical algebra directly with a subalgebra equipped with ordinary matrix multiplication on Md. The full range of Em is the physical subalgebra N0 ⊕ C(I − q), so no Choi–Effros product is needed. We keep the encoding–decoding terminology for these factorization maps and their Stinespring dilations. We first state the approximate factorization result as the following consequence of [Kit25, Theorem 12.3]. 12 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+Theorem 4.3 (Approximate factorization) . There is a universal constant c > 0 such that, whenever 
+
+Φ : Md → Md is UCP and 
+
+Φ2 − Φ cb ≤ η < η 0,
+
+there are a finite-dimensional C∗-algebra A with dim A = rank PΦ and UCP maps 
+
+∆ : A → Md, Υ : Md → A 
+
+such that 
+
+(4.3) ∥∆Υ − Φ∥cb ≤ cη, ∥Υ∆ − id A∥cb ≤ cη. 
+
+Proof. In the notation of [Kit25], 
+
+eΦ = PΦ, Aapp = Ran eΦ = Ran PΦ.
+
+Theorem 10.5 of [Kit25] gives a genuine C∗-algebra B and an extended O(η)-isomorphism v : B → Aapp . Here “ O(η)-isomorphism” includes bijectivity [Kit25, Definition 2.2 and Section 10] , so v is a linear isomorphism and 
+
+dim B = dim Aapp = rank PΦ.
+
+More explicitly, let ι : Aapp ,→ Md be the inclusion and regard PΦ as a map into Aapp . [Kit25] first defines 
+
+e∆ = ιv : B → Md, eΥ = v−1PΦ : Md → B .
+
+Since PΦ|Aapp = id Aapp ,
+
+e∆ eΥ = PΦ, eΥ e∆ = id B .
+
+These maps are constructed from v and v−1 and need not be UCP. Eqs. (12.31)–(12.32) and (12.40)–(12.42) replace them with UCP maps having the same domains and codomains, 
+
+e∆ : B → Md 7 −→ ∆ : B → Md, eΥ : Md → B 7 −→ Υ : Md → B .
+
+The linear isomorphism v and the algebra B are not changed. Thus the original linear bijection 
+
+v : B → A app and the dimension equality above remain valid. The theorem statement simply renames B as A.After enlarging c if necessary, estimate (12.24) of [Kit25] gives 
+
+∥Υn(∆ n(X)∆ n(Y )) − XY ∥ ≤ cη ∥X∥ ∥ Y ∥
+
+for every n and X, Y ∈ Mn ⊗ A . Set Y = In ⊗ IA. Since ∆ is unital, ∆n(Y ) = In ⊗ Id, and hence 
+
+∥(Υ∆) n(X) − X∥ ≤ cη ∥X∥ .
+
+Taking the supremum over n and nonzero X gives the second estimate in Equation (4.3). □
+
+4.2. Stinespring representations and matrix blocks. Stinespring representations express a completely positive map through an isometry into a larger Hilbert space and a ∗-homomorphism on the larger space [Pau03, Theorem 4.1]. See also [Kit25, Section 11.1]. In particular, for UCP maps between matrix algebras, the unital ∗-homomorphism can be taken as an amplification x 7 → x ⊗ IE
+
+[Pau03, Exercise 4.11]. Specifically, if Φ : Md1 → Md2 is UCP, then there exists a Hilbert space E
+
+and an isometry V such that (4.4) Φ( x) = V ∗(x ⊗ IE )V, V ∗V = Id2 , V : Cd2 → Cd1 ⊗ E .
+
+Writing V ξ = Pℓk=1 Vkξ ⊗ ek in an orthonormal environmental basis gives the Kraus representation 
+
+Φ( x) = 
+
+> ℓ
+
+X
+
+> k=1
+
+V ∗ 
+
+> k
+
+xV k, Vk : Cd2 → Cd1 , X
+
+> k
+
+V ∗ 
+
+> k
+
+Vk = Id2 .QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 13 
+
+The adjoint channel acts as the Φ∗(ρ) = Tr E (V ρV ∗) where Tr E : Md1 ⊗ ME → Md1 is the partial trace over the environment, which can be easily seen from the following computation: 
+
+⟨Φ( x), y ⟩HS = Tr( V ∗(x ⊗ IE )V y ) = Tr(( x ⊗ IE )( V yV ∗)) = Tr( x Tr E (V yV ∗)) = ⟨x, Tr E (V yV ∗)⟩HS .
+
+The structure theorem for finite-dimensional C∗-algebras gives a ∗-isomorphism A ∼= Lsj=1 Mnj
+
+[Car25, Theorem 4.28]. We use this identification to write a = ( aj ) and introduce the coordinate map and its trace adjoint: (4.5) 
+
+pr j : M
+
+> i
+
+Mni → Mnj , pr j (a) = aj ,
+
+pr j, ∗ : Mnj → M
+
+> i
+
+Mni , pr j, ∗(b) = (0 , . . . , 0, b, 0, . . . , 0) .
+
+Here the traces are defined in Equation (2.1). In particular, ⟨a, b ⟩A = P 
+
+> j
+
+Tr( a∗ 
+
+> j
+
+bj ). For a UCP map from A to Md, a Stinespring representation has the block form (4.6) Φ( a) = W ∗π(a)W, π(a) = M
+
+> j
+
+(aj ⊗ IEj ), W : Cd → G := M
+
+> j
+
+(Cnj ⊗ E j ).
+
+This representation keeps every logical matrix factor intact. The multiplicity spaces Ej carry the environmental freedom. We can easily see Equation (4.6) by identifying A ∼= L 
+
+> j
+
+Mnj and applying Equation (4.4) block-wise. 4.3. The physical picture of the surgery. Before presenting the rigorous proof in Section 5, we outline its strategy. We start from the approximate encoding–decoding factorization in Section 4.1 and repair the Stinespring representations of the UCP maps, introduced in Section 4.2, to restore the exact recovery relation. Since the encoding map Υ : Md → A ∼= L 
+
+> j
+
+Mnj sends the physical input to each logical block 
+
+Mnj , we could write Υj = pr j Υ in block coordinates. The Stinespring representations of ∆ and Υj
+
+are given by (4.7) ∆( a) = W ∗π(a)W, Υj (X) = V ∗ 
+
+> j
+
+(X ⊗ IYj )Vj , Zj = ( W ⊗ IYj )Vj .
+
+Here Vj : Cnj → Cd ⊗ Y j is an isometry, and Zj dilates the composite Υj ∆. We call Ej the decoding environment (the multiplicity space of π) and Yj the encoding environment . Correspondingly, we call the Stinespring dilations W and Vj the decoding dilation and encoding dilation , respectively. If δ = ∥Υ∆ − id A ∥cb is small, then each Υj ∆ is close to pr j . By Lemma 5.3, Zj is therefore 
+
+OA(√δ)-close to a product isometry Jj ξ = ξ ⊗ ζj in the jth representation block. The joint environmental unit vector ζj ∈ E j ⊗ Y j is independent of the logical input ξ. Intuitively, this means that approximate recovery nearly decouples the logical information from both environments. Figure 3 summarizes the coupled repair of the decoding and encoding dilations. Although the product dilation Jj keeps the exact logical input ξ ∈ Cnj , simply replacing Zj by Jj
+
+does not yield the exact recovery relation in Equation (4.2). Indeed, it need not factor through the original decoding isometry W since its range need not lie in Ran W ⊗ Y j . To address this mismatch, we must repair the encoding and decoding maps together. With P = W W ∗, the leakage measuring the failure of Ran Jj to lie in Ran W ⊗ Y j is controlled by 
+
+∥(( I − P ) ⊗ I)Jj ∥ ≤ ∥ Jj − Zj ∥ ≲A
+
+√δ. 
+
+For the global cb-norm estimate, we first apply Lemma 5.5 to the decoding-environment states 
+
+ρj := Tr Yj |ζj ⟩⟨ ζj | by tracing out Yj for ζj ∈ E j ⊗ Y j . At a cutoff threshold τ , this gives projections qj
+
+on Ej and nearby states ρ0 
+
+> j
+
+supported on qj Ej . This identifies a subspace G0 := L 
+
+> j
+
+(Cnj ⊗ qj Ej ) ⊂ G 
+
+that preserves every logical matrix factor while restricting the decoding environments. Its leakage obeys ∥(I − P )|G0 ∥ = OA(√τ ), and the change in each environmental state is ∥ρ0 
+
+> j
+
+− ρj ∥1 = OA(δ/τ ).Next, Lemma 5.7 gives a small unitary rotation U that replaces the decoding isometry by W0 = U W 14 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE cutoff rotate purify match 
+
+Figure 3. A schematic illustration of the surgery on the decoding and encoding dilations. A cutoff by {qj } selects the repaired decoding space G0 and nearby environmental states ρ0 
+
+> j
+
+. Rotation ensures G0 ⊆ Ran W0, and purification yields the repaired product isometries J0 
+
+> j
+
+ξ = ξ ⊗ ζ0 
+
+> j
+
+. The nested range inclusions then allow the pullback that defines V 0 
+
+> j
+
+, matching the two repaired dilations and yielding 
+
+Υ0∆0 = id A.and ensures G0 ⊆ Ran W0. Finally, we purify ρ0 
+
+> j
+
+using a new encoding environment Y0 
+
+> j
+
+. This gives matching product isometries J0 
+
+> j
+
+ξ = ξ ⊗ ζ0 
+
+> j
+
+with ζ0 
+
+> j
+
+∈ qj Ej ⊗ Y 0 
+
+> j
+
+, so the pullback V 0 
+
+> j
+
+= ( W ∗ 
+
+> 0
+
+⊗ IY0 
+
+> j
+
+)J0
+
+> j
+
+defines the repaired encoding isometry. This yields the exactly idempotent UCP map Eg
+
+(4.8) (W, {Vj }) cutoff, rotation 
+
+−−−−−−−−−→ (W0, {V 0 
+
+> j
+
+}), Υ0∆0 = id A, Eg := ∆ 0Υ0.
+
+The errors in the UCP maps are controlled by two contributions: OA(δ/τ ) from changing the decoding-environment states and OA(√τ ) from rotating the decoder. Choosing τ ∼ δ2/3 balances them and gives the cube-root estimate. The surgery modifies the Stinespring isometries. The stability estimate in Lemma 5.8 then transfers these perturbation bounds to cb-norm bounds for the UCP maps. As discussed in Section 3.2, we seek to improve two aspects of Theorem 3.3: (1) the cube-root error bound, and (2) the possible need for the Choi–Effros product on the range of the resulting projection. The surgery picture explains how the metastable seminorm in Definition 3.5 yields both a square-root error bound and a range closed under ordinary matrix multiplication: (1) We keep the cutoff threshold τ fixed. The decoding-environment states then change by 
+
+OA(δ), and purifications in the original encoding environments Yj can be chosen with 
+
+∥ζ0 
+
+> j
+
+− ζj ∥ = OA(√δ). Although U − I need not be globally small, its action on the relevant product vectors J0 
+
+> j
+
+ξ is of the same square-root order. (2) We pull back G0 through the repaired encoding isometry W0, obtaining the physical sector 
+
+qCd = W ∗ 
+
+> 0
+
+G0, which supports a faithful representation w(A) ⊂ qM dq of the logical algebra 
+
+A. Thus w(A) is realized as an ordinary matrix subalgebra with the ambient product. Since the encoder assigns only ∥Υ( I − q)∥ = OA(δ) weight to the complementary sector, its action there can be replaced by a scalar component C(I − q) at a cost of only OA(√δ)
+
+in the metastable seminorm. Equivalently, in the Schrödinger picture, the two-outcome measurement {q, I − q} finds the system in the sector carrying the logical algebra with probability at least 1 − O r(η), as discussed in Theorem 3.7. The resulting conditional expectation has range w(A) ⊕ C(I − q) ⊂ Md, an ordinary physical matrix subalgebra QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 15 (a) (b) repaired dilation (c) (d) complete 
+
+Figure 4. A schematic illustration of the ambient completion in the metastable seminorm, read clockwise from (a) to (d). The projection q identifies the physical subspace that corresponds to the cutoff dilation space G0 ⊂ G . The decomposition determined by q gives ∆0 = w + r. Replacing the latter by a scalar component yields the conditional expectation Em onto the ambient subalgebra w(A) ⊕ C(I − q).requiring no Choi–Effros construction. This completion preserves the improved error bound and yields the stronger algebraic conclusion. Figure 4 illustrates this ambient completion. 5. Surgery on the approximate idempotent factorization 
+
+We keep the physical-picture roles from Section 4.3 in mind. The following proposition formalizes the surgery procedure for obtaining an exact idempotent factorization from an approximate one, with error bound in the ordinary cb-norm or the metastable seminorm. 
+
+Proposition 5.1 (Surgery with cb-norm error) . Let A be a finite-dimensional C∗-algebra. There are constants dA, K A > 0 that only depend on the structure of A, specifically, only the dimension and the largest direct summand in the decomposition of A, with the following property. If ∆ : A → Md
+
+and Υ : Md → A are UCP and 
+
+δ = ∥Υ∆ − id A∥cb < d A,
+
+then there are UCP maps ∆0, Υ0 such that 
+
+(5.1) Υ0∆0 = id A
+
+and 
+
+(5.2) ∥∆0 − ∆∥cb + ∥Υ0 − Υ∥cb ≤ KAδ1/3.
+
+Proposition 5.2 (Surgery with metastable-seminorm error) . Under the same setup as in Propo-sition 5.1, there are UCP maps ∆0 : A → Md, Υ0 : Md → A , a projection q ∈ Md, a faithful representation w : A → qM dq with unit q, and a UCP conditional expectation Em onto the subalgebra 
+
+w(A) ⊕ C(I − q) of Md, satisfying 
+
+Υ0∆0 = Υ 0w = id A, Υ0(I − q) = 0 , q∆0(a) = w(a) = ∆ 0(a)q (a ∈ A ),
+
+(5.3) ∥Υ0 − Υ∥cb ≤ KA
+
+√δ, ∥Υ( I − q)∥ ≤ KAδ. 16 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+Writing T = Em − ∆Υ , Tm = id Mm ⊗T , and Υm = id Mm ⊗Υ, one also has, for every m and 
+
+X ∈ Mm ⊗ Md,
+
+(5.4) ∥Υm(Tm(X)∗Tm(X)) ∥1/2 ≤ KA
+
+√δ ∥X∥ .
+
+The scalar summand is omitted if I − q = 0 .
+
+We will first establish some auxiliary lemmas in Section 5.5. The main task in this section is to prove the surgery results Propositions 5.1 and 5.2, which will be addressed in Sections 5.2 and 5.4 respectively. The proofs of the main theorems Theorems 3.3 and 3.7 are applications of the surgery results above, which we will present in Section 5.3 and Section 5.5 respectively. 5.1. Auxiliary lemmas. We state some abstract lemmas that will be used in the proof of Proposi-tion 5.1. We first show that the approximate recovery property implies that the isometry Zj dilating 
+
+Γj ∆ is close to a product isometry Jj : ξ 7 → ξ ⊗ ζj on the jth logical block. 
+
+Lemma 5.3 (Product dilations on blocks) . Let A = L 
+
+> i
+
+Mni , let π(x) = L
+
+> i
+
+(xi ⊗ IEi ), and write 
+
+pr j (x) = xj . For each j, suppose that the isometry 
+
+Zj : Cnj −→ M
+
+> i
+
+Cni ⊗ E i
+
+!
+
+⊗ Y j
+
+satisfies 
+
+Z∗ 
+
+> j
+
+(π( · ) ⊗ IYj )Zj − pr j cb ≤ δ < 1.
+
+Then there are unit vectors ζj ∈ E j ⊗ Y j such that, for Jj ξ = ξ ⊗ ζj in the jth summand, 
+
+(5.5) ∥Zj − Jj ∥ ≤ p2nj δ. 
+
+In order to prove the product-dilation lemma on blocks, we first establish a simple version Lemma 5.4 of the result for a single block, with possible leakage. 
+
+Lemma 5.4. Let V : Cd → (Cd ⊗ E 1) ⊕ E 2 be an isometry, written as V ξ = V1ξ ⊕ V2ξ. Suppose that the completely positive map T : Md → Md is close to the identity: 
+
+T (x) = V ∗ 
+
+> 1
+
+(x ⊗ IE1 )V1, ∥T − id Md ∥cb ≤ δ < 1.
+
+Then there exists a unit vector ζ ∈ E 1 such that 
+
+Jζ ξ = ( ξ ⊗ ζ) ⊕ 0, ∥V − Jζ ∥ ≤ √2dδ. 
+
+Proof. Set 
+
+Ω = 1
+
+√d
+
+> d
+
+X
+
+> a=1
+
+ea ⊗ ea, v = ( I ⊗ V )Ω , v1 = ( I ⊗ V1)Ω , σ = Tr E1 |v1⟩⟨ v1| .
+
+Here {ea}da=1 is the standard basis of Cd. Now, let Eab denote the elementary matrix with 1 in the 
+
+(a, b ) entry and zeros elsewhere. The dual is T∗(ω) = Tr E1 (V1ωV ∗ 
+
+> 1
+
+), so 
+
+σ = 1
+
+d
+
+X
+
+> a,b
+
+Tr E1 (Eab ⊗ V1Eab V ∗ 
+
+> 1
+
+) = 1
+
+d
+
+X
+
+> a,b
+
+Eab ⊗ T∗(Eab )= (id Md ⊗T∗)
+
+ X 
+
+> a,b
+
+Eab ⊗ Eab 
+
+
+
+= ( T∗)d(|Ω⟩⟨ Ω|).
+
+The cb–diamond duality gives (5.6) ∥σ − | Ω⟩⟨ Ω|∥ 1 ≤ ∥ T∗ − id Md ∥⋄ = ∥T − id Md ∥cb ≤ δ. 
+
+Set ζ′ = ( ⟨Ω| ⊗ IE1 )v1. By the definition of partial trace and Equation (5.6), 
+
+ζ′ 2 = ⟨v1, (|Ω⟩⟨ Ω| ⊗ IE1 )v1⟩ = Tr[( |Ω⟩⟨ Ω| ⊗ IE1 ) |v1⟩⟨ v1|] = ⟨Ω, σ Ω⟩ ≥ 1 − ∥ σ − | Ω⟩⟨ Ω|∥ 1 ≥ 1 − δ. QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 17 
+
+Thus ζ = ζ′/ ∥ζ′∥ is well defined. Since V is an isometry, the full vector v has norm one, including its leakage component. Moreover, ⟨v, (Ω ⊗ ζ) ⊕ 0⟩ = ⟨v1, Ω ⊗ ζ⟩ = ⟨ζ′, ζ ⟩ = ∥ζ′∥, and hence 
+
+∥v − ((Ω ⊗ ζ) ⊕ 0) ∥2 = 2 − 2 ζ′ ≤ 2(1 − √1 − δ) ≤ 2δ. 
+
+Finally, orthogonality of the ea gives 
+
+∥V − Jζ ∥2 ≤ ∥ V − Jζ ∥2HS =
+
+> d
+
+X
+
+> a=1
+
+∥(V − Jζ )ea∥2 = d ∥(I ⊗ (V − Jζ ))Ω ∥2 ≤ 2dδ. 
+
+□
+
+Proof of Lemma 5.3. Recall from Equation (4.5) that pr j, ∗ : Mnj → A is the canonical inclusion into the jth block of A. With the jth representation block placed first, we have 
+
+π(0 ⊕ · · · ⊕ x ⊕ · · · ⊕ 0) ⊗ IYj = π(pr j, ∗(x)) ⊗ IYj = ( x ⊗ IEj ⊗Y j ) ⊕ 0.
+
+Since pr j, ∗ is a completely-isometric map, the assumption implies 
+
+Z∗
+
+> j
+
+ ( · ⊗ IEj ⊗Y j ) ⊕ 0Zj − id Mnj cb = (Z∗ 
+
+> j
+
+(π(·) ⊗ IYj ) − pr j ) ◦ pr j, ∗ cb ≤ δ. 
+
+Apply Lemma 5.4 with its parameters chosen as d = nj , V = Zj , E1 = Ej ⊗Y j , E2 = L 
+
+> i̸=j
+
+Cni ⊗E i ⊗Y j .With this decomposition we write Zj = V1 ⊕ V2 and thus Lemma 5.4 applies to the map Tj (x) = 
+
+V ∗ 
+
+> 1
+
+(x ⊗ IEj ⊗Y j )V1. Undoing the block permutation gives the isometry Jj , whose only nonzero component ξ ⊗ ζj ∈ E j ⊗ Y j is in the jth block, with the error bound ∥Zj − Jj ∥ ≤ p2nj δ. □
+
+Next we give a generic cutoff approach to density matrices. This is a Markov’s inequality-type estimate. In the application, ρ describes the environmental state used by the product encodings 
+
+{Jj }, and a positive operator D measures leakage out of the decoder’s physical dilation range. The lemma replaces ρ by a nearby state ρ0 supported on a subspace projection q where leakage D is uniformly bounded. 
+
+Lemma 5.5. Let D ∈ Md, D ≥ 0, let ρ ∈ D be a density matrix. For every τ > Tr( ρD ), there are a projection q and a density matrix ρ0 ∈ D, supported on q, such that 
+
+(5.7) qDq ≤ τ q, 
+
+
+
+1 − Tr( ρD )
+
+τ
+
+
+
+ρ0 ≤ ρ, ∥ρ − ρ0∥1 ≤ 2 Tr( ρD )
+
+τ .
+
+Proof. Set 
+
+H = ρ1/2(D − τ I )ρ1/2, p = 1 (−∞ ,0] (H), ep = ρ1/2pρ 1/2,
+
+where 1(−∞ ,0] refers to the spectral projector of the self-adjoint operator H for the interval (−∞ , 0] .For every v = ρ1/2pev ∈ Ran( ρ1/2p),
+
+⟨v, (D − τ I )v⟩ = Tr( ρ1/2p |ev⟩⟨ ev| pρ 1/2(D − τ I )) = Tr( pHp |ev⟩⟨ ev|) ≤ 0.
+
+Let q be the support projection of ep, so that the closure of Ran( ρ1/2p) is Ran( q). The above inequality grants qDq ≤ τ q . If 
+
+β = 1 − Tr ep = Tr(( I − p)ρ),
+
+then positivity of (I − p)H(I − p) gives 
+
+τ β = Tr 
+
+
+
+(I − p)ρ1/2τ Iρ 1/2(I − p)
+
+
+
+≤ Tr 
+
+
+
+(I − p)ρ1/2Dρ 1/2(I − p)
+
+
+
+≤ Tr( ρD ).
+
+Since 0 ≤ ep ≤ ρ, the state ρ0 = ep/ (1 − β) satisfies (5.8) 
+
+
+
+1 − Tr( ρD )
+
+τ
+
+
+
+ρ0 ≤ (1 −β)ρ0 = ep ≤ ρ, ∥ρ − ρ0∥1 ≤ ∥ ρ − ep∥1 +∥ep − ρ0∥1 = 2 β ≤ 2 Tr( ρD )
+
+τ .
+
+□18 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+The following estimate can be viewed as a version of Hayashi’s pinching inequality [OH01, Appendix B, Lemma 2]. The error bound depends only on the logical dimension n, not on the size k
+
+of the environment. 
+
+Lemma 5.6. For every positive A ∈ Mn ⊗ Mk,
+
+(5.9) A ≤ nI n ⊗ Tr Cn A. 
+
+Proof. Let A = |ψ⟩⟨ ψ| and take a Schmidt decomposition 
+
+ψ =
+
+> rψ
+
+X
+
+> ℓ=1
+
+pλℓ eℓ ⊗ fℓ, rψ ≤ n, λℓ ≥ 0.
+
+Then Tr Cn A = P 
+
+> ℓ
+
+λℓ |fℓ⟩⟨ fℓ|. For every v ∈ Cn ⊗ Ck, Cauchy–Schwarz gives 
+
+⟨v, Av ⟩ ≤ rψ
+
+X
+
+> ℓ
+
+λℓ|⟨ eℓ ⊗ fℓ, v ⟩| 2 ≤ rψ⟨v, (In ⊗ Tr Cn A)v⟩ ≤ n⟨v, (In ⊗ Tr Cn A)v⟩.
+
+Thus A ≤ nI n ⊗ Tr Cn A. Summing a rank-one spectral decomposition proves Equation (5.9) for general A ≥ 0. □
+
+In our application, the cutoff product sector is only approximately contained in the physical dilation range. A unitary rotation makes this inclusion exact while preserving the Stinespring form, hence complete positivity and unitality. The required finite-dimensional direct rotation follows from singular-value decomposition (SVD) constructions and subspace-rotation estimates (see, e.g., [SS90, Theorems 5.2 and 5.5] and [DK70, Kat95]). 
+
+Lemma 5.7. Let P be an orthogonal projection on a finite-dimensional Hilbert space and let G0 be a subspace such that 
+
+∥(I − P )|G0 ∥ ≤ ε < 1.
+
+Then there is a unitary U such that 
+
+(5.10) G0 ⊆ U Ran P, ∥U − I∥ ≤ 2ε. 
+
+Proof. If v ∈ G 0 and P v = 0 , then ∥(I − P )v∥ = ∥v∥, so v = 0 . Thus P |G0 is injective and 
+
+G′ 
+
+> 0
+
+= P G0 ⊆ Ran P has the same dimension as G0. Moreover, PG′ 
+
+> 0
+
+v = P v for v ∈ G 0.Take an SVD of P |G0 : G0 → G ′
+
+> 0
+
+. Since the singular values are all at most 1, this gives orthonormal bases sk ∈ G 0 and rk ∈ G ′
+
+> 0
+
+, with 0 ≤ θk < π/ 2, such that 
+
+P sk = cos θk rk, sin θk = ∥(I − P )sk∥ ≤ ε. 
+
+For θk > 0, set 
+
+tk = sk − cos θk rk
+
+sin θk
+
+∈ ker P, sk = cos θk rk + sin θk tk.
+
+The vectors tk are orthonormal because 
+
+⟨(I − P )si, (I − P )sj ⟩ = δij sin 2 θi.
+
+Each pair rk ∈ Ran P, tk ∈ ker P forms an orthonormal basis for a plane, and the above ensures that these planes are all mutually orthogonal. Define 
+
+U rk = cos θk rk + sin θk tk = sk, U tk = − sin θk rk + cos θk tk
+
+on each nontrivial plane, and let U be the identity on the orthogonal complement. For θk = 0 , U
+
+fixes rk = sk. In the ordered basis (rk, tk),
+
+Uk − I2 =
+
+cos θk − 1 − sin θk
+
+sin θk cos θk − 1
+
+
+
+, (Uk − I2)∗(Uk − I2) = 4 sin 2(θk/2) I2.QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 19 
+
+Therefore 
+
+∥U − I∥ = 2 max  
+
+> k
+
+sin( θk/2) ≤ 2 max  
+
+> k
+
+sin θk ≤ 2ε. 
+
+Since U G′ 
+
+> 0
+
+= G0 and G′ 
+
+> 0
+
+⊆ Ran P , Equation (5.10) follows. □
+
+With these lemmas in hand, we are ready to do the surgery to the Stinespring dilations to obtain the exact idempotent UCP. The next estimate is the Schrödinger-picture form of the continuity theorem for Stinespring dilations [KSW08, Theorem 1]. It supplies the operational error bound: nearby isometries produce nearby channels after the environment is discarded, uniformly over reference systems. We will use it for the repaired decoder and encoder. 
+
+Lemma 5.8 (Continuity under Stinespring perturbations) . Let V1, V 2 : H → U ⊗ W be isometries and define 
+
+CV1 (ω) = Tr W (V1ωV ∗ 
+
+> 1
+
+), CV2 (ω) = Tr W (V2ωV ∗ 
+
+> 2
+
+).
+
+Then 
+
+(5.11) ∥CV1 − CV2 ∥⋄ ≤ 2 ∥V1 − V2∥ .
+
+Proof. For any reference space H′ and density matrix ω on H′ ⊗ H , trace-norm contractivity under partial trace [Wat18, Eq. (1.183)] and ∥AXB ∥1 ≤ ∥ A∥ ∥ X∥1 ∥B∥ give 
+
+∥Tr W [( IH′ ⊗ V1)ω(IH′ ⊗ V ∗ 
+
+> 1
+
+) − (IH′ ⊗ V2)ω(IH′ ⊗ V ∗ 
+
+> 2
+
+)] ∥1
+
+≤  ∥V1 − V2∥ ∥ V1∥ + ∥V2∥ ∥ V1 − V2∥ ∥ω∥1 = 2 ∥V1 − V2∥ .
+
+Taking the supremum over H′ and ω proves Equation (5.11). □
+
+5.2. Proof of Proposition 5.1. 
+
+Proof of Proposition 5.1. If δ = 0 , take ∆0 = ∆ and Υ0 = Υ . Henceforth assume δ > 0 and write 
+
+A =
+
+> s
+
+M
+
+> j=1
+
+Mnj , n∗ = max  
+
+> j
+
+nj , dim A =
+
+> s
+
+X
+
+> j=1
+
+n2 
+
+> j
+
+.
+
+Step 0: Stinespring setup (see Sections 4.2 and 4.3) 
+
+Recall from Section 4.2 that we write the Stinespring dilation of ∆ as (5.12) ∆( x) = W ∗π(x)W, π(x) = 
+
+> s
+
+M
+
+> j=1
+
+(xj ⊗ IEj ), on G =
+
+> s
+
+M
+
+> j=1
+
+(Cnj ⊗ E j ),
+
+where W : Cd → G is an isometry. Put P = W W ∗ ∈ B (G). The jth component Υj : Md → Mnj
+
+given by Υj = pr j ◦Υ is also UCP and so admits a similar decomposition: (5.13) Υj (a) = V ∗ 
+
+> j
+
+(a ⊗ IYj )Vj on Cd ⊗ Y j ,
+
+where Vj : Cnj → Cd ⊗ Y j is an isometry. We may then construct an isometry Zj : Cnj → G ⊗ Y j by (5.14) Zj = ( W ⊗ IYj )Vj ,
+
+which then enjoys the property Z∗ 
+
+> j
+
+(π( · ) ⊗ IYj )Zj = Υ j ∆ = pr j Υ∆ . Therefore (5.15) Z∗ 
+
+> j
+
+(π( · ) ⊗ IYj )Zj − pr j cb ≤ ∥ Υ∆ − id A∥cb = δ. 
+
+Step 1: product dilation. 
+
+The composite isometry Zj records an encoding by Vj followed by a decoding by W , with the encoding environment Yj and decoding environments Ei. Approximate recovery says that the logical factor is nearly unchanged by this round trip. In an ideal product dilation, the logical input ξ ∈ Cnj20 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+survives intact and the environment is in a fixed state ζj independent of ξ. The product-dilation Lemma 5.3 makes this interpretation quantitative. Lemma 5.3 applied to Zj gives the unit vector 
+
+ζj ∈ E j ⊗ Y j , Jj ξ = ξ ⊗ ζj in the jth summand ,
+
+such that (5.16) ∥Zj − Jj ∥ ≤ p2nj δ ≤ p2n∗δ. 
+
+The product form has the exact logical action J∗ 
+
+> j
+
+(π(x) ⊗ I)Jj = xj (see also later in Equation (5.28)). However, it may not be realizable through the original decoder: Ran Jj need not lie in Ran W ⊗ Y j .Pulling it back by W ∗ ⊗ I need not produce an isometry or define a unital Stinespring map. The cutoff and rotation below create exact containment in a modified physical range, after which this pullback becomes legitimate. We have (P ⊗ IYj )Zj = Zj . Thus 
+
+Ran Zj ⊆ Ran( P ⊗ IYj ) and (( I − P ) ⊗ IYj )Zj = 0 .
+
+Consequently, Equation (5.16) gives the leakage bound, which quantifies how much of the Jj fails to lie within the range of P ⊗ IYj .(5.17) (( I − P ) ⊗ IYj )Jj = (( I − P ) ⊗ IYj )( Jj − Zj ) ≤ ∥ Jj − Zj ∥ ≤ p2n∗δ. 
+
+Step 2: cutoff. 
+
+We let Qj be the projection onto Cnj ⊗ E j in G, and define Aj = Qj (I − P )Qj ∈ B (G), which is the leakage of the j-th representation block. For vj ∈ Cnj ⊗ E j
+
+⟨vj , (I − P )vj ⟩ = ⟨vj , Q j (I − P )Qj vj ⟩ = ⟨vj , A j vj ⟩
+
+Since I − P is a projection, squaring Equation (5.17) gives 
+
+J∗ 
+
+> j
+
+(( I − P ) ⊗ IYj )Jj ≤ 2n∗δI nj .
+
+The range of Jj lies in the jth block, so I − P may be replaced by Aj . Using Jj J∗ 
+
+> j
+
+= Inj ⊗ | ζj ⟩⟨ ζj |
+
+and taking the normalized trace yields (5.18) 2n∗δ ≥ 1
+
+nj
+
+Tr  J∗ 
+
+> j
+
+(Aj ⊗ IYj )Jj
+
+ = 1
+
+nj
+
+Tr  (Aj ⊗ IYj )( Inj ⊗ | ζj ⟩⟨ ζj |) =: Tr( ρj Dj ).
+
+Here we denote (5.19) ρj = Tr Yj |ζj ⟩⟨ ζj | ∈ B (Ej ), Dj = 1
+
+nj
+
+Tr Cnj Aj ∈ B (Ej ).
+
+Tr( ρj Dj ) quantifies the weight ρj outside Ran W . Applying Lemma 5.5 to (Dj , ρ j ) and using Equation (5.18), we obtain qj and ρ0 
+
+> j
+
+, supported on qj , such that (5.20) qj Dj qj ≤ τ q j , ρj − ρ0  
+
+> j1
+
+≤ 4n∗
+
+δτ , ∀τ > 2n∗δ. 
+
+These two estimates have distinct uses. The operator bound controls the geometry of the cutoff environmental support. We define G0 := Lsj=1 (Cnj ⊗ qj Ej ) ⊂ G . The trace-norm bound controls the change in the decoding-environment state used to reconstruct the encoder: the cost of replacing 
+
+ρj by the ρ0 
+
+> j
+
+supported on qj Ej is uniformly upper bounded by O(δ/τ ). Since Tr Cnj Aj = nj Dj ,Lemma 5.6 gives (5.21) Aj ≤ nj Inj ⊗ Tr Cnj Aj = n2 
+
+> j
+
+Inj ⊗ Dj .
+
+Let vj ∈ Cnj ⊗ qj Ej . Then we have qj vj = vj and thus using Equations (5.9) and (5.21) gives 
+
+⟨vj , (I − P )vj ⟩ = ⟨vj , A j vj ⟩ ≤ n2 
+
+> j
+
+⟨vj , (Inj ⊗ Dj )vj ⟩ ≤ n2 
+
+> j
+
+τ ∥vj ∥2. Since I − P ≥ 0, Cauchy–Schwarz for the semidefinite form induced by I − P gives (5.22) |⟨ vj , (I − P )vk⟩| ≤ ⟨ vj , (I − P )vj ⟩1/2⟨vk, (I − P )vk⟩1/2 ≤ nj nkτ ∥vj ∥ ∥ vk∥ ,QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 21 
+
+Therefore, for any v = P 
+
+> j
+
+vj ∈ G 0, by the Cauchy–Schwarz inequality, 
+
+⟨v, (I − P )v⟩ ≤ τ
+
+X
+
+> j
+
+nj ∥vj ∥
+
+
+
+> 2
+
+≤ τ
+
+X
+
+> j
+
+n2
+
+> j
+
+ ∥v∥2 = τ dim( A) ∥v∥2 .
+
+Since I − P is a projection, we have proved (5.23) ∥(I − P )|G0 ∥ ≤ √τ dim A.
+
+Step 3: rotate the Stinespring space. 
+
+If τ dim A < 1, Lemma 5.7 and Equation (5.23) give a unitary U on G such that (5.24) G0 ⊆ U Ran P, ∥U − I∥ ≤ 2√τ dim A.
+
+Set the rotated isometry (which is still an isometry because U is unitary) and the repaired decoder (5.25) W0 = U W, ∆0(x) = W ∗ 
+
+> 0
+
+π(x)W0.
+
+Then ∆0 is UCP, because W0 is an isometry and π is a ∗-homomorphism which means that ∆0 has a Stinespring form, and the dual of Lemma 5.8 gives (5.26) ∥∆0 − ∆∥cb ≤ 2 ∥U − I∥ ≤ 4√τ dim A.
+
+The inclusion G0 ⊆ Ran W0 ensures that any unit vector ζ0 
+
+> j
+
+∈ qj Ej ⊗ Y 0 
+
+> j
+
+can be pulled back by the isometry W ∗ 
+
+> 0
+
+⊗ IY0 
+
+> j
+
+. Step 4 uses precisely these states to construct the product isometry and to repair the encoder. 
+
+Step 4: construction of Υ0 via purification and comparison. 
+
+We now purify ρ0 
+
+> j
+
+to define the modified product isometry J0 
+
+> j
+
+(and thus the modified Υ0). We recall that ρ0 
+
+> j
+
+is supported on qj Ej , so we can take a spectral decomposition 
+
+ρ0 
+
+> j
+
+=
+
+> rj
+
+X
+
+> ℓ=1
+
+pℓ |uℓ⟩⟨ uℓ| , rj = rank ρ0 
+
+> j
+
+, uℓ ∈ qj Ej .
+
+Choose a new encoding environment Y0 
+
+> j
+
+= Crj , serving as a purifying auxiliary space, with orthonor-mal basis (fℓ)ℓ and set the purification 
+
+ζ0 
+
+> j
+
+=
+
+> rj
+
+X
+
+> ℓ=1
+
+√pℓ uℓ ⊗ fℓ ∈ qj Ej ⊗ Y 0 
+
+> j
+
+.
+
+Since P 
+
+> ℓ
+
+pℓ = 1 , this is a unit vector, and orthonormality of the fℓ gives Tr Y0 
+
+> j
+
+|ζ0 
+
+> j
+
+⟩⟨ ζ0 
+
+> j
+
+| = ρ0 
+
+> j
+
+. Set the product isometry J0 
+
+> j
+
+ξ = ξ ⊗ ζ0 
+
+> j
+
+. The definition of G0 gives Ran J0 
+
+> j
+
+⊆ G 0 ⊗ Y 0 
+
+> j
+
+. Moreover, the rotation constructed above satisfies G0 ⊆ U Ran P = Ran( U W ) = Ran W0. Therefore Ran J0 
+
+> j
+
+⊆ G 0 ⊗ Y 0 
+
+> j
+
+⊆
+
+Ran( W0 ⊗ IY0 
+
+> j
+
+). Define (5.27) (Υ 0(a)) j = ( V 0 
+
+> j
+
+)∗(a ⊗ IY0 
+
+> j
+
+)V 0 
+
+> j
+
+, V 0 
+
+> j
+
+= ( W0 ⊗ IY0 
+
+> j
+
+)∗J0 
+
+> j
+
+.
+
+The new encoding isometry V 0 
+
+> j
+
+first appends the purified environmental state ζ0 
+
+> j
+
+to a logical input and then pulls this product vector back into the physical system using W ∗ 
+
+> 0
+
+. Since V 0 
+
+> j
+
+is an isometry, the Stinespring form Υ0 : Md → L 
+
+> j
+
+Mnj is also UCP. We now verify the exact-recovery property. π(x) acts as xj ⊗ IEj on the jth block, so (5.28) (π(x) ⊗ IY0 
+
+> j
+
+)J0 
+
+> j
+
+ξ = xj ξ ⊗ ζ0 
+
+> j
+
+= J0 
+
+> j
+
+xj ξ, ∀ξ ∈ Cnj , i.e. (π(x) ⊗ IY0 
+
+> j
+
+)J0 
+
+> j
+
+= J0 
+
+> j
+
+xj .22 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+Put P0 = W0W ∗ 
+
+> 0
+
+. Since Ran J0 
+
+> j
+
+⊆ G 0 ⊗ Y 0 
+
+> j
+
+and G0 ⊆ Ran P0, (P0 ⊗ IY0 
+
+> j
+
+)J0 
+
+> j
+
+= J0 
+
+> j
+
+. Thus (5.29) 
+
+(Υ 0∆0(x)) j = ( V 0 
+
+> j
+
+)∗(W ∗ 
+
+> 0
+
+π(x)W0 ⊗ IY0 
+
+> j
+
+)V 0 
+
+> j
+
+= ( J0 
+
+> j
+
+)∗(P0π(x)P0 ⊗ IY0 
+
+> j
+
+)J0
+
+> j
+
+= ( J0 
+
+> j
+
+)∗(π(x) ⊗ IY0 
+
+> j
+
+)J0
+
+> j
+> Equation (5.28)
+
+= (J0 
+
+> j
+
+)∗J0 
+
+> j
+
+xj = xj .
+
+This proves Equation (5.1). We already have the estimate Equation (5.26) for ∥∆0 − ∆∥cb . It remains to compare Υ0 and Υ.Write Ad W (X) = W XW ∗. From Equation (5.14), (Ad W ◦Υj, ∗)( ω) = Tr Yj (Zj ωZ ∗ 
+
+> j
+
+). Moreover, 
+
+Tr Yj (Jj ωJ ∗ 
+
+> j
+
+) = Tr Yj
+
+ (I ⊗ ζj )ω(I ⊗ ζj )∗ = ω ⊗ ρj .
+
+Applying Lemma 5.8 and Equation (5.16) gives (5.30) ∥Ad W ◦Υj, ∗ − (ω 7 → ω ⊗ ρj )∥⋄ = ω 7 → Tr Yj (Zj ωZ ∗ 
+
+> j
+
+− Jj ωJ ∗ 
+
+> j
+
+) ⋄ ≤ 2 ∥Zj − Jj ∥ ≤ 2p2n∗δ. 
+
+For the modified channel, the corresponding identity is exact: (5.31) (Ad W0 ◦Υ0
+
+> j, ∗
+
+)( ω) = ω ⊗ ρ0 
+
+> j
+
+.
+
+Insert successively the maps ω 7 → ω ⊗ ρ0 
+
+> j
+
+, ω 7 → ω ⊗ ρj , and Ad W ◦Υj, ∗. The triangle inequality gives (5.32) 
+
+Υ0 
+
+> j, ∗
+
+− Υj, ∗ ⋄ = Ad W0 ◦Υ0 
+
+> j, ∗
+
+− Ad W0 ◦Υj, ∗ ⋄
+
+≤ Ad W0 ◦Υ0 
+
+> j, ∗
+
+− (ω 7 → ω ⊗ ρ0 
+
+> j
+
+) ⋄ + (ω 7 → ω ⊗ ρ0 
+
+> j
+
+) − (ω 7 → ω ⊗ ρj ) ⋄
+
++ ∥(ω 7 → ω ⊗ ρj ) − Ad W ◦Υj, ∗∥⋄ + ∥Ad W ◦Υj, ∗ − Ad W0 ◦Υj, ∗∥⋄
+
+≤ 0 + ρ0 
+
+> j
+
+− ρj 1 + 2 p2n∗δ + 2 ∥W0 − W ∥≤ 4n∗
+
+δτ + 2 p2n∗δ + 4 √τ dim A.
+
+The first term vanishes by Equation (5.31). The second equals ρ0 
+
+> j
+
+− ρj 1 by multiplicativity of the trace norm under tensor products and is bounded using Equation (5.20). The third uses Equation (5.30); the fourth uses Lemma 5.8 followed by Equation (5.24). For a map T : Md →L 
+
+> j
+
+Mnj , ∥T ∥cb = max j pr j T cb . Applying cb–diamond duality componentwise to Equation (5.32) gives (5.33) ∥Υ0 − Υ∥cb ≤ 4n∗
+
+δτ + 2 p2n∗δ + 4 √τ dim A.
+
+The algebra dependence is explicit: only the structure of the reduced algebra A (n∗ and dim A)enters (but not the total dimension d or the Stinespring multiplicities). Take (5.34) dA = min 
+
+n
+
+1, (2 n∗)−3, (dim A)−3/2o
+
+.
+
+For 0 < δ < d A, set τ = δ2/3. Then τ > 2n∗δ, √τ dim A < 1 by the choice of dA in Equation (5.34), so the cutoff and rotation steps apply. Combining Equations (5.26) and (5.33) and using δ1/2 ≤ δ1/3
+
+gives 
+
+∥∆0 − ∆∥cb + ∥Υ0 − Υ∥cb ≤ 4n∗δ1/3 + 2 √2n∗ δ1/2 + 8 √dim A δ1/3 ≤ KAδ1/3,
+
+where one may take (5.35) KA = 4 n∗ + 2 √2n∗ + 8 √dim A
+
+which only depends on the structure of A. This proves Equation (5.2). □QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 23 
+
+5.3. Proof of Theorem 3.3. With Proposition 5.1 at hand, the proof of Theorem 3.3 is very straightforward. 
+
+Proof of Theorem 3.3. Apply Kitaev’s factorization theorem Theorem 4.3. There are A, ∆, Υ such that (5.36) dim A ≤ r, ∥∆Υ − Φ∥cb ≤ cη, δ := ∥Υ∆ − id A∥cb ≤ cη. 
+
+Only finitely many C∗-algebras occur, up to isomorphism, with dimension at most r. Define 
+
+dr = min   
+
+> dim A≤ r
+
+dA, Kr = max   
+
+> dim A≤ r
+
+KA,
+
+where the extrema range over isomorphism classes and thus dr and Kr are finite and depend only on 
+
+r. Choose ηr < min  14 , η 0, dr 
+
+> c
+
+, 1 . Then Proposition 5.1 gives UCP maps ∆0, Υ0 satisfying 
+
+Υ0∆0 = id A, ∥∆0 − ∆∥cb + ∥Υ0 − Υ∥cb ≤ Kr(cη )1/3.
+
+Set Eg = ∆ 0Υ0. Then Eg is UCP and E2g = ∆ 0(Υ 0∆0)Υ 0 = Eg. Every UCP map has cb norm one [Pau03, Proposition 3.6]. Consequently, 
+
+∥Eg − Φ∥cb ≤ ∥ ∆0Υ0 − ∆Υ ∥cb + ∥∆Υ − Φ∥cb ≤ ∥ ∆0 − ∆∥cb + ∥Υ0 − Υ∥cb + cη 
+
+≤  Krc1/3 + cη1/3.
+
+Thus one may take Cr = Krc1/3 + c. □
+
+5.4. Proof of Proposition 5.2. The metastable-seminorm version of Proposition 5.1 uses the same cutoff and rotation construction. Most of the proof can be carried over from the cb-norm case. 
+
+Proof. We only need to modify the proof of Proposition 5.1 as follows, retaining its notation 
+
+W, π, P, V j , Z j , J j , ρ j , D j . The qj , ρ0 
+
+> j
+
+, ∆0 and Υ0 are also constructed in the same way, but with slightly adjusted thresholds and error controls to accommodate the metastable-seminorm setting. 
+
+Step 1: product dilation. 
+
+Reuse Equations (5.16) and (5.17), which bound both the isometry error and the leakage by √2n∗δ,with n∗ = max j nj .
+
+Step 2: a fixed cutoff and nearby purifications. 
+
+Use the same state-cutoff construction, now with the fixed threshold τ :
+
+τ = 14 dim A , dA = min {1, τ / (4 n∗)}.
+
+For δ < d A, we have Tr( ρj Dj ) ≤ 2n∗δ < τ / 2. Thus Lemma 5.5 gives a state ρ0 
+
+> j
+
+supported on qj with (5.37) qj Dj qj ≤ τ q j ,
+
+
+
+1 − 2n∗δτ
+
+
+
+ρ0 
+
+> j
+
+≤ ρj .
+
+For G0 = L 
+
+> j
+
+(Cnj ⊗ qj Ej ), Equation (5.23) then yields 
+
+∥(I − P )|G0 ∥ ≤ √τ dim A = 12 .
+
+The fixed threshold gives enough geometric control to perform the rotation, although its global operator norm need not tend to zero with δ. Meanwhile, the environmental state ρj → ρ0 
+
+> j
+
+changes by only OA(δ). In order to make good use of the small preparation error, we directly compare the product environmental-state vectors ζj and ζ0 
+
+> j
+
+on which the rotation acts. Proposition 5.1 estimates the states ρj and ρ0 
+
+> j
+
+after tracing out Yj (or Y0 
+
+> j
+
+) and therefore allows any purification of ρ0 
+
+> j
+
+. Here 24 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+we need ζ0 
+
+> j
+
+itself to be close to ζj , so we keep the original Yj and align the purifications within that common environment. The domination Equation (5.37) implies supp ρ0 
+
+> j
+
+⊆ supp ρj , so define 
+
+ζ0 
+
+> j
+
+=  (ρ0 
+
+> j
+
+)1/2ρ−1/2 
+
+> j
+
+⊗ Iζj ,
+
+where ρ−1/2 
+
+> j
+
+denotes the pseudo-inverse taken on supp ρj . Explicitly, ρ−1/2 
+
+> j
+
+is defined to be zero on ker ρj , so ρ−1/2 
+
+> j
+
+ρj ρ−1/2 
+
+> j
+
+= Pj , where Pj projects onto supp ρj and thus acts as the identity on 
+
+supp ρ0 
+
+> j
+
+. Since Tr Yj |ζj ⟩⟨ ζj | = ρj , partial trace gives 
+
+Tr Yj |ζ0 
+
+> j
+
+⟩⟨ ζ0 
+
+> j
+
+| = ( ρ0 
+
+> j
+
+)1/2ρ−1/2 
+
+> j
+
+ρj ρ−1/2 
+
+> j
+
+(ρ0 
+
+> j
+
+)1/2 = ρ0 
+
+> j
+
+.
+
+Thus ζ0 
+
+> j
+
+is a normalized purification. Using the reduced state of ζj and cyclicity of the trace, 
+
+⟨ζj , ζ 0 
+
+> j
+
+⟩ = Tr 
+
+
+
+ρj (ρ0 
+
+> j
+
+)1/2ρ−1/2
+
+> j
+
+
+
+= Tr 
+
+
+
+ρ1/2 
+
+> j
+
+(ρ0 
+
+> j
+
+)1/2
+
+
+
+. The domination in Equation (5.37) and operator monotonicity of the square root function [Car25, Theorem 3.18] imply ρ1/2 
+
+> j
+
+≥ p1 − 2n∗δ/τ (ρ0 
+
+> j
+
+)1/2.Taking the trace against the positive operator (ρ0 
+
+> j
+
+)1/2 yields 
+
+⟨ζj , ζ 0 
+
+> j
+
+⟩ ≥ p1 − 2n∗δ/τ Tr ρ0 
+
+> j
+
+= p1 − 2n∗δ/τ . 
+
+Finally, both vectors are normalized, so (5.38) ζ0 
+
+> j
+
+− ζj 
+
+> 2
+
+= 2 − 2 Re ⟨ζj , ζ 0 
+
+> j
+
+⟩ ≤ 2(1 − p1 − 2n∗δ/τ ) ≤ 4n∗δ/τ, J0 
+
+> j
+
+− Jj ≤ 2pn∗δ/τ . 
+
+Step 3: rotation on the dilations of encoded logical states. 
+
+Reuse the vectors and orthogonal planes from Lemma 5.7. Since U ∗sℓ = rℓ, ⟨sℓ, rℓ⟩ = cos θℓ and 
+
+0 ≤ θℓ < π/ 2, ∥(U ∗ − I)sℓ∥2 = ∥rℓ − sℓ∥2 = 2(1 − cos θℓ) ≤ 2 sin 2 θℓ. The planes are mutually orthogonal, so for every v ∈ G 0,(5.39) ∥(U ∗ − I)v∥2 = 2 X
+
+> ℓ
+
+|⟨ sℓ, v ⟩| 2(1 − cos θℓ) ≤ 2 X
+
+> ℓ
+
+|⟨ sℓ, v ⟩| 2 sin 2 θℓ = 2 ∥(I − P )v∥2 .
+
+Expanding in an orthonormal basis of Yj gives the same inequality (5.40) (( U ∗ − I) ⊗ IYj )v′ 2 ≤ 2 (( I − P ) ⊗ IYj )v′ 2
+
+for any v′ ∈ G 0 ⊗ Y j . Set W0 = U W and J0 
+
+> j
+
+ξ = ξ ⊗ ζ0 
+
+> j
+
+. Since Ran J0 
+
+> j
+
+⊆ G 0 ⊗ Y j , Equations (5.17), (5.38) and (5.40) give (5.41) 
+
+(( U ∗ − I) ⊗ IYj )J0 
+
+> j
+
+≤ √2 (( I − P ) ⊗ IYj )J0 
+
+> j
+
+≤ √2   (( I − P ) ⊗ IYj )Jj + J0 
+
+> j
+
+− Jj
+
+
+
+≤ √2
+
+p 2n∗δ + 2 pn∗δ/τ 
+
+
+
+=: ϵU .
+
+This is where the comparison improves. The bound measures the displacement of the dilation vectors 
+
+J0 
+
+> j
+
+ξ = ξ ⊗ ζ0 
+
+> j
+
+for encoded logical states, rather than that of an arbitrary vector in G.
+
+Step 4: the exact factorization and ambient completion. 
+
+Define ∆0, Υ0 by Equations (5.25) and (5.27), now with the shared Yj . The same computation in Equation (5.29) again gives Υ0∆0 = id A, while by Equations (5.16), (5.38) and (5.41) we have (5.42) V 0 
+
+> j
+
+− Vj = ( W ∗ ⊗ IYj ) (( U ∗ − I) ⊗ IYj )J0 
+
+> j
+
++ ( J0 
+
+> j
+
+− Jj ) + ( Jj − Zj ) ,
+
+V 0 
+
+> j
+
+− Vj ≤ ϵU + 2 pn∗δ/τ + p2n∗δ =: ϵV = OA(√δ).
+
+Thus Lemma 5.8 gives (5.43) ∥Υ0 − Υ∥cb ≤ 2ϵV .QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 25 
+
+To estimate the metastable-seminorm error, use (π(x) ⊗ I)J0 
+
+> j
+
+= J0 
+
+> j
+
+xj (Equation (5.28)) and (P U ∗ ⊗
+
+I)J0 
+
+> j
+
+= ( U ∗ ⊗ I)J0 
+
+> j
+
+(since U ∗G0 ⊆ Ran P ) to obtain 
+
+(∆( x) ⊗ I)V 0 
+
+> j
+
+− V 0 
+
+> j
+
+xj = ( W ∗π(x)W ⊗ I)( W ∗U ∗ ⊗ I)J0 
+
+> j
+
+− (W ∗U ∗ ⊗ I)J0 
+
+> j
+
+xj
+
+= ( W ∗ ⊗ I)([ π(x), U ∗] ⊗ I)J0 
+
+> j
+
+,
+
+(∆( x) ⊗ I)V 0 
+
+> j
+
+− V 0 
+
+> j
+
+xj ≤ (π(x)( U ∗ − I) ⊗ I)J0 
+
+> j
+
++ (( U ∗ − I) ⊗ I)J0 
+
+> j
+
+xj
+
+≤  ∥π(x)∥ + ∥xj ∥ (( U ∗ − I) ⊗ I)J0 
+
+> j
+
+≤ 2ϵU ∥x∥ .
+
+Here we used ∥π(x)∥ ≤ ∥ x∥ , ∥xj ∥ ≤ ∥ x∥, and the rotation estimate Equation (5.41). Suppose we define the conditional expectation Eg := ∆ 0Υ0 just as in the cb-norm case Section 5.3 and set 
+
+Tg := Eg − ∆Υ . Combining this estimate with Equation (5.43) gives 
+
+(Tg(X) ⊗ I)V 0 
+
+> j
+
+≤ ∥ (Υ 0(X) − Υ( X)) j ∥ + 2 ϵU ∥Υ( X)∥ ≤ (2 ϵU + 2 ϵV ) ∥X∥ .
+
+Replacing V 0 
+
+> j
+
+by Vj costs at most 2ϵV ∥X∥, because ∥T g∥cb ≤ 2. These identities also hold after tensoring, i.e. for Tg,m = id Mm ⊗T g,(5.44) ∥Υm(Tg,m (X)∗Tg,m (X)) ∥1/2 ≤ (4 ϵV + 2 ϵU ) ∥X∥ = OA(√δ) ∥X∥ .
+
+Thus the square-root estimate is already available for the Eg construction. However, as discussed in Section 4.3, the range Ran Eg = ∆ 0(A) is not necessarily a subalgebra of Md under its ordinary product. The repaired decoder acts on x = L 
+
+> j
+
+xj by ∆0(x) = W ∗
+
+> 0
+
+L  
+
+> j
+
+(xj ⊗ IEj )W0. To isolate the part of its action coming from the cutoff representation on G0, consider the physical projection 
+
+q ∈ Md associated with that subspace: (5.45) PG0 = M
+
+> j
+
+(Inj ⊗ qj ), q := W ∗ 
+
+> 0
+
+PG0 W0, Ran q = W ∗ 
+
+> 0
+
+G0.
+
+The inclusion G0 ⊆ Ran W0 = U Ran W gives q2 = W ∗ 
+
+> 0
+
+PG0 W0W ∗ 
+
+> 0
+
+PG0 W0 = W ∗ 
+
+> 0
+
+PG0 W0 = q and thus 
+
+q is indeed a projection. Note that π(x) acts as L 
+
+> j
+
+xj ⊗ IEj on G, so it commutes with PG0 (i.e. G0
+
+reduces π(A)), and hence q∆0(x) = W ∗ 
+
+> 0
+
+PG0 π(x)W0 = W ∗ 
+
+> 0
+
+π(x)PG0 W0 = ∆ 0(x)q for all x ∈ A . Since 
+
+V 0 
+
+> j
+
+= ( W ∗ 
+
+> 0
+
+⊗ I)J0 
+
+> j
+
+and Ran J0 
+
+> j
+
+⊆ G 0 ⊗ Y j , Equation (5.45) gives (5.46) (q ⊗ I)V 0 
+
+> j
+
+= V 0 
+
+> j
+
+, (( I − q) ⊗ I)V 0 
+
+> j
+
+= 0 .
+
+Write πG0 (x) := π(x)|G0 = L 
+
+> j
+
+(xj ⊗ Iqj Ej ) for the restricted representation, and define 
+
+L := W ∗ 
+
+> 0
+
+|G0 , q = LL ∗, w(x) := LπG0 (x)L∗.
+
+The map L is an isometry, and each qj̸ = 0 because Lemma 5.5 supplies a density matrix ρ0 
+
+> j
+
+supported on qj , so w is a faithful representation A ∼=
+
+→ qM dq with unit q.(5.47) w(x) = L
+
+hM 
+
+> j
+
+(xj ⊗ Iqj Ej )
+
+i
+
+L∗ = W ∗
+
+> 0
+
+hM 
+
+> j
+
+(xj ⊗ qj )
+
+i
+
+W0 = q∆0(x)q = q∆0(x) = ∆ 0(x)q. 
+
+Using Equation (5.47) above together with Equation (5.29), 
+
+(Υ 0(w(x))) j = ( V 0 
+
+> j
+
+)∗(q∆0(x)q ⊗ I)V 0 
+
+> j
+
+= ( V 0 
+
+> j
+
+)∗(∆ 0(x) ⊗ I)V 0 
+
+> j
+
+= (Υ 0(∆ 0(x))) j = xj .
+
+Thus Υ0w = id A. Now it becomes clearer how we modify Eg by writing ∆0 as the decomposition 
+
+∆0(x) = w(x) ⊕ r(x), r(x) := ( I − q)∆ 0(x)( I − q).
+
+Note that r(xy ) = r(x)r(y) does not hold in general, so ∆0(A) = Ran( Eg) is in general not a subalgebra of Md. We replace this complementary action by an independent scalar component, while 26 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+keeping w(Υ 0(X)) on q. Specifically, we choose any density matrix ω⊥ supported on I − q when 
+
+I − q̸ = 0 , and set (5.48) Em(X) = w(Υ 0(X)) + Tr( ω⊥(I − q)X(I − q)) ( I − q).
+
+This map is UCP and fixes its range Ran( Em) = w(A) ⊕ C(I − q) ⊂ Md. Ran( Em) is an ambient subalgebra of Md, so Schwarz equality on it implies the conditional-expectation property [Pau03, Theorem 3.18]. The completion preserves the square-root order of the error. Indeed, eT := Em − Eg satisfies 
+
+eT (X) = ( I − q) eT (X)( I − q) and eT cb ≤ 2. Writing eTm = id Mm ⊗ eT , we have at every amplification level (5.49) Υm( eTm(X)∗ eTm(X)) 1/2
+
+≤ 2 ∥Υ( I − q)∥1/2 ∥X∥ .
+
+By Equations (5.42) and (5.46), (5.50) ∥Υ( I − q)∥ = max  
+
+> j
+
+∥(( I − q) ⊗ I)Vj ∥2 ≤ ϵ2 
+
+> V
+
+.
+
+By the triangle inequality for Y 7 → ∥ Υm(Y ∗Y )∥1/2, Equations (5.44) and (5.49) give, for T =
+
+Em − ∆Υ = Tg + eT ,(5.51) ∥Υm(Tm(X)∗Tm(X)) ∥1/2 ≤ (4 ϵV + 2 ϵU + 2 ∥Υ( I − q)∥1/2) ∥X∥ ≤ (6 ϵV + 2 ϵU ) ∥X∥ .
+
+Thus the scalar completion preserves the OA(√δ) bound. The estimate Equation (5.51) proves Equation (5.4) uniformly in m. Equation (5.43) and Equation (5.50) prove Equation (5.3). Since 
+
+τ −1 = 4 dim A,
+
+ϵV = (1 + √2)( √2 + 4 √dim A)pn∗δ. 
+
+Thus one may take KA = (1 + √2) 2n∗(√2 + 4 √dim A)2. Indeed, n∗, dim A ≥ 1 imply KA ≥
+
+(1 + √2) 2(√2 + 4) 2 > 64 , and ϵU ≤ ϵV = √KAδ, so 
+
+2ϵV ≤ 6ϵV + 2 ϵU ≤ 8pKAδ ≤ KA
+
+√δ, ϵ2 
+
+> V
+
+= KAδ. 
+
+These inequalities cover all three bounds. □
+
+5.5. Proof of Theorem 3.7. 
+
+Proof of Theorem 3.7. Let c, η 0 > 0 be the constants in Theorem 4.3, and let dA, K A be the constants in Proposition 5.2. Just as in Section 5.3, we may set 
+
+dr = min   
+
+> dim A≤ r
+
+dA > 0, Kr = max   
+
+> dim A≤ r
+
+KA < ∞, ηr = 12 min 
+
+ 14 , η 0, dr
+
+c
+
+
+
+,
+
+For η < η r, Theorem 4.3 gives a C∗-algebra A and UCP maps ∆ : A → Md, Υ : Md → A with 
+
+dim A = rank PΦ ≤ r and 
+
+ϵ0 := ∥∆Υ − Φ∥cb ≤ cη, δ := ∥Υ∆ − id A∥cb ≤ cη ≤ dA.
+
+Thus Proposition 5.2 applies to these ∆, Υ. In particular, w : A → qM dq is a faithful representa-tion with unit q, and Em is a UCP conditional expectation onto w(A) ⊕ C(I − q). The bounds Equations (5.3) and (5.4) give 
+
+∥Υ( I − q)∥ ≤ Krδ, ∥Υm(Tm(X)∗Tm(X)) ∥1/2 ≤ Kr
+
+√δ ∥X∥
+
+for every m and X ∈ Mm ⊗ Md. Since Em and ∆Υ are UCP, ∥T ∥ cb ≤ 2. For every amplified contraction X, the factorization error, complete contractivity of ∆, and the preceding estimate yield 
+
+∥Φm(Tm(X)∗Tm(X)) ∥ ≤ ∥ Υm(Tm(X)∗Tm(X)) ∥ + 4 ϵ0 ≤ K2 
+
+> r
+
+δ + 4 ϵ0.QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 27 
+
+Taking square roots and suprema gives ∥T ∥ cb Φ,2 ≤ pK2 
+
+> r
+
+δ + 4 ϵ0. Since Em − Φ = T + (∆Υ − Φ) , the triangle inequality and Proposition 3.6 yield 
+
+∥Em − Φ∥cb Φ,2 ≤ ∥T ∥ cb Φ,2 + ∥∆Υ − Φ∥cb ≤ pK2 
+
+> r
+
+δ + 4 ϵ0 + ϵ0 ≤
+
+p c(K2 
+
+> r
+
++ 4) + c
+
+ √η, 
+
+where the last step uses δ, ϵ 0 ≤ cη and η < 1. Likewise, 
+
+∥Φ( I − q)∥ ≤ ∥ Υ( I − q)∥ + ϵ0 ≤ Krδ + ϵ0 ≤ c(Kr + 1) η. 
+
+Set N0 = w(A). Faithfulness of w gives dim N0 = dim A = rank PΦ, and both estimates hold with 
+
+Cr = max 
+
+np c(K2 
+
+> r
+
++ 4) + c, c (Kr + 1) 
+
+o
+
+.
+
+which is independent of d. □
+
+6. QMSMs for weakly driven dissipative spin chains 
+
+We use two variants of a weakly driven spin chain to test the global cb-norm and metastable-seminorm results for constructing QMSMs. Each example reduces a dissipative chain of n spins to either a metastable logical qubit or long-lived classical phases. The many-body dissipative dynamics is given by a continuous-time quantum Markov semigroup, and the reduced dynamics is obtained by iterating the transition channel in Theorem 3.2 (or the UCP transition map, by duality, see Corollary 3.8) at the metastable timescale t0. In each variant (quantum or classical), the slow algebra N# = Ran E# (# ∈ { q, c}) is an ambient subalgebra of M2n , with a constant dimension independent of n. The explicit conditional expectation E# therefore realizes the conclusions of both general theorems, while the Riesz range need not itself be an algebra and fails to capture the essential structure of the metastable information. In this example, the slow algebra N# is exactly invariant when the weak drive is turned off, and we use this algebra to construct the reduced state space in the presence of the weak drive. This is inspired by the approach of [GSTV26] and makes it practical to evaluate K# and verify the approximation bounds. However, the reduced UCP map and reduced dynamics are defined directly through the nonperturbative construction K# = E#Φ#ι#, and do not rely on the reference decoherence-free manifold as in [GSTV26]. Figure 5 summarizes the two models and their reduced channels. We first present the logical-qubit case, followed by a variant exhibiting long-lived classical phases. All detailed calculations and estimates are deferred to Appendix B. 6.1. The qubit model. Let n = 2 nb + 3 ≥ 5 be odd, where nb counts the driven bulk sites 
+
+4, 6, . . . , n − 1. We suppress dependence on n in the notation and measure time in units of the common dissipative rate. With single-site Pauli operators Xj , Y j , Z j , set (6.1) I = {1} ∪ { 2k}nb+1  
+
+> k=1
+
+= {1, 2, 4, 6, . . . , n − 1}, H = ε X
+
+> j∈I
+
+Xj .
+
+For a jump operator L, write the Heisenberg-picture dissipator as DL(A) = L∗AL − 12 {L∗L, A }. The generator Lq and its semigroup are 
+
+Lq = i[ H, · ] + 
+
+> n−1
+
+X
+
+> j=1
+
+ DXj Xj+1 + DZj Zj+1 
+
+, T (q)  
+
+> t
+
+= etLq .
+
+For these Hermitian Pauli jumps, DP (A) = P AP − A. The dissipative jumps are Xj Xj+1 and 
+
+Zj Zj+1 . The sites outside I are undriven, but remain coupled through these jumps. Choose (6.2) ε = n−2, t0 = Ct log n, Ct ≥ 8, Φq = T (q)  
+
+> t0
+
+.28 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE Switching parity-phase even parity odd parity Dephasing logical qubit 
+
+Figure 5. A schematic illustration of the weakly driven dissipative spin chain with classical or quantum metastable information. Both open chains have odd n, weak Xj drive on 
+
+j ∈ { 1, 2, 4, . . . , n − 1}, and Lindbladian jumps Xj Xj+1 and Zj Zj+1 on every bond. Top: adding the boundary dissipator Z1 gives switching between the parity phases 
+
+ρ± = ( I ± Qx)/2n, where Qx = Z⊗n. Bottom: without this extra jump, the dynamics reduces to a logical qubit. Qz = X⊗n is conserved while Qx, Q y dephase. 
+
+6.2. The reference qubit algebra and reconstruction. For a Hermitian Pauli unitary P , define (6.3) Ad P (A) = P AP, EP (A) = 12 (A + P AP ), Eq =
+
+> n−1
+
+Y
+
+> j=1
+
+EXj Xj+1 EZj Zj+1 .
+
+We define 
+
+Qx = Z⊗n, Qz = X⊗n, Qy = −iQz Qx,
+
+We choose the logical labels so that the conserved string X⊗n is Qz . Consequently, the reduced UCP map below has the standard Z-dephasing form, fixing Qz and damping Qx, Q y. Odd n gives 
+
+QxQz = −Qz Qx, so the linear span of {I, Q x, Q y, Q z } is also an ambient matrix algebra, i.e. 
+
+Nq = span C{I, Q x, Q y, Q z } ∼= M2.
+
+We note that EP is the conditional expectation onto the commutant of P by computing the action on the Pauli words. With the normalized trace τ = 2 −n Tr , Eq is the conditional expectation onto Nq
+
+(6.4) Eq(A) = τ (A)I + X
+
+> j=x,y,z
+
+τ (Qj A)Qj .
+
+Let ιq : M2 → M2n send σj to Qj for j = x, y, z . We also write Eq for its corestriction to the logical algebra, so Eqιq = id . The reconstruction map which is the dual of Eq is 
+
+Eq,∗
+
+  12 (I + vxσx + vyσy + vz σz ) = I + vxQx + vyQy + vz Qz
+
+2n .
+
+In the zero-field case i.e. the driving field ε = 0 in Equation (6.1), the subalgebra Nq is exactly preserved by the dissipative dynamics. And the metastability behavior arises when the driving QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 29 
+
+field is weakly turned on. With the parameters Equation (6.2), we have the following quantitative estimates for the metastability of eLq .
+
+Proposition 6.1. For all sufficiently large odd n, the zero-field expectation Eq defined above satisfies 
+
+rank PΦq = 4 , ηq := ∥Φ2q − Φq∥cb ∼ log nn3 ,δq := ∥Eq − Φq∥cb ∼ n−1, ϵq := ∥Eq − Φq∥cb Φq,2 = O(n−3/2).
+
+All constants are independent of n and reference-system dimension. 
+
+Thus the assumptions of Theorems 3.3 and 3.7 hold with fixed slow rank, and the same explicit expectation realizes both guarantees, with q = I. Here, we construct this expectation directly and do not identify it with the particular idempotent selected by either existence proof. The derivation is summarized in Section 6.6 and proved in Appendix B.2 and B.2.5. 6.3. The qubit transition map. At the metastable timescale t0, define the compressed transition map and its dual 
+
+Kq = EqΦqιq, Mq = Kq,∗ = ιq,∗Φq,∗Eq,∗.
+
+For subsequent state-picture formulae here and in Appendix B, we use the notation of the QMSM master theorem, Theorem 3.2. We use the same notation M# in logical-register coordinates under the CPTP identification. This identification allows us to write Mq directly on qubit density matrices. The UCP map Kq fixes I, Q z and multiplies Qx, Q y by u = uq(t0). Appendix B.1 computes this scalar using only a 4-by-4 and a 2-by-2 matrix exponential uq(t) = ( etM q )00 [( etM s )00 ]nb . The equality of the two multipliers follows from a fixed symmetry. The global X-parity is a fixed unitary and therefore lies in the multiplicative domain [Pau03, Theorem 3.18]: 
+
+T (q)  
+
+> t
+
+(Qz ) = Qz , Qy = −iQz Qx, T (q)  
+
+> t
+
+(Qy) = −iQz T (q)  
+
+> t
+
+(Qx).
+
+The expectation is a bimodule map over the subalgebra Nq, so 
+
+EqT (q)  
+
+> t
+
+(Qx) = uQ x =⇒ EqT (q)  
+
+> t
+
+(Qy) = −iQz (uQ x) = uQ y.
+
+For a logical density matrix, 
+
+Mq(ρ) = 1 + u
+
+2 ρ + 1 − u
+
+2 σz ρσ z , M k
+
+> q
+
+a cc 1 − a
+
+
+
+=
+
+ a ukcukc 1 − a
+
+
+
+.
+
+Physically, this has a standard dephasing-channel form. In the reduced qubit, the logical populations are conserved, while the coherence decays. For sufficiently large n, 0 < u < 1, and − log u ∼ γqt0 ∼
+
+Ct(log n)/n 3, so the decay rate per unit metastable timescale satisfies κq = −t−10 log u ∼ γq ∼ n−3.In Appendix B.1, we show that the Riesz projection Pq associated with the semigroup T (q)  
+
+> t
+
+is not positive and that its range is not an algebra, by examining the action of Pq on the eigenoperators. 6.4. Full-state prediction from the QMSM process. Corollary 3.8 applies with E = Eq and 
+
+Φ = Φ q. Substitution of the errors in Section 6.1 gives 
+
+∥R qMk
+
+> q
+
+Qq − C k 
+
+> q
+
+∥⋄ ≤ 2kδ q = O(k/n ), k ≥ 1,
+
+∥R qMk
+
+> q
+
+QqCq − C k+1 q ∥⋄ ≤ (k + 1)( ϵq + ηq) = O(( k + 1) n−3/2), k ≥ 0.
+
+The second estimate is weighted by the preparation Cq of the metastable states. We note that the explicit computation detailed in the Appendix gives a separate longer-time guarantee: for metastable states, the error is O(nε + ( k + 1) nε 2 + ne −t0/2). For kγ qt0 ≤ S with fixed S, this is 
+
+OS (n−1 + 1 / log n). That is, it remains small throughout a fixed number of iterations of the reduced process instead of growing linearly with k as in the estimate given by Corollary 3.8, using some model-specific information (Appendix B.2.6). 30 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+6.5. A classical variation: two parity phases. We also provide a dissipative spin-chain model, whose reduced slow dynamics is classical, i.e. the slow algebra is commutative. The model is the same as above, except that we add one boundary jump Z1:(6.5) 
+
+Lc(A) = Lq(A) + DZ1 (A) = Lq(A) + ( Z1AZ 1 − A), Ec = EZ1 Eq, Nc = span {I, Q x} ∼= C ⊕ C.
+
+Indeed, Z1QxZ1 = Qx, Z1QyZ1 = −Qy, Z1Qz Z1 = −Qz ,
+
+EZ1 (Qx) = Qx, EZ1 (Qy) = EZ1 (Qz ) = 0 .
+
+Thus the extra dephasing removes Qy, Q z . With P± = ( I ± Qx)/2,(6.6) Ec(A) = X
+
+> s∈{ +,−}
+
+Tr( PsA)2n−1 Ps = τ (A)I + τ (QxA)Qx, ρ± = I ± Qx
+
+2n .
+
+This is the conditional expectation averaging within the two parity blocks. Writing uc for uc(t0),the (classical) transition matrix and its iterations are 
+
+Kk 
+
+> c
+
+= 12
+
+1 + uk 
+
+> c
+
+1 − uk
+
+> c
+
+1 − uk 
+
+> c
+
+1 + uk
+
+> c
+
+
+
+, p(k) = Kk 
+
+> c
+
+p(0) , p =
+
+p+
+
+p−
+
+
+
+.
+
+Equivalently, for the ambient representative ρ = ( I + mQ x)/2n,
+
+M k 
+
+> c
+
+(ρ) = uk 
+
+> c
+
+ρ + (1 − uk 
+
+> c
+
+)I/ 2n.
+
+The one-step switching probability is (1 − uc)/2. The relaxation rate is κc = −t−10 log uc. The slow rank is two, γc = ( nb + 2) ε2 + O(nε 4), and the same upper error bounds hold. The Riesz projection for T (c)  
+
+> t
+
+is also not positive, and the range is also not an algebra (Appendix B.1). 6.6. Proof strategy and key estimates. We provide the main proof strategy and key estimates for the analysis of the weakly driven dissipative spin chain example, and the detailed derivations are given in Appendix B. The proof first identifies the slow spectral projection and controls the fast remainder. It then compares the explicit conditional expectations Eq, E c with the metastable propagators Φq, Φc in the cb norm and metastable seminorm. For # ∈ { c, q}, the resolvent argument gives 
+
+∥P # − E#∥cb ≲ nε, T (#)  
+
+> t
+
+= F# + e−γ#tS# + Z#,t , ∥Z #,t ∥cb ≲ ne −t/ 2.
+
+Appendix B.2 proves these assertions. The additional key estimate proved in Appendix B.2.5 is 
+
+∥E# − P #∥cb Φ#,2 ≤ C(√nε + e−t0 ). Using the triangle inequality and ∥S∥cb Φ,2 ≤ ∥ S∥cb , we have 
+
+δ# ≲ (nε + γ#t0 + ne −t0/2) = O(n−1), ϵ# ≲ C(√nε + γ#t0 + ne −t0/2) = O(n−3/2).
+
+The decomposition also bounds η# above by Cγ #t0 + Cne −t0/2. Testing a slow eigenoperator bounds it below by e−γ#t0 (1 − e−γ#t0 ). Hence η# ∼ (log n)/n 3. So both theorem assumptions hold and both norm estimates are uniform in the many-body dimension n.QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 31 
+
+Appendix A. Proof of Proposition 2.1 
+
+Proof of Proposition 2.1. Set η := Φ2 − Φ cb < 14 . By spectral mapping, every λ ∈ spec(Φ) satisfies 
+
+|λ(λ − 1) | ≤ Φ2 − Φ cb = η < 14 .
+
+Hence spec(Φ) = Σ 0 ⊔ Σ1 splits into two components near 0 and 1, respectively. See Figure 6. −0.5 0 0.5 1 1.5        
+
+> −1.00
+> −0.75
+> −0.50
+> −0.25 0.00 0.25 0.50 0.75 1.00 Re( z)Im( z)
+> {z∈C:|z(z−1) |<1/4}
+
+Figure 6. {| z(z − 1) | < 1/4} has two components containing 0 and 1 respectively. On the spectral region {| z(z − 1) | < 1/4}, define 
+
+ϕ(z) = 12
+
+h
+
+1 + (2 z − 1)  1 + 4( z2 − z)−1/2i
+
+,
+
+where (·)−1/2 denotes the holomorphic branch defined by the binomial series near 1. Since (2 z − 1) 2 =1 + 4( z2 − z), the function ϕ equals 0 on Σ0 and 1 on Σ1. Therefore, by the holomorphic functional calculus, 
+
+PΦ := ϕ(Φ) = 12πi
+
+I
+
+> C
+
+(z id −Φ) −1 dz, 
+
+for any positively oriented contour C enclosing Σ1 but not Σ0 [Kat95]. Thus PΦ is precisely the Riesz projection onto the spectral component near 1. Using (2Φ − id) 2 = id +4(Φ 2 − Φ) , and the fact that the two factors commute, we may write JΦ := (2Φ − id)  id +4(Φ 2 − Φ) −1/2, so that J 2Φ = id 
+
+and PΦ = 12 (id + JΦ). In particular, P2Φ = PΦ.It remains to estimate its distance from Φ. By [Pau03, Proposition 3.6], ∥Φ∥cb = ∥Φ( I)∥ = 1 , and hence ∥2Φ − id ∥cb ≤ 3. Expanding the inverse square root at the identity,  id +4(Φ 2 − Φ) −1/2 =id −2(Φ 2 − Φ) + O(η2), we obtain 
+
+∥P Φ − Φ∥cb = 12 (2Φ − id) 
+
+h id +4(Φ 2 − Φ) −1/2 − id 
+
+i
+
+> cb
+
+≤ 3 Φ2 − Φ cb + O(η2) = O(η).
+
+□32 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+Appendix B. Technical proofs for the spin-chain examples 
+
+The appendix has two purposes. Appendix B.1 derives in detail the reduced qubit channel and the classical transition matrix directly from the coefficient matrices Mq, M c, M s. Appendix B.2 verifies the assumptions of the main theorems and bounds the difference between the conditional expectation and the metastable propagator, as well as the error for the iterations of the QMSM reduced dynamics and the full semigroup evolution. We write the normalized trace τ = 2 −n Tr , where n is the chain length. B.1. Local blocks and the reduced transition maps. We first separate the full generator into pieces. Put J = {2k}nb+1  
+
+> k=2
+
+= {4, 6, . . . , n − 1} and 
+
+DX =
+
+> n−1
+
+X
+
+> ℓ=1
+
+DXℓXℓ+1 , L0,q = i[ ε(X1 + X2), · ] + 
+
+> 2
+
+X
+
+> ℓ=1
+
+DZℓZℓ+1 , L0,c = L0,q + DZ1 .
+
+For j ∈ J , define the local generator Lj = i[ εX j , · ] + DZj−1Zj + DZj Zj+1 . The full generator is the sum of the boundary and bulk-site pieces: 
+
+L# = DX + L0,# + X
+
+> j∈J
+
+Lj , # ∈ { c, q}.
+
+Let I = {1, 2}∪J which is the set of sites where the weak driving field acts. For s = ( sj )j∈I ∈ { 0, 1}I ,define the following Pauli-word observables and the subspace they span: 
+
+Ps := 
+
+Y
+
+> j∈I
+
+Z 1−sj 
+
+> j
+
+Y sj
+
+> j
+
+ Y
+
+> k∈I c
+
+Zk
+
+!
+
+, Vx := span C{Ps}.
+
+An X-field only interchanges Z and Y at its driven site, and every dephasing term acts diagonally on Pauli words. Hence Vx is invariant under every summand in L#. Moreover, every Ps commutes with every XℓXℓ+1 , so DX |Vx = 0 . Technically, this exact invariance is what allows the reduced transition parameter to be computed from the following blocks of coefficient matrices. B.1.1. The coefficient matrices. We first identify the tensor-product structure of Vx. We recall that I = {1, 2} ∪ J . The two boundary sites {1, 2} contribute the four-dimensional local space 
+
+span {Z1Z2, Y 1Z2, Z 1Y2, Y 1Y2} ≃ C4, while each j ∈ J contributes the two-dimensional space 
+
+span {Zj , Y j } ≃ C2. Hence we may identify 
+
+Vx ≃ C4 ⊗ (C2)⊗nb , dim Vx = 4 · 2nb .
+
+We now compute the actions of the local generators. For j ∈ J , let Ps be a Pauli word and let 
+
+s(j→b) denote s with sj replaced by b ∈ { 0, 1}. Using i[ X, Z ] = 2 Y , i[ X, Y ] = −2Z, one finds 
+
+Lj (Ps) = 
+
+
+
+2εP s(j→1) , sj = 0 ,
+
+−2εP s(j→0) − 4Ps, sj = 1 .
+
+Thus, in the ordered basis (Zj , Y j ), the local generator Lj is represented by the matrix Ms = 0 −2ε
+
+2ε −4
+
+
+
+. For the boundary sites, let (B0, B 1, B 2, B 12 ) denote the Pauli words with ordered basis 
+
+(Z1Z2, Y 1Z2, Z 1Y2, Y 1Y2) on the first two sites, with all spectator coordinates held fixed. Directly, 
+
+L0,q(B0) = 2 εB 1 + 2 εB 2, L0,q(B1) = −2εB 0 − 2B1 + 2 εB 12 ,
+
+L0,q(B2) = −2εB 0 − 4B2 + 2 εB 12 , L0,q(B12 ) = −2εB 1 − 2εB 2 − 2B12 ,QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 33 
+
+and therefore L0,q acts on the local basis (B0, B 1, B 2, B 12 ) as 
+
+Mq =
+
+
+
+0 −2ε −2ε 02ε −2 0 −2ε
+
+2ε 0 −4 −2ε
+
+0 2ε 2ε −2
+
+ .
+
+For the classical boundary generator, L0,c(A) = L0,q(A) + ( Z1AZ 1 − A). The additional term acts as (B0, B 1, B 2, B 12 ) 7 → (0 , −2B1, 0, −2B12 ), so 
+
+Mc = Mq − 2 diag(0 , 1, 0, 1) = 
+
+
+
+0 −2ε −2ε 02ε −4 0 −2ε
+
+2ε 0 −4 −2ε
+
+0 2ε 2ε −4
+
+ .
+
+We note that each local rule is independent of the spectator coordinates of the Pauli words, so the action of the full generator on the space Vx has the corresponding Kronecker-factorized decomposition: (B.1) L#|Vx ≃ M# ⊗ I⊗nb 
+
+> 2
+
++
+
+> nb
+
+X
+
+> ℓ=1
+
+I4 ⊗ I⊗(ℓ−1) 2 ⊗ Ms ⊗ I⊗(nb−ℓ)2 , # ∈ { q, c}.
+
+B.1.2. The reduced transition maps. For # ∈ { q, c}, let T (#)  
+
+> t
+
+= etL# be the Heisenberg semigroup. The Kronecker sum in Equation (B.1) exponentiates factorwise: 
+
+T (#)  
+
+> tVx
+
+≃ etM # ⊗ (etM s )⊗nb .
+
+In the ordered local bases of Vx above, Qx = Z⊗n corresponds to the zeroth basis vector in every tensor component, and the conditional expectation E# (see Equations (6.4) and (6.6)) keeps the coefficient. Thus 
+
+E#T (#)  
+
+> t
+
+(Qx) = u#(t)Qx, u#(t) = f#(t)fs(t)nb ,
+
+where f#(t) = ( etM # )00 and fs(t) = ( etM s )00 . The single-site factor is 
+
+fs(t) = e−2t
+
+cosh 
+
+
+
+2tp1 − ε2
+
+
+
++sinh 
+
+
+
+2t√1 − ε2
+
+
+
+√1 − ε2
+
+ .
+
+The remaining factor f#(t) is a 4 × 4 matrix exponential, so M# and Ms determine the exact compressed transition coefficient. For the qubit model, Qz = X⊗n commutes with the Hamiltonian and every jump operator. Therefore 
+
+T (q)  
+
+> t
+
+(I) = I, T (q)  
+
+> t
+
+(Qz ) = Qz .
+
+The fixed unitary Qz lies in the multiplicative domain of the UCP map T (q)  
+
+> t
+
+[Pau03, Theorem 3.18]. Since Qy = −iQz Qx and Eq is an Nq-bimodule map, 
+
+T (q)  
+
+> t
+
+(Qy) = −iQz T (q)  
+
+> t
+
+(Qx), EqT (q)  
+
+> t
+
+(Qy) = −iQz EqT (q)  
+
+> t
+
+(Qx) = uq(t)Qy.
+
+Hence the compressed evolution Kq = EqT (q)  
+
+> t
+
+ιq fixes I, σ z and multiplies σx, σ y by uq(t). At t = t0,its Schrödinger-picture qubit channel is 
+
+Mq(ρ) = 1 + uq(t0)2 ρ + 1 − uq(t0)2 σz ρσ z .
+
+Similarly, for the classical model, let P± = ( I ± Qx)/2. Since I is fixed and Qx is multiplied by 
+
+uc(t0), the transition matrix in the ordered basis (P+, P −) and its powers are 
+
+Kc = 12
+
+1 + uc(t0) 1 − uc(t0)1 − uc(t0) 1 + uc(t0)
+
+
+
+, Kk 
+
+> c
+
+= 12
+
+1 + uc(t0)k 1 − uc(t0)k
+
+1 − uc(t0)k 1 + uc(t0)k
+
+
+
+.34 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+B.1.3. Slow eigenoperators. 
+
+Slow eigenvalues and eigenoperators. We now compute the slow eigenoperators of the full generator. Before that, we need the local eigenvalues and eigenvectors. Let −γ0,# be the simple eigenvalue of M# near zero, # ∈ { q, c}, and let −γs be the slow eigenvalue of Ms. Substituting −γ
+
+into the characteristic equations gives 
+
+γ2s − 4γs + 4 ε2 = 0 ,
+
+and 
+
+γ40,q − 8γ30,q + (20 + 16 ε2)γ20,q − (16 + 64 ε2)γ0,q + 48 ε2 = 0 , γ30,c − 8γ20,c + (16 + 16 ε2)γ0,c − 32 ε2 = 0 .
+
+Expanding the roots vanishing at ε = 0 yields 
+
+γs = ε2 + 14 ε4 + O(ε6), γ0,q = 3 ε2 − 34 ε4 + O(ε6), γ0,c = 2 ε2 − 12 ε6 + O(ε8).
+
+Let a = ( a0, a 1, a 2, a 12 ) and b = ( b0, b 1) be real unit slow eigenvectors satisfying M#a = −γ0,#a
+
+and Msb = −γsb, chosen with a0, b 0 > 0. By the Kronecker-sum representation Equation (B.1), the tensor mode a ⊗ b⊗nb has decay rate 
+
+γ# = γ0,# + nbγs ∼ nε 2.
+
+These are actually all the relevant slow eigenvalues of the full generator, as will be clearly seen later in the fast-mode estimate in Appendix B.2. Set 
+
+x = a1
+
+a0
+
+, y = a2
+
+a0
+
+, z = a12 
+
+a0
+
+, β = b1
+
+b0
+
+.
+
+Writing M#a = −γ0,#a and Msb = −γsb coordinatewise gives (B.2) 
+
+γ0,q = 2 ε(x + y), (2 − γ0,q)x = 2 ε(1 − z), (4 − γ0,q)y = 2 ε(1 − z), (2 − γ0,q)z = 2 ε(x + y),γ0,c = 2 ε(x + y), (4 − γ0,c)x = 2 ε(1 − z), (4 − γ0,c)y = 2 ε(1 − z), (4 − γ0,c)z = 2 ε(x + y),γs = 2 εβ, (4 − γs)β = 2 ε. 
+
+The eigenvalue equations give 
+
+x y z
+
+q ε + O(ε3) 12 ε + O(ε3) 32 ε2 + O(ε4)c 12 ε + O(ε3) 12 ε + O(ε3) 12 ε2 + O(ε4)
+
+and β = 12 ε + O(ε3). After normalization, (B.3) 
+
+# a0 a1 a2 a12 b0 b1
+
+q 1 − 58 ε2 + O(ε4) ε + O(ε3) 12 ε + O(ε3) 32 ε2 + O(ε4) 1 − 18 ε2 + O(ε4) 12 ε + O(ε3),
+
+c 1 − 14 ε2 + O(ε4) 12 ε + O(ε3) 12 ε + O(ε3) 12 ε2 + O(ε4) 1 − 18 ε2 + O(ε4) 12 ε + O(ε3),
+
+Denote the boundary factor A# = a0Z1Z2 + a1Y1Z2 + a2Z1Y2 + a12 Y1Y2. Then the normalized many-body slow eigenoperator is (B.4) Ψ# = A#
+
+> nb
+
+Y
+
+> ℓ=1
+
+ b0Zjℓ + b1Yjℓ
+
+ Y 
+
+> k∈I c
+
+Zk.QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 35 
+
+Failure of algebraic closure and positivity. Because all factors away from the boundary square to the identity, 
+
+Ψ2# = I + d#X1X2, d# = 2( a1a2 − a0a12 ),
+
+with 
+
+dq = −2ε2 + O(ε4), dc = − 12 ε2 + O(ε4).
+
+Thus d#̸ = 0 for small ε.By direct computation, Lq(X1X2) = −2X1X2 and Lc(X1X2) = −4X1X2, so the Pauli word X1X2
+
+lies in the fast sector. Hence Ψ2# does not belong to the corresponding slow Riesz range Ran( P#).In particular, the classical slow space Ran( Pc) = span {I, Ψc} and the qubit slow space Ran( Pq) = span {I, Q z , Ψq, −iQz Ψq} are therefore not algebras. Moreover, P#(Ψ #) = Ψ #, P#(Ψ 2#) = I, and consequently P#(Ψ 2#) − P #(Ψ #)2 = −d#X1X2. Since X1X2 has eigenvalues ±1 and d#̸ = 0 , the right-hand side is indefinite. This violates the Kadison inequality for a unital positive map, so P# is not positive and hence is not a UCP map. B.2. Error bounds for the conditional expectation and reduced dynamics. In this section, we provide technical estimates that justify the choice of the conditional expectation E# as the nearby idempotent of the metastable propagator and the reduced dynamics as a good approximation of the full semigroup over the metastable lifetime. Specifically, we view the slow spectral projection as an ε-perturbation of the physical conditional expectation using the perturbation theory for linear operators [Kat95], and provide uniform estimates on the reduced dynamics. We first establish uniform local spectral control. For 1 ≤ ℓ ≤ nb, set jℓ = 2 ℓ + 2 and Lℓ, # := Ljℓ ,with L0,# as in Part I. Then L# = DX + Pnb 
+
+> ℓ=0
+
+Lℓ, #. We note that [Lℓ, #, Lk, #] = 0 , [DX , Lℓ, #] = 0 ,
+
+and therefore the global semigroup also has the exact factorization (B.5) T (#)  
+
+> t
+
+= etDX
+
+> nb
+
+Y
+
+> ℓ=0
+
+etLℓ, # .
+
+When fixing q or c, we write Lℓ = Lℓ, # and Tℓ,t = etLℓ .B.2.1. Local estimates. Define the zero-field local generators by setting ε = 0 : L(0) 0,q = DZ1Z2 + DZ2Z3 ,
+
+L(0) 0,c = L(0) 0,q + DZ1 , and L(0)  
+
+> ℓ
+
+= DZjℓ−1Zjℓ + DZjℓ Zjℓ+1 for 1 ≤ ℓ ≤ nb. The local semigroups defined by these generators fix the Pauli words that commute with the corresponding ZZ bonds. The projections onto these locally-fixed subspaces can be explicitly written as (B.6) E0,q = EZ1Z2 EZ2Z3 , E0,c = EZ1 E0,q, Eℓ = EZjℓ−1Zjℓ EZjℓ Zjℓ+1 (ℓ ≥ 1) .
+
+Here we denote EP (A) := 12 (A + P AP ) which can in fact be viewed as the conditional expectation onto the commutant of a Pauli word P . Define the local slow spectral projection by (B.7) Pℓ = 12πi
+
+I
+
+> |z|=1
+
+(z id − L ℓ)−1 dz. 
+
+In the following estimate, we show that those zero-field projections are close to the Riesz projections Equation (B.7). 
+
+Lemma B.1. For 0 < ε ≤ 1/16 , uniformly in ℓ, n, and any reference-system dimension, 
+
+∥P ℓ − Eℓ∥cb ≤ C0ε, ∥Tℓ,t (id − P ℓ)∥cb ≤ C1e−t/ 2,
+
+∥L ℓPℓ∥cb ≤ C2ε2, ∥P ℓ∥cb ≤ 1 + C0ε, 
+
+where the constants are independent of n.36 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+Proof. Each of the local maps Eℓ, Lℓ and Pℓ etc. can be viewed as a linear map on a 3-spin algebra which can be identified with M8. We define the normalized Hilbert–Schmidt norm by 
+
+∥A∥2,τ 3 := τ3(A∗A)1/2, with τ3 = 2 −3 Tr , and ∥S∥2→2 := sup A̸=0 ∥S(A)∥2,τ 3 /∥A∥2,τ 3 is its induced operator norm. The zero-field generator L(0)  
+
+> ℓ
+
+= DZjℓ−1Zjℓ + DZjℓ Zjℓ+1 is a sum of commuting Pauli dephasings and is therefore self-adjoint for the local Hilbert–Schmidt inner product. Its Pauli-basis spectrum is contained in {0, −2, −4, −6}, so zero is semisimple and is separated from the fast spectrum by at least 2. By the spectral theorem for normal operators on Hilbert spaces [Kat95, Chapter I, §6.9], 
+
+∥(z id − L (0)  
+
+> ℓ
+
+)−1∥2→2 = dist( z, spec( L(0)  
+
+> ℓ
+
+)) −1 ≤ 1 for |z| = 1 . Moreover, we write V0 = X1 + X2
+
+and Vℓ = Xjℓ . Then Lℓ − L (0)  
+
+> ℓ
+
+= i ε[Vℓ, · ], and ∥[Vℓ, A ]∥2 ≤ 2∥Vℓ∥∥ A∥2. We have ∥Vℓ∥ = 1 and 
+
+∥V0∥ = ∥X1 + X2∥ = 2 . Consequently, uniformly over all local blocks, ∥L ℓ − L (0)  
+
+> ℓ
+
+∥2→2 ≤ 4ε. Thus on the unit circle, 
+
+∥(z id − L (0)  
+
+> ℓ
+
+)−1(Lℓ − L (0)  
+
+> ℓ
+
+)∥2→2 ≤ ∥ (z id − L (0)  
+
+> ℓ
+
+)−1∥2→2∥(Lℓ − L (0)  
+
+> ℓ
+
+)∥2→2 ≤ 4ε ≤ 14 .
+
+By the factorization z id − L ℓ = ( z id − L (0)  
+
+> ℓ
+
+)[id − (z id − L (0)  
+
+> ℓ
+
+)−1(Lℓ − L (0)  
+
+> ℓ
+
+)] , we have (B.8) ∥(z id − L ℓ)−1∥2→2 ≤ ∥(z id − L (0)  
+
+> ℓ
+
+)−1∥2→2
+
+1 − ∥ (z id − L (0)  
+
+> ℓ
+
+)−1(Lℓ − L (0)  
+
+> ℓ
+
+)∥2→2
+
+≤ 11 − 4ε ≤ 2.
+
+The resolvent identity gives 
+
+∥P ℓ − Eℓ∥2→2 ≤ 12π
+
+I
+
+> |z|=1
+
+(z id − L ℓ)−1 − (z id − L (0)  
+
+> ℓ
+
+)−1 
+
+> 2→2
+
+|dz| ≤ 12π 2 · 4ε · 1 · 2π = 8 ε. 
+
+For maps on M8 there exists a universal constant eC0 such that ∥·∥ cb ≤ eC0 ∥·∥ 2→2, where C0 is independent of n. Recall that each of Pℓ and Eℓ can be viewed as a linear map on M8. Therefore, we have (B.9) ∥P ℓ − Eℓ∥cb ≤ eC0 · 8ε =: C0ε. 
+
+For the fast estimate, let Cf be e.g. the positively oriented boundary of the rectangle {− 7 ≤
+
+Re z ≤ − 1/2, | Im z| ≤ 1}. On this contour, the distance to the zero-field spectrum is at least 1/2,so ∥(z id − L (0)  
+
+> ℓ
+
+)−1∥2→2 ≤ 2. Since ∥L ℓ − L (0)  
+
+> ℓ
+
+∥2→2 ≤ 1/4, the same estimate as in Equation (B.8) gives ∥(z id − L ℓ)−1∥2→2 ≤ 4, and the preceding cb comparison gives ∥(z id − L ℓ)−1∥cb ≤ 4 eC0. The Dunford functional calculus [Kat95, Chapter I, §5.6] together with the fact that the contour has length 17 and satisfies Re z ≤ − 1/2, gives 
+
+∥Tℓ,t (id − P ℓ)∥cb ≤ 12πi
+
+I
+
+> Cf
+
+etz (z id − L ℓ)−1 dz ≤ 17 2π · e−t/ 2 · 4 eC0 =: C1e−t/ 2,
+
+The constants are independent of n.It remains to show that the slow local rates start at second order. Write Lℓ = L(0)  
+
+> ℓ
+
++ εVℓ, with 
+
+Vℓ = i[ Vℓ, · ]. Each X-field anticommutes with at least one of the local ZZ bonds, so Eℓ(Vℓ) = 0 .Since Eℓ(A) ∈ Ran Eℓ, the bimodule property of the conditional expectation gives 
+
+EℓVℓEℓ(A) = i Eℓ(VℓEℓ(A) − Eℓ(A)Vℓ) = i ( Eℓ(Vℓ)Eℓ(A) − Eℓ(A)Eℓ(Vℓ)) = 0 .
+
+The Neumann expansion of the resolvent on the fixed contour is analytic in ε, and contour integration therefore gives Pℓ = Eℓ + εP(1)  
+
+> ℓ
+
++ O(ε2) in the local 2 → 2 norm or equivalently in cb norm because the local space is fixed dimensional. Expanding the generator gives 
+
+PℓLℓPℓ = EℓL(0)  
+
+> ℓ
+
+Eℓ + ε
+
+
+
+P(1)  
+
+> ℓ
+
+L(0)  
+
+> ℓ
+
+Eℓ + EℓL(0)  
+
+> ℓ
+
+P(1)  
+
+> ℓ
+
++ EℓVℓEℓ
+
+
+
++ O(ε2).QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 37 
+
+All displayed zeroth- and first-order terms vanish because L(0)  
+
+> ℓ
+
+Eℓ = EℓL(0)  
+
+> ℓ
+
+= 0 and EℓVℓEℓ = 0 .Since a Riesz projection commutes with its generator, LℓPℓ = PℓLℓPℓ = O(ε2). Finally, complete contractivity of Eℓ and the first estimate of the lemma give 
+
+∥L ℓPℓ∥cb = O(ε2), ∥P ℓ∥cb ≤ ∥ Eℓ∥cb + ∥P ℓ − Eℓ∥cb ≤ 1 + C0ε. 
+
+□
+
+B.2.2. Dimension counting of global slow manifolds. We construct the global slow projection using the local projections (B.10) EX =
+
+> n−1
+
+Y
+
+> j=1
+
+EXj Xj+1 , P# = EX P0,#
+
+> nb
+
+Y
+
+> ℓ=1
+
+Pℓ,
+
+Here P0,# is the slow Riesz projection of the model-dependent boundary generator L0,#. The bulk projections Pℓ for ℓ ≥ 1 are the Riesz projections of the same local generator Lℓ and are the same in the two models. In the product estimates below, we abbreviate P0 := P0,# and E0 := E0,#.We recall that the conditional expectation E# (# = c , q) onto the slow algebra N# is exactly the zero-field projection and has the factorization E# = EX E0,#
+
+Qnb 
+
+> ℓ=1
+
+Eℓ (see Equations (6.3) and (6.5)) which formally aligns with the factorization of P# defined in Equation (B.10). In Proposition B.2 we will show that P# is O(nε )-close to E# in cb norm, and therefore has the same rank as E#. Later we will see that P# is indeed the Riesz projection of the metastable propagator Φ# := et0L# when choosing t0 to be a proper metastable time scale (see Corollary B.5). 
+
+Proposition B.2. There is a constant c∗ > 0, independent of n, such that nε ≤ c∗ implies that 
+
+∥P # − E#∥cb ≤ Cnε, rank P# =
+
+(
+
+2, # = c ,
+
+4, # = q .
+
+Moreover, Ran Pc = span {I, Ψc} and Ran Pq = span {I, Q z , Ψq, −iQz Ψq}.Proof. The product difference telescopes as 
+
+> nb
+
+Y
+
+> ℓ=0
+
+Pℓ −
+
+> nb
+
+Y
+
+> ℓ=0
+
+Eℓ =
+
+> nb
+
+X
+
+> k=0
+> k−1
+
+Y
+
+> ℓ=0
+
+Pℓ
+
+!
+
+(Pk − Ek)
+
+> nb
+
+Y
+
+> ℓ=k+1
+
+Eℓ
+
+!
+
+.
+
+Using ∥EX ∥cb = ∥Eℓ∥cb = 1 and the bounds from Lemma B.1 gives 
+
+∥P # − E#∥cb ≤ C0ε
+
+> nb
+
+X
+
+> j=0
+
+(1 + C0ε)j = (1 + C0ε)nb+1 − 1.
+
+Choose a fixed c∗ > 0 with eC0c∗ − 1 < 1, and assume nε ≤ c∗. Then this difference is less than one and is O(nε ). Two idempotents at operator-norm distance less than one have equal rank [Kat95, Chapter I, §4.6]. Hence rank P# = rank E# =
+
+(
+
+2, # = c ,
+
+4, # = q . It remains to identify the ranges. Under the tensor-coordinate identification in Equation (B.1), the coefficient vector of Ψ# is a ⊗ b⊗nb . Since 
+
+M#a = −γ0,#a and Msb = −γsb, the summands in Equation (B.1) give (B.11) L0,#(Ψ #) = −γ0,#Ψ#, Lℓ, #(Ψ #) = −γsΨ#, 1 ≤ ℓ ≤ nb.
+
+Both eigenvalues lie inside the contour |z| = 1 . Hence the Riesz formulas and Equation (B.11) give 
+
+P0,#(Ψ #) = 12πi
+
+I
+
+> |z|=1
+
+dzz + γ0,#
+
+Ψ# = Ψ #, Pℓ(Ψ #) = 12πi
+
+I
+
+> |z|=1
+
+dzz + γs
+
+Ψ# = Ψ #.38 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+Every Pauli word in Ψ# carries Z or Y at both ends of each XX bond, so it commutes with Xj Xj+1 .Therefore EX (Ψ #) = Ψ #, and the product definition of the global projection gives (B.12) P#(Ψ #) = Ψ #.
+
+For the fixed eigenoperator ( I in the classical case, I and Qz in the qubit case), we have 
+
+Lℓ, #(I) = 0 , EX (I) = I, Lℓ, q(Qz ) = 0 , EX (Qz ) = Qz , 0 ≤ ℓ ≤ nb,
+
+and hence Pc(I) = I, Pq(I) = I, Pq(Qz ) = Qz . For each ℓ, the local semigroup etLℓ, q is UCP and fixes the unitary Qz , and the UCP map EX also fixes Qz . Hence Qz belongs to their multiplicative domains [Pau03, Theorem 3.18], so (B.13) etLℓ, q (Qz A) = Qz etLℓ, q (A), EX (Qz A) = Qz EX (A), 0 ≤ ℓ ≤ nb.
+
+Differentiating Equation (B.13) at t = 0 gives Lℓ, q(Qz A) = Qz Lℓ, q(A). Applying it to Equation (B.11) gives 
+
+L0,q(−iQz Ψq) = −γ0,q(−iQz Ψq), Lℓ, q(−iQz Ψq) = −γs(−iQz Ψq), 1 ≤ ℓ ≤ nb,
+
+and EX (−iQz Ψq) = −iQz Ψq. Therefore 
+
+span {I, Ψc} ⊆ Ran Pc, span {I, Q z , Ψq, −iQz Ψq} ⊆ Ran Pq.
+
+The two left-hand spaces have dimensions 2 and 4, respectively, equal to the ranks computed above, so both inclusions are equalities. □
+
+B.2.3. Evolution in the fast sector. We next bound the remaining evolution in the fast sector. 
+
+Lemma B.3. Under the assumptions of Proposition B.2, 
+
+∥T (#)  
+
+> t
+
+(id − P #)∥cb ≤ Cne −t/ 2, ∀t ≥ 0,
+
+with a constant independent of n.Proof. For a single bond, write Ej = EXj Xj+1 . Then etDP = et(Ad P −id) = EP + e−2t(id − E P ), thus 
+
+etDX = Qn−1
+
+> j=1
+
+Ej + e−2t(id − E j ) . Using ∥E j ∥cb = 1 and ∥id − E j ∥cb ≤ 1, the product difference telescopes as 
+
+∥etDX − EX ∥cb = e−2tn−1X
+
+> k=1
+
+
+
+> k−1
+
+Y
+
+> j=1
+
+Ej + e−2t(id − E j ) (id − E k)
+
+
+
+> n−1
+
+Y
+
+> j=k+1
+
+Ej
+
+ ≤ (n − 1) e−2t.
+
+Using the semigroup factorization Equation (B.5), 
+
+T (#)  
+
+> t
+
+P# = etDX
+
+> nb
+
+Y
+
+> ℓ=0
+
+Tℓ,t 
+
+!
+
+EXnbY
+
+> ℓ=0
+
+Pℓ
+
+!
+
+= etDX EXnbY
+
+> ℓ=0
+
+(Tℓ,t Pℓ) = EXnbY
+
+> ℓ=0
+
+(Tℓ,t Pℓ),
+
+where etDX EX = EX . Adding and subtracting EX
+
+Qnb 
+
+> ℓ=0
+
+Tℓ,t therefore gives 
+
+T (#)  
+
+> t
+
+(id − P #) = ( etDX − EX )
+
+> nb
+
+Y
+
+> ℓ=0
+
+Tℓ,t + EX
+
+" nbY
+
+> ℓ=0
+
+Tℓ,t −
+
+> nb
+
+Y
+
+> ℓ=0
+
+(Tℓ,t Pℓ)
+
+#
+
+.
+
+The second product difference telescopes as 
+
+> nb
+
+Y
+
+> ℓ=0
+
+Tℓ,t −
+
+> nb
+
+Y
+
+> ℓ=0
+
+(Tℓ,t Pℓ) = 
+
+> nb
+
+X
+
+> k=0
+> k−1
+
+Y
+
+> ℓ=0
+
+Tℓ,t Pℓ
+
+!
+
+Tk,t (id − P k)
+
+> nb
+
+Y
+
+> ℓ=k+1
+
+Tℓ,t 
+
+!
+
+.
+
+Each Tℓ,t is UCP and has cb norm one, while ∥Tℓ,t Pℓ∥cb ≤ 1 + C0ε. The local fast bound from Lemma B.1 therefore gives 
+
+∥T (#)  
+
+> t
+
+(id − P #)∥cb ≤ (n − 1) e−2t + C1(nb + 1)(1 + C0ε)nb e−t/ 2 ≤ Cne −t/ 2,QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 39 
+
+with a constant independent of n, because (1 + C0ε)nb ≤ eC0nε ≤ eC0c∗ . □
+
+B.2.4. Decomposition of the spectral structure. We now combine the range identification from Proposition B.2 with the fast bound from Lemma B.3. The projections onto the fixed eigenoperators ({I} in the classical model and {I, Q z } in the qubit model) are 
+
+Fc(A) = τ (A)I, Fq(A) = τ (A)I + τ (Qz A)Qz .
+
+Define the slow-decaying and the fast-remainder components of the semigroup by 
+
+S# = P# − F #, Z#,t = T (#)  
+
+> t
+
+(id − P #).
+
+With those notations above, we have the following slow–fast decomposition of the semigroup. 
+
+Proposition B.4. Under nε ≤ c∗,
+
+T (#)  
+
+> t
+
+= F# + e−γ#tS# + Z#,t , ∥Z #,t ∥cb ≤ Cne −t/ 2.
+
+Moreover, the cb norms of P# and S# are bounded uniformly in n.Proof. By the identification of the eigenoperators in Ran P# from Proposition B.2, since the slow eigenvalue is −γ# and the fixed eigenvalue is 0, we have 
+
+T (#)  
+
+> t
+
+F# = F#, T (#)  
+
+> t
+
+S# = e−γ#tS#.
+
+Therefore the semigroup can be decomposed as T (#)  
+
+> t
+
+= T (#)  
+
+> t
+
+P# + T (#)  
+
+> t
+
+(id − P #) =: F# + e−γ#tS# +
+
+Z#,t . The estimate for Z#,t is exactly Lemma B.3. For the slow projections, Lemma B.1 gives 
+
+∥P #∥cb ≤ Qnb 
+
+> ℓ=0
+
+∥P ℓ∥cb ≤ (1 + C0ε)nb+1 ≤ eC0c∗ . Since ∥F #∥cb = 1 , the identity S# = P# − F #
+
+also bounds ∥S #∥cb uniformly. □
+
+As a corollary, the assumptions in Theorem 3.3 are satisfied for this spin chain model, and we have a bound on the error between the metastable propagator Φ# and the conditional expectation E#.
+
+Corollary B.5 (Approximate idempotency of Φ# and the error bound of the conditional expectation) .
+
+For n sufficiently large, at the metastable timescale t0 = Ct log n and ε = n−α, where α ≥ 2 and 
+
+Ct ≥ 4α, we define the metastable propagator Φ# = T (#)  
+
+> t0
+
+. Then, P# is the slow Riesz projection of 
+
+Φ# in the sense of Proposition 2.1, and we have the following estimates with constants independent of n:
+
+δ# = ∥E# − Φ#∥cb ≲ nε + γ#t0 + ne −t0/2 ≲ nε + nε 2t0 + ne −t0/2 ∼ 1
+
+nα−1 ,η# = ∥Φ2# − Φ#∥cb ≲ γ#t0 + ne −t0/2 ≲ nε 2t0 + ne −t0/2 ∼ log nn2α−1 .
+
+In particular, when α = 2 as in Section 6.6, we have δ# = O(n−1), η # ∼ log nn3 .
+
+Proof. Since P# commutes with Φ#, the spectrum of Φ# on its range is {1, e −γ#t0 } → { 1} (n → ∞ )because γ#t0 ∼ nε 2 · log n ∼ log n/n 2α−1 → 0 ( n → ∞ ) , whereas ∥Φ#(id − P #)∥cb ≤ Cne −t0/2.Whenever t0 = Ct log n with Ct > 2, we have ∥Φ#(id − P #)∥cb ≤ Cn(Ct−2) /2 → 0 ( n → ∞ ). Therefore, the spectral separation shows that P# is exactly the Riesz projection of Φ# onto the cluster near 1.At the metastable time, Proposition B.4 gives 
+
+E# − Φ# = ( E# − P #) + (1 − e−γ#t0 )S# − Z #,t 0 .
+
+The projection comparison from Proposition B.2, the uniform cb-norm bound on S# in Propo-sition B.4, the inequality 1 − e−x ≤ x, and the fast estimate in Lemma B.3 give δ# ≤ ∥ E# −P#∥cb +  1 − e−γ#t0
+
+ ∥S #∥cb + ∥Z #,t 0 ∥cb ≲  nε + γ#t0 + ne −t0/2 . Here the ≲ is up to a constant independent of n because all the used cb-norm bounds are uniform in n.40 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+The semigroup property gives Φ2# = T (#) 2t0 . Applying the same decomposition at the two times yields 
+
+Φ2# − Φ# =  e−2γ#t0 − e−γ#t0  S# + Z#,2t0 − Z #,t 0 .
+
+Since |e−2x − e−x| = e−x(1 − e−x) ≤ x for x ≥ 0, and the two fast remainders are bounded by 
+
+Cne −t0/2, we prove the estimate for η#.For Ct ≥ 4α, nε = n1−α, γ #t0 ∼ log nn2α−1 , ne −t0/2 = n1−Ct/2 ≤ n1−2α. Substitution gives δ# =
+
+O(n1−α) and η# = O((log n)/n 2α−1). Testing the defect on any decaying slow eigenoperator in 
+
+Ran S# gives η# ≥ e−γ#t0
+
+ 1 − e−γ#t0
+
+ ∼ γ#t0 ∼ log nn2α−1 . □
+
+B.2.5. Errors in metastable seminorms. We next prove the metastable-seminorm estimates. For this, we first prove Lemma B.6 below, which shows that the slow eigenoperators are close to the logical operators in the subalgebra N#.Fix # and n, with 0 < ε ≤ ε∗ and nε ≤ c∗ < 1. We denote Q ∈ Qq := {Qx, Q y} and 
+
+Q ∈ Qc := {Qx}. Set ΨQx := Ψ #, with Ψ# given by Equation (B.4). Since M#(ε)T = M#(−ε) and 
+
+Ms(ε)T = Ms(−ε), put 
+
+eA# = a0Z1Z2 − a1Y1Z2 − a2Z1Y2 + a12 Y1Y2, eΨQx := eA#
+
+> nb
+
+Y
+
+> ℓ=1
+
+(b0Zjℓ − b1Yjℓ ) Y
+
+> k∈I c
+
+Zk.
+
+The transpose of Equation (B.2), together with the decomposition Equation (B.1), gives (B.14) L#(Ψ Qx ) = −γ#ΨQx , L#,∗( eΨQx ) = −γ# eΨQx , ∥ΨQx ∥2,τ = ∥ eΨQx ∥2,τ = 1 .
+
+For the qubit model, define (B.15) ΨQy := −iQz ΨQx = −iQz Ψq, eΨQy := −iQz eΨQx .
+
+Because Qz is a fixed unitary of T (q)  
+
+> t
+
+, the multiplicative-domain argument [Pau03, Theorem 3.18] again gives T (q)  
+
+> t
+
+(Qz A) = Qz T (q)  
+
+> t
+
+(A). Differentiating at t = 0 , and then taking Hilbert–Schmidt adjoints using that left multiplication by Qz is self-adjoint, gives 
+
+Lq(Qz A) = Qz Lq(A), Lq,∗(Qz A) = Qz Lq,∗(A).
+
+Together with Equation (B.14), these identities verify (B.16) Lq(Ψ Qy ) = −γqΨQy , Lq,∗( eΨQy ) = −γq eΨQy , ∥ΨQy ∥2,τ = ∥ eΨQy ∥2,τ = 1 .
+
+Lemma B.6. Assume 0 < ε ≤ ε∗ and nε ≤ c∗ < 1. For each Q ∈ Q#, let ωQ = τ ( eΨQΨQ).Uniformly in n and ε, we have 
+
+∥ΨQ − Q∥2,τ + ∥ eΨQ − Q∥2,τ ≲ √n ε, |ωQ − 1| ≲ nε 2, ∥ΨQ − Q∥ ≲ nε, ∥ΨQ∥ ≤ 1 + O(ε2),
+
+and, for every t ≥ 0,
+
+∥T (#)  
+
+> t
+
+(( Q − ΨQ)2)∥ ≲ nε 2 + e−2t.
+
+Proof. We first prove the estimates for Qx. From Equation (B.3), we note that (B.17) 
+
+QxΨQx = ( Z1Z2A#)
+
+> nb
+
+Y
+
+> ℓ=1
+
+Zjℓ (b0Zjℓ + b1Yjℓ ) = ( a0 − ia1X1 − ia2X2 − a12 X1X2)
+
+> nb
+
+Y
+
+> ℓ=1
+
+(b0 − ib1Xjℓ ) .
+
+Normalized Pauli words are orthonormal for the inner product defined by the normalized trace τ , so the constant coefficient of Equation (B.17) gives τ (QxΨQx ) = a0bnb 
+
+> 0
+
+, since every nontrivial Pauli word is traceless. Note that Qx and ΨQx have normalized Hilbert–Schmidt norm one, 
+
+∥ΨQx − Qx∥22,τ = 2(1 − a0bnb 
+
+> 0
+
+) ≤ 2[(1 − a0) + nb(1 − b0)] ≲ nε 2,
+
+where the last inequality follows from Equation (B.3). QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 41 
+
+Transposing the real coefficient matrices replaces ε by −ε, hence the left local eigenvectors are 
+
+ea = ( a0, −a1, −a2, a 12 ), eb = ( b0, −b1), and the same calculation gives ∥ eΨQx − Qx∥2,τ ≲ √n ε . The pairing of the left and right eigenoperators is given by 
+
+ωQx = τ ( eΨQx ΨQx ) = ⟨ea, a ⟩⟨ eb, b ⟩nb = ( a20 − a21 − a22 + a212 )( b20 − b21)nb ,
+
+so Equation (B.3) gives |ωQx − 1| ≲ nε 2.For each bulk factor, (b0Zjℓ + b1Yjℓ )2 = ( b20 + b21)I + b0b1(Zjℓ Yjℓ + Yjℓ Zjℓ ) = I. For the boundary factor, A2# = I +d#X1X2 where d# = 2( a1a2 −a0a12 ), and Equation (B.3) gives |d#| ≲ ε2. Therefore 
+
+∥ΨQx ∥ = ∥A#∥ ≤ 
+
+q
+
+1 + |d#| ≤ 1 + O(ε2).
+
+We next bound the operator norm of ΨQx − Qx with the following telescoping expansion 
+
+ΨQx − Qx = ( A# − Z1Z2)
+
+> nb
+
+Y
+
+> ℓ=1
+
+(b0Zjℓ + b1Yjℓ )+ Z1Z2
+
+> nb
+
+X
+
+> k=1
+> k−1
+
+Y
+
+> ℓ=1
+
+(b0Zjℓ + b1Yjℓ )
+
+!
+
+[( b0Zjk + b1Yjk ) − Zjk ]
+
+> nb
+
+Y
+
+> ℓ=k+1
+
+Zjℓ
+
+!
+
+.
+
+Equation (B.3) gives ∥A# − Z1Z2∥ ≲ ε and ∥(b0Zjℓ + b1Yjℓ ) − Zjℓ ∥ ≲ ε. Since all other factors have norm one, 
+
+∥ΨQx − Qx∥ ≲ ε + nbε ≲ nε. 
+
+Moreover, by the triangle inequality 
+
+∥Qx − eΨQx /ω Qx ∥2,τ ≤ ∥ Qx − eΨQx ∥2,τ + |1 − ω−1 
+
+> Qx
+
+|∥ eΨQx ∥2,τ ≲ √n ε + nε 2 ≲ √n ε, 
+
+where the last inequality uses ωQx ≥ 1 − nε 2 ≥ 1 − c∗ε∗ and √n ε ≤ nε ≤ c∗ < 1, for ε∗ sufficiently small. For S ⊆ I , put XS = Q 
+
+> j∈S
+
+Xj , with X∅ = I. Equation (B.17) shows that both QxΨQx and 
+
+ΨQx Qx = ( QxΨQx )∗ are linear combinations of XS , supported on the active sites I. Together with 
+
+Ψ2 
+
+> Qx
+
+= I + d#X1X2, the identity (Qx − ΨQx )2 = I − QxΨQx − ΨQx Qx + Ψ 2 
+
+> Qx
+
+therefore gives 
+
+(Qx − ΨQx )2 = X
+
+> S⊆I
+
+cS XS , c∅ = τ (( Qx − ΨQx )2) = ∥Qx − ΨQx ∥22,τ ≲ nε 2.
+
+Set La = |a0| + |a1| + |a2| + |a12 | and Lb = |b0| + |b1|. The ℓ1-norm of the Pauli coefficients is submultiplicative, so 
+
+X
+
+> S⊆I
+
+|cS | ≤ (1 + LaLnb 
+
+> b
+
+)2 ≤
+
+h
+
+1 + (1 + O(ε)) eO(nbε)i2
+
+≲ 1,
+
+because Equation (B.3) gives La = 1 + O(ε) and Lb = 1 + O(ε) and we set nε ≤ c∗. Let 
+
+∂S = {j < n : 1S (j)̸ = 1S (j + 1) }. For each bond j, j + 1 ,
+
+DZj Zj+1 (XS ) = Zj Zj+1 XS Zj Zj+1 − XS =
+
+
+
+(−1) 1S (j)+ 1S (j+1) − 1
+
+
+
+XS = −21{j∈∂S }XS .
+
+The remaining generator terms act as i[ H, X S ] = 0 , DXj Xj+1 (XS ) = 0 , DZ1 (XS ) = −21{1∈S}XS .
+
+Summing these contributions gives 
+
+L#(XS ) = −2 |∂S | + 1{#=c , 1∈S}
+
+XS , T (#)  
+
+> t
+
+(XS ) = e−2t(|∂S |+1{#=c , 1∈S})XS .
+
+Every nonempty S ⊆ I is a proper subset of the chain, so |∂S | ≥ 1. Consequently, 
+
+∥T (#)  
+
+> t
+
+(( Qx − ΨQx )2)∥ ≤ | c∅| + X
+
+> ∅̸=S⊆I
+
+|cS |e−2t(|∂S |+1{#=c , 1∈S}) ≲ nε 2 + e−2t X
+
+> ∅̸=S
+
+|cS | ≲ nε 2 + e−2t.42 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+For the qubit Qy pair, Equation (B.15) and Qy = −iQz Qx give 
+
+ΨQy − Qy = −iQz (Ψ Qx − Qx), eΨQy − Qy = −iQz ( eΨQx − Qx).
+
+Since Qz anticommutes with Qx, ΨQx , and eΨQx , multiplication by −iQz preserves all the operator and Hilbert–Schmidt norms above and gives 
+
+(Qy − ΨQy )2 = ( Qx − ΨQx )2, ωQy = τ ( eΨQy ΨQy ) = τ ( eΨQx ΨQx ) = ωQx .
+
+The Qy estimates therefore follow from the Qx estimates. □
+
+Proposition B.7 (The error bound in the metastable seminorm) . Under the assumptions of Proposition B.2, the explicit expectation satisfies 
+
+∥E# − P #∥cb Φ#,2 ≲ √nε + e−t0 ,
+
+and consequently 
+
+ϵ# := ∥E# − Φ#∥cb Φ#,2 ≲ √nε + γ#t0 + ne −t0/2 ≲ √nε + nε 2t0 + ne −t0/2 ∼ 1
+
+nα−1/2 .
+
+The constants are independent of n, ε.Proof. Write Φ = Φ # = T (#)  
+
+> t0
+
+and set Qc = {Qx}, Qq = {Qx, Q y}. Recall from the decomposition Proposition B.4 that 
+
+Fc(A) = τ (A)I, Fq(A) = τ (A)I + τ (Qz A)Qz .
+
+The explicit conditional expectations therefore have the form (B.18) E#(A) = F#(A) + X
+
+> Q∈Q#
+
+τ (QA )Q. 
+
+For each Q ∈ Q#, let ΨQ, eΨQ be the left–right pair defined in Equations (B.14) and (B.16), and let ωQ = τ ( eΨQΨQ). The biorthogonal expansion of the Riesz projection onto the semisimple slow spectral subspace [Kat95, Chapter I, §5.5] gives (B.19) P#(A) = F#(A) + X
+
+> Q∈Q#
+
+τ ( eΨQA)
+
+ωQ
+
+ΨQ.
+
+Subtracting Equation (B.19) from Equation (B.18) gives (B.20) (E# − P #)( A) = X
+
+> Q∈Q#
+
+τ (QA )( Q − ΨQ) + τ  (Q − eΨQ/ω Q)AΨQ
+
+.
+
+For D ∈ M2n , denote the linear functional φD(A) = τ (DA ). Schatten 1–∞ duality [Wat18, Equation (1.173)] gives ∥φD∥ = τ (|D|). The same norm holds completely: for unit vectors u, v ∈ Cm
+
+and X ∈ Mm ⊗ M2n ,
+
+|⟨ u, (id Mm ⊗ φD)( X)v⟩| = τ  D(⟨u| ⊗ I)X(|v⟩ ⊗ I) ≤ τ (|D|)∥X∥,
+
+and equality already occurs at m = 1 . Therefore ∥φD∥cb = τ (|D|). In particular, ∥φQ∥cb = 1 . For the second functional in Equation (B.20), Schatten 2–2 Hölder inequality [Wat18, Equation (1.174)] and Lemma B.6 give (B.21) ∥φQ− eΨQ/ω Q ∥cb = τ (|Q − eΨQ/ω Q|) ≤ ∥ Q − eΨQ/ω Q∥2,τ 
+
+≤ ∥ Q − eΨQ∥2,τ + |1 − ω−1 
+
+> Q
+
+|∥ eΨQ∥2,τ ≲ √nε. 
+
+We now apply the metastable-seminorm definition Equation (3.7) at an arbitrary amplification. Fix 
+
+m ≥ 1 and ∥X∥ ≤ 1, and set 
+
+ΛQ = (id Mm ⊗ φQ)( X), eΛQ = (id Mm ⊗ φQ− eΨQ/ω Q )( X).QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 43 
+
+The functional estimates above give ∥ΛQ∥ ≤ 1 and, by Equation (B.21), ∥eΛQ∥ ≲ √nε . For the first term in Equation (B.20), the final estimate of Lemma B.6, evaluated at t = t0, gives (B.22) ∥ΛQ ⊗ (Q − ΨQ)∥22,D⋆, Φm = ∥(id Mm ⊗ Φ)(Λ ∗
+
+> Q
+
+ΛQ ⊗ (Q − ΨQ)2)∥
+
+= ∥Λ∗
+
+> Q
+
+ΛQ∥ ∥ T (#)  
+
+> t0
+
+(( Q − ΨQ)2)∥ ≲ nε 2 + e−2t0 .
+
+For the second term, positivity and unitality of Φ imply 0 ≤ Φ(Ψ 2
+
+> Q
+
+) ≤ ∥ ΨQ∥2I. Consequently, using Equation (B.21) and the bound ∥ΨQ∥ ≤ 1 + O(ε2) from Lemma B.6, (B.23) ∥eΛQ ⊗ ΨQ∥22,D⋆, Φm = ∥eΛ∗ 
+
+> Q
+
+eΛQ ⊗ Φ(Ψ 2
+
+> Q
+
+)∥ ≤ ∥ eΛQ∥2∥ΨQ∥2 ≲ nε 2.
+
+Note that |Q#| ≤ 2. By applying the triangle inequality to Equation (B.20) at each amplification and then taking the suprema in Equation (3.7), Equations (B.22) and (B.23) give (B.24) 
+
+∥E# − P #∥cb Φ#,2 ≤ X
+
+> Q∈Q#
+
+sup  
+
+> m≥1,∥X∥≤ 1
+
+
+
+∥ΛQ ⊗ (Q − ΨQ)∥2,D⋆, Φm + ∥eΛQ ⊗ ΨQ∥2,D⋆, Φm
+
+
+
+≲ √nε + e−t0 ,
+
+Finally, Proposition B.4 gives 
+
+E# − Φ# = ( E# − P #) + (1 − e−γ#t0 )S# − Z #,t 0 .
+
+By Proposition 3.6 and Equation (B.24), Proposition B.4, and 1 − e−x ≤ x for x ≥ 0,
+
+∥E# − Φ#∥cb Φ#,2 ≤ ∥ E# − P #∥cb Φ#,2 + (1 − e−γ#t0 )∥S #∥cb + ∥Z #,t 0 ∥cb 
+
+≲ √nε + e−t0 + γ#t0 + ne −t0/2
+
+≲ √nε + γ#t0 + ne −t0/2.
+
+□
+
+Corollary B.8 (Reduced-iteration errors) . Let K# = E#Φ#ι#. Then 
+
+∥ι#Kk
+
+> #
+
+E# − Φk
+
+> #
+
+∥cb ≤ 2kδ # = O(k/n ), k ≥ 1,
+
+and, after one microscopic preparation step, 
+
+∥Φ#ι#Kk
+
+> #
+
+E# − Φk+1 # ∥cb ≤ (k + 1)( ϵ# + η#) = O(( k + 1) n−3/2), k ≥ 0.
+
+Proof. Apply Corollary 3.8 with the bounds from Corollary B.5 and Proposition B.7. □
+
+B.2.6. Direct iteration error over the slow lifetime. In fact, we can improve the error bound of the reduced iteration, over some number of metastable timescales. 
+
+Proposition B.9. Uniformly for t ≥ 0,
+
+|u#(t) − e−γ#t| ≤ Cnε 2.
+
+Consequently, 
+
+∥K k 
+
+> #
+
+− E#T (#)  
+
+> kt 0
+
+ι#∥cb ≤ C(k + 1) nε 2.
+
+If ε = n−α and t0 = Ct log n, where α ≥ 2 and Ct ≥ 4α, then for every fixed S,
+
+sup 
+
+> 1≤k, kγ #t0≤S
+
+∥ι#Kk
+
+> #
+
+E# − T (#)  
+
+> kt 0
+
+∥cb = OS (n1−α + (log n)−1).
+
+Proof. Recall that u#(t) = f#(t)fs(t)nb , γ # = γ0,# + nbγs. The spectral decompositions of M# and 
+
+Ms give, uniformly for t ≥ 0,
+
+|f#(t) − e−γ0,#t| + |fs(t) − e−γst| ≲ ε2, |f#(t)|, |fs(t)| ≤ 1.44 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+Therefore 
+
+|u#(t) − e−γ#t| ≤ | f#(t) − e−γ0,#t| | fs(t)|nb + e−γ0,#t|fs(t)nb − e−nbγst|≤ ε2 +
+
+> nb−1
+
+X
+
+> a=0
+
+|fs(t)|nb−1−a|fs(t) − e−γst|e−aγ st ≲ (nb + 1) ε2 ≲ nε 2.
+
+Define K#(t) = E#T (#)  
+
+> t
+
+ι#, so K# = K#(t0). The fixed components of N# form Ran Fc = span {I}
+
+and Ran Fq = span {I, Q z }, while the non-fixed ones are precisely Q ∈ Q#. Thus, 
+
+K#(t)|Ran F# = id , K#(t)( Q) = u#(t)Q, Q ∈ Q#.
+
+Thus Kk 
+
+> #
+
+and K#(kt 0) agree on Ran F#, while their multipliers on each Q ∈ Q# are u#(t0)k and 
+
+u#(kt 0), respectively. Hence 
+
+∥K k 
+
+> #
+
+− K #(kt 0)∥cb ≲ |u#(t0)k − u#(kt 0)| ≤ k|u#(t0) − e−γ#t0 | + |e−kγ #t0 − u#(kt 0)|
+
+≲ (k + 1) nε 2.
+
+We drop the model index for brevity, and write Zt = Tt(id − P ). Since Tt = TtP + Zt,
+
+Tt − ET tE = (id − E)TtP + ET tP(id − E) + Zt − EZtE, 
+
+(id − E)P = ( P − E)P, P(id − E) = P(P − E).
+
+Using ∥TtP∥ cb ≲ 1, ∥P∥ cb ≲ 1, ∥E∥cb = 1 , and Propositions B.2 and B.4, 
+
+∥Tt − ET tE∥cb ≲ ∥E − P∥ cb + ∥Z t∥cb ≲ nε + ne −t/ 2.
+
+For k ≥ 1, complete contractivity of E and ι, together with ιK#(kt 0)E = ET kt 0 E, now gives 
+
+∥ιKkE − Tkt 0 ∥cb ≤ ∥K k − K (kt 0)∥cb + ∥ET kt 0 E − Tkt 0 ∥cb ≲ (k + 1) nε 2 + nε + ne −t0/2.
+
+Finally, ε = n−α, t0 = Ct log n, and γ# ∼ nε 2 imply 
+
+kγ #t0 ≤ S ⇒ (k + 1) nε 2 ≲ nε 2 + St0
+
+= OS ((log n)−1),
+
+while nε = n1−α and ne −t0/2 = n1−Ct/2 ≤ n1−2α. This proves the last estimate. Left composition by Φ = Tt0 and duality give the corresponding prepared-state diamond bound. Its k = 0 case follows from Corollary 3.8. □
+
+Appendix C. Sharpness and obstructions 
+
+This appendix explains what the two approximation theorems can and cannot guarantee. We distinguish four issues: 
+
+• Global cb approximation by ambient conditional expectations can fail even at slow rank 2
+
+(Proposition C.1). 
+
+• The square-root exponent in the metastable seminorm is optimal for ambient expectations with prescribed range dimension (Proposition C.2). 
+
+• The cube-root cb exponent is optimal for global cb approximation using UCP idempotents (Proposition C.3). 
+
+• Without a bound on slow rank, no dimension-independent approximation modulus tending to zero exists using UCP idempotents (Proposition C.4). QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 45 
+
+C.1. A rank-2 example: ambient obstruction and the square-root bound. For d = 2 m + 1 ,
+
+m ≥ 1, let h = diag( Im, −Im, 0) , and write P+, P −, P 0 for its spectral projections. Define the trace-preserving UCP map which is self-adjoint with respect to the Hilbert–Schmidt inner product, by (C.1) Φ( X) = Tr Xd Id + Tr( hX )
+
+d h. 
+
+The key feature is that h is almost fixed by Φ, but its square is not. 
+
+Proposition C.1. The slow Riesz projection of Φ has rank two, and 
+
+(C.2) η := ∥Φ2 − Φ∥cb = d − 1
+
+d2 −→ 0.
+
+Nevertheless, every UCP conditional expectation E : Md → Md onto an ambient subalgebra satisfies 
+
+(C.3) ∥E − Φ∥cb ≥ 15 − 1
+
+d .
+
+Proof. Set λ = ( d − 1) /d . Direct substitution gives Φ( I) = I, Φ( h) = λh , and Φ( X) = 0 when X is Hilbert–Schmidt orthogonal to both I and h. Hence the slow Riesz range is span {I, h }, and 
+
+Φ2 − Φ = 
+
+ 1
+
+d Tr( ·)Id + λd Tr( h ·)h
+
+
+
+−
+
+ 1
+
+d Tr( ·)Id + 1
+
+d Tr( h ·)h
+
+
+
+= −d−2 Tr( h ·)h. 
+
+The functional Tr( h ·) = Tr( P+ ·) − Tr( P− ·) has cb norm d − 1: the triangle inequality gives the upper bound, and evaluation at the contraction h gives equality. This proves the formula Equation (C.2) for η. Complete contractivity of conditional expectations gives ∥E(h)∥ ≤ 1, while 
+
+∥E(h)−h∥ ≤ ∥ E −Φ∥cb +d−1. Because Ran E is an algebra, it contains E(h)2, so E(E(h)2) = E(h)2.Also ∥E(h)2 − h2∥ ≤ 2∥E(h) − h∥, by writing E(h)2 − h2 = E(h)( E(h) − h) + ( E(h) − h)h. Since 
+
+Φ( h2) = λI , we obtain 
+
+1 − 1
+
+d = ∥Φ( h2) − h2∥≤ ∥ Φ( h2) − E(h2)∥ + ∥E(h2 − E(h)2)∥ + ∥E(h)2 − h2∥≤ ∥ E − Φ∥cb + 2 ∥E(h)2 − h2∥ ≤ 5∥E − Φ∥cb + 4
+
+d ,
+
+which proves (C.3). □
+
+The theorem’s ambient completion constructed in Theorem 3.7 has dimension at most rank PΦ+1 = 3. In this class, the metastable square-root exponent is also optimal. Write τd = d−1 Tr and 
+
+∥X∥2,τ d = τd(X∗X)1/2.
+
+Proposition C.2. There are constants c, C > 0 such that, for all sufficiently large odd d,
+
+(C.4) c√η ≤ inf   
+
+> Econditional expectation
+> dim Ran E≤3
+
+∥E − Φ∥cb Φ,2 ≤ C√η. 
+
+Proof. The square-root upper bound is a consequence of Theorem 3.7. It remains to prove that this order cannot be improved. Let E be a conditional expectation in (C.4). The maximally mixed state I/d is stationary for 
+
+Φ∗, so it is among the metastable states D⋆, Φ defined in Definition 3.5. Testing this state and the contraction h gives 
+
+∥E(h) − λh ∥2,τ d ≤ ∥ E − Φ∥cb Φ,2, ∥E(h) − h∥ ≤ √d ∥E − Φ∥cb Φ,2 + 1
+
+d .
+
+Here we used the inequality ∥Y ∥ ≤ √d ∥Y ∥2,τ d .46 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+Suppose ∥E − Φ∥cb Φ,2 < 1/(8 √d). For large d, the last bound gives ∥E(h) − h∥ < 1/4. Weyl’s eigenvalue perturbation inequality [Car25, Theorem 11.21] gives 
+
+|μk(E(h)) − μk(h)| ≤ ∥ E(h) − h∥ < 14 , k = 1 , . . . , d, 
+
+where μk denotes the k-th eigenvalue in decreasing order. As h has eigenvalues 1, 0, −1 with multiplicities m, 1, m , respectively, E(h) has exactly one eigenvalue in (−1/4, 1/4) . Its spectral projection R0 has rank one and is a polynomial in E(h), so R0 ∈ Ran E and E(R0) = R0.On the other hand, Tr R0 = 1 and | Tr( hR 0)| ≤ 1, so (C.1) gives ∥Φ( R0)∥ ≤ 2/d . Test the same metastable state I/d , now with the contraction R0:
+
+∥E − Φ∥cb Φ,2 ≥ ∥ R0 − Φ( R0)∥2,τ d ≥ 1
+
+√d − 2
+
+d > 18√d
+
+for large d, a contradiction. Hence ∥E − Φ∥cb Φ,2 ≥ 1/(8 √d) ≳ √η. □
+
+The obstruction in Proposition C.1 concerns ambient conditional expectations . It does not rule out a nearby UCP idempotent with a Choi–Effros range, as supplied by Theorem 3.3. The obstruction for arbitrary UCP idempotents uses a different example with growing slow rank in Section C.3. C.2. A rank-9 example: the sharpness of the global exponent. The construction has two orthogonal copies of a 3-dimensional logical space. One copy can be decoded exactly; the other has a small coupling to one extra physical direction. We give the second copy weight t. Its decoding error is of order t2, so the idempotency defect is of order t3, but an exact idempotent must still change the UCP map by order t. Let L = C3, with basis {u0, u 1, u 2}, and set Eij = |ui⟩⟨ uj | and xij = ⟨ui, xu j ⟩.Put 
+
+H = G ⊕ B ⊕ Ck, G = span {g0, g 1, g 2}, B = span {b0, b 1, b 2},
+
+All displayed basis vectors are orthonormal. Let PG, P B be the projections onto G, B , and let 
+
+JG, J B : L → H send ui to gi, b i, respectively. For 0 < t < 1, write c = √1 − t2 and define an isometry W : H → L ⊗ C3, with environment basis {fg, f 0, f 1}, by (C.5) 
+
+W g i = ui ⊗ fg, (i = 0 , 1, 2) ,W b 0 = u0 ⊗ (cf 0 + tf 1), W b j = uj ⊗ f0, (j = 1 , 2) ,W k = u1 ⊗ f1.
+
+Define UCP maps ∆ : M3 → M7, Υ : M7 → M3, and Φ : M7 → M7 by (C.6) ∆( x) = W ∗(x ⊗ I)W, Υ( X) = (1 − t)J∗
+
+> G
+
+XJ G + tJ ∗ 
+
+> B
+
+XJ B , Φ = ∆Υ .
+
+Proposition C.3. For sufficiently small t > 0, rank PΦ = 9 ,
+
+(C.7) η := ∥Φ2 − Φ∥cb = t(1 − p1 − t2) ∼ t3,
+
+and there is an absolute constant a > 0 such that 
+
+(C.8) at ≤ inf    
+
+> F:M7→M7UCP
+> F2=F
+
+∥F − Φ∥cb ≤ 2t. 
+
+Thus the exponent 1/3 in Theorem 3.3 cannot be increased for any rank bound r ≥ 9.Proof. Step 1: defect and slow rank. 
+
+We first compute η in Equation (C.7) and identify the slow range. Write R = ∆ ∗, N = Υ ∗, and 
+
+NG(ρ) = JGρJ ∗
+
+> G
+
+. Relative to L = Cu0 ⊕ span {u1, u 2}, define the channel D by 
+
+D
+
+ρ00 ρ0b
+
+ρb0 ρbb 
+
+
+
+=
+
+ ρ00 cρ 0b
+
+cρ b0 ρbb 
+
+
+
+.QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 47 
+
+Thus both diagonal blocks are unchanged, while only the coherences between the two sectors are multiplied by c. Direct substitution in (C.5) gives (C.9) RN = (1 − t) id + tD =: A, RN G = id .
+
+For every k ≥ 1 and X ∈ Mk ⊗ M3, the two summands of (id Mk ⊗N )( X) are supported on the orthogonal spaces Ck ⊗ G and Ck ⊗ B. Trace norm is additive on a block-diagonal matrix, and isometric embeddings preserve its nonzero singular values. Hence 
+
+∥(id Mk ⊗N )( X)∥1 = ∥(1 − t)X ⊕ tX ⊕ 0∥1 = (1 − t)∥X∥1 + t∥X∥1 = ∥X∥1.
+
+Consequently, (C.10) ∥Φ2 − Φ∥cb = ∥N (A − id) R∥⋄ = ∥A − id ∥⋄.
+
+Indeed, R is a channel, so ∥N (A−id) R∥⋄ ≤ ∥ A−id ∥⋄. Conversely, using (C.9) gives ∥N (A−id) R∥⋄ ≥∥N (A−id) RN G∥⋄ = ∥N (A−id) ∥⋄ = ∥A−id ∥⋄, where the last equality uses the complete trace-norm isometry of N .With Z = diag(1 , −1, −1) , conjugation by Z fixes the diagonal blocks and negates the off-diagonal blocks. Therefore 
+
+D
+
+ρ00 ρ0b
+
+ρb0 ρbb 
+
+
+
+= 1 + c
+
+2
+
+ρ00 ρ0b
+
+ρb0 ρbb 
+
+
+
++ 1 − c
+
+2
+
+ ρ00 −ρ0b
+
+−ρb0 ρbb 
+
+
+
+, D = 1 + c
+
+2 id + 1 − c
+
+2 Ad Z .
+
+It is easy to see that the two channels id and Ad Z have diamond distance 2. Together with (C.10), this gives 
+
+η = t∥D − id ∥⋄ = t(1 − c) = t3
+
+1 + √1 − t2 , t3
+
+2 ≤ η ≤ t3,
+
+proving (C.7). Since Z = Z∗, Ad Z is self-adjoint for the Hilbert–Schmidt inner product. Thus D and A are self-adjoint, and Υ∆ = ( RN )∗ = A. The block-diagonal matrices form a 12 + 2 2 = 5 -dimensional eigenspace with eigenvalue 1; the two off-diagonal blocks form a 2 + 2 = 4 -dimensional eigenspace with eigenvalue 1 − t(1 − c) = 1 − η. Since A = Υ∆ is invertible, every X ∈ M7 has the unique decomposition X = ∆( a) + Y , with a = A−1Υ( X) ∈ M3 and Y ∈ ker Υ . Thus 
+
+Φ(∆( a) + Y ) = ∆(Υ∆( a)) = ∆( Aa ).
+
+In a basis adapted to (Ran ∆ , ker Υ) , the matrix representation of Φ is 
+
+A 00 0
+
+
+
+. For small t, the Riesz contour |z − 1| = 1 /2 therefore encloses exactly the 5 eigenvalues at 1 and 4 at 1 − η, proving 
+
+rank PΦ = 9 .For the upper bound, by direct computation we know that X 7 → J∗
+
+> G
+
+XJ G is a UCP left inverse of 
+
+∆. Thus 
+
+F (0) (X) = ∆( J∗
+
+> G
+
+XJ G)
+
+is a UCP idempotent, by the same exact recovery argument used in Section 5.3. Since Υ differs from 
+
+J∗
+
+> G
+
+(·)JG by at most 2t in cb norm, ∥F (0) − Φ∥cb ≤ 2t. In fact the order of the upper bound also follows from Theorem 3.3, because η1/3 ∼ (t3)1/3 = t.
+
+Step 2: a nearby idempotent has range algebra M3.
+
+For the lower bound, let F be UCP and idempotent, and set ϵ = ∥F − Φ∥cb . We may assume ϵ < 1/8.The Riesz estimate Proposition 2.1 gives ∥P Φ − Φ∥cb = O(η), so ∥F − P Φ∥cb < 1 for small t. Two projections at distance less than one have the same rank [Kat95, Chapter I, §4.6], as also used in the proof of Proposition B.2. Hence rank F = 9 . Its Choi–Effros range AF is therefore a 9-dimensional 
+
+C∗-algebra. 48 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+We claim AF ∼= M3. By the structure theorem [Car25, Chapter 4] (see also Section 4.2), the only alternative is a direct sum of matrix blocks of size at most 2. To exclude this alternative, consider 
+
+K = Υ F ∆.(C.11) ∥K − id ∥cb ≤ ϵ + ∥A2 − id ∥cb ≤ ϵ + 2 η < 12 .
+
+If AF = L 
+
+> j
+
+Mnj with nj ≤ 2, the adjoint channel K∗ factors as a channel from M3 to L 
+
+> j
+
+Mnj
+
+followed by a channel back to M3. By the blockwise Kraus representation in Section 4.2, write their Kraus operators as Bjβ : C3 → Cnj and Cjα : Cnj → C3. The composite Kraus operators are Cjα Bjβ , so each has rank at most nj ≤ 2. Denote these products collectively by Lα. Let 
+
+Ω = 3 −1/2 P2 
+
+> i=0
+
+ui ⊗ ui and σ = (id ⊗K∗)( |Ω⟩⟨ Ω|). For each Lα, its at most two nonzero singular values give | Tr Lα|2 ≤ ∥ Lα∥21 ≤ 2 Tr( L∗
+
+> α
+
+Lα) by Cauchy–Schwarz. Since ⟨Ω, (I ⊗ Lα)Ω ⟩ = Tr Lα/3
+
+and P 
+
+> α
+
+L∗
+
+> α
+
+Lα = I3,
+
+⟨Ω, σ Ω⟩ = 19
+
+X
+
+> α
+
+| Tr Lα|2 ≤ 29
+
+X
+
+> α
+
+Tr( L∗
+
+> α
+
+Lα) = 23 .
+
+The trace-norm duality bound, tested on the contraction 2 |Ω⟩⟨ Ω| − I, now gives 
+
+∥K − id ∥cb = ∥K∗ − id ∥⋄ ≥ ∥ σ − | Ω⟩⟨ Ω| ∥ 1
+
+≥ Tr  (2 |Ω⟩⟨ Ω| − I)( σ − | Ω⟩⟨ Ω|) = 2(1 − ⟨ Ω, σ Ω⟩) ≥ 23 ,
+
+contradicting (C.11). Therefore AF ∼= M3.
+
+Step 3: exact recovery forces orthogonal logical copies. 
+
+Choose a unital ∗-isomorphism θ : AF → M3, corestrict F : M7 → A F , and let ι : AF ,→ M7 be inclusion, as in the proof of Theorem 3.2. Then the UCP maps ∆′ = ιθ −1 and Υ′ = θF satisfy 
+
+∆′Υ′ = ιF = F, Υ′∆′ = θF ιθ −1 = id M3 .
+
+Taking adjoints gives F∗ = N ′R′ and R′N ′ = id , where N ′ = Υ ′∗ and R′ = ∆ ′∗. For a map 
+
+T : M3 → M3, define its Choi matrix by (C.12) Ch( T ) := 
+
+> 2
+
+X
+
+> i,j =0
+
+Eij ⊗ T (Eij ).
+
+If T (ρ) = P 
+
+> α
+
+LαρL ∗
+
+> α
+
+, then Ch( T ) = P 
+
+> α
+
+|vec( Lα)⟩⟨ vec( Lα)|, where vec( L) = P 
+
+> i
+
+ui ⊗ Lu i [Wat18, Theorem 2.22]. We use the following consequence: every positive summand of a rank-one positive matrix has range contained in its one-dimensional range. Since Ch(id) = |vec( I3)⟩⟨ vec( I3)|, every Kraus operator of the identity channel is a scalar multiple of I3. Choosing Kraus operators Bβ , C α for 
+
+N ′, R ′, the composite R′N ′ = id has Kraus operators CαBβ , so CαBβ = cαβ I3. Trace preservation of R′ gives P 
+
+> α
+
+C∗
+
+> α
+
+Cα = I7, hence 
+
+B∗ 
+
+> β
+
+Bγ = B∗
+
+> β
+
+X
+
+> α
+
+C∗
+
+> α
+
+Cα
+
+!
+
+Bγ = X
+
+> α
+
+(CαBβ )∗(CαBγ ) = X
+
+> α
+
+cαβ cαγ 
+
+!
+
+I3.
+
+Diagonalizing this positive coefficient matrix, and discarding zero Kraus operators, gives (C.13) N ′(ρ) = 
+
+> s
+
+X
+
+> j=1
+
+pj Vj ρV ∗ 
+
+> j
+
+, V ∗ 
+
+> i
+
+Vj = δij I3, pj > 0, X
+
+> j
+
+pj = 1 , s ≤ 2.
+
+The last inequality follows from 3s ≤ dim H = 7 . Thus an exact encoding consists of at most two orthogonal logical copies. QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 49 
+
+Step 4: encodings into 1 or 2 orthogonal copies give the lower bound. 
+
+If s = 1 , every output of F∗ is supported on the three-dimensional space V1L. On the other hand, 
+
+Φ∗
+
+ JG(I3/3) J∗
+
+> G
+
+ = 1 − t
+
+3 PG + t
+
+3 PB .
+
+For t < 1/2, the three largest eigenvalues of this state sum to 1 − t. Thus every rank-three projection 
+
+P satisfies Tr(( I − P )Φ ∗(JG(I3/3) J∗
+
+> G
+
+)) ≥ t. Taking P = V1V ∗ 
+
+> 1
+
+and testing the output difference against the contraction 2P − I gives ϵ ≥ 2t.It remains to consider s = 2 . The space C = V1L ⊕ V2L in (C.13) has codimension one. Write 
+
+C⊥ = Ch, with ∥h∥ = 1 . Put Λj (x) = V ∗ 
+
+> j
+
+∆′(x)Vj . These are UCP maps and exact recovery gives 
+
+P 
+
+> j
+
+pj Λj = Υ ′∆′ = id . By (C.12), the Choi matrices of their adjoints are positive and their weighted sum is the rank-one Choi matrix of id . Each must therefore be proportional to that matrix. Trace preservation forces Λj, ∗ = id , hence V ∗ 
+
+> j
+
+∆′(x)Vj = x for every j and x.For a unitary u ∈ M3, T = ∆ ′(u) is a contraction and its compression to Vj L is the unitary Vj uV ∗
+
+> j
+
+on that space. With P = Vj V ∗ 
+
+> j
+
+, this means (P T P )∗(P T P ) = P = ( P T P )( P T P )∗. Consequently, 
+
+P T ∗(I − P )T P = P T ∗T P − P ≤ 0, P T (I − P )T ∗P = P T T ∗P − P ≤ 0.
+
+Both left-hand sides are positive, so (I − P )T P = 0 = P T (I − P ): Vj L reduces T . Since matrices are spanned by unitaries, C reduces every ∆′(x). Trace duality then gives 
+
+R′(|h⟩⟨ v|) = 0 , F∗(|h⟩⟨ v|) = 0 (v ⊥ h).
+
+Using the trace-norm isometry of N established before Equation (C.10), for unit v ⊥ h and ∥x∥ ≤ 1
+
+we obtain 
+
+|⟨ v, ∆( x)h⟩| ≤ ∥ R(|h⟩⟨ v|)∥1 = ∥Φ∗(|h⟩⟨ v|)∥1 ≤ ϵ. 
+
+Equivalently, writing Ph⊥ = I − | h⟩⟨ h|,(C.14) ∥Ph⊥ ∆( x)h∥ ≤ ϵ (∥x∥ ≤ 1) .
+
+We finish by testing this inequality on a few matrix units. The operators Pi := ∆( Eii ) are the orthogonal projections onto 
+
+H0 = span {g0, b 0}, H1 = span {g1, b 1, k }, H2 = span {g2, b 2}.
+
+The off-diagonal matrix units used below are (C.15) ∆( E21 ) = |g2⟩⟨ g1| + |b2⟩⟨ b1|,
+
+∆( E01 ) = |g0⟩⟨ g1| + c|b0⟩⟨ b1| + t|b0⟩⟨ k|.
+
+Put pi = ∥Pih∥2. Equation (C.14), applied to Eii , gives pi(1 − pi) ≤ ϵ2. Since P 
+
+> i
+
+pi = 1 and 
+
+ϵ < 1/8, exactly one pi is at least 1 − 2ϵ2, and the other two are at most 2ϵ2. This dominant index cannot be 0: by Equation (C.15), ∆( E10 ) is an isometry from H0 into H1, so (C.14) would give ϵ ≥ pp0(1 − p1) ≥ 1 − 2ϵ2. The same argument with ∆( E12 ) excludes index 2. Therefore 
+
+p1 ≥ 1 − 2ϵ2.The first identity in Equation (C.15) sends the g1, b 1 components of h into H2. By (C.14), their squared norm is at most ϵ2/(1 − p2) ≤ 2ϵ2. Together with p0 + p2 ≤ 2ϵ2, this gives 1 − |⟨ k, h ⟩| 2 ≤ 4ϵ2.Choose the phase of h so that ⟨k, h ⟩ ≥ 0. Then ∥h − k∥ ≤ 3ϵ.Finally, the second identity in Equation (C.15) gives ∆( E01 )k = tb 0. Since ∥∆( E01 )∥ ≤ 1 and 
+
+∥Ph⊥ − Pk⊥ ∥ ≤ 2∥h − k∥, (C.14) yields 
+
+t = ∥Pk⊥ ∆( E01 )k∥ ≤ ∥ Ph⊥ ∆( E01 )h∥ + 3 ∥h − k∥ ≤ 10 ϵ. 
+
+Thus ϵ ≥ t/ 10 in this case as well. Together with the s = 1 case and the trivial case ϵ ≥ 1/8, this proves (C.8) for all sufficiently small t. □50 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+C.3. A dimensional obstruction without bounded slow rank. The previous examples keep the slow rank fixed. We now let it grow and show that no cb approximation modulus tending to zero can hold uniformly over all UCP maps. The construction encodes m classical labels into m − 1 physical dimensions. Fix m ≥ 9, set d = m − 1, and identify Md with B(H), where H = span {e}⊥ ⊂ Cm
+
+and e = Pmj=1 ej . Define (C.16) 
+
+vj =
+
+r mm − 1
+
+
+
+ej − e
+
+m
+
+
+
+, Pj = |vj ⟩⟨ vj |, ⟨vi, v j ⟩ = − 1
+
+m − 1 (i̸ = j), X
+
+> j
+
+Pj = mm − 1 Id.
+
+Each vj is a unit vector. The associated UCP maps and physical UCP propagator are (C.17) 
+
+Υ : Md → Cm, Υ( X)j = Tr( Pj X),
+
+∆ : Cm → Md, ∆( a) = m − 1
+
+m
+
+X
+
+> j
+
+aj Pj , Φ = ∆Υ .
+
+Proposition C.4. The maps in Equation (C.17) satisfy 
+
+(C.18) η := ∥Φ2 − Φ∥cb ≤ 2
+
+m , rank PΦ = m, 
+
+and 
+
+(C.19) inf  
+
+> E:Mm−1→Mm−1UCP
+> E2=E
+
+∥E − Φ∥cb ≥ 1 − 2(2 m − 3) 
+
+m(m − 1) .
+
+Consequently, there is no dimension-independent function f (η) → 0 as η → 0 that bounds the distance of every almost-idempotent UCP map to a UCP idempotent. Proof. Step 1: defect and slow rank. 
+
+As in the proof of Proposition C.3, we first compute the logical round trip A := Υ∆ . Write 
+
+Π( a) = m−1(P 
+
+> j
+
+aj )ICm and λ = ( m − 2) /(m − 1) . By Equation (C.16), (C.20) (A)ij =
+
+(
+
+1 − 1/m, i = j, 
+
+1/[m(m − 1)] , i̸ = j, A = Π + λ(id Cm −Π) .
+
+Since Cm is commutative, the cb norm equals the ordinary operator norm [BL04, §1.2.6], which for a scalar matrix is the maximum absolute row sum. Therefore (C.21) ∥A − id Cm ∥cb = 2
+
+m , δ := ∥A2 − id Cm ∥cb = 2(1 − λ2)
+
+
+
+1 − 1
+
+m
+
+
+
+= 2(2 m − 3) 
+
+m(m − 1) .
+
+Since Φ2 − Φ = ∆( A − id Cm )Υ , complete contractivity proves the defect bound. Since A is invertible, every X ∈ Md has the unique decomposition X = ∆( a) + Y , with a = A−1Υ( X) and Y ∈ ker Υ . In these coordinates, 
+
+Φ(∆( a) + Y ) = ∆(Υ∆( a)) = ∆( Aa ), Φ ←→ 
+
+A 00 0
+
+
+
+.
+
+Thus 
+
+A 00 0
+
+
+
+is the matrix representation of Φ on the basis adapted to (Ran ∆ , ker Υ) , using ∆ to identify the first summand with Cm. Its nonzero eigenvalues are 1 and λ > 1/2, with multiplicities 1
+
+and m − 1. Since η < 1/4, the Riesz projection in Proposition 2.1 selects exactly these modes and has rank m.
+
+Step 2: a nearby idempotent has an m-dimensional range algebra. 
+
+To prove (C.19), suppose for contradiction that a UCP idempotent E satisfies ∥E − Φ∥cb < 1 − δ.Equip AE = Ran E with the Choi–Effros product, as in Corollary 3.8, and denote its inclusion by ι.QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 51 
+
+The maps 
+
+∆E := E∆ : Cm → A E , ΥE := Υ ι : AE → Cm
+
+are UCP and satisfy (C.22) ΥE ∆E − id Cm = Υ( E − Φ)∆ + ( A2 − id Cm ),
+
+∆E ΥE − id AE = E(Φ − E)ι. 
+
+Here E denotes either the ambient idempotent or its corestriction, as before. Thus the two cb norms are bounded by ∥E − Φ∥cb + δ < 1 and ∥E − Φ∥cb < 1, respectively. Both round trips are invertible by the Neumann series. The first makes ∆E injective and the second makes it surjective, so dim AE = m.
+
+Step 3: the range algebra must be commutative. 
+
+Suppose AE has a matrix block Mnj with nj ≥ 2. Using the block decomposition in Section 4.2, choose an isometry V : C2 → Cnj and define the corner inclusion ȷ(X) = (0 , . . . , V XV ∗, . . . , 0) and the projection onto this corner, represented in M2, by κ(a) = V ∗aj V . Both maps are completely positive contractions and κȷ = id M2 . Set Λ = κ∆E ΥE ȷ. By (C.22), ∥Λ − id M2 ∥cb ≤ ∥ E − Φ∥cb < 1.The factorization through the classical algebra is explicitly 
+
+M2ΥE ȷ
+
+−−→ Cm κ∆E
+
+−−−→ M2.
+
+Each coordinate of the first map is a positive functional, so (Υ E ȷ)( X)i = Tr( BiX) for some Bi ≥ 0.If ei is the i-th coordinate vector of Cm, the second map sends it to Ci := κ∆E (ei) ≥ 0. Hence 
+
+Λ( X) = P 
+
+> i
+
+Tr( BiX)Ci. For Ω = ( e1 ⊗ e1 + e2 ⊗ e2)/√2 in C2 ⊗ C2 and ω = |Ω⟩⟨ Ω|,
+
+σ := (id M2 ⊗Λ∗)( ω) = 12
+
+X
+
+> i
+
+CT 
+
+> i
+
+⊗ Bi.
+
+Thus σ is a sum of positive product operators. For any a, b ≥ 0,
+
+Tr  ω(a ⊗ b) = 12 Tr( aTb) ≤ 12 Tr( a) Tr( b), Tr( ωσ ) ≤ 12 Tr σ. 
+
+The same maximally entangled-state test as in Proposition C.3 gives 
+
+∥E − Φ∥cb ≥ ∥ Λ − id M2 ∥cb = ∥Λ∗ − id M2 ∥⋄ ≥ ∥ ω − σ∥1
+
+≥ Tr  (2 ω − I)( ω − σ) = 1 + Tr σ − 2 Tr( ωσ ) ≥ 1,
+
+a contradiction. Hence AE ∼= Cm.
+
+Step 4: m perfectly distinguishable states cannot fit in m − 1 dimensions. 
+
+We now pass to states to turn exact preservation of the m classical labels into a lower bound on the physical dimension: each label must have a physical state, and the states must be perfectly distinguishable. Let e1, . . . , e m be the minimal projections of AE ∼= Cm. The reconstruction and compression maps from Corollary 3.8 give states ρi = E∗(ei) and physical effects pj = ι(ej ) satisfying 
+
+0 ≤ pj ≤ Id, X
+
+> j
+
+pj = Id, Tr( ρipj ) = Tr AE (eiEι (ej )) = δij .
+
+Consequently, supp ρi ⊆ ker( Id − pi) and supp ρi ⊆ ker pj for j̸ = i. These supports are pairwise orthogonal: for u ∈ supp ρi and v ∈ supp ρj , i̸ = j, we have ⟨u, v ⟩ = ⟨piu, v ⟩ = ⟨u, p iv⟩ = 0 . Each state has nonzero support, so m ≤ d = m − 1, a contradiction. This proves Equation (C.19). □52 HAO-EN LI, LIN LIN, AND MICHAEL RAGONE 
+
+References 
+
+[BCV25] Thiago Bergamaschi, Chi-Fang Chen, and Umesh Vazirani. A structural theory of quantum metastability: Markov properties and area laws, 2025. arXiv:2510.08538v1. [BdH15] Anton Bovier and Frank den Hollander. Metastability: A Potential-Theoretic Approach , volume 351 of 
+
+Grundlehren der mathematischen Wissenschaften . Springer, 2015. [Bin87] Kurt Binder. Theory of first-order phase transitions. Reports on Progress in Physics , 50:783–859, 1987. [BKK07] Cédric Bény, Achim Kempf, and David W. Kribs. Generalization of quantum error correction via the heisenberg picture. Physical Review Letters , 98:100502, 2007. arXiv:quant-ph/0608071. [BL04] David P. Blecher and Christian Le Merdy. Operator Algebras and Their Modules: An Operator Space Approach . Oxford University Press, 2004. [BMJ24] C. A. Brown, Katarzyna Macieszczak, and Robert L. Jack. Unraveling metastable Markovian open quantum systems. Physical Review A , 109:022244, 2024. arXiv:2308.14107. [Car25] Eric Carlen. Inequalities in Matrix Algebras , volume 251 of Graduate Studies in Mathematics . American Mathematical Society, Providence, RI, 2025. [CE77] Man-Duen Choi and Edward G. Effros. Injectivity and operator spaces. Journal of Functional Analysis ,24(2):156–209, 1977. [CN14] John D. Chodera and Frank Noé. Markov state models of biomolecular conformational dynamics. Current Opinion in Structural Biology , 25:135–144, 2014. [DK70] Chandler Davis and W. M. Kahan. The rotation of eigenvectors by a perturbation. III. SIAM Journal on Numerical Analysis , 7(1):1–46, 1970. [DKLP02] Eric Dennis, Alexei Kitaev, Andrew Landahl, and John Preskill. Topological quantum memory. Journal of Mathematical Physics , 43:4452–4505, 2002. arXiv:quant-ph/0110143. [DS01] Pablo G. Debenedetti and Frank H. Stillinger. Supercooled liquids and the glass transition. Nature ,410:259–267, 2001. [GSTV26] Tommaso Grigoletto, Alain Sarlette, Francesco Ticozzi, and Lorenza Viola. Approximate reduced Lindblad dynamics via algebraic and adiabatic methods. Quantum Science and Technology , 11(4):045003, 2026. arXiv:2603.11982. [HP18] Brooke E. Husic and Vijay S. Pande. Markov state models: From an art to a science. Journal of the American Chemical Society , 140(7):2386–2396, 2018. [HTB90] Peter Hänggi, Peter Talkner, and Michal Borkovec. Reaction-rate theory: fifty years after Kramers. 
+
+Reviews of Modern Physics , 62:251–341, 1990. [JQM24] Y.-D. Jin, C.-D. Qiu, and W.-L. Ma. Theory of metastability in discrete-time open quantum dynamics. 
+
+Physical Review A , 109:042204, 2024. arXiv:2401.00157. [Kat95] Tosio Kato. Perturbation Theory for Linear Operators . Classics in Mathematics. Springer, Berlin, second edition, 1995. [Kit25] Alexei Kitaev. Almost-idempotent quantum channels and approximate C∗-algebras. arXiv preprint arXiv:2405.02434 , 2025. arXiv:2405.02434. [KLP05] David Kribs, Raymond Laflamme, and David Poulin. Unified and generalized approach to quantum error correction. Physical Review Letters , 94(18):180501, 2005. arXiv:quant-ph/0412076. [KSW08] Dennis Kretschmann, Dirk Schlingemann, and Reinhard F. Werner. A continuity theorem for Stinespring’s dilation. Journal of Functional Analysis , 255(8):1889–1904, 2008. arXiv:0710.2495. [LCW98] Daniel A. Lidar, Isaac L. Chuang, and K. Birgitta Whaley. Decoherence-free subspaces for quantum computation. Physical Review Letters , 81(12):2594–2597, 1998. arXiv:quant-ph/9807004. [LLPDS11] Kresten Lindorff-Larsen, Stefano Piana, Ron O. Dror, and David E. Shaw. How fast-folding proteins fold. 
+
+Science , 334:517–520, 2011. [LTN +17] Fabian Letscher, Oliver Thomas, Thomas Niederprüm, Michael Fleischhauer, and Herwig Ott. Bista-bility versus metastability in driven dissipative Rydberg gases. Physical Review X , 7:021020, 2017. arXiv:1611.00627. [LVP +20] Raphaël Lescanne, Marius Villiers, Théau Peronnin, Alain Sarlette, Matthieu Delbecq, Benjamin Huard, Takis Kontos, Mazyar Mirrahimi, and Zaki Leghtas. Exponential suppression of bit-flips in a qubit encoded in an oscillator. Nature Physics , 16:509–513, 2020. arXiv:1907.11729. [LW03] Daniel A. Lidar and K. Birgitta Whaley. Decoherence-free subspaces and subsystems. In Fabio Benatti and Roberto Floreanini, editors, Irreversible Quantum Dynamics , volume 622 of Lecture Notes in Physics ,pages 83–120. Springer, Berlin, 2003. arXiv:quant-ph/0301032. [MGLG16] Katarzyna Macieszczak, Mădălin Guţă, Igor Lesanovsky, and Juan P. Garrahan. Towards a theory of metastability in open quantum dynamics. Physical Review Letters , 116(24):240404, 2016. arXiv:1512.05801. [MRLG21] Katarzyna Macieszczak, Dominic C. Rose, Igor Lesanovsky, and Juan P. Garrahan. Theory of classical metastability in open quantum systems. Physical Review Research , 3(3):033047, 2021. arXiv:2006.01227. QUANTUM MARKOV STATE MODELS FOR METASTABLE DYNAMICS 53 
+
+[NHSS07] Frank Noé, Illia Horenko, Christof Schütte, and Jeremy C. Smith. Hierarchical analysis of conformational dynamics in biomolecules: Transition networks of metastable states. The Journal of Chemical Physics ,126:155102, 2007. [NSVE +09] Frank Noé, Christof Schütte, Eric Vanden-Eijnden, Lothar Reich, and Thomas R. Weikl. Constructing the equilibrium ensemble of folding pathways from short off-equilibrium simulations. Proceedings of the National Academy of Sciences , 106:19011–19016, 2009. [OH01] Tomohiro Ogawa and Masahito Hayashi. A new proof of the direct part of stein’s lemma in quantum hypothesis testing, 2001. arXiv:quant-ph/0110125. [Pau03] Vern Paulsen. Completely Bounded Maps and Operator Algebras , volume 78 of Cambridge Studies in Advanced Mathematics . Cambridge University Press, 2003. [PDDFN17] Nuria Plattner, Stefan Doerr, Gianni De Fabritiis, and Frank Noé. Complete protein–protein association kinetics in atomic detail revealed by molecular dynamics simulations and Markov modelling. Nature Chemistry , 9:1005–1011, 2017. [PN15] Nuria Plattner and Frank Noé. Protein conformational plasticity and complex ligand-binding kinetics explored by atomistic simulations and Markov models. Nature Communications , 6:7653, 2015. [RMLG16] Dominic C. Rose, Katarzyna Macieszczak, Igor Lesanovsky, and Juan P. Garrahan. Metastability in an open quantum Ising model. Physical Review E , 94(5):052132, 2016. arXiv:1607.06780. [SBMD25] Lukas M. Sieberer, Michael Buchhold, Jamir Marino, and Sebastian Diehl. Universality in driven open quantum matter. Reviews of Modern Physics , 97:025004, 2025. arXiv:2312.03073. [SS90] G. W. Stewart and Ji-guang Sun. Matrix Perturbation Theory . Computer Science and Scientific Computing. Academic Press, Boston, 1990. [Tak72] Masamichi Takesaki. Conditional expectations in von neumann algebras. Journal of Functional Analysis ,9(3):306–321, 1972. [Wat18] John Watrous. The Theory of Quantum Information . Cambridge University Press, 2018. [YSL25] Chao Yin, Federica Maria Surace, and Andrew Lucas. Theory of metastable states in many-body quantum systems. Physical Review X , 15:011064, 2025. arXiv:2408.05261. 
+
+Department of Mathematics, University of California, Berkeley, CA 94720, USA 
+
+Email address : haoen2021@math.berkeley.edu 
+
+Department of Computing and Mathematical Sciences, California Institute of Technology, Pasadena, CA 91125, USA Applied Mathematics and Computational Research Division, Lawrence Berkeley National Labora-tory, Berkeley, CA 94720, USA Department of Mathematics, University of California, Berkeley, CA 94720, USA 
+
+Email address : lin@caltech.edu 
+
+Department of Mathematics, University of California, Berkeley, CA 94720, USA 
+
+Email address : micragone@berkeley.edu

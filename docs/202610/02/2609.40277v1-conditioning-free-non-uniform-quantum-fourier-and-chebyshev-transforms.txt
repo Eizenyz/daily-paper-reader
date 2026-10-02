@@ -1,0 +1,2221 @@
+Title: Conditioning-Free Non-Uniform Quantum Fourier and Chebyshev Transforms
+
+URL Source: https://arxiv.org/pdf/2609.40277v1
+
+Published Time: Thu, 01 Oct 2026 02:19:57 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# Conditioning-Free Non-Uniform Quantum Fourier and Chebyshev Transforms 
+
+## Chaowen Guan 1 and Akshit Katiyar 2
+
+> 1
+
+Department of Computer Science, University of Cincinnati, OH 
+
+> 2
+
+Department of Computer Science, Pennsylvania State University, University Park, PA 
+
+Abstract 
+
+We present an efficient quantum algorithm for the non-uniform Chebyshev transform. It is defined as the projection of a function onto Chebyshev polynomials sampled at given nodes that are uniform in x ∈ [−1, 1], and hence non-uniform in the angle θ = arccos x, a setting that QFT-based quantum Chebyshev transforms cannot handle. Our construction is based on an improvement of an existing Non-uniform Quantum Fourier Transform (NUQFT) whereby we remove the conditioning from non-uniform node sampling. Hence, error bounds are independent of the geometry-dependent parameter κ of prior work. We use the fact that Chebyshev transform matrix is the average of two Type-II non-uniform DFTs, which we implement with a single controlled NUQFT circuit. We provide explicit oracle constructions, including the row-access oracle previously left as an assumption. The resulting ε-accurate block encoding has O(1) normalization and uses O(L) qubits and eO(L2) gates, where L = log N + log(1 /ε ). We give an end-to-end implementation with complexity analysis, including the success probability and output-state error. 
+
+# Contents 
+
+1 Introduction 3
+
+1.1 Problem Statement . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31.2 Main contributions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 41.3 Overview . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+
+2 Preliminaries 5
+
+2.1 Chebyshev polynomials and Bessel Functions . . . . . . . . . . . . . . . . . . . . . . 62.2 Quantum Algorithm Primitives . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+
+3 Background on Low-Rank NUFFT and NUQFT 7
+
+3.1 Low-rank factorization of the NUDFT . . . . . . . . . . . . . . . . . . . . . . . . . . 83.2 The NUQFT circuit and the parameter κ . . . . . . . . . . . . . . . . . . . . . . . . 10 
+
+> 1
+
+guance@ucmail.uc.edu 
+
+> 2
+
+akshitk@psu.edu 
+
+1arXiv:2609.40277v1 [quant-ph] 30 Sep 2026 4 Conditioning-Free NUQFT 12 
+
+4.1 Error analysis of block encoding factors . . . . . . . . . . . . . . . . . . . . . . . . . 13 4.2 Oracle assumptions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 4.3 Main theorem . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 
+
+5 Application to the Non-Uniform Chebyshev Transform 21 
+
+5.1 Reduction to two NUDFTs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 5.2 Constructing the Oracles . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 5.2.1 Node oracle Oτ . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 5.2.2 Row access . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 5.2.3 Negative nodes . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25 5.2.4 Coefficient preparation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 5.3 Main result . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 
+
+6 Conclusion and Discussion 29 A Alternative Grover-Rudolph interpretation of coefficient preparation 31 B Why κ cannot be bounded for the NUCT nodes 32 C Uniform and weighted outer LCU constructions 33 
+
+21 Introduction 
+
+The quantum Chebyshev transform of [WPW +23] uses the Quantum Fourier Transform to map a quantum state from the computational basis to the Chebyshev basis. The idea goes back to quantum cosine transforms [KR01], and it mirrors the classical computation of a discrete Chebyshev transform by a DFT of twice the length [Mak80]. It requires the nodes to be evenly spaced in the angle 
+
+θ = arccos( x), that is, the Chebyshev points, because only then is the transform a uniform DFT in 
+
+θ. Data are often given instead on a grid that is evenly spaced in x ∈ [−1, 1]. Classically, Driscoll, Healy and Rockmore [DHR97] handle this case with a non-uniform FFT at the angles arccos xk, in 
+
+O(N log 2 N ) operations. We give the quantum analogue, with the non-uniform FFT replaced by the non-uniform quantum Fourier transform (NUQFT) of [AKY26]. Our initial motivation for the work was to implement the [DHR97] pipeline for polynomial transforms on quantum circuits. We leave that for a future work and focus on the Non-uniform Chebyshev Transform in this paper. 
+
+## 1.1 Problem Statement 
+
+The Chebyshev polynomials of the first kind are 
+
+Tj (x) = cos( j arccos( x)) , x ∈ [−1, 1] . (1) 
+
+Definition 1.1 (Non-uniform Chebyshev transform) . Let N = 2 n with n ≥ 2, and let xk = −1 + 2kN ,
+
+k = 0 , . . . , N − 1, be equispaced nodes in [ −1, 1]. The non-uniform Chebyshev transform (NUCT) maps f ∈ CN to 
+
+cj = 
+
+> N−1
+
+X
+
+> k=0
+
+fkTj (xk), j = 0 , . . . , N − 1. (2) This is the discrete polynomial transform of [DHR97, Eq. (1.2)] with Pj = Tj and unit weights, and exactly the transform of [DHR97, Corollary 2.2(2)]. Since Tj (xk) = cos( jθ k) with θk = arccos xk,it is a cosine transform at the angles θk, which are non-uniform because the nodes are uniform in 
+
+x. On Chebyshev nodes the NUCT reduces to a discrete cosine transform and coincides, up to a normalization, with the quantum Chebyshev transform of [WPW +23]. On general nodes it is a projection onto the sampled Tj , however its outputs are not the coefficients bj of an expansion 
+
+fk = P 
+
+> j
+
+bj Tj (xk), which would require inverting the transform, a problem that is exponentially ill-conditioned on equispaced nodes. We also define the normalized transform matrix (CN )jk = 1
+
+√N Tj (xk), (3) so that c = √N C N f .Given a circuit that prepares |f ⟩ = ∥f ∥−12
+
+P 
+
+> k
+
+fk |k⟩, the goal is to prepare an approximation of 
+
+CN |f ⟩∥CN |f ⟩∥ = c
+
+∥c∥2
+
+. (4) We construct an ε-accurate block encoding of CN . The state then follows by postselection and amplitude amplification [BHMT02], with an error that depends on ε and ∥CN |f ⟩∥ (Corollary 5.11). 
+
+Remark 1.2 . We do not analyze the general case of arbitrarily placed nodes in [ −1, 1], but our algorithm can be applied to those cases as well, given efficient node and row-access oracles. 31.2 Main contributions 
+
+κ independent block-encoding analysis. The low-rank Chebyshev-Bessel expansion and the overall circuit structure are inherited from [RAT18, AKY26]. We obtain a simpler truncation bound, error bounds that do not depend on κ, and an improved block-encoding normalization. As in [RAT18], several nodes may round to the same grid point. Unlike the classical algorithm, where such collisions are free, they enter our block encoding through its normalization O(√dr), where dr is the largest number of nodes sharing a grid point (Lemma 4.2). Our general NUQFT is therefore efficient when 
+
+dr = polylog( N ). In the worst case dr = N , and the normalization grows to √N .
+
+Application to the NUCT. Combining the reduction of the NUCT to two Type-II NUDFTs (Theorem 5.1, outlined in Section 1.3) with our conditioning-free NUQFT gives an ε-accurate block encoding of the NUCT without any geometry-dependent parameter such as κ. For these nodes we show that at most five angles round to the same grid point, so dr ≤ 5, and we construct the row-access oracle explicitly (Proposition 5.5). The result therefore needs no assumption on collisions or on row access. The main result can be summarized in the theorem below: 
+
+Theorem 1.3 (Informal version of Theorem 5.10 and Corollary 5.11) . Let N = 2 q , 0 < ε ≤ 1
+
+and L = q + log(1 /ε ). There is an explicit quantum circuit that implements an ε-accurate block encoding of the NUCT matrix CN with normalization O(1) , using O(L) qubits and eO(L2) gates ( eO(L3) Clifford +T gates). Given |f ⟩ with r := ∥CN |f ⟩∥ > ε , it prepares a state within 2ε/ (r − ε) of Eq. (4) using O(1 /(r − ε)) rounds of amplitude amplification. 
+
+## 1.3 Overview 
+
+Write xk = cos(2 πt k) with tk = arccos( xk)/2π ∈ (0 , 12 ]. Since Tj (xk) = 12 (e−2πijt k + e2πijt k ), the NUCT matrix is the average of two Type-II non-uniform DFTs, 
+
+CN = 12 (Ft + Ft− ) , (Ft)jk = 1√N e−2πijt k , t− 
+
+> k
+
+= ( −tk) mod 1 (Theorem 5.1). The NUQFT of [AKY26] block-encodes such matrices, but its error bound depends on a parameter κ that we cannot control for these nodes, and it assumes row access to the matrix 
+
+Mσ as an oracle. 
+
+Proof technique. 
+
+• Exact nodes. Each node is stored as an m-bit fixed-point number τk, and τ is treated as the exact node set of the transform. The error then splits into a truncation term, an implementation term and a node term ∥Ft − Fτ ∥.
+
+• No input error in arccos . The offsets zj are computed exactly from τ , so every arccos acts on an exact input and only its output angle is rounded. The Chebyshev error is then uniform in the nodes, and κ never appears. 
+
+• Node error through the phases. The node term is bounded through the Fourier phases, whose derivative has no singularity. This gives ∥Ft − Fτ ∥ ≤ 2π√3 N 3/2 ∥t − τ ∥∞, so m = 32 q+O(log(1 /ε )) bits per node suffice. 
+
+• Constant normalization. A Bessel-function bound gives an explicit truncation rank K = O(L)and a total coefficient weight Λ < 24. With a weighted outer LCU, the normalization is O(√dr ). 4• Structure of the NUCT nodes. At most five nodes share a grid point, and they have consecutive indices. This gives dr ≤ 5 and an explicit row oracle. 
+
+Algorithm. 
+
+• Compute each stored node τk ≈ arccos( xk)/(2 π) to m bits with a reversible arccos circuit. 
+
+• Block-encode Fτ ≈ P 
+
+> r<K
+
+Dvr F M σ Dur . The Chebyshev diagonals Dvr and Dur use an angle register and controlled rotations, Mσ uses sparse access, and F is the QFT. The K terms are combined by a weighted LCU. 
+
+• Obtain Fτ − from the same circuit by reflecting the node data, and average the two with one sign qubit and two Hadamards. This block-encodes CN with normalization O(1). 
+
+• Apply the block encoding to |f ⟩ and use amplitude amplification to prepare CN |f ⟩ / ∥CN |f ⟩∥ .
+
+Organization. Section 2 introduces the preliminaries like a Bessel function bound and the quantum circuits for trigonometric functions used throughout. Section 3 defines the Type-II NUDFT recalls the important lemmas of [RAT18] and [AKY26], showing where κ enters the analysis and lists the issues we address. Section 4 provides a sharper analysis removing κ from the NUQFT algorithm in Theorem 4.7. Section 5 applies it to the NUCT by using the reduction to two NUDFTs and constructing explicit node, row-access and coefficient-preparation oracles along with end-to-end complexity in Theorem 5.10 and Corollary 5.11. 
+
+# 2 Preliminaries 
+
+Fixed-point number. For an integer m ≥ 1, an m-bit fixed-point number in [0 , 1) is any number of the form 
+
+τ = a
+
+2m , a ∈ { 0, 1, . . . , 2m − 1}.
+
+Equivalently, τ has a terminating binary expansion τ = 0 .b 1b2 · · · bm. Stored nodes are written 
+
+τj = aj
+
+2m , aj ∈ { 0, . . . , 2m − 1}. (5) Offsets such as z(t) ∈ [−1, 1] can be negative, so we also use signed fixed-point numbers. A signed fixed-point number with p fractional bits is any number a/ 2p with a ∈ Z, and a register stores it as the integer a in two’s complement. Shifts, additions, subtractions and comparisons of fixed-point numbers are exact. We call a quantity exact when it is a fixed-point number held in a register with no rounding. 
+
+Remark 2.1 . When a quantum register stores the integer a, we regard it as an exact representation of the mathematical value a/ 2m. A real or irrational node t may first be approximated by a fixed-point node τ . The fixed-point NUQFT is then applied exactly to τ and the matrix perturbation from t to 
+
+τ is accounted for separately. 
+
+Nearest grid point and offset. Let N = 2 q . For a node t ∈ [0 , 1) define 
+
+sunw (t) := round( N t ) ∈ { 0, . . . , N },σ(t) := sunw (t) mod N ∈ { 0, . . . , N − 1},z(t) := 2  N t − sunw (t) ∈ [−1, 1] , (6) 5where round( ·) rounds to the nearest integer. Here sunw (t)/N is the grid point nearest to t, and z(t)is the distance from t to it, scaled to [ −1, 1]. The index σ(t) is the same grid point wrapped around to {0, . . . , N − 1}, so that it names a column of the N × N DFT. The two differ only when t is within 1 /(2 N ) of 1, where sunw (t) = N and σ(t) = 0. Since N t = sunw (t) + z(t)/2 and sunw (t) ≡ σ(t)(mod N ), for every integer frequency k,
+
+e−2πikt = e−2πikσ (t)/N e−iπ (k/N )z(t). (7) The first factor is an entry of the uniform DFT. The second depends on the node only through the offset z(t). For a node sequence we write sunw  
+
+> j
+
+= sunw (tj ), σj = σ(tj ) and 
+
+Mσ :=  
+
+> N−1
+
+X
+
+> j=0
+
+|σj ⟩⟨ j| , dℓ := {j : σj = ℓ} , dτ := max  
+
+> 0≤ℓ<N
+
+dℓ, (8) so that Mσ sends node j to its grid point, dℓ is the number of nodes assigned to grid point ℓ, and dτ
+
+is the largest such number. For real nodes tj (Section 3) we write the offset as yj = z(tj ), following [AKY26]. For the stored fixed-point nodes τj of Eq. (5) (Section 4) we write zj = z(τj ). 
+
+## 2.1 Chebyshev polynomials and Bessel Functions 
+
+Chebyshev polynomials. For n ∈ Z≥0 and x ∈ [−1, 1], Tn(x) = cos( n arccos x). Equivalently, with the angular variable θ = arccos x ∈ [0 , π ], 
+
+Tn(cos θ) = cos( nθ ), |Tn(x)| ≤ 1, T0 ≡ 1, Tn(1) = 1 , Tn(−1) = ( −1) n. (9) The first identity is how the circuits evaluate Tn: they compute the angle θ into a register and apply a rotation by nθ . The bound |Tn| ≤ 1 means that diagonal matrices of Chebyshev values have norm at most one and can be block-encoded without rescaling. 
+
+Remark 2.2 (Endpoint bookkeeping) . Chebyshev series conventionally halve their n = 0 term. We absorb this halving into the coefficients through the weights ηn of Eq. (16), so every factor T0 that appears in a circuit is the exact identity and needs no angle computation. The endpoints are likewise exact: at x = 1 the angle is 0, and at x = −1 the parity value Tn(−1) = ( −1) n can be applied directly, bypassing the angle register. 
+
+Bessel functions. We use the Bessel functions of the first kind Jn of integer order, together with the symmetries [OLBC10, Eqs. 10.4.1 and 10.11.1] 
+
+J−n(a) = ( −1) nJn(a), Jn(−a) = ( −1) nJn(a), (10) so in particular |J−n(a)| = |Jn(−a)| = |Jn(a)|. Bessel functions enter the paper through the Jacobi– Anger expansion. Setting t = ie iu in the generating function ez(t−1/t )/2 = P 
+
+> n∈Z
+
+tnJn(z) [OLBC10, Eq. 10.12.1] gives eiz cos u = P 
+
+> n
+
+inJn(z)einu . With z = −a and Eq. (10), 
+
+e−ia cos u = X
+
+> n∈Z
+
+(−i)nJn(a) einu , a ∈ R, u ∈ R. (11) The following bound gives the super-geometric decay of Jn(a) in n.
+
+Lemma 2.3. For n ∈ Z≥0 and a ≥ 0,
+
+|Jn(a)| ≤ ea2/4 (a/ 2) n
+
+n! .
+
+6Proof. For every n ∈ Z≥0, the defining series for the Bessel function of the first kind [OLBC10, Eq. 10.2.2] gives 
+
+Jn(a) = 
+
+ a
+
+2
+
+n ∞X
+
+> k=0
+
+(−1) k(a2/4) k
+
+k!( n + k)! .
+
+Consequently, using ( n + k)! ≥ n!, 
+
+|Jn(a)| ≤ 
+
+ a
+
+2
+
+n ∞X
+
+> k=0
+
+(a2/4) k
+
+k!( n + k)! 
+
+≤ (a/ 2) n
+
+n!
+
+> ∞
+
+X
+
+> k=0
+
+(a2/4) k
+
+k! = ea2/4 (a/ 2) n
+
+n! .
+
+## 2.2 Quantum Algorithm Primitives 
+
+We use standard reversible circuits for elementary functions on fixed-point inputs. CORDIC evaluates these functions by a sequence of shift-and-add rotations and [BBGA24] gave a clean reversible quantum version of it. Theorem 2.4 follows from their construction. 
+
+Theorem 2.4 (Reversible inverse cosine and trigonometric evaluation) . Let b, p ≥ 1 and let the input be exact in signed b-bit fixed point. There are clean reversible circuits that return, with p fractional bits, (i) an angle eϕ(z) ∈ [0 , π ] with | eϕ(z) − arccos z| ≤ cacos 2−p for every z ∈ [−1, 1] , exact at z = 1 . At 
+
+z = −1 an endpoint flag may instead implement Tn(−1) = ( −1) n exactly. (ii) values es(θ), ec(θ) with |es(θ) − sin θ| + |ec(θ) − cos θ| ≤ ctrig 2−p for every θ in a fixed bounded interval, using 
+
+O(b + p) qubits , eO (b + p)2 gates , eO(b + p) depth . (12) 
+
+Proof. For (i), run the reversible CORDIC arcsin circuit of [BBGA24] ( O(w) qubits, O(w2) gates, 
+
+O(w log w) depth) at precision w = Θ( b + p) and use arccos z = π/ 2 − arcsin z, with a coherent comparison for the endpoints. For (ii), use reversible CORDIC in rotation mode after range reduction [HRS18], with the same bounds. In both cases, copying the output and uncomputing clears all scratch registers. 
+
+# 3 Background on Low-Rank NUFFT and NUQFT 
+
+Our algorithm modifies the non-uniform quantum Fourier transform (NUQFT) of [AKY26], which in turn is a quantum realization of the low-rank non-uniform FFT of [RAT18]. This section defines the Type-II NUDFT Eq. (13), recalls both constructions as they appear in those works, explains where the parameter κ enters and states the result of [AKY26] (Theorem 3.4), and lists the changes that our algorithm makes in Section 4 . 7The Type-II NUDFT. Following [AKY26], let {tk}N −1 
+
+> k=0
+
+⊆ [0 , 1) be possibly non-uniform nodes and {ωj }N −1 
+
+> j=0
+
+uniform frequencies, ωj = j. The Type-II NUDFT matrix is (Ft)jk = 1
+
+√N e−2πiω j tk = 1
+
+√N e−2πijt k , 0 ≤ j, k < N. (13) Throughout the paper, rows are indexed by frequencies and columns by nodes. So Ft takes data given at the nodes and returns values at the uniform frequencies. This is the orientation of the NUCT Eq. (2), whose output is indexed by the degree j and whose sum runs over the nodes, and of the discrete polynomial transforms of [DHR97]. The rest of Section 3 and Section 4 rename the indices and write ( Ft)kj = 1√N e−2πikt j , with frequency index k and node index j. Without a subscript, F
+
+denotes the uniform DFT, the case tk = k/N .
+
+Remark 3.1 (Orientation convention) . [RAT18] and [AKY26] write the Type-II matrix with the opposite orientation, nodes on the rows and frequencies on the columns: (FII )kj = e−2πit k j , so that Ft = 1
+
+√N F T 
+
+> II
+
+.
+
+In their terminology the transpose F T 
+
+> II
+
+is called the Type-I NUDFT. We nevertheless call Ft the Type-II matrix, because the nodes and the uniform frequencies play the same roles as in [AKY26], and only the orientation differs. Concretely: 
+
+• Every matrix in this paper, including the factorization Eq. (21), is written for Ft, with frequencies on the rows. 
+
+• Results quoted from [AKY26], such as Theorem 3.4, carry over unchanged, since AT = ∥A∥.
+
+• The matrix FII of [AKY26] is obtained by transposing our construction, as explained after Theorem 4.7. 
+
+## 3.1 Low-rank factorization of the NUDFT 
+
+Applying the NUDFT directly costs O(N 2) operations. When the nodes are uniform, tj = j/N , the FFT does the same in O(N log N ). The non-uniform FFT of [RAT18] reduces the general case to a few uniform FFTs. It uses the fact that every node lies within half a grid spacing of some uniform grid point s/N . Relative to that grid point, e−2πikt j is a uniform DFT entry times a correction factor that depends only on the frequency k and on the small offset of tj from the grid point. The correction factor is smooth, so it is well approximated by a short sum of terms, each a function of the node times a function of the frequency. Each such term is a uniform DFT with a diagonal scaling on either side, so the NUDFT becomes a sum of a few scaled DFTs. We recall the construction in three steps, in the notation used throughout this paper. 
+
+Split each node into a grid point and an offset. Each node tj is split into its nearest grid point 
+
+σj and the scaled offset yj = z(tj ) ∈ [−1, 1] of Eq. (6). By Eq. (7), e−2πikt j = e−2πikσ j /N e−iπ (k/N )yj
+
+which is precisely an entry of the uniform DFT times a correction factor. This factor is the only part that depends on the offset and couples yj with the frequency k.8Separate the node and frequency dependence. To turn the correction factor into a sum of node-times-frequency terms, first rescale the frequency to wk := 2 k/N − 1 ∈ [−1, 1), so that both variables lie in [ −1, 1]. Then 
+
+e−iπ (k/N )yj = e−iπy j /2 H(wk, y j ), H(x, z ) := e−iπxz/ 2, (x, z ) ∈ [−1, 1] 2. (14) The prefactor e−iπy j /2 depends only on the node, while the kernel H couples both variables. Because 
+
+H is analytic, its Chebyshev expansion in both variables converges rapidly, and each term Tℓ(z)Tr (x)is a function of the node times a function of the frequency. Writing x = cos θ, z = cos φ and a = π/ 4, one has e−iπxz/ 2 = e−ia cos( θ+φ)e−ia cos( θ−φ). Applying the Jacobi–Anger expansion Eq. (11) to both factors and grouping the frequencies ( ±r, ±ℓ) gives the coefficients 
+
+αℓr =
+
+(
+
+4ir J(ℓ+r)/2(−π/ 4) J(r−ℓ)/2(−π/ 4) , ℓ ≡ r (mod 2) ,
+
+0, otherwise . (15) In the notation of [AKY26], this is the window parameter γ = 1 /2. Chebyshev series conventionally halve their n = 0 term. We absorb this weight into the coefficients by setting 
+
+ηn =
+
+( 12 , n = 0 ,
+
+1, n ≥ 1, α′ 
+
+> ℓr
+
+= ηℓηr αℓr . (16) Then the expansion reads 
+
+H(x, z ) = 
+
+> ∞
+
+X
+
+> r=0
+> ∞
+
+X
+
+> ℓ=0
+
+α′ 
+
+> ℓr
+
+Tℓ(z)Tr (x), (17) and holds uniformly on [ −1, 1] 2. For more details refer to [Tow14, Lemma A.3] and [RAT18, Appendix A]. The coefficients α′ 
+
+> ℓr
+
+coincide with those of [AKY26]. By Lemma 2.3, |Jn(π/ 4) | ≤ 
+
+eπ2/64 (π/ 8) n/n !, so the coefficients decay faster than any geometric sequence and a small truncation rank K suffices. [RAT18] quantify this as follows. 
+
+Theorem 3.2 (Adapted from Lemma A.1 and Theorem A.2, [RAT18]) . For K ≥ 1 let 
+
+HK (x, z ) = 
+
+> K−1
+
+X
+
+> r=0
+> K−1
+
+X
+
+> ℓ=0
+
+α′ 
+
+> ℓr
+
+Tℓ(z)Tr (x)
+
+be the rectangular truncation of Eq. (17) . For 0 < ε < 1 and 
+
+K = max 
+
+n
+
+3,
+
+l 52 exp 
+
+
+
+W   25 log(140 /ε )mo 
+
+= O
+
+ log(1 /ε )log log(1 /ε )
+
+
+
+, (18) 
+
+where W is the Lambert-W function, one has max x,z ∈[−1,1] |H(x, z ) − HK (x, z )| ≤ ε. Consequently, for any nodes tj with offsets yj , the N × N matrix with entries e−iπ (k/N )yj is approximated to within 
+
+ε in every entry by the rank-K matrix with entries e−iπy j /2HK (wk, y j ).Remark 3.3 . Two features of Theorem 3.2 matter for us. 
+
+• Entrywise bound. The bound is entrywise, while a block encoding needs the operator norm. Since Ft carries the normalization 1 /√N , a kernel error ∆ K in every entry gives 
+
+Ft − F (K) 
+
+> t
+
+≤ Ft − F (K) 
+
+> tF
+
+≤ √N ∆K (19) (Bound 1 in the proof of Theorem 4.7). Theorem 3.2 must therefore be applied with ε/ √N in place of ε, so K depends on N through log( √N /ε ). 9• Incomplete tail bound. The proof in [RAT18] bounds the truncation error by P
+
+> p≥K
+
+P 
+
+> r≥K
+
+|apr |,the sum over pairs in which both indices are at least K. The rectangular truncation also discards the pairs in which exactly one index is at least K, and these are not covered. Lemma 4.1 bounds the full discarded sum, over max {ℓ, r } ≥ K, and replaces the Lambert-W rank Eq. (18) by an explicit K = O(log( N/ε )). The gain is a complete bound with explicit constants, not a smaller rank: with ε/ √N substituted, Eq. (18) is O log( N/ε )/ log log( N/ε ).
+
+Assemble the low-rank factorization. Truncating Eq. (17) to 0 ≤ ℓ, r < K and combining with Eqs. (7) and (14) gives 
+
+e−2πikt j ≈ e−2πikσ j /N K−1X
+
+> r=0
+
+ur (j) vr (k), ur (j) = e−iπy j /2
+
+> K−1
+
+X
+
+> ℓ=0
+
+α′ 
+
+> ℓr
+
+Tℓ(yj ), vr (k) = Tr (wk). (20) In matrix form, with rows indexed by frequencies and columns by nodes as in Eq. (13), so that (Ft)kj = 1√N e−2πikt j , let Dur and Dvr be the diagonal matrices with entries ur(j) and vr(k), let F
+
+be the uniform DFT, and let Mσ be as in Eq. (8), so that F M σ places column σj of F in column j.Then 
+
+Ft ≈
+
+> K−1
+
+X
+
+> r=0
+
+Dvr F M σ Dur . (21) Each term is a node scaling, a column selection, one uniform DFT and a frequency scaling. Classically this costs O(KN log N ) in total, and several nodes sharing a grid point cost nothing extra. Section 3.2 summarizes how [AKY26] implements each of these factors using a quantum circuit. 
+
+## 3.2 The NUQFT circuit and the parameter κ
+
+[AKY26] turns the matrix factorization Eq. (21) into a block encoding. Each term Dvr F M σ Dur is a product of block encodings of a frequency diagonal, the QFT, the matrix Mσ , which sends node j to grid point σj , and a node diagonal. These K terms are combined by a linear combination of unitaries (LCU) [CW12]. The diagonal entries are built from Chebyshev values Tn(y) = cos( n arccos y), obtained by computing arccos into a register and applying controlled rotations. The resulting complexity is stated in Theorem 3.4 below, after we explain where κ comes from. The normalization of such an LCU is governed by the coefficient magnitudes. For a truncation rank K, write 
+
+λr =
+
+> K−1
+
+X
+
+> ℓ=0
+
+|α′ 
+
+> ℓr
+
+|, Λ = 
+
+> K−1
+
+X
+
+> r=0
+
+λr = X
+
+> r,ℓ<K
+
+|α′ 
+
+> ℓr
+
+|, (22) so that λr is the weight of the rth term and Λ the total weight. We now explain where κ enters the analysis. In the analysis of [AKY26], finite-precision access produces an m-bit approximation byj satisfying 
+
+|yj − byj | ≤ N 2−m+1 . (23) Writing θj = arccos( yj ) and letting bθj be its p-bit approximation, the mean-value theorem is applied to the input perturbation of arccos. Thus, for some point y∗ 
+
+> j
+
+between yj and byj ,
+
+|θj − bθj | ≤ | arccos( yj ) − arccos( byj )| + | arccos( byj ) − bθj |≤ N 2−m+1 
+
+q
+
+1 − (y∗ 
+
+> j
+
+)2
+
++ O(2 −p). (24) 10 In the second inequality, the first term is the mean-value theorem with | ddy arccos y| = 1 /p1 − y2,combined with Eq. (23). The second is the output error of the reversible arccos circuit, part (i) of Theorem 2.4 [BBGA24]. Both appear in the proof of [AKY26, Lemma 27]. Consequently, a degree-ℓ Chebyshev polynomial of first kind incurs error 
+
+|Tℓ(yj ) − Tℓ(byj )| = | cos( ℓθ j ) − cos( ℓbθj )| ≤ (a) ℓ|θj − bθj | ≤ ℓ
+
+O(2 −p) + N 2−m+1 
+
+q
+
+1 − (y∗ 
+
+> j
+
+)2
+
+ , (25) where step ( a) follows from an application of the mean-value theorem to the cosine function. Their result therefore introduces 
+
+κ := max 
+
+> j
+
+1
+
+q
+
+1 − (y∗ 
+
+> j
+
+)2
+
+, (26) and its sufficient precision and gate bounds contain logarithmic factors of the form log(1 + Kκ ). The point y∗ 
+
+> j
+
+in Eq. (26) comes from the mean-value theorem in the proof of [AKY26, Lemma 27]. It exists, but its position between yj and byj is not specified, so κ formally depends on m as well. By Eq. (23), κ can be bounded independently of m whenever max j |yj | < 1 and m is large enough. [AKY26] also report numerical experiments (their Table 1, N = 2 6, ε = 10 −12 ) in which the minimal required precision m∗ stays essentially unchanged as κ grows, which suggests that the dependence of 
+
+m on κ is mild in practice. With this parameter, the result of [AKY26] reads as follows. 
+
+Theorem 3.4 (Adapted from Theorem 24, Theorem 28 and Corollary 29, [AKY26]) . Let ε > 0
+
+and N = 2 n for some n ∈ N. There exists a quantum algorithm that implements an ε-accurate block-encoding of the Type-II NUDFT with gate complexity O(n2 + L2 
+
+> n,ε
+
++ log(1 + κL n,ε )) and 
+
+O(Ln,ε + log(1 + κL n,ε )) qubits, where Ln,ε := n + log(1 /ε ) and κ is the geometry parameter Eq. (26) .
+
+This dependence is undesirable in a general complexity theorem, even though it is only logarithmic. First, κ measures the conditioning of the auxiliary map y 7 → arccos y, rather than the spectral conditioning of the NUDFT matrix itself. Second, arccos ′(y) = −(1 − y2)−1/2 is singular at y = ±1, so admissible nodes can make κ arbitrarily large by approaching a nearest-grid cell boundary. A polylogarithmic bound in n = log 2 N therefore follows from the estimate only after one controls the growth of κ. Third, certifying such control is instance-dependent: it amounts to lower-bounding the distance of every scaled node N t j from a half-integer. 
+
+Issues addressed in this paper. Besides κ, we note one further point in [AKY26]. Both are resolved in Section 4. 1. Nodes near t = 1 . [AKY26, Section 3.1.2] forms the offset from the wrapped index, 2 N (tj −
+
+σj /N ), instead of from sunw  
+
+> j
+
+, so for nodes within 1 /(2 N ) of 1 this quantity is close to 2 N ,outside the domain of arccos. We form it from the unwrapped index, as in Eq. (6), and use the wrapped index only to select the column of the DFT. 2. Conditioning and normalization. The only κ-dependent step is the mean-value bound Eq. (24) on the node diagonal [AKY26, Lemma 27]. Lemma 4.3 replaces it by a bound that is uniform in the nodes, and the weighted outer LCU of Lemma 4.4 improves the block-encoding normalization from O(K2√dr ) to O(√dr ), where dr bounds the number of nodes that round to the same grid point. 11 4 Conditioning-Free NUQFT 
+
+We first summarize the strategy for removing the κ dependence and then prove the modified lemmas in Section 4.1, finally we state and prove the main result in Section 4.3. 
+
+The conditioning-free strategy. The real nodes t = ( t0, . . . , t N −1) may be irrational. The NUCT nodes tj = 12π arccos( −1 + 2 j/N ) are an example. A quantum circuit cannot store such numbers exactly. What it does store is an m-bit binary value τj = aj /2m for each node. Our key idea is to treat these stored values as the actual input of the transform, rather than as noisy copies of the real nodes. The NUQFT subroutine therefore implements the matrix Fτ built from the stored nodes, while the real-node matrix Ft remains the final goal. This splits the total error into two independent parts: 
+
+∥UII − Ft∥ ≤ ∥ UII − Fτ ∥ + ∥Fτ − Ft∥ . (27) Concretely, the construction keeps the circuit of [AKY26] and changes the analysis in three steps. (i) Split the stored nodes exactly. Because N = 2 q is a power of two, the split Eq. (6) of a stored node τj into sunw  
+
+> j
+
+, σj and zj is exact bit arithmetic, so the phase splitting Eq. (7) is an exact identity for Fτ .(ii) Round only the output angle. The offset zj = ( aj − 2m−q sunw  
+
+> j
+
+)/2m−q−1 is a signed fixed-point number with m − q − 1 fractional bits, computed exactly from τj , so the circuit computes arccos of an exact input. The reversible arithmetic of Theorem 2.4 returns eϕj with | eϕj − arccos zj | ≤ 
+
+cacos 2−p, and therefore, for 0 ≤ ℓ < K ,
+
+|Tℓ(zj ) − cos( ℓ eϕj )| ≤ ℓc acos 2−p ≤ Kc acos 2−p. (28) This is where the analysis differs from [AKY26]. There, the target matrix is Ft, whose Chebyshev values are Tℓ(yj ) at the true offsets yj , but the circuit evaluates arccos at a rounded offset byj . Comparing the two passes the input error |yj − byj | through arccos where the slope 
+
+| ddy arccos y| = 1 /p1 − y2 is unbounded at y = ±1. This is the source of κ in Eq. (24). Here, the target of the first part of Eq. (27) is Fτ , whose Chebyshev values are Tℓ(zj ) at the stored offsets. The circuit feeds exactly this zj into arccos. The target and the circuit therefore use the same input, and the only error is the rounding of the output angle. Eq. (28) bounds it by 
+
+Kc acos 2−p for every zj ∈ [−1, 1], including zj near ±1, so κ does not appear. The difference between tj and τj is not lost. It is moved to the second part of Eq. (27), where step (iii) bounds it through the Fourier phases instead of through arccos. (iii) Count the node error separately. Moving a node by a small amount changes each Fourier phase by a proportional amount, which gives the second part of Eq. (27): 
+
+∥Ft − Fτ ∥ ≤ 2π
+
+vuutN −1X
+
+> k=0
+
+k2 ∥t − τ ∥∞ ≤ 2π
+
+√3 N 3/2∥t − τ ∥∞. (29) This bound, proved within the proof of Theorem 4.7, uses only the Fourier phases and not arccos. Thus m = 32 q + O(log(1 /ε )) bits per node suffice, with no condition on where the nodes sit. In short, the circuit is essentially that of [AKY26] with a modified error analysis. 12 Overview of the section. Section 4.1 splits the error into truncation, implementation and node terms. We prove four lemmas that bound the error of each factor: the coefficient bounds, the nearest-point matrix, the κ-free diagonal bound, and the assembly of the K terms. Section 4.2 lists the oracles the circuit needs and shows that the coefficient preparation does not depend on the nodes, so it can be built once and reused. Section 4.3 states and proves the main result, Theorem 4.7: an ε-accurate block encoding of Ft with normalization O(√dr) and eO(m2 + L2) gates. Section C compares the two ways of assembling the K terms. 
+
+## 4.1 Error analysis of block encoding factors 
+
+Let τj be the stored nodes, split as in Eq. (6) into σj and zj . The circuit targets (Fτ )kj := 1
+
+√N e−2πikτ j (30) through the rank-K factorization Eq. (21), with zj in place of yj :
+
+vr (k) := Tr (wk), ur (j) := e−iπz j /2
+
+> K−1
+
+X
+
+> ℓ=0
+
+α′ 
+
+> ℓr
+
+Tℓ(zj ), F (K) 
+
+> τ
+
+:= 
+
+> K−1
+
+X
+
+> r=0
+
+Dvr F M σ Dur , (31) where wk = 2 k/N − 1, Dvr = diag( vr (0) , . . . , v r (N − 1)) and Dur = diag( ur (0) , . . . , u r (N − 1)). The circuit UII of Theorem 4.7 is built from the factorization F (K) 
+
+> τ
+
+, but every Chebyshev value in it is computed from a finite-precision angle. The matrix it encodes is therefore P 
+
+> r
+
+eDvr F M σ eDur , where 
+
+eDvr and eDur are Dvr and Dur with each Tn(w) replaced by eTn(w) = cos( n eϕ(w)). This matrix differs slightly from F (K) 
+
+> τ
+
+. By the triangle inequality, its error relative to the target Ft splits into three terms, 
+
+∥UII − Ft∥ ≤ Fτ − F (K) 
+
+> τ
+
++ UII − F (K) 
+
+> τ
+
++ ∥Fτ − Ft∥ , (32) which refines Eq. (27). The first is the truncation error of the Chebyshev-Bessel expansion and depends only on K. The second is the implementation error, which comes from computing arccos to 
+
+p bits. The third is the node error from storing tj with m bits. It is bounded directly in the proof of Theorem 4.7, through the Fourier phases alone. The normalization of UII is the product of the normalizations of the factors in each term, combined by an LCU over r.The four lemmas below supply these pieces. Lemma 4.1 bounds the expansion coefficients: its tail bound controls the truncation term, and its bound on the total weight Λ controls the normalization. Lemma 4.2 gives the normalization √dr contributed by Mσ and shows that the offsets zj are computed exactly. Lemma 4.3 uses this exactness to bound the error of the Chebyshev diagonals without κ.Lemma 4.4 combines them into a bound on the implementation term and the final normalization. 
+
+Coefficients. The coefficients α′ 
+
+> ℓr
+
+of Eqs. (15) and (16) enter twice: the tail of the expansion gives the truncation error, and the total weight Λ of Eq. (22) sets the normalization of the LCU. Both follow from one estimate. Part (i) replaces the Lambert-W truncation rank of Theorem 3.2 with an explicit K and bounds the full truncation error (Remark 3.3), and part (ii) improves the bound Λ = O(K) of [AKY26] to a constant. 
+
+Lemma 4.1 (Chebyshev-Bessel coefficients) . Let a = π/ 4 and cα := 8 ea2/2+ a = 8 exp( π2/32+ π/ 4) <
+
+24 , and let HK be the rectangular truncation of Theorem 3.2. 
+
+13 (i) Truncation. ∆K := max  
+
+> x,z ∈[−1,1]
+
+|H(x, z ) − HK (x, z )| ≤ cα
+
+aK
+
+K! . (33) 
+
+In particular, for N ≥ 2 and 0 < δ ≤ 1, any K ≥ ⌈ log 2(24 √N /δ )⌉ gives √N ∆K ≤ δ.(ii) Total weight. For every K,
+
+Λ ≤ cα < 24 . (34) 
+
+Proof. Both parts bound sums of |α′ 
+
+> ℓr
+
+| over sets of index pairs. The coefficients vanish unless ℓ ≡ r
+
+(mod 2). For the others, ηn ≤ 1 and the symmetries Eq. (10) give 
+
+|α′ 
+
+> ℓr
+
+| ≤ 4|Ju(a)| | Jv (a)|, u = ℓ+r 
+
+> 2
+
+, v = |ℓ−r| 
+
+> 2
+
+, (35) with u, v nonnegative integers and u + v = max {ℓ, r }. The map ( ℓ, r ) 7 → (u, v ) has at most two preimages, ( u + v, u − v) and ( u − v, u + v). By Lemma 2.3, |Ju(a)Jv (a)| ≤ ea2/2(a/ 2) u+v /(u! v!), and summing over u + v = s with P
+
+> u
+
+ su
+
+ = 2 s gives P 
+
+> u+v=s
+
+|Ju(a)Jv (a)| ≤ ea2/2as/s !. Hence, for every s0 ≥ 0, X
+
+> max {ℓ,r }≥ s0
+
+|α′ 
+
+> ℓr
+
+| ≤ 8ea2/2 X
+
+> s≥s0
+
+as
+
+s! . (36) (ii) Taking s0 = 0 gives Λ ≤ 8ea2/2ea = cα, and cα ≈ 23 .89. (i) Since |Tn| ≤ 1 on [ −1, 1] and the expansion converges absolutely, |H − HK | is at most the sum of |α′ 
+
+> ℓr
+
+| over the pairs outside the square 0 ≤ ℓ, r < K , that is, over max {ℓ, r } ≥ K.By Eq. (36) with s0 = K and the Taylor remainder bound P 
+
+> s≥K
+
+as/s ! ≤ eaaK /K !, this gives Eq. (33). For K ≥ 5 > 2ea ≈ 4.27, the estimate K! ≥ (K/e )K gives aK /K ! ≤ (ea/K )K ≤ 2−K ,so ∆ K < 24 · 2−K . For N ≥ 2 and δ ≤ 1 the stated K is at least ⌈log 2(24 √2) ⌉ = 6, and then √N ∆K < 24 √N 2−K ≤ δ.Part (i) is used in Bound 1 of the proof of Theorem 4.7, and part (ii) in the normalization and the precision choice of Lemma 4.4. 
+
+The nearest-point matrix. The factor Mσ is the only one with normalization depending on how the nodes are distributed, i.e. the normalization grows with the number of nodes that share a grid point. The next lemma records this normalization, and the cost of computing the split Eq. (6) which is exact for stored nodes. 
+
+Lemma 4.2 (Nearest-point matrix and sparse normalization) . Let τj ∈ [0 , 1) be exact nodes, with 
+
+sunw  
+
+> j
+
+, σj , zj , Mσ and dτ as in Eqs. (6) and (8) . Then 
+
+∥Mσ ∥ = pdτ . (37) 
+
+Given sparse access to Mσ with a known bound dr ≥ dτ on its row sparsity, [GSLW19, Lemma 48] gives an exact block encoding of Mσ with normalization √dr , and its adjoint block-encodes M T 
+
+> σ
+
+with the same normalization. If N = 2 q and τj = aj /2m is an m-bit fixed-point number, then sunw  
+
+> j
+
+, σj , and zj are computed exactly with O(m + q) qubits and O(m + q) Toffoli and CNOT gates. In particular, zj carries no approximation error. 
+
+14 Proof. For the norm, Mσ M † 
+
+> σ
+
+= P 
+
+> j
+
+|σj ⟩⟨ σj | = P 
+
+> ℓ
+
+dℓ |ℓ⟩⟨ ℓ|, so ∥Mσ ∥2 = max ℓ dℓ = dτ . The matrix 
+
+Mσ has column sparsity one, row sparsity at most dr, and entries in {0, 1}, so the sparse-access block encoding [GSLW19, Lemma 48] has normalization √sr sc = √dr · 1 and zero error. Taking the adjoint circuit gives the statement for M T 
+
+> σ
+
+= M † 
+
+> σ
+
+, whose sparsities are swapped, leaving sr sc
+
+unchanged. For fixed-point nodes, multiplying by N = 2 q is a binary shift. The shifted number determines 
+
+sunw  
+
+> j
+
+by an exact comparison (with a fixed tie convention), its low q bits give σj , and an exact signed subtraction gives zj . These are reversible ripple-carry operations of width O(m + q), and reversing them uncomputes the work registers. The exactness of zj is what the next lemma relies on. 
+
+The Chebyshev diagonals. The diagonals contain Chebyshev values Tn(w) = cos( n arccos w), at 
+
+w = wk in Dvr and at w = zj in Dur . The circuit computes an angle eϕ(w) ≈ arccos w into a register and applies a controlled rotation, so it implements 
+
+eTn(w) := cos  n eϕ(w) (38) and the diagonals 
+
+eDvr := diag   eTr (wk)
+
+> k
+
+, eDur := diag 
+
+
+
+e−iπz j /2
+
+> K−1
+
+X
+
+> ℓ=0
+
+α′ 
+
+> ℓr
+
+eTℓ(zj )
+
+ 
+
+> j
+
+.
+
+This is the step where [AKY26] incurs κ. Here both inputs of arccos are exact: wk = ( k − N/ 2) /2q−1
+
+is a signed fixed-point number with q − 1 fractional bits, and zj is computed exactly from τj by Lemma 4.2. The only error left is in the output angle. By part (i) of Theorem 2.4, running the arccos circuit with ⌈log 2 cacos ⌉ additional bits makes this error at most 2 −p.
+
+Lemma 4.3 (Frequency and node diagonal errors) . Suppose that, on every exact input w ∈ [−1, 1] ,the angle circuit returns eϕ(w) with 
+
+eϕ(w) − arccos w ≤ δϕ. (39) 
+
+Then, for 0 ≤ n, r < K :(i) | eTn(w) − Tn(w)| ≤ nδ ϕ ≤ Kδ ϕ.(ii) The frequency and node diagonals satisfy 
+
+eDvr − Dvr ≤ Kδ ϕ, (40) 
+
+eDur − Dur ≤ λr Kδ ϕ. (41) 
+
+(iii) eDvr and eDur have block encodings with normalizations 1 and λr , respectively. Proof. (i) Since Tn(w) = cos( n arccos w) and the cosine is 1-Lipschitz, | cos( n eϕ) − cos( n arccos w)| ≤ 
+
+n| eϕ − arccos w| ≤ nδ ϕ.15 (ii) The matrices are diagonal, so their norms are the largest entry errors. For Dvr this is (i) with 
+
+n = r. For Dur , the phase e−iπz j /2 has unit modulus, so by (i) 
+
+X
+
+> ℓ<K
+
+α′
+
+> ℓr
+
+  eTℓ(zj ) − Tℓ(zj ) ≤ X
+
+> ℓ<K
+
+|α′ 
+
+> ℓr
+
+| Kδ ϕ = λr Kδ ϕ.
+
+(iii) We use a data register |·⟩ , a work register |·⟩ w that holds the offset and the angle, a coefficient register |·⟩ c of ⌈log 2 K⌉ qubits, and one ancilla qubit |·⟩ a. With Ry (ϑ) = e−iϑY / 2,
+
+Ry (2 ϑ) |0⟩a = cos ϑ |0⟩a + sin ϑ |1⟩a . (42) For an integer n and a fixed-point angle ϕ, the product nϕ is computed exactly, so a rotation Ry (2 nϕ )controlled on the angle register introduces no new error. Compute wk from k and its angle by part (i) of Theorem 2.4, rotate the ancilla by Eq. (42) with 
+
+ϑ = r eϕ(wk), and uncompute the work register: 
+
+|k⟩ | 0⟩w |0⟩a 7 → | k⟩ | wk, eϕ(wk)⟩w |0⟩a
+
+7→ | k⟩ | wk, eϕ(wk)⟩w
+
+  eTr (wk) |0⟩a + sin( r eϕ(wk)) |1⟩a
+
+
+
+7→ eTr (wk) |k⟩ | 0⟩w |0⟩a + sin( r eϕ(wk)) |k⟩ | 0⟩w |1⟩a .
+
+Projecting the ancilla onto |0⟩a leaves eTr (wk) |k⟩, which is a block encoding of eDvr with norm 1. Now for the block encoding of eDur , write α′ 
+
+> ℓr
+
+= |α′ 
+
+> ℓr
+
+|eiφ ℓr and use an LCU over ℓ. Let PREP r be a unitary on the coefficient register with PREP r |0⟩c = 1
+
+√λrK−1X
+
+> ℓ=0
+
+q
+
+|α′ 
+
+> ℓr
+
+| | ℓ⟩c . (43) Section 4.2 lists PREP r among the oracles the NUQFT uses, and Proposition 5.8 gives a circuit for it with O(K) gates. Write eϕj := eϕ(zj ). The circuit acts as follows. (a) Offset and angle. From τj , compute zj exactly (Lemma 4.2) and then eϕj (part (i) of Theorem 2.4): 
+
+|j⟩ | 0⟩w 7 → | j⟩ | zj , eϕj ⟩w .
+
+(b) Prepare. Apply PREP r to the coefficient register, giving λ−1/2
+
+> r
+
+P
+
+> ℓ
+
+p|α′ 
+
+> ℓr
+
+| | j⟩ | zj , eϕj ⟩w |ℓ⟩c |0⟩a.(c) Select. Controlled on |ℓ⟩c and on the angle in the work register, apply the phase eiφ ℓr and the rotation Ry (2 ℓ eϕj ) to the ancilla. By Eq. (42), 
+
+|zj , eϕj ⟩w |ℓ⟩c |0⟩a 7 → eiφ ℓr |zj , eϕj ⟩w |ℓ⟩c
+
+  eTℓ(zj ) |0⟩a + sin( ℓ eϕj ) |1⟩a
+
+.
+
+(d) Unprepare. Apply PREP †
+
+> r
+
+. Since the amplitudes in Eq. (43) are real and nonnegative, 
+
+⟨0|c PREP † 
+
+> r
+
+|ℓ⟩c = p|α′ 
+
+> ℓr
+
+|/λ r . The component with |0⟩c |0⟩a is therefore 
+
+> K−1
+
+X
+
+> ℓ=0
+
+|α′ 
+
+> ℓr
+
+|
+
+λr
+
+eiφ ℓr eTℓ(zj ) |j⟩ | zj , eϕj ⟩w = 1
+
+λrK−1X
+
+> ℓ=0
+
+α′ 
+
+> ℓr
+
+eTℓ(zj ) |j⟩ | zj , eϕj ⟩w .
+
+16 (e) Node phase. Since zj is a signed fixed-point number, zj = P 
+
+> i
+
+cibj,i with bits bj,i ∈ { 0, 1} and fixed signed powers of two ci. So e−iπz j /2 = Q 
+
+> i
+
+e−iπc ibj,i /2 is applied by one phase gate on each bit of zj :
+
+|zj , eϕj ⟩w 7 → e−iπz j /2 |zj , eϕj ⟩w .
+
+(f) Uncompute. Reverse step (a), which returns the work register to |0⟩w in every branch, since it was used only as a control. Altogether, projecting the coefficient register and the ancilla onto |0⟩c |0⟩a maps |j⟩ | 0⟩w to 1
+
+λr
+
+e−iπz j /2
+
+> K−1
+
+X
+
+> ℓ=0
+
+α′ 
+
+> ℓr
+
+eTℓ(zj ) |j⟩ | 0⟩w = 1
+
+λr
+
+  eDur
+
+ 
+
+> jj
+
+|j⟩ | 0⟩w ,
+
+so the circuit is a block encoding of eDur with normalization λr. Here λr > 0 for every r, since 
+
+α′ 
+
+> rr
+
+= 4 η2 
+
+> r
+
+ir Jr (−π/ 4) J0(−π/ 4) ̸ = 0. 
+
+Assembly. It remains to combine the factors. Each term Ar := Dvr F M σ Dur is a product of four block encodings (the two diagonals, the QFT and Mσ ), and the K terms are added by an outer LCU with weights proportional to λr .
+
+Lemma 4.4 (Error and normalization of the assembled factors) . Let eAr := eDvr F M σ eDur , and suppose Kδ ϕ ≤ 1.(i) Each term satisfies 
+
+eAr − Ar ≤ 3pdr λr Kδ ϕ. (44) 
+
+(ii) With the outer state PREP out of Eq. (50) , the LCU block-encodes P 
+
+> r
+
+eAr with normalization √dr Λ < 24 √dr , and K−1X
+
+> r=0
+
+eAr −
+
+> K−1
+
+X
+
+> r=0
+
+Ar ≤ 3pdr ΛKδ ϕ. (45) 
+
+(iii) For 0 < ε ≤ 1, the choice 
+
+δϕ = 2 −p, p := 
+
+
+
+log 2
+
+ 144 √dr Kε
+
+ 
+
+(46) 
+
+satisfies Kδ ϕ < 1 and makes the error in Eq. (45) at most ε/ 2.Proof. (i) This is the triangle-inequality argument of [AKY26, Section 5.2], with Lemma 4.3. Since 
+
+F is unitary, ∥F M σ ∥ = ∥Mσ ∥ ≤ √dr by Lemma 4.2. Then 
+
+eAr − Ar = ( eDvr − Dvr )F M σ Dur + eDvr F M σ ( eDur − Dur ).
+
+Here ∥Dur ∥ ≤ λr , since |ur (j)| ≤ P 
+
+> ℓ
+
+|α′ 
+
+> ℓr
+
+|, and eDvr ≤ 1 + Kδ ϕ ≤ 2. With Eqs. (40) and (41), the two terms are at most Kδ ϕ
+
+√dr λr and 2 √dr λr Kδ ϕ.(ii) The block encodings of eDvr , F , Mσ and eDur have normalizations 1, 1, √dr and λr (Lemmas 4.2 and 4.3), so their product encodes eAr with normalization βr = √dr λr . The outer state has amplitudes pλr /Λ, so the PREP-SELECT-PREP † sandwich selects 
+
+> K−1
+
+X
+
+> r=0
+
+λr
+
+Λ · eAr
+
+√dr λr
+
+=
+
+P 
+
+> r
+
+eAr
+
+√dr Λ .
+
+17 The normalization is therefore √drΛ, which is less than 24 √dr by Lemma 4.1. Summing Eq. (44) over r gives Eq. (45). (iii) The choice gives K2−p ≤ ε/ (144 √dr) < 1, and with Λ < 24, 3 √drΛK2−p < 72 √dr K2−p ≤
+
+ε/ 2. The weighted outer LCU of part (ii) gives normalization O(√dr ). A uniform outer LCU, close to the construction of [AKY26], would give O(K√dr ). Section C compares the two. 
+
+## 4.2 Oracle assumptions 
+
+The circuit of Theorem 4.7 is built from three oracles. The first two describe the node set and must be constructed for each problem. Section 5.2 does this for the NUCT. The third depends only on the truncation rank K and can be built once and reused. (i) Node oracle. It writes the m-bit stored node τj :
+
+Oτ |j⟩ | 0⟩⊗m = |j⟩ | τj ⟩ . (47) (ii) Row-access oracle. It gives the positions of the nonzero entries in each row of the matrix 
+
+Mσ of Lemma 4.2. Their values are all 1. If row ℓ contains the ordered column indices 
+
+kℓ, 0 < · · · < k ℓ,d ℓ−1 and dr ≤ N is a declared row-sparsity bound, define 
+
+ρℓ,r =
+
+(
+
+kℓ,r , 0 ≤ r < d ℓ,N + r, dℓ ≤ r < d r , (48) where the padding values N + r mark empty slots. The oracle is 
+
+Or |ℓ⟩ | r⟩ = |ℓ⟩ | ρℓ,r ⟩ . (49) (iii) Coefficient preparation. For each r, the inner preparation PREP r and the outer preparation PREP out act as PREP r |0⟩⊗⌈ log 2 K⌉ = 1
+
+√λrK−1X
+
+> ℓ=0
+
+q
+
+|α′ 
+
+> ℓr
+
+| | ℓ⟩ , PREP out |0⟩⊗⌈ log 2 K⌉ = 1
+
+√Λ
+
+> K−1
+
+X
+
+> r=0
+
+pλr |r⟩ .
+
+(50) with λr and Λ as in Eq. (22). The phases of α′ 
+
+> ℓr
+
+are applied in the SELECT step. [AKY26] treats the coefficient preparation as an oracle (Assumption 18). The next lemma shows that it does not depend on the transform instance, which is why we call these preparations universal .
+
+Lemma 4.5 (Coefficient PREP are node-independent) . Fix the truncation rank K and the window convention γ = 1 /2. The coefficients α′ 
+
+> ℓr
+
+of Eq. (16) , the branch weights λr and total mass Λ of Eq. (22) , and therefore the preparations Eq. (50) do not depend on the nodes t or τ , the nearest points 
+
+σ, the row multiplicities, the geometry parameter κ, or the input data f . The same preparations serve the transposed construction for F T 
+
+> t
+
+.Proof. By Eqs. (15) and (16), α′ 
+
+> ℓr
+
+is a function of ( ℓ, r ) and the fixed Bessel argument −π/ 4 determined by γ = 1 /2 alone. The weights λr and Λ are finite sums of |α′ 
+
+> ℓr
+
+|, and the amplitudes in Eq. (50) are functions of these numbers. The phases arg( α′
+
+> ℓr
+
+) are carried by the select oracle and are likewise instance independent. In the factorization Eq. (31), the node data enter only through Tℓ(zj ) in Dur
+
+and through Mσ , and the frequency coordinate enters only through Tr(wk) in Dvr . Transposition does not change the coefficient table. 18 Remark 4.6 (Reusing the coefficient preparations) . We write PREP LCU for the inner preparations 
+
+{PREP r }r<K together with the outer preparation PREP out . Their circuits are given in Proposi-tions 5.8 and 5.9. They correspond to Equation (64) and Assumption 18 of [AKY26]. The symbol PREP f is reserved for loading the input data. By Lemma 4.5, all rotation angles and phases of PREP LCU can be computed classically in advance. The same circuit can therefore be reused in every NUQFT or NUCT call with the same K and angle precision bα (Proposition 5.8). Each call still runs PREP r and PREP †
+
+> r
+
+, so reuse saves the classical precomputation, not the gate cost. 
+
+## 4.3 Main theorem 
+
+We now make the conditioning-free strategy of Section 4 precise: the stored fixed-point nodes are treated as the exact nodes of the transform, and σj and zj are computed exactly from them. 
+
+Theorem 4.7 (Conditioning-free Type-II NUQFT) . Let N = 2 q and let t = ( t0, . . . , t N −1) ∈ [0 , 1) N
+
+define the normalized Type-II NUDFT 
+
+(Ft)kj = 1
+
+√N e−2πikt j , 0 ≤ j, k < N, (51) 
+
+with rows indexed by the frequencies k and columns by the nodes tj . This is Eq. (13) with the indices renamed. Suppose that a node circuit supplies m-bit fixed-points τ = ( τ0, . . . , τ N −1) and that the nearest-grid matrix Mσ determined by τ has ordered sparse row access with a declared row-sparsity bound dr .For every 0 < ε ≤ 1, there is a quantum circuit UII that implements the block encoding of Ft with normalization O(√dr ) and total operator-norm error 
+
+∥UII − Ft∥ ≤ ε + 2π
+
+√3 N 3/2 ∥t − τ ∥∞ . (52) 
+
+Given the oracles of Section 4.2, the quantum circuit uses 
+
+O(m + L) qubits , eO(m2 + L2) logical gates , (53) 
+
+where L := q + log(1 /ε ).Proof. The proof has two parts. The error analysis bounds the three terms of Eq. (32), with Fτ and 
+
+F (K) 
+
+> τ
+
+as in Eqs. (30) and (31), one bound per term. The resource analysis then counts qubits and gates. 
+
+• Bound 1: truncation error Fτ − F (K) 
+
+> τ
+
+. By Eqs. (7) and (14), e−2πikτ j = e−2πikσ j /N e−iπz j /2H(wk, z j )exactly. Since ( F M σ )kj = Fkσ j = e−2πikσ j /N /√N , the ( k, j ) entry of F (K) 
+
+> τ
+
+is P 
+
+> r
+
+vr (k)Fkσ j ur (j), that is, (F (K) 
+
+> τ
+
+)kj = e−2πikσ j /N e−iπz j /2
+
+√N HK (wk, z j ), and hence |(Fτ − F (K) 
+
+> τ
+
+)kj | ≤ ∆K
+
+√N . (54) Consequently, 
+
+Fτ − F (K) 
+
+> τ
+
+≤ Fτ − F (K) 
+
+> τF
+
+≤ √N ∆K . (55) 19 By part (i) of Lemma 4.1 with δ = ε/ 2, choosing K = ⌈log 2
+
+ 48 √Nϵ
+
+
+
+⌉ = O q + log 1
+
+> ε
+
+ ensures that the first term of Eq. (32) satisfies 
+
+Fτ − F (K) 
+
+> τ
+
+≤ √N ∆K ≤ ε/ 2.
+
+• Bound 2: implementation error UII − F (K) 
+
+> τ
+
+. The QFT and the block encoding of Mσ
+
+(Lemma 4.2) are exact, so UII encodes P 
+
+> r
+
+eAr with eAr as in Lemma 4.4, while F (K) 
+
+> τ
+
+= P 
+
+> r
+
+Ar .With p as in Eq. (46), part (iii) of that lemma gives 
+
+UII − F (K) 
+
+> τ
+
+≤ ε
+
+2 . (56) Here p = O(log K + 12 log dr + log(1 /ε )) = O(q + log(1 /ε )), using dr ≤ N .Overall, combining Eq. (55) and Eq. (56) yields 
+
+∥UII − Fτ ∥ ≤ UII − F (K) 
+
+> τ
+
++ F (K) 
+
+> τ
+
+− Fτ ≤ ε. (57) 
+
+• Bound 3: node error ∥Fτ − Ft∥. This is the error from using the stored nodes {τj } instead of the target nodes {tj }, the third term of Eq. (32). For every j, k , the inequality |eiu − eiv | ≤ | u − v|
+
+gives 
+
+|(Ft − Fτ )kj | = 1
+
+√N |e−2πikt j − e−2πikτ j | ≤ 2πk 
+
+√N |tj − τj | ≤ 2πk 
+
+√N ∥t − τ ∥∞ .
+
+Therefore, 
+
+∥Ft − Fτ ∥ ≤ ∥ Ft − Fτ ∥F
+
+≤
+
+ 
+
+> N−1
+
+X 
+
+> j=0
+> N−1
+
+X
+
+> k=0
+
+4π2k2
+
+N ∥t − τ ∥2
+
+> ∞
+
+
+
+> 1/2
+
+= 2 π 
+
+> N−1
+
+X
+
+> k=0
+
+k2
+
+!1/2
+
+∥t − τ ∥∞
+
+≤ 2π
+
+√3 N 3/2 ∥t − τ ∥∞ . (58) Together with Eq. (57), this proves 
+
+∥UII − Ft∥ ≤ ε + 2π
+
+√3 N 3/2 ∥t − τ ∥∞ , (59) which completes the proof for Eq. (52). 
+
+Resource analysis. Let L := q + log(1 /ε ). The choices above give K = O(L) and p = O(L). The node register has m bits. Computing σj and zj exactly uses O(m + q) temporary bits and O(m + q)reversible arithmetic gates (Lemma 4.2). The node factor keeps the offset zj , including its sign and the carry at the last grid cell, at width wac := max {m + 2 , p } + gac with gac = O(log( m + p + 2)), so 20 wac = O(m + p). Its inverse-trigonometric and phase arithmetic costs eO(w2ac ) gates and O(wac ) work qubits by Theorem 2.4. The frequency factor acts on the exact q-bit input wk and costs eO(( q + p)2). Multiplying the angle by the coherent degree register 0 ≤ n < K adds eO(( wac + log K)2), of the same order since p ≥ log 2 K, and the phase e−iπz j /2 uses O(m) controlled phases. The QFT contributes 
+
+O(q2) controlled rotations, and the selector registers use O(log K + log dr) qubits. Thus, before compiling the universal coefficient states, the circuit uses 
+
+O(m + L) qubits , eO(m2 + L2) logical gates . (60) For fixed r, M¨ ott¨ onen synthesis [MVBS05] (Theorem 5.7) prepares the K-dimensional coefficient state using O(K) elementary rotations and CNOTs. Coherently multiplexing the K such preparations costs O(K2) = O(L2) gates, and the weighted outer state costs O(K) = O(L) gates. These additions do not change Eq. (60). The costs of the instance-specific node and ordered row-access circuits remain separate, as stated in the theorem. If m = O(L), the displayed bounds reduce to O(L) qubits and eO(L2) logical gates. 
+
+Note. Because F T = F and diagonal matrices are symmetric, the transposed factors AT 
+
+> r
+
+=
+
+Dur M T 
+
+> σ
+
+F D vr block-encode F T 
+
+> t
+
+, which is FII /√N in the orientation of [AKY26] (Remark 3.1). The spectral norm is invariant under transposition, and the block encoding of M T 
+
+> σ
+
+is the adjoint of that of Mσ (Lemma 4.2), so the same bounds, oracles and resources apply. 
+
+# 5 Application to the Non-Uniform Chebyshev Transform 
+
+We now apply Theorem 4.7 to the NUCT defined in Eq. (2). The argument has three steps. Section 5.1 writes CN as the average of two NUDFTs whose nodes are the angles of the grid points. Section 5.2 builds the ingredients that Theorem 4.7 takes as given: the node oracle, row access to Mσ , and the coefficient preparation. Section 5.3 puts them together. Throughout, N = 2 q with q ≥ 2, and for 0 ≤ k < N ,
+
+xk = −1 + 2kN , θk = arccos xk ∈ (0 , π ], tk = θk
+
+2π ∈  0, 12
+
+ . (61) The nodes tk are irrational in general. Only the endpoint t0 = 1 /2 is exact. Since xk increases with 
+
+k and arccos is decreasing, tk decreases with k.
+
+## 5.1 Reduction to two NUDFTs 
+
+Theorem 5.1 (NUCT as an average of two NUDFTs) . Let CN be as in Eq. (3) , let Ft be the Type-II matrix Eq. (13) with the nodes Eq. (61) , and let t− 
+
+> k
+
+= ( −tk) mod 1 . Then 
+
+CN = 12 (Ft + Ft− ) . (62) 
+
+Proof. By Eq. (1), Tj (xk) = cos( jθ k) = 12 (e−ijθ k + eijθ k ). Since θk = 2 πt k and e−2πijt − 
+
+> k
+
+= e2πijt k for integer j,(CN )jk = 12√N
+
+
+
+e−2πijt k + e−2πijt −
+
+> k
+
+
+
+= 12 (( Ft)jk + ( Ft− )jk ) .
+
+21 This is the reduction in the proof of [DHR97, Corollary 2.2(2)], with the nodes e±iθ k on the unit circle. We apply the factor 12 as a two-term LCU (Algorithm 2) rather than folding it into conjugate-symmetric data. A circuit cannot store the irrational nodes tk, so it works with m-bit approximations τk and implements 
+
+Cτ := 12 (Fτ + Fτ − ) , ∥t − τ ∥∞ = max  
+
+> k
+
+|τk − tk|. (63) The difference between Cτ and CN is the node term of Theorem 4.7. For each of the two NUDFTs, that theorem needs a node oracle Eq. (47), row access Eq. (49) to Mσ with a small row-sparsity bound dr , and the coefficient preparations. The next subsection constructs all of them. The negative nodes τ − come almost for free from τ (Lemma 5.6). 
+
+## 5.2 Constructing the Oracles 
+
+This subsection builds three circuits. The node oracle Oτ returns an m-bit approximation τk of tk
+
+(Proposition 5.2). The row oracle Or gives row access to Mσ for both τ and τ − (Proposition 5.5 and Lemma 5.6). The coefficient preparations PREP LCU prepare the Bessel-coefficient states (Propositions 5.8 and 5.9). The input state is prepared by a given circuit PREP f |0⟩⊗q = |f ⟩, as in Section 1.1. 
+
+5.2.1 Node oracle Oτ
+
+Since xk = (2 k − N )/N is an exact fixed-point number, the node oracle evaluates arccos on an exact input and rounds only once, at the end. Fix a constant number g of guard bits, set the working precision w = m + g, and let [1 /(2 π)] w denote 1 /(2 π) rounded to w bits. The oracle computes 
+
+τk =
+
+(
+
+1/2, k = 0 ,
+
+min max {etk, 0}, 1/2 , k ≥ 1, etk := round m
+
+ [1 /(2 π)] w eθk
+
+, (64) where eθk is the w-bit approximation of arccos xk from part (i) of Theorem 2.4 and round m rounds to 
+
+m fractional bits. Algorithm 1 lists the steps of Oτ and the state after each one. 
+
+Algorithm 1 Node oracle Oτ
+
+Given: |k⟩ | 0⟩f |0⟩w |0⟩o with index k (q qubits), flag (1 qubit), work register, and output ( m qubits), with output precision m ≥ q + 1 and working precision w = m + g 
+
+> 1:
+
+Index and flag. Compute the signed integer Xk = 2 k − N (q + 1 qubits) by a shift and a subtraction, and bk = [ k = 0] by a comparison.  
+
+> 2:
+
+Angle. Compute eθk ≈ arccos( Xk/N ) ∈ [0 , π ] ( w+2 qubits: 2 integer, w fractional) by Theorem 2.4, whose O(q + w) scratch qubits are cleaned within this step.  
+
+> 3:
+
+Scale and round. Compute Pk = [1 /(2 π)] w eθk ∈ [0 , 1) ( w qubits) by shifted additions, since the classical constant [1 /(2 π)] w needs no register. Then compute etk (m qubits) from the top m
+
+fractional bits of Pk + 2 −m−1. 
+
+> 4:
+
+Clip. Compare with 0 and 1 /2 to get ˇ tk = min {max {etk, 0}, 1/2} (m qubits).  
+
+> 5:
+
+Write. Controlled on bk = 0, copy ˇ tk to the output. Controlled on bk = 1, apply a CNOT from the flag to the first fractional bit of the output, which writes 0 .10 · · · 0 = 1 /2.  
+
+> 6:
+
+Uncompute. Reverse steps 4, 3, 2 and 1, which only read the output register. At most 2q + 2 w + 3 m + O(1) = O(m) qubits are held between steps. 22 Every step applies the same gates for every k, and all ancillas return to |0⟩ for every k. By linearity, Oτ therefore acts on superpositions as 
+
+Oτ
+
+X
+
+> k
+
+ak |k⟩ | 0⟩⊗m = X
+
+> k
+
+ak |k⟩ | τk⟩ . (65) 
+
+Proposition 5.2 (Node oracle) . Let m ≥ q + 1 . There is a reversible circuit Oτ |k⟩ | 0⟩⊗m = |k⟩ | τk⟩,where τk ∈ [0 , 1/2] is an m-bit number with 
+
+|τk − tk| ≤ 2−m. (66) 
+
+It uses O(m) qubits, eO(m2) gates, and depth eO(m).Proof. The construction above realizes Oτ |k⟩ | 0⟩⊗m = |k⟩ | τk⟩ with τk as in Eq. (64), and all its arithmetic is done at width w = m + g. Before the final rounding there are three approximate stages. The arccos evaluation has error at most cacos 2−w by part (i) of Theorem 2.4, and multiplying by the stored constant [1 /(2 π)] w < 1 does not increase it. The stored constant satisfies |[1 /(2 π)] w −1/(2 π)| ≤ 
+
+2−w, which contributes at most π2−w since θk ≤ π. Rounding the product to w bits adds at most 2−w. The total is at most C2−w with C := cacos + π + 1, so the constant g := ⌈log 2(4 C)⌉ keeps the error before the final rounding below 2 −m−2. The final rounding adds at most 2 −m−1, and the sum is below 2 −m. The endpoint k = 0 is exact, and clipping cannot increase the error. The resources follow from Eq. (12) with w = m + O(1), plus O(q) gates for Xk.This is the only arccos evaluation which contributes to error in analysis and that error enters only through the node term ∥t − τ ∥∞ of Eq. (52). The two arccos evaluations inside the improved NUQFT, for the frequency and node factors, act on exact inputs (Lemma 4.3), so no κ appears. 
+
+Lemma 5.3 (Number of bits per node) . Let 0 < ε ≤ 1 and 
+
+m =
+
+ 32 q + log 2
+
+24 πε
+
+
+
+. (67) 
+
+Then the node oracle of Proposition 5.2 satisfies 
+
+2π
+
+√3 N 3/2 ∥t − τ ∥∞ ≤ ε
+
+12 √3 < ε
+
+3 and N ∥t − τ ∥∞ < 12π . (68) 
+
+In particular m = O(L) with L = q + log(1 /ε ).Proof. By Eq. (66), ∥t − τ ∥∞ ≤ 2−m ≤ 2−3q/ 2ε/ (24 π). Multiplying by (2 π/ √3) N 3/2 = (2 π/ √3)2 3q/ 2
+
+gives the first bound, and multiplying by N = 2 q gives N ∥t − τ ∥∞ ≤ 2−q/ 2ε/ (24 π) < 1/(2 π). Also 
+
+m ≥ q + 1, as Proposition 5.2 requires. 
+
+5.2.2 Row access 
+
+Theorem 4.7 also needs ordered access to the nonzero entries in each row of the matrix Mσ =P 
+
+> k
+
+|σk⟩⟨ k| of Eq. (8), where σk is the grid point of τk (Eq. (6)). Since τk ≤ 1/2, sunw  
+
+> k
+
+≤ N/ 2, so no wrap-around occurs and σk = sunw  
+
+> k
+
+. The grid-point oracle Oσ |k⟩ | 0⟩ = |k⟩ | σk⟩ costs one call to Oτ , a rounding, and an uncomputation. Three facts make row access cheap: each row has at most five entries, they are consecutive integers, and they lie in a short window that can be computed from the row number. 23 Column access to Mσ is Oσ itself. Row access is constructed below. The bound dr = 5 counts nodes per grid point, so it does not depend on whether Mσ or its transpose is used. (Numerically, the largest multiplicity is 3 for N ≤ 64 and 4 for 128 ≤ N ≤ 218 , both for the nodes t and for the negative nodes t− of Theorem 5.1.) 
+
+Lemma 5.4 (Rows of Mσ ). Suppose N ∥t − τ ∥∞ < 1/(2 π). Rows ℓ > N/ 2 of Mσ are empty. For 
+
+0 ≤ ℓ ≤ N/ 2, let 
+
+Θℓ, − = max 
+
+
+
+0, 2πN
+
+
+
+ℓ − 34
+
+ 
+
+, Θℓ, + = min 
+
+
+
+π, 2πN
+
+
+
+ℓ + 34
+
+ 
+
+. (69) 
+
+Then every k with σk = ℓ satisfies 
+
+aℓ ≤ k ≤ bℓ, aℓ = N
+
+2 (1 + cos Θ ℓ, +), bℓ = N
+
+2 (1 + cos Θ ℓ, −), (70) 
+
+and bℓ − aℓ < 5. In particular, every row has at most five entries. Moreover, σk is non-increasing in 
+
+k, so the entries of each row are consecutive integers. Proof. Rows ℓ > N/ 2 are empty because σk ≤ N/ 2. If σk = ℓ, then |N τ k − ℓ| ≤ 1/2, and 
+
+N ∥t − τ ∥∞ < 1/(2 π) < 1/4 gives 
+
+|N t k − ℓ| ≤ | N t k − N τ k| + |N τ k − ℓ| < 34 .
+
+Hence θk = 2 πt k ∈ [Θ ℓ, −, Θℓ, +], and since k = N 
+
+> 2
+
+(1 + cos θk), the index k lies in Eq. (70). Because cosine is 1-Lipschitz, 
+
+bℓ − aℓ ≤ N
+
+2
+
+ Θℓ, + − Θℓ, −
+
+ ≤ 3π
+
+2 < 5, (71) so the window contains at most five integers. The bound is attained, for example, at N = 8 and 
+
+ℓ = 2. For monotonicity, xk+1 − xk = 2 /N and | ddx arccos x| ≥ 1, so θk − θk+1 ≥ 2/N and tk − tk+1 ≥
+
+1/(πN ). Hence 
+
+τk − τk+1 ≥ tk − tk+1 − 2 ∥t − τ ∥∞ > 1
+
+πN − 22πN = 0 .
+
+So τk is decreasing in k. Rounding is non-decreasing, so σk = sunw  
+
+> k
+
+= round( N τ k) is non-increasing in k. The set of k with σk = ℓ is therefore a set of consecutive integers. 
+
+Proposition 5.5 (Row access from eight candidates) . Suppose N ∥t − τ ∥∞ < 1/(2 π) and set 
+
+dr = min {5, N }. The row-access oracle Or of Eq. (49) for Mσ can be implemented with at most sixteen calls each to Oσ and O† 
+
+> σ
+
+, eO(m2 + q2) gates, and O(m + q) work qubits. It needs no lookup table and no search. Proof. For rows ℓ > N/ 2, which are empty, every slot returns the padding value N + r. For 0 ≤ ℓ ≤ N/ 2, compute hℓ = ⌊eaℓ⌋ from an approximation with |eaℓ − aℓ| < 1/4. This needs cos Θ ℓ, +
+
+to q + O(1) bits (part (ii) of Theorem 2.4), since a cosine error below 1 /(2 N ) gives an error below 1/4 in aℓ. With Aℓ = ⌊aℓ⌋ we have hℓ ∈ { Aℓ − 1, A ℓ, A ℓ + 1 }, and by Lemma 5.4 every column of row ℓ lies in [ Aℓ, A ℓ + 5]. So every column lies among the eight candidates 
+
+Jℓ = {hℓ − 1, h ℓ, . . . , h ℓ + 6 } . (72) 24 By Lemma 5.4, the columns of row ℓ are consecutive integers fℓ, f ℓ + 1 , . . . , f ℓ + dℓ − 1, all in Jℓ.Hold each candidate k in a signed ( q + 3)-bit register, which covers the range −2, . . . , N + 7, and flag whether 0 ≤ k < N . If not, query index 0 instead, so that every oracle call is on a valid index. Mark 
+
+k valid if the flag is set and σk = ℓ. Then fℓ is the smallest valid candidate and dℓ is the number of valid candidates. For empty rows, including all ℓ > N/ 2, set fℓ = dℓ = 0. Computing the marks, deriving fℓ and dℓ, copying them out and uncomputing the marks gives 
+
+|ℓ⟩ | 0⟩ | 0⟩ 7 → | ℓ⟩ | fℓ⟩ | dℓ⟩
+
+with eight calls each to Oσ and O† 
+
+> σ
+
+.Since the row is consecutive, Eq. (49) becomes 
+
+ρℓ,r =
+
+(
+
+fℓ + r, r < d ℓ,N + r, dℓ ≤ r < d r .
+
+Hold r in a ( q + 3)-bit register. Compute the flag c = [ r < d ℓ], add fℓ to r controlled on c = 1, and add N to r controlled on c = 0. The register now holds ρℓ,r . Since fℓ + dℓ − 1 < N and N + r ≥ N ,the flag equals [ ρℓ,r < N ], so recomputing this comparison erases it: 
+
+|ℓ⟩ | r⟩ | fℓ, d ℓ⟩ | 0⟩ 7 → | ℓ⟩ | r⟩ | fℓ, d ℓ⟩ | c⟩ 7 → | ℓ⟩ | ρℓ,r ⟩ | fℓ, d ℓ⟩ | c⟩ 7 → | ℓ⟩ | ρℓ,r ⟩ | fℓ, d ℓ⟩ | 0⟩ .
+
+Uncompute fℓ and dℓ by reversing the first step, which depends only on ℓ. This gives Eq. (49) for 0 ≤ r < d r , the only inputs the sparse block encoding queries. The two passes use sixteen calls each to Oσ and O† 
+
+> σ
+
+. Each call costs eO(m2) by Proposition 5.2, and the candidate and shift arithmetic acts on O(q)-bit words, which gives the stated cost. 
+
+5.2.3 Negative nodes Lemma 5.6 (Negative nodes from the positive ones) . Suppose N ∥t − τ ∥∞ < 1/(2 π). Then τk ∈
+
+(0 , 1/2] , so τ − 
+
+> k
+
+= 1 − τk. Let sunw  
+
+> k
+
+, σk and zk be as in Eq. (6) for τk, and set 
+
+s− 
+
+> k
+
+= N − sunw  
+
+> k
+
+, z− 
+
+> k
+
+= −zk, σ− 
+
+> k
+
+= ( −σk) mod N. (73) 
+
+Then N τ − 
+
+> k
+
+= s− 
+
+> k
+
++z− 
+
+> k
+
+/2 with z− 
+
+> k
+
+∈ [−1, 1] , and row ℓ of Mσ− is row (−ℓ) mod N of Mσ . Consequently: (i) The NUQFT for τ − is the circuit for τ with (τk, s unw  
+
+> k
+
+, z k) replaced by (1 − τk, s − 
+
+> k
+
+, −zk), which costs O(m + q) extra gates and no second arccos .(ii) Its row oracle is obtained by negating ℓ modulo N , applying the row oracle of Proposition 5.5, and negating back, with the same bound dr .Proof. First, tk ≥ tN −1 > 1/(2 N ): indeed cos( π/N ) > 1 − π2/(2 N 2) ≥ 1 − 2/N for N ≥ 4, so θN −1 = arccos(1 − 2/N ) > π/N . Hence τk ≥ tk − ∥ t − τ ∥∞ > 1/(2 N ) − 1/(2 πN ) > 0, and (−τk) mod 1 = 1 − τk. Then 
+
+N τ − 
+
+> k
+
+= N − N τ k = N − sunw  
+
+> k
+
+− zk
+
+2 = s− 
+
+> k
+
++ z−
+
+> k
+
+2 .
+
+Since σk = sunw  
+
+> k
+
+≤ N/ 2, we have σ− 
+
+> k
+
+= ℓ exactly when σk = ( −ℓ) mod N , which is the statement about rows. Lemma 4.2, and hence Theorem 4.7, use the nearest integer only through the identity N τ k =
+
+sunw  
+
+> k
+
++ zk/2 with integer sunw  
+
+> k
+
+and zk ∈ [−1, 1]. Its reduction modulo N is σk. So they apply to 
+
+τ − with ( s−, z −, σ −). This split agrees with rounding N τ − 
+
+> k
+
+directly, except possibly at a tie, where either choice is valid. 25 5.2.4 Coefficient preparation 
+
+The coefficient preparations do not depend on the nodes (Lemma 4.5), so the constructions below apply to any NUQFT and are compiled once for a given K and precision. For fixed r, with λr as in Eq. (22), define 
+
+|χr ⟩ = 1
+
+√λrK−1X
+
+> ℓ=0
+
+q
+
+|α′ 
+
+> ℓr
+
+| | ℓ⟩ , ϕℓr = arg( α′ 
+
+> ℓr
+
+). (74) We implement PREP r |0⟩⊗⌈ log 2 K⌉ = |χr ⟩ (75) and apply the phase eiϕ ℓr inside the SELECT operation, so that the LCU produces the complex coefficient α′
+
+> ℓr
+
+. For the coefficients Eq. (15) the Bessel factors are real, so ϕℓr is a multiple of π/ 2and the phases cost only Clifford gates. Both preparations are built from the following standard construction. 
+
+Theorem 5.7 (M¨ ott¨ onen et al. [MVBS05]) . Let D = 2 n and a ∈ RD 
+
+> ≥0
+
+with P 
+
+> j
+
+a2 
+
+> j
+
+= 1 . There is an ancilla-free circuit Ua with 
+
+Ua |0⟩⊗n =
+
+> D−1
+
+X
+
+> j=0
+
+aj |j⟩ , (76) 
+
+made of n uniformly controlled Ry rotations, which decompose into at most 
+
+D − 1 Ry rotations and D − 2 CNOT gates . (77) 
+
+For a binary prefix z, let Pz := P   
+
+> jwith prefix z
+
+a2 
+
+> j
+
+. The rotation that splits z into its two children has angle 
+
+ϑz = 2 arcsin 
+
+r Pz1
+
+Pz
+
+(78) 
+
+(and ϑz = 0 if Pz = 0 ). If each of the S rotations is implemented with operator-norm error at most 
+
+η, the circuit has error at most Sη .
+
+This is the nonnegative-amplitude case of [MVBS05]: no phase-equalizing Rz rotations are needed, and Eq. (78) is their Eq. (8). The last claim follows by replacing the rotations one at a time. The Grover-Rudolph construction gives the same gate count (Section A). 
+
+Proposition 5.8 (Inner LCU coeff preparation) . Let α be the normalization of the block encoding in which the preparations are used. After classically computing the K2 coefficients and the angles Eq. (78) to accuracy O(2 −bα ), each state |χr ⟩ can be prepared with O(K) rotations and CNOT gates on O(log K) qubits, and the controlled family 
+
+PREP LCU =
+
+> K−1
+
+X
+
+> r=0
+
+|r⟩⟨ r| ⊗ PREP r (79) 
+
+with O(K2) one- and two-qubit gates. Choosing 
+
+bα = O
+
+
+
+log K2αεprep 
+
+
+
+(80) 
+
+keeps the resulting error in the encoded matrix O(εprep ).
+
+26 Proof. For fixed r, pad the amplitudes in Eq. (74) to dimension K′ = 2 ⌈log 2 K⌉ < 2K and apply Theorem 5.7. This gives O(K) gates. For the controlled family, pad r to K′ values as well. At level j of the cascade the angle depends on r and on the j − 1 bits already prepared, so the level is one uniformly controlled rotation with log 2 K′ + j − 1 controls, which decomposes into K′2j−1
+
+rotations and as many CNOTs. Summing over j gives K′(K′ − 1) = O(K2) gates. By the last part of Theorem 5.7, angle errors O(2 −bα ) give an error O(K22−bα ) in PREP LCU , at most twice that in the PREP-SELECT-PREP † product, and O(αK 22−bα ) in the encoded matrix. Eq. (80) makes this 
+
+O(εprep ). 
+
+Proposition 5.9 (Outer LCU preparations) . Let the rth term of the outer LCU have normalization 
+
+βr = √dr λr (Lemma 4.4), and let β⋆ = √dr Λ. After classically computing the weights λr :(a) The uniform outer LCU prepares K−1/2 P 
+
+> r<K
+
+|r⟩ and, in branch r, rotates an ancilla so that its |0⟩ amplitude is βr /β ⋆ = λr /Λ. Its normalization is 
+
+αunif = Kpdr Λ. (81) 
+
+(b) The weighted outer LCU prepares 
+
+PREP out |0⟩⊗⌈ log 2 K⌉ = 1
+
+√Λ
+
+> K−1
+
+X
+
+> r=0
+
+pλr |r⟩ , (82) 
+
+and its normalization is 
+
+αwt = pdr Λ. (83) 
+
+Each preparation, and the branch-dependent rotation in (a), uses O(K) rotations and CNOT gates. Choosing 
+
+bout = O
+
+
+
+log Kα unif 
+
+εout 
+
+
+
+(84) 
+
+bits of angle precision keeps the resulting error in the encoded matrix O(εout ).Proof. The normalizations are derived in Lemma 4.4 and Section C. Here we only build the circuits. Both outer states have nonnegative amplitudes ( K−1/2, or pλr /Λ), so Theorem 5.7 with D = K′ <
+
+2K prepares them with O(K) gates. The rotation in (a) is one uniformly controlled Ry rotation on the outer index, which also decomposes into O(K) gates. With O(K) rotations, angle errors 
+
+O(2 −bout ) give an error O(K2−bout ) in the selected block, hence O(Kα unif 2−bout ) in the encoded matrix, since αwt ≤ αunif .
+
+## 5.3 Main result 
+
+Let V+ be the block encoding of Fτ given by Theorem 4.7 with the oracles above, and V− the one for 
+
+Fτ − obtained from it by Lemma 5.6. Both have the same normalization α and the same number a of ancillas. Define SEL ± = |0⟩⟨ 0| ⊗ V+ + |1⟩⟨ 1| ⊗ V−, VNUCT = ( H ⊗ I) SEL ±(H ⊗ I), (85) where the Hadamards act on a sign qubit. By Lemma 5.6, SEL ± is the single circuit V+ with its node data controlled on the sign qubit, not two separate circuits. 27 Algorithm 2 Quantum NUCT 
+
+Require: N = 2 q , target error ε, the oracles of Section 5.2, and a circuit PREP f with PREP f |0⟩⊗q =
+
+|f ⟩ 
+
+> 1:
+
+Prepare |f ⟩ = PREP f |0⟩⊗q 
+
+> 2:
+
+Initialize the NUQFT ancillas and a sign qubit to |0⟩ 
+
+> 3:
+
+Apply H to the sign qubit  
+
+> 4:
+
+Apply SEL ±: the NUQFT for τ or τ −, controlled on the sign qubit  
+
+> 5:
+
+Apply H to the sign qubit  
+
+> 6:
+
+Measure the sign qubit and the NUQFT ancillas, and accept only the all-zero outcome  
+
+> 7:
+
+return the system register, in a state proportional to eCN |f ⟩
+
+Theorem 5.10 (Quantum NUCT) . Let N = 2 q with q ≥ 2, let 0 < ε ≤ 1, and let L = q + log(1 /ε ).With m as in Lemma 5.3, the circuit VNUCT is a block encoding of CN with normalization 
+
+α = pdr Λ < 24 √5 = O(1) (86) 
+
+and error at most ε. It uses O(L) qubits and 
+
+eO(L2) reversible-arithmetic, Clifford, Toffoli, and controlled-rotation gates . (87) 
+
+Synthesizing every rotation over Clifford+ T gives 
+
+eO(L3) Clifford+ T gates . (88) 
+
+No parameter depending on the node geometry appears. These counts exclude PREP f and amplitude amplification. With the uniform outer LCU instead, the normalization is O(K) = O(L).Proof. We split the error budget into three parts of ε/ 3. 
+
+Node error. By Lemma 5.3, (2 π/ √3) N 3/2 ∥t − τ ∥∞ < ε/ 3. Since tk, τ k > 0 (Lemma 5.6), |τ − 
+
+> k
+
+−
+
+t− 
+
+> k
+
+| = |τk−tk|. Applying Eq. (58) to both terms of Eq. (63) gives ∥Cτ − CN ∥ ≤ (2 π/ √3) N 3/2 ∥t − τ ∥∞ <ε/ 3. 
+
+NUQFT error. By Lemma 5.3, N ∥t − τ ∥∞ < 1/(2 π), so Proposition 5.5 and Lemma 5.6 give row access for both node sets with dr = min {5, N }. Theorem 4.7, applied with accuracy ε/ 3 to the stored nodes themselves (so that its node term vanishes), gives V± encoding matrices eF± with 
+
+eF+ − Fτ ≤ ε/ 3 and eF− − Fτ − ≤ ε/ 3. With the weighted outer LCU, their normalization is 
+
+√dr Λ < 24 √5 by Lemmas 4.1 and 4.4. Projecting the sign qubit of Eq. (85) onto |0⟩ gives 12 (V+ +V−), so VNUCT encodes eCN = 12 ( eF+ + eF−) with the same normalization and eCN − Cτ ≤ ε/ 3. 
+
+Rotation precision. The last ε/ 3 covers finite-precision rotations. Choosing εprep and εout in Propositions 5.8 and 5.9 as suitable constant fractions of ε keeps the error from the coefficient angles below ε/ 6. The Clifford+ T synthesis below contributes at most another ε/ 6. The three parts give 
+
+eCN − CN ≤ ε.
+
+Resources. Since m = O(L), Theorem 4.7 uses O(L) qubits and eO(L2) gates, including O(K2) = 
+
+O(L2) gates for the coefficient preparations. Its oracles add eO(m2) gates for Oτ (Proposition 5.2), 
+
+eO(m2 + q2) for each of the constant number of row-oracle calls made by the sparse-access block encoding (Proposition 5.5), and O(m + q) for the negative branch (Lemma 5.6). The sign qubit adds one qubit and two Hadamards. This proves Eq. (87). For Clifford+ T , let R = eO(L2) be the number of rotations and synthesize each to error ε/ (6 αR ), which costs O(log( αR/ε )) = O(L) T gates [RS16] and adds at most ε/ 6 to the encoded matrix. This gives Eq. (88). 28 Corollary 5.11 (Output state) . Let |f ⟩ = ∥f ∥−12
+
+P 
+
+> k
+
+fk |k⟩ be the input state, let eCN and α be as in Theorem 5.10, and let r := ∥CN |f ⟩∥ = ∥c∥2 /(√N ∥f ∥2), where c is as in Eq. (2) . Suppose r > ε .Then Algorithm 2 succeeds with probability eCN |f ⟩ 2
+
+/α 2 ≥ (r − ε)2/α 2, so amplitude amplification needs O(α/ (r − ε)) uses of VNUCT , PREP f and their inverses. The output state satisfies 
+
+eCN |f ⟩
+
+eCN |f ⟩
+
+− c
+
+∥c∥2
+
+≤ 2εr − ε . (89) 
+
+Proof. The success probability is the squared norm of the encoded block applied to |f ⟩, divided by α2, and eCN |f ⟩ ≥ r − ε. For Eq. (89), use CN |f ⟩ /r = c/ ∥c∥2 and the elementary bound 
+
+∥u/ ∥u∥ − v/ ∥v∥∥ ≤ 2 ∥u − v∥ / ∥u∥ with u = eCN |f ⟩ and v = CN |f ⟩.Since α = O(1), the number of amplification rounds is governed by r, which depends on the data. The transform itself costs eO(L2) gates, but an end-to-end application can still be dominated by loading f , by the factor 1 /r , or by reading out many coefficients. 
+
+# 6 Conclusion and Discussion 
+
+We improved the non-uniform quantum Fourier transform of [AKY26] by removing its dependence on the geometry parameter κ. In their analysis, κ grows as nodes approach the boundaries of the grid cells, and for the NUCT nodes we could not bound it by any polynomial in N (Section B). The resulting error bound (Theorem 4.7) holds for any node set and depends only on the number of bits per node, the target accuracy and the row sparsity dr. Together with the constant bound on the total Bessel weight (Lemma 4.1) and the weighted outer LCU, this also improves the normalization from O(K2√dr ) to O(√dr ). Using this NUQFT and the reduction of the Chebyshev transform to two NUDFTs (Theorem 5.1), we obtained an ε-accurate block encoding of the non-uniform Chebyshev transform with O(1) normalization, O(L) qubits and eO(L2) gates, where L = log N + log(1 /ε ) (Theorem 5.10). All oracles are constructed explicitly, including the row access that [AKY26] assumed. This is the discrete polynomial transform of Driscoll, Healy and Rockmore [DHR97] with Pj = Tj at equispaced nodes, which they compute classically with O(N log 2 N ) operations. Our circuit is polylogarithmic in N ,so the transform itself is exponentially cheaper. As for any quantum linear-algebra primitive, an end-to-end speedup also depends on preparing the input state, on the norm of the output, and on how many output coefficients must be read out. Our original motivation was to implement the full pipeline of [DHR97] with quantum circuits. They compute the discrete polynomial transform for any family of orthogonal polynomials with a three-term recurrence, by a divide-and-conquer on the recurrence whose basic operations are Chebyshev transforms. Fast non-uniform Fourier and polynomial transforms are used throughout scientific computing and imaging, for example in MRI reconstruction from non-Cartesian samples [FS03]. An efficient quantum version would give exponentially fast numerical algorithms for this whole class of transforms. The non-uniform Chebyshev transform is the first step in that direction. In future work we plan to use it to build quantum polynomial transforms for general orthogonal polynomial families, following the approach of [DHR97]. The main open question is whether the remaining steps of their construction, which convert between the Chebyshev basis and a general orthogonal basis through the three-term recurrence, can also be implemented with polylogarithmic cost. 29 Acknowledgment 
+
+AI Disclosure. The authors came up with the novel idea for using NUQFT for Chebyshev Transform and improving the NUQFT by removing the condition number. We had a working proof and used ChatGPT-Sol-5.6 to refine the conditioning-free idea and oracle constructions. We used Claude Opus 5.5 for coming up with efficient Oracle constructions, based on standard techniques and help with writing the paper. The authors verified the correctness and originality of all content including references and take full responsibility for the work presented. 
+
+# References 
+
+[AKY26] Junaid Aftab, Yuehaw Khoo, and Haizhao Yang. Non-uniform quantum Fourier trans-form. arXiv preprint arXiv:2602.13472 , 2026. [BBGA24] Iain Burge, Michel Barbeau, and Joaquin Garcia-Alfaro. Quantum cordic–arcsine on a budget. arXiv preprint arXiv:2411.14434 , 2024. [BHMT02] Gilles Brassard, Peter Høyer, Michele Mosca, and Alain Tapp. Quantum amplitude amplification and estimation. In Quantum Computation and Information , volume 305 of Contemporary Mathematics , pages 53–74. American Mathematical Society, 2002. arXiv:quant-ph/0005055. [CW12] Andrew M. Childs and Nathan Wiebe. Hamiltonian simulation using linear combinations of unitary operations. Quantum Information and Computation , 12(11–12):901–924, 2012. arXiv:1202.5822. [DHR97] James R. Driscoll, Dennis M. Healy, Jr., and Daniel N. Rockmore. Fast discrete polynomial transforms with applications to data analysis for distance transitive graphs. 
+
+SIAM Journal on Computing , 26(4):1066–1099, 1997. [FS03] Jeffrey A. Fessler and Bradley P. Sutton. Nonuniform fast Fourier transforms using min-max interpolation. IEEE Transactions on Signal Processing , 51(2):560–574, 2003. [GR02] Lov Grover and Terry Rudolph. Creating superpositions that correspond to efficiently integrable probability distributions. arXiv preprint quant-ph/0208112 , 2002. [GSLW19] Andr´ as Gily´ en, Yuan Su, Guang Hao Low, and Nathan Wiebe. Quantum singular value transformation and beyond: Exponential improvements for quantum matrix arithmetics. In Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing (STOC) , pages 193–204, 2019. Full version: arXiv:1806.01838. [HRS18] Thomas H¨ aner, Martin Roetteler, and Krysta M. Svore. Optimizing quantum circuits for arithmetic. arXiv preprint arXiv:1805.12445 , 2018. [KR01] Andreas Klappenecker and Martin R¨ otteler. Discrete cosine transforms on quantum computers. In Proceedings of the 2nd International Symposium on Image and Signal Processing and Analysis (ISPA 2001) , pages 464–468, 2001. arXiv:quant-ph/0111038. [Mak80] John Makhoul. A fast cosine transform in one and two dimensions. IEEE Transactions on Acoustics, Speech, and Signal Processing , 28(1):27–34, 1980. 30 [MVBS05] Mikko M¨ ott¨ onen, Juha J. Vartiainen, Ville Bergholm, and Martti M. Salomaa. Transfor-mation of quantum states using uniformly controlled rotations. Quantum Information and Computation , 5(6):467–473, 2005. arXiv:quant-ph/0407010. [Niv56] Ivan Niven. Irrational Numbers . Number 11 in Carus Mathematical Monographs. Mathematical Association of America, 1956. [OLBC10] Frank Olver, Daniel Lozier, Ronald Boisvert, and Charles Clark. The NIST Handbook of Mathematical Functions . Cambridge University Press, New York, NY, 2010-05-12 00:05:00 2010. [RAT18] Diego Ruiz-Antolin and Alex Townsend. A nonuniform fast Fourier transform based on low rank approximation. SIAM Journal on Scientific Computing , 40(1):A529–A547, 2018. [RS16] Neil J. Ross and Peter Selinger. Optimal ancilla-free Clifford+T approximation of z-rotations. Quantum Information and Computation , 16(11–12):901–953, 2016. arXiv:1403.2975. [Tow14] Alex Townsend. Computing with functions in two dimensions . PhD thesis, University of Oxford, 2014. [WPW +23] Chelsea A. Williams, Annie E. Paine, Hsin-Yu Wu, Vincent E. Elfving, and Oleksandr Kyriienko. Quantum Chebyshev transform: Mapping, embedding, learning and sampling distributions. arXiv preprint arXiv:2306.17026 , 2023. 
+
+# A Alternative Grover-Rudolph interpretation of coefficient preparation 
+
+For completeness, the same fixed-r magnitude state in Eq. (74) can be described through the Grover-Rudolph probability-tree recursion [GR02]. Pad to K′ = 2 ⌈log 2 K⌉ and define 
+
+Wr,z := X   
+
+> ℓ:ℓhas prefix z
+
+|α′ 
+
+> ℓr
+
+|. (90) At a nonempty prefix z, apply a prefix-controlled rotation satisfying cos 2
+
+ θr,z 
+
+2
+
+
+
+= Wr,z 0
+
+Wr,z 
+
+, sin 2
+
+ θr,z 
+
+2
+
+
+
+= Wr,z 1
+
+Wr,z 
+
+. (91) Induction over the tree depth shows that the amplitude at leaf ℓ is p|α′ 
+
+> ℓr
+
+|/λ r. Since the subtree masses are universal constants, they are computed once offline. No coherent numerical integration is required. For this finite tabulated distribution, the Grover-Rudolph tree and the nonnegative-amplitude specialization of M¨ ott¨ onen synthesis [MVBS05] use the same K′ − 1 = O(K) conditional angles. After decomposition into elementary gates, both therefore have linear gate complexity for one fixed-r state and quadratic complexity for the fully coherent r-multiplexed library. We use the M¨ ott¨ onen formulation in the main text because it directly provides the uniformly controlled-rotation decomposition, analytic angle arrays, and ancilla-free elementary-gate count required by Propositions 5.8 and 5.9. 31 B Why κ cannot be bounded for the NUCT nodes 
+
+Theorem 3.4 depends on the parameter κ of Eq. (26). This appendix explains why it does not give an explicit complexity for the NUCT. For the nodes Eq. (61) we could neither compute κ in closed form nor bound it by a polynomial in N . We show that finding a good upper bound is difficult: Let 
+
+δN := 1 − max  
+
+> 0≤k<N
+
+|yk| (92) be the smallest distance from an offset yk = z(tk) to the cell boundary ±1. The negative nodes t−
+
+> k
+
+have offsets −yk, so they give the same δN . The point y∗ 
+
+> k
+
+in Eq. (26) lies between yk and byk, and 
+
+|yk − byk| ≤ N 2−m+1 by Eq. (23). If N 2−m+1 ≤ δN /2, then |y∗
+
+> k
+
+| ≤ 1 − δN /2, so 1 − (y∗ 
+
+> k
+
+)2 ≥ δN /2 and 
+
+κ ≤ p2/δ N . (93) Without such a condition on m the point y∗ 
+
+> k
+
+can approach ±1 and no bound holds. So both κ and the precision m ≥ q + 2 + log 2(1 /δ N ) are controlled by δN , and bounding κ means bounding δN from below. 
+
+Exponential Bound. Since θk = 2 πt k and N t k = sunw  
+
+> k
+
++ yk/2 by Eq. (6), we have N θ k =2πs unw  
+
+> k
+
++ πy k. By Eq. (9), TN (xk) = cos( N θ k) = cos( πy k). With TN = 2 T 2 
+
+> N/ 2
+
+− 1 this gives 
+
+|TN/ 2(xk)| = | cos( πy k/2) | = sin   π 
+
+> 2
+
+(1 − | yk|).
+
+Since u ≤ sin( πu/ 2) ≤ πu/ 2 for u ∈ [0 , 1], 2
+
+π min  
+
+> 0≤k<N
+
+|TN/ 2(xk)| ≤ δN ≤ min  
+
+> 0≤k<N
+
+|TN/ 2(xk)|. (94) So κ is small exactly when no grid point xk = −1 + 2 k/N comes close to a zero cos  (2 n + 1) π/N  of 
+
+TN/ 2.The polynomial TN/ 2 has integer coefficients and degree N/ 2, and xk = (2 k − N )/N has denominator dividing 2 q−1. Hence 2 (q−1) N/ 2 TN/ 2(xk) is an integer. It is nonzero. The zeros of 
+
+TN/ 2 are cosines of rational multiples of π, and by Niven’s theorem [Niv56] such a cosine is rational only if it lies in {0, ± 12 , ±1}. None of these is a zero of TN/ 2 when N = 2 q ≥ 4. Therefore 
+
+|TN/ 2(xk)| ≥ 2−(q−1) N/ 2, and by Eqs. (93) and (94) 
+
+δN ≥ 2
+
+π 2−(q−1) N/ 2, log 2 κ ≤ (q − 1) N
+
+4 + O(1) .
+
+This is the best bound we obtained. In Theorem 3.4 it gives log(1 + κL ) = O(N log N ) qubits and gates, which removes the exponential speedup. We now give some heuristic arguments for why such a bound might be hard. A polynomial bound 
+
+κ ≤ poly( N ) needs every fractional part of N θ k/(2 π) = N 
+
+> 2π
+
+arccos( −1 + 2 k/N ) to stay at distance 1/poly( N ) from 12 , uniformly in k and N . Near x = 0, for instance, N θ k/(2 π) ≈ N/ 4 − (k − N/ 2) /π ,so even the linearized problem asks how well multiples of 1 /π approximate half-integers, which depends on the irrationality measure of π. Away from x = 0 the dependence on k is nonlinear, and we know of no argument that controls these fractional parts. An equidistribution heuristic suggests 
+
+δN ≈ 1/N and κ ≈ √N , but it gives no bound valid for every N .32 Numerics. Table 1 lists δN and κ0 := max k(1 − y2
+
+> k
+
+)−1/2, the limit of κ as m → ∞ . The values were computed in double precision and checked with 50-digit arithmetic for q ≤ 12 and for the minimizer at q = 20. The growth is roughly √N but irregular. The product N δ N ranges from 0 .055 to 5 .2, κ0
+
+is not monotone in N , and at q = 20 the single node k = 1010685 has δN ≈ 5.2 × 10 −8. Outliers of this kind are why no clean bound can be read off from the data either. 
+
+q δN N δ N κ0 κ0/√N
+
+4 2.87 × 10 −1 4.59 1.43 0.36 6 4.94 × 10 −2 3.16 3.22 0.40 8 1.15 × 10 −2 2.94 6.62 0.41 10 3.86 × 10 −4 0.40 36.0 1.12 12 2.09 × 10 −4 0.86 48.9 0.76 14 3.20 × 10 −4 5.24 39.6 0.31 16 2.34 × 10 −5 1.54 146.1 0.57 18 5.26 × 10 −6 1.38 308.2 0.60 20 5.22 × 10 −8 0.055 3094.6 3.02 Table 1: Distance δN of the NUCT offsets to the cell boundary and the resulting κ0, for N = 2 q .
+
+The fix in our algorithm. Theorem 4.7 does not need δN . The arccos evaluations inside the NUQFT act on exact inputs (Lemma 4.3), and the node error enters only through the Fourier phases, whose derivative has no singularity. This is why the NUCT complexity in Section 5.3 is explicit. 
+
+# C Uniform and weighted outer LCU constructions 
+
+Lemma 4.4 combines the K component block encodings of Ar = Dvr F M σ Dur , whose normalizations are βr = √dr λr, through one of two outer LCUs. The normalization-aware (weighted) outer LCU prepares a selector with amplitudes pλr /Λ, so each branch weight cancels its own λr and the normalization is √drΛ = O(√dr). The uniform outer LCU first pads every branch from normalization βr to the common value β⋆ = √drΛ ≥ βr by an ancillary one-qubit amplitude, and then prepares |+K ⟩. It selects 1
+
+> K
+
+P 
+
+> r
+
+eAr /β ⋆, so it costs an additional factor K and gives normalization 
+
+K√dr Λ = O(K√dr ), with the same unnormalized error Eq. (45). The proof of Theorem 4.7 uses only the weighted alternative. The uniform outer LCU, which is close to the outer-LCU organization of [AKY26], is retained only for comparison, and the two constructions are never applied simultaneously. The two outer-LCU normalizations, compiled explicitly in Proposition 5.9, obey Λ = O(K) Lemma 4.1: Λ = O(1) uniform outer LCU O(K2√dr ) O(K√dr )normalization-aware outer LCU O(K√dr ) O(√dr )Relative to the source-level bound O(K2√dr), the constant-mass estimate of Lemma 4.1 and the weighted selector each remove one factor of K, and the off-diagonal entries of the table show that the two refinements act independently. The constant-mass estimate is not needed to remove κ: with the source-level bound Λ = O(K), the choice p = O(log( √dr K2/ε )) = O(q + log(1 /ε )) still suffices in Theorem 4.7. Its role is to improve the normalization, and hence the success probability. For the NUCT, with dr ≤ 5, the bounds become O(K2) for the source-level construction, O(K) for the 33 uniform construction, and O(1) for the weighted construction. These are comparisons between the upper bounds proved for the respective constructions, not a lower bound showing that the original NUQFT architecture cannot be improved by incorporating the same refinements. The normalization does not change the gate count of a single transform-layer invocation. However, for an α-normalized block encoding of an operator eF applied to an input proportional to f , the postselection success probability is eF f 22
+
+/(α2 ∥f ∥22). Relative to the uniform construction, the weighted construction therefore improves this probability by a factor K2 and reduces the amplitude-amplification overhead by a factor K = O(q + log(1 /ε )), which carries over to coherent output-state preparation and to applications that repeatedly invoke the transform block encoding. The selector states and the normalization-equalizing rotations are compiled in Proposition 5.9. 34

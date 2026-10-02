@@ -1,0 +1,3622 @@
+Title: Floquet-Universal Hamiltonian Simulation
+
+URL Source: https://arxiv.org/pdf/2610.01878v1
+
+Published Time: Fri, 02 Oct 2026 01:58:08 GMT
+
+Number of Pages: 60
+
+Markdown Content:
+# Floquet-Universal Hamiltonian Simulation 
+
+## Emilio Onorati 1,2 , Harriet Apel 3, Michael M. Wolf 1, and Toby Cubitt 3,* 
+
+> 1
+
+Department of Mathematics, Technische Universit¨ at M¨ unchen, Germany 
+
+> 2
+
+Department of Physics, Freie Universit¨ at Berlin, Germany 
+
+> 3
+
+Department of Computer Science, University College London, United Kingdom 
+
+Abstract 
+
+Analogue and digital Hamiltonian simulation represent two distinct approaches to making one quantum system replicate the physical prop-erties of another, with consequences ranging from practical applications to complexity theory and quantum gravity. They are rooted in two dis-tinct regimes of quantum dynamics: time-independent Hamiltonians for the former; fully controllable time-dependent quantum circuits in the lat-ter. Time-periodic Hamiltonians represent an intermediate regime. In this work, we establish a theory of Floquet simulation where we use periodically driven Hamiltonians to synthesise time-independent ones. We show that a set of interactions S can Floquet-simulate every Hamil-tonian in the Lie algebra Lie( S), and consequently we give a complete and constructive characterisation of Floquet-universal Hamiltonians that are able to produce any target Hamiltonian. Notably, our construction uses only O(1) local interaction strengths and ratios thereof, avoiding the impractical multi-scale local interaction strengths often required in analogue simulation via time-independent Hamiltonians. Instead, the con-struction requires a range of driving frequencies which scales polynomially with system size for important classes such as k-local lattice Hamiltonians. This has immediate complexity-theoretic implications, including numer-ous BQP-completeness and QMA-hardness results for natural physical properties and quantities studied in Floquet physics. 
+
+> ∗
+
+email: t.cubitt@ucl.ac.uk 
+
+1arXiv:2610.01878v1 [quant-ph] 1 Oct 2026 Contents 
+
+## I Overview 3
+
+1 Introduction 32 Floquet theory 63 Floquet simulation 64 Main results 85 Proof roadmap 9
+
+## II Mathematical proofs 11 
+
+6 Preliminaries 11 7 Floquet Hamiltonian and Magnus expansion 11 
+
+7.1 Vanishing lower orders . . . . . . . . . . . . . . . . . . . . . . . . 14 7.2 Leading-order Magnus terms . . . . . . . . . . . . . . . . . . . . 17 
+
+8 Algebraic reduction via residues 20 
+
+8.1 Hyperplanes and residues . . . . . . . . . . . . . . . . . . . . . . 21 8.2 Shuffle identities and image of the functional Ξ . . . . . . . . . . 24 
+
+9 Canonical projection on a Lie polynomial 33 10 Floquet universality 35 
+
+10.1 Mixed-degree synthesis and truncation . . . . . . . . . . . . . . . 35 10.2 Floquet synthesis with bounded Fourier-amplitudes . . . . . . . . 37 10.3 Explicit construction of admissible frequencies . . . . . . . . . . . 48 10.4 Efficiency of Floquet Simulation . . . . . . . . . . . . . . . . . . . 52 
+
+References 57 
+
+2Part I 
+
+# Overview 
+
+# 1 Introduction 
+
+Quantum simulation is both of immense practical value and fundamental scien-tific significance. On the practical front, simulating the quantum many-body systems that occur in chemistry and materials science is one of the most promis-ing applications of quantum technology [Dal+22]. Analogue simulation, in which a quantum system is engineered to reproduce a target Hamiltonian of inter-est, has been successfully performed for decades, at scales well-beyond what is possible on classical or quantum computers [BL20; Mon+21]. Meanwhile, recent results have reported the first scientifically meaningful digital quantum simulations that challenge current state-of-the-art classical techniques [Ala+26; Ala+25]. Fundamentally, quantum simulation has deep connections to quantum computation and complexity theory. It was established long ago that general-purpose digital quantum simulation is theoretically equivalent to a universal quantum computer [Llo96; Dod+02]. Meanwhile, analogue quantum simulation is closely related to Hamiltonian complexity theory [CMP18; CM16; BH17], with recent theoretical results proving an exact equivalence between general-purpose analogue quantum simulators and Hamiltonians in the QMA complexity class [Koh+22]. These qualitatively different sets of simulation experiments and theorems, analogue and digital, represent two distinct mathematical structures underlying the simulation. In analogue simulation, a static, time-independent Hamiltonian is engineered to replicate the desired target Hamiltonian. This form of simulation was originally proposed in [Jak+98], and a full mathematical theory underlying it worked out in [CMP18]. Meanwhile, in digital quantum simulation, a quantum circuit consisting of a sequence of few-qubit unitary gates is constructed, which reproduces the time-dynamics of the target Hamiltonian. Its theory is exactly that of universal quantum computation and the Hamiltonian simulation algorithm, worked out in the 1980-90s [NC10]. Thus analogue quantum simulation (at least in its original form) uses a time-independent Hamiltonian with no dynamically varying parameters to carry out the simulation. Whereas digital quantum simulation uses a quantum com-puter, which can be viewed as a highly time-dependent Hamiltonian with many dynamically varying parameters. The consequences of this underlying mathematical difference can be traced all the way through from theory to state-of-the-art experiments. On the theoretical side, it is a classic result from the early days of quantum computing theory that any entangling two-qubit interaction (together with single-qubit gates) is sufficient to carry out universal quantum computation [Dod+02], hence sufficient for digital simulation of any desired target Hamiltonian. Whereas the classification of two-qubit interactions sufficient for universal analogue simulation is non-trivial, does not encompass all entangling interactions, and was worked out only 3in 2018 [CMP18]. Experimentally, because analogue simulation only requires engineering time-independent Hamiltonians, it is less demanding of hardware, hence far larger analogue quantum simulation experiments have been performed than digital. On the other hand, since only time-independent Hamiltonians are available, the range of target Hamiltonians that can feasibly be simulated using analogue techniques is more restricted. There is an interesting intermediate regime between time-independent Hamil-tonians with no dynamical control, and time-dependent Hamiltonians with full dynamical control: periodically driven Hamiltonians, also called “Floquet Hamiltonians”. Their time-dependence is periodic: 
+
+H(t) = H(t + T ) (1) for some period T and therefore can be expressed as a Fourier series: 
+
+H(t) = 
+
+> ∞
+
+X
+
+> k=1
+
+ak cos( ωkt ) + bk sin( ωkt ). (2) The Floquet Hamiltonians encountered in practice typically have simple Fourier series, consisting of a finite number of terms not involving extremely large values of k; i.e. Fourier series with bounded bandwidth. As with analogue quantum simulation, Floquet quantum systems have been engineered and studied experimentally for multiple decades. They exhibit in-teresting many-body physics phenomena, many of which parallel those of static many-body quantum systems [MP15; Khe+16], but some of which are not possi-ble with time-independent Hamiltonians, most famously time-crystals [EBN16; MIQ+22]. Simulation of Floquet systems using digital quantum computers has become popular recently [MIQ+22; Zha+22], largely because the circuit depths attainable in current quantum computers are typically insufficient to achieve a good approximation to continuous-time dynamics. Although these are discrete Floquet systems consisting of repeated layers of quantum gates, rather than the sinusoidally periodically-driven Hamiltonians of conventional Floquet physics. However, the use of Floquet Hamiltonians themselves to simulate other quantum Hamiltonians remains less explored than either the static or fully time-dependent cases. In this paper, we initiate the systematic, mathemati-cal study of quantum Floquet simulation: specifically, the use of periodically driven Hamiltonians to simulate target Hamiltonians that are time-independent. We prove a complete characterisation of the Floquet-simulation power of any set of interactions, and as a consequence fully characterise Floquet-universal Hamiltonians able to simulate any time-independent Hamiltonians. The classification is simple to state, although its proof is non-trivial: a set of periodically driven interactions S can Floquet-simulate any Hamiltonian in the Lie algebra Lie( S) generated by S. In particular, this means that a set of interactions can simulate all target Hamiltonians – is “Floquet universal” – if it generates the full Lie algebra. Comparing this characterisation with the time-independent and fully time-dependent cases, we see that the condition for Floquet-universality coincides 4with the classification of interactions that generate universal gates for quantum computation. Hence, restricting from discontinuous time-dependent Hamiltoni-ans with infinite frequency bandwidth to smoothly time-periodic Hamiltonians with bounded bandwidth does not reduce the computational or simulation power. This contrasts to restricting to time-independent control, which was shown in [CMP18; Koh+22] to in general reduce both. Despite arriving at the same classification, the proof in the Floquet case is very different and significantly more involved than the case of universal quantum gates. It uses a novel algebraic geometry argument via residues to relate the effective Hamiltonian to the canonical projection from the free associative algebra to the Lie algebra, and requires a recent tighter bound on the tail of the Magnus expansion [ACO25]. Our characterisation of the Floquet-simulation power of an arbitrary set of interactions is also constructive: given any target Hamiltonian, suitable periodic driving parameters for generating that Hamiltonian can be derived by essentially a linear algebra computation. Notably, all these results still hold when all ratios between local interaction strengths in the engineered Floquet Hamiltonian bounded between 1 and 2 (in natural units) so that only the driving frequencies are allowed to scale. This is a key practical motivation for this work, contrasting strongly with the time-independent case where the the ratios of the interaction strengths scale polynomially, and there are no-go results indicating that this cannot be im-proved [CMP18; AZ19; Har+24; AB25]. For this reason, analogue Hamiltonian simulation constructions based on perturbation gadgets or history state construc-tions have had little practical impact, as they require precise engineering of local interaction strengths across different energy scales, well beyond capabilities of analogue experiments. On the other hand, engineering finite bandwidth periodic driving is potentially more experimental feasible – indeed, this type of driving has already been realised experimentally [Jot+14; Cho+20; Koy+25]. Since universality encompasses the simulation of arbitrary Hamiltonians, in-cluding families with exponentially many independent parameters and QMA hard instances, unsurprisingly the driving frequencies in the general Floquet-universal construction can grow exponentially with the size of the target Hamiltonian. The relevant question is whether an efficient construction exists for Hamiltoni-ans with a succinct description. We show that it does for the important class of k-local Hamiltonians on a lattice, and more generally k-local Hamiltonians whose non-commutativity graph has constant chromatic number. For any such Hamiltonian on n qudits, Floquet simulation can be achieved with all interaction strengths O(1) and all driving frequencies bounded by poly( n). In the next section we will review Floquet theory before defining Floquet simulation and establishing its broader consequences. We then present our two main results in Section 4: the characterisation of the simulation power of Floquet Hamiltonians including a description of Floquet-universal Hamiltonians; and 
+
+k-local lattice Hamiltonians can be efficiently simulated. The complete proof and rigorous statement of our results is deferred to Part II. 52 Floquet theory 
+
+We will be concerned throughout with time-dependent Hamiltonians that are periodic in time, which we capture in a definition for concreteness: 
+
+Definition 1 A time-dependent Hamiltonian is time-periodic (or just periodic )if there exists a T such that H(t) = H(t + nT ) for all n ∈ N. In this case, T is the period and ω = 2 π/T is the frequency of H(t).
+
+Floquet engineering is an application of the Floquet-Bloch theorem [Flo83; Blo29] which describes how a periodically driven quantum system can be trans-formed into an effective time-independent dynamics by a time-dependent unitary change of basis. 
+
+Theorem 2 (Floquet Theorem: see [Flo83; Blo29]) Let H(t) be a time-periodic Hamiltonian, and U (t) its associated time-evolution operator. For all 
+
+t ∈ [0 , T ]
+
+U (t + nT ) = U (t) [ U (T )] n . (3) It is therefore useful to define a time-independent Floquet Hamiltonian whose time-evolution operator coincides with that of the periodic Hamiltonian at integer multiples of the period. 
+
+Definition 3 (Floquet Hamiltonian) Given a periodic Hamiltonian H(t) with period T , the associated Floquet Hamiltonian , HF , satisfies 
+
+e−iH F nT = exp 
+
+"
+
+−iT
+
+Z nT 
+
+> 0
+
+H(s)ds 
+
+#
+
+(4) 
+
+for any n ∈ N+. We write HF (n) = nH F for the Floquet Hamiltonian defined over n periods. 
+
+Note the Floquet Hamiltonian is not unique; for example, integer multiples of 2π/T can be added to HF without altering the above equality. There is also an additional gauge freedom in choosing when during the period the system starts; i.e. when considering a period [ t0, t 0 + T ] we have freedom to chose 
+
+t0 ∈ [0 , T ] [MP15; GD14; RGF03]. For simplicity, we disregard this Floquet gauge freedom throughout, equivalent to implicitly choosing t0 = 0. 
+
+# 3 Floquet simulation 
+
+We first map out the rigorous mathematical formulation of simulation when the simulating system is periodic. 
+
+Definition 4 (Floquet simulation) A time-periodic Hamiltonian H(t) Floquet-simulates the time-independent Hamiltonian Htarget to precision ϵ over n periods – or, more briefly, (ϵ, n )-Floquet-simulates Htarget – if 
+
+∥HF (n) − Htarget ∥ ≤ ϵ, (5) 
+
+where HF is its associated Floquet Hamiltonian. We say a Floquet simulation is 
+
+perfect if ϵ = 0 .
+
+6A simple and immediate consequence of the Floquet theorem is: 
+
+Corollary 5 A time periodic Hamiltonian H(t) = H(t + nT ) perfectly Floquet-simulates its associated Floquet Hamiltonian. 
+
+Similarly, a time-periodic Hamiltonian will approximately Floquet-simulate any time-independent Hamiltonian H′ that is close to its associated Floquet Hamiltonian: 
+
+Corollary 6 Let H(t) be a time-periodic Hamiltonian, and HF its associated Floquet Hamiltonian. If ∥H′ − HF ∥ ≤ ϵ, then H(t) ϵ-Floquet-simulates H′.
+
+The following lemma is standard (see e.g. [CMP18, Lemma 30]). 
+
+Lemma 7 For H, H′ Hermitian and ∥·∥ any unitarily invariant norm, 
+
+∥eiH ′t − eiHt ∥ ≤ ∥ H′ − H∥t.
+
+This immediately implies (via Definitions 3 and 4) that Floquet-simulation reproduces the time-dynamics of the target Hamiltonian: 
+
+Corollary 8 If H(t) ( ϵ, n )-Floquet-simulates Htarget , then for all n ∈ N+
+
+∥U (nT ) − e−iH target T ∥ ≤ ϵT, (6) 
+
+where T is the period of H(t) and U (t) is the time-evolution operator generated by it: 
+
+U (t) = T exp 
+
+
+
+−i
+
+Z t
+
+> 0
+
+H(s) ds 
+
+
+
+. (7) However, the Floquet Hamiltonian, HF , plays a more important role in Floquet physics than simply being the effective generator of the time-evolution over multiples of the period. The properties of the Floquet Hamiltonian play a role directly analogous to those of a static, time-independent Hamiltonian. The eigenvalues of HF are called the “quasi-energies”, which are conserved modulo ℏω, reflecting the fact that the system can absorb or emit energy in quanta of ℏω from the periodic drive. The associated eigenvectors |ψ⟩ of HF
+
+are called the “Floquet states” (or “Floquet modes”), and correspond to stable states whose evolution under H(t) has a simple periodic dependence on t. Their structure governs phenomena such as Floquet topological phases, time-crystals, localisation, and many other many-body phenomena in Floquet physics. See e.g. [Shi65; GH98; Sam73] for previous works and textbooks covering this theory, and [MP15; Eck17; OK19] for a selection of more recent reviews covering different aspects of Floquet physics in quantum systems. From the Definition 4 it follows immediately that the quasienergies and Floquet states of H(t) reproduce the eigenenergies and eigenstates of Htarget :
+
+Corollary 9 Let H(t) be a time-periodic Hamiltonian that (ϵ, n )-Floquet-simulates 
+
+Htarget . Let εi be the quasienergies and |φi(t)⟩ the corresponding Floquet modes of H(t), and let λi and |ψi⟩ denote the eigenvalues and corresponding eigenstates of Htarget . Then 
+
+|εi − λi| ≤ ϵ, ∥| φi(0) ⟩ − | ψi⟩∥ ≤ ϵ. (8) 7Because our definition of Floquet simulation approximates the target Hamil-tonian in operator norm, this in turn immediately implies that many of the complexity theoretic results for time-independent Hamiltonians carry over to their Floquet analogues. E.g. approximating the minimum quasienergies to 1 /poly pre-cision is QMA-hard, approximating the quasienergy spectrum is BQP-complete in the same setting in which spectral approximation for static Hamiltonians is, etc. It is worth highlighting here the differences between our Floquet simulation results and classic Trotterization-based quantum algorithms for Hamiltonian simulation. That family of quantum algorithms simulates the time dynamics of a quantum Hamiltonian by constructing a sequence of quantum gates that approximates time-evolution under the target Hamiltonian for a small time-step, and then repeats this series of gates. If we represent the quantum circuit for such a Trotter algorithm as a time-dependent Hamiltonian, then this Hamiltonian is indeed time-periodic, as the sequence of gates is repeated. Such circuits are sometimes called “Floquet circuits”. But the time dependence in this Hamiltonian is very far from a finite sum of smooth sinusoids; it requires “bang-bang” control, i.e. the local Hamiltonians must be switched on and off discontinuously, equivalent to square-wave driving whose Fourier series has infinite bandwidth. 
+
+# 4 Main results 
+
+We will be interested in families of time-periodic Hamiltonians that are com-posed of sums of individual time-dependent interactions from some finite set. Analogously to the time-independent case, we define S-driven Hamiltonians as the set of all time-dependent Hamiltonians that can be constructed by periodic driving of interactions in the set S:
+
+Definition 10 ( S-driven Hamiltonian) Let S = {h1, . . . , h m} be a subset of interactions (Hermitian matrices, each defined on a fixed number of qudits). The set of S-driven Hamiltonians comprises all periodic Hamiltonians H(t) on any number of qudits n which can be decomposed in terms of these interactions as 
+
+H(t) = 
+
+> m
+
+X
+
+> x=1
+
+fx(t)hx, (9) 
+
+where the fx(t) are periodic functions with a common period T and base frequency 
+
+ω = 2πT .
+
+The first main result of this work is the characterisation of the simulation power of Floquet Hamiltonians (see Theorem 49 for the full theorem statement): 
+
+Theorem 11 (Floquet simulation and Floquet universality) Let Lie( S)
+
+be a perfect Lie algebra, generated by the set S. Then an S-driven Hamiltonians can Floquet-simulate any Hamiltonian in Lie( S). In particular, an S-Hamiltonian is Floquet-universal iff S generates the full Lie algebra. Moreover, the ratios of the amplitudes of all f (t) in Definition 10 are bounded between 1 and 2, and the f (t) have finite Fourier series. 
+
+8Notably, while it is significant that in the above construction all the amplitudes are O(1) and their ratios are between 1 and 2, in the general case the frequencies have unfavourable scaling with the size of the target Hamiltonian being simulated. Our second result shows that for an important class of target Hamiltonian, including k-local lattice Hamiltonians, this Floquet-simulation can be performed efficiently. In this setting, in addition to all the interaction strengths and their ratios being O(1), the driving frequencies scale only polynomially in the number of parameters in the target Hamiltonian. 
+
+Theorem 12 (Floquet efficiency) k-local Hamiltonians whose interaction graph has constant chromatic number (which includes all lattice Hamiltoni-ans) can be simulated by Floquet-universal Hamiltonians with all amplitude ratios bounded between 1 and 2, as above, and with all frequencies in the Fourier series scaling polynomially with the size of the Hamiltonian being simulated. 
+
+This result is shown by careful accounting of the requirements on the driving frequencies in Section 10.4. A formal statement of the efficiency result is given in Theorem 57. 
+
+# 5 Proof roadmap 
+
+The proof of Theorem 11 is somewhat lengthy and is organised into four key steps. Each step is captured by a separate theorem and developed in its own section of Part II. In Section 7, we prove that given certain conditions on the driving frequencies in the periodic Hamiltonian the lower order terms of the Magnus expansion vanish (Theorem 19). The remaining leading order term consists of a linear combination of nested commutators of terms appearing in the time-periodic Hamiltonian. This term divides into a product of two distinct parts: an outer sum over permutations of nested commutators of elements, and an inner sum over permutations of combinatorial functions of the driving frequencies (Theorem 21). Section 8 deals with the second of these two parts. We essentially show that the combinatorial functions appearing in the sum form a complete basis of rational functions in a suitable space. The driving frequencies can therefore always be chosen such that the inner sum effectively reduces to the identity, leaving just the outer sum over nested commutators of generators. Ironically, showing that this combinatorial factor can be simplified away entirely is the most involved part of the proof, culminating in Theorem 37. Section 9 then shows in Theorem 40 that the remaining outer sum is in fact the canonical projection of words in the free associative algebra over the generators into the Lie algebra over the same. This implies that any Lie polynomial of fixed degree generated by the terms in the original Hamiltonian can be realised in the leading order term in the Magnus expansion. The final step in Section 10 addresses the challenge of combining Lie-polynomial terms appearing at different orders in the Magnus expansion, while controlling the unwanted cross-terms and the infinite tail of the expansion. The solution is two-fold. First, we show in Lemma 44 that rescaling of the relative 9frequencies alone allows us to tune the effective magnitudes of terms in the Magnus expansion, allowing terms of different orders to be combined successfully. Secondly, recent new error bounds on the Magnus expansion due to some of the authors [ACO25] give sufficiently tight control on the norm of the tail. This leads to the formal statement of our main Floquet universality result Theorem 49. To analyse the scaling behaviour of the frequency coefficients for the simu-lation of an arbitrary target Hamiltonian, Lemma 50 first provides a bound in terms of the number of polynomials and their degree. We then restrict the setting in Section 10.4 by assuming a commutation structure of the target decomposition; in Lemma 55, commutation between the generators of distinct terms allows the same frequency vectors to be reused within each family, while constant phase shifts bring contributions of different degrees to a common scale. Consequently, the frequency bound depends on the number of families and the maximal Lie polynomial degree, but is independent of the total number of terms within each family. For local Hamiltonians, Lemma 56 provides the required decomposition by colouring the intersection graph, so that the number of commuting families is controlled by locality and the chromatic number. In particular, lattice Hamiltoni-ans admit such a decomposition with a constant number of families. Combining this with Lemma 55 and the bounded amplitude construction above yields The-orem 12: k-local lattice Hamiltonians, and more generally those with constant chromatic number, can be Floquet-simulated with polynomially bounded driving frequencies while all physical amplitudes remain O(1) and within a ratio of 2. 
+
+## Acknowledgements 
+
+We would like to thank Robert K¨ onig, Thomas Schulte–Herbr¨ uggen and Li-bor Caha for insightful discussions. HA is supported by EPSRC DTP Grant Reference: EP/N509577/1 and EP/T517793/1. 10 Part II 
+
+# Mathematical proofs 
+
+# 6 Preliminaries 
+
+As usual, we will work in natural units where ℏ = 1. Throughout, ∥•∥ denotes the operator norm, whereas the trace norm will be denoted ∥•∥ 1.
+
+Definition 13 (Lie polynomial) A Lie polynomial over an alphabet A is an element of the free Lie algebra Lie( A) ⊂ R⟨A⟩ . A Lie polynomial LP (A1, . . . , A n)
+
+is homogeneous of degree K if each term in the polynomial contains exactly 
+
+K of the Aj . A homogeneous Lie polynomial LP (A1, . . . , A K ) is multilinear of degree K if each Aj appears exactly once in every monomial, so that 
+
+LP (A1, . . . , A K ) = X
+
+> π∈SK
+
+F (π)Aπ(1) · · · Aπ(K) (10) 
+
+for some coefficients F : SK → R. (Note that the Aj are formal elements of the alphabet A, so different Aj are allowed to correspond to the same operator.) 
+
+# 7 Floquet Hamiltonian and Magnus expansion 
+
+The Magnus expansion [Mag54] provides an exponential representation of the solution of ordinary linear differential equations, in particular the time-dependent Schr¨ odinger equation. Applying this to evolution under a time-dependent Hamil-tonian, the evolution operator can be expressed as 
+
+U (t) = exp [ M(t)] , (11) where the exponent is given by an infinite series expansion over terms involving multiple integrals of nested commutators: 
+
+M(t) = 
+
+> ∞
+
+X
+
+> k=1
+
+Mk(t). (12) Refs. [ACC18; BS17; EMQ25] give an explicit expression for the k’th Magnus term as a sum of right nested commutators: 
+
+Mk(t) = (−i)k
+
+k2
+
+Z t
+
+> 0
+
+dt 1 · · · 
+
+Z tk−1
+
+> 0
+
+dt k
+
+X
+
+> σ∈Sk
+
+(−1) des( σ)
+
+  k−1des( σ)
+
+ H(tσ(1) ), H (tσ(2) ), . . . , H (tσ(k)) ,
+
+(13) where we adopt a standard condensed notation for the right-nested commutator: [X1, . . . , X k] := [ X1, [X2, . . . , [Xk−1, X k] . . . ]] . (14) Here σ is one of the possible k! permutations of 1 , 2, . . . , k and des( σ) is the number of descents 1 in the permutation σ. In this work we will sometimes            
+
+> 1A descent in a permutation σis any position i∈1,2, ..., n −1 for which σ(i+ 1) < σ (i).
+
+11 denote by Mk(H, t ) the k’th order Magnus expansion of a periodic Hamiltonian 
+
+H evaluated at time t.The Magnus expansion can be used to approximate the Floquet Hamiltonian for a time-periodic system. From Theorem 2, there is a direct correspondence between HF and the Magnus expansion evaluated at the period: 
+
+M(T ) = −iH F T. (15) The Floquet Hamiltonian can then be written in terms of the Magnus expansion: 2
+
+HF =
+
+> ∞
+
+X
+
+> k=0
+
+H(k) 
+
+> F
+
+where H(k) 
+
+> F
+
+:= iT Mk+1 (T ). (16) By explicitly calculating the dominant orders in this expansion, we can approxi-mate the Floquet Hamiltonian. An important property of this Magnus expansion is that it remains Hermitian when truncated (unlike e.g. the Dyson expansion). We are concerned here with S-driven Hamiltonians of the form in Definition 10. It will be convenient to express the periodic driving functions fx(t) in terms of their Fourier series. We will restrict to driving functions with finite Fourier series expansions and all terms of cosine form except (at most) one, which will suffice for our purposes. 
+
+Definition 14 ( S-driven Hamiltonian (Fourier expansion)) For an S-driven Hamiltonian from Definition 10, we write 
+
+H(t) = 
+
+PCj=1 aj
+
+ eiℓ j ωt + e−iℓ j ωt  Aj C odd ,
+
+PC−1 
+
+> j=1
+
+aj
+
+ eiℓ j ωt + e−iℓ j ωt  Aj + i a C
+
+ e−iℓ C ωt − eiℓ C ωt  AC C even .
+
+(17) 
+
+Here, ω > 0 is the base frequency, ℓ = ℓ1, . . . , ℓ j , . . . , ℓ C is the vector of driv-ing frequencies, aj are the amplitudes for each frequency component, and the operators Aj ∈ S are chosen from the set S of available Hamiltonian terms. 
+
+Compared to Definition 10 of S-driven Hamiltonians, this regroups terms into C different Fourier frequency components. We can easily recover the form of Definition 10, by setting the periodic driving functions to be 
+
+fx(t) = X
+
+> m
+
+am
+
+X 
+
+> j:Aj=hx
+
+
+
+eiℓ (m)  
+
+> jωt
+
++ e −iℓ (m) 
+
+> jωt
+
+
+
+(18) for odd C, and analogously for even C.Here and throughout, we will choose driving frequencies that satisfy certain conditions, described by the following. 
+
+Condition 15 (Admissible frequency vectors) A frequency vector 
+
+ℓ = ( ℓ1, . . . , ℓ K ) ∈ ZK (19)  
+
+> 2Note the differing indexing of the expansion terms. This is to be consistent with the Magnus expansion literature and for convenience when considering the Floquet Hamiltonian.
+
+12 is called admissible if for every 1 ≤ k ≤ K, every choice of indices (i1, . . . , i k) ∈{1, . . . , K }, and every choice of signs s1, . . . , s k ∈ {± 1}, the relation 
+
+> k
+
+X
+
+> q=1
+
+sq ℓiq = 0 (20) 
+
+holds if and only if one of the following two alternatives is satisfied: (i) k = K, every index is distinct, and s1 = · · · = sK = ±1. I.e. 
+
+> K
+
+X
+
+> j=1
+
+ℓj = 0 .
+
+(ii) {(i1, s 1), . . . , (ik, s k)} admits a pairing such that each pair consists of identical indices with opposite signs, 
+
+(ia, s a), (ib, s b) with ia = ib, s a = −sb. (21) We will later need to divide the frequencies into “blocks” ℓ(m), chosen such that each block of frequencies contributes independently to the Magnus expansion at leading order. To this end, we refine Definition 14 to introduce additional block indices. Note that this is purely notational; it is easy to see that this does not change the class of Hamiltonians under consideration. 
+
+Definition 16 For an S-driven Hamiltonian from Definition 14, we divide the frequencies into multiple blocks ℓ(m), and write 
+
+H(t) = X
+
+> m
+
+Hm(t) (22) 
+
+where 
+
+Hm(t) = 
+
+PKj=1 a(m)
+
+> j
+
+
+
+eiℓ (m)  
+
+> jωt
+
++ e−iℓ (m) 
+
+> jωt
+
+
+
+Aj K odd ,
+
+PK−1 
+
+> j=1
+
+a(m)
+
+> j
+
+
+
+eiℓ (m)  
+
+> jωt
+
++ e−iℓ (m) 
+
+> jωt
+
+
+
+Aj + i a (m)
+
+> K
+
+
+
+e−iℓ (m)  
+
+> Kωt
+
+− eiℓ (m) 
+
+> Kωt
+
+
+
+AK K even .
+
+(23) Note that, here, we deliberately choose to restrict every block Hm to contain the same number K of frequency components. We extend the notion of admissi-ble frequencies to such sets of frequency vectors ℓ(m), imposing an additional condition on the interaction between distinct frequency blocks. 
+
+Condition 17 (Admissible frequency sets) We say that a set of frequency vectors 
+
+L = {ℓ (1) , . . . , ℓ (d)} (24) 
+
+is admissible if the following two conditions hold: 
+
+13 (i) Each individual vector ℓ (n) ∈ L is admissible in the sense of Condition 15. (ii) Any vanishing signed sum involving components from more than one vector in L admits a pairing such that each pair consists of identical labelled components with opposite signs; namely, the terms can be partitioned into pairs of the form n
+
+ℓ(n) 
+
+> i
+
+, −ℓ(n)
+
+> i
+
+o
+
+. (25) 
+
+## 7.1 Vanishing lower orders 
+
+We will show that the above conditions on the driving frequencies lead to vanishing of the lower-order terms of the Magnus expansion. First we prove a useful lemma that is a consequence of the fact that the integral of a non-trivial Fourier mode over a full period vanishes. 
+
+Lemma 18 Let T = 2 π/ω , and let a1, . . . , a K ∈ Z. Consider any ordered sequence 
+
+(ai1 , . . . , a iJ ), 1 ≤ J ≤ K, i1, . . . , i J ∈ { 1, . . . , K }, (26) 
+
+where repetitions of indices are allowed. If no non-empty subset of the selected terms vanishes, i.e. 
+
+X
+
+> m∈S
+
+aim̸ = 0 , ∅̸ = S ⊆ { 1, . . . , J }, (27) 
+
+then the following associated integral vanishes: 
+
+Z T
+
+> 0
+
+dt 1
+
+Z t1
+
+> 0
+
+dt 2 · · · 
+
+Z tJ−1
+
+> 0
+
+dt J exp iω 
+
+> J
+
+X
+
+> m=1
+
+aim tm
+
+!
+
+= 0 . (28) 
+
+Proof Denote the integral in the statement by IJ (ai1 , . . . , a iJ ). Performing the innermost integration over tJ gives 
+
+IJ (ai1 , . . . , a iJ ) = 1
+
+iωa iJ
+
+Z T
+
+> 0
+
+dt 1
+
+Z t1
+
+> 0
+
+dt 2 · · · 
+
+Z tJ−2
+
+> 0
+
+dt J−1
+
+× exp 
+
+"
+
+iω 
+
+> J−2
+
+X
+
+> m=1
+
+aim tm + ( aiJ−1 + aiJ )tJ−1
+
+!# 
+
+− exp 
+
+"
+
+iω 
+
+> J−1
+
+X
+
+> m=1
+
+aim tm
+
+#! 
+
+.
+
+(29) The two terms correspond to evaluating the boundary of the innermost integration at tJ = tJ−1 and tJ = 0, respectively. The integrations are then performed recursively: at each recursive step, the coefficient of the integration variable is a sum of a non-empty subset of the selected terms {ai1 , . . . , a iJ }. By assumption, every such sum is nonzero, so every recursive integration is well-defined and follows the pattern 
+
+Z tm
+
+> 0
+
+dt m eiω (Pm−1   
+
+> j=1 aijtj+ϕt m
+
+) = 1
+
+iω ϕ 
+
+
+
+eiω (Pm−2    
+
+> j=1 aijtj+( aim−1+ϕ)tm−1
+
+) − eiω Pm−1  
+
+> j=1 aijtj
+
+
+
+,
+
+(30) 14 where ϕ is a non-zero integer given by a sum of a non-empty subset of the selected terms, determined by the preceding integrations. After integrating J − 1 times, the integral can therefore be written as 
+
+IJ (ai1 , . . . , a iJ ) = 1(iω )J−1
+
+X
+
+> c
+
+αc
+
+Z T
+
+> 0
+
+dt 1 exp( iωγ ct1), (31) where each γc is a non-zero integer obtained as a sum of a non-empty subset of the selected terms, and αc are rational coefficients arising from the recursive integrations, whose explicit values are not needed. Finally, since T = 2 π/ω and γc ∈ Z \ { 0},
+
+Z T
+
+> 0
+
+dt 1 exp( iωγ ct1) = exp( i2πγ c) − 1
+
+iωγ c
+
+= 0 (32) Hence the final expression can be written as a sum of terms, each vanishing, resulting in 
+
+IJ (ai1 , . . . , a iJ ) = 0 . (33) 
+
+□
+
+Theorem 19 If the driving frequencies ℓ(m) in Definition 14 satisfy Condi-tion 17, then Mk(T ) = 0 for all k < K .
+
+Proof Substituting the Fourier expansion from Definition 14 into the k-th Magnus term eq. (13), results in a sum of nested commutators weighted by nested oscillatory time integrals: 
+
+Mk(T ) = X
+
+> n,j,s,σ
+
+C(n, j, s, σ ) [ Aj1 , . . . , A jk ] I(n, j, s, σ ), (34) where the sum is taken over 
+
+n ∈ { 1, . . . , d }k, j ∈ { 1, . . . , K }k, s ∈ {± 1}k, σ ∈ Sk−1. (35) Here nr specifies the frequency vector ℓ(nr ) from which the r-th Fourier compo-nent is taken, C(n, j, s, σ ) collects the combinatorial factors and amplitudes and 
+
+I(n, j, s, σ ) = 
+
+Z T
+
+> 0
+
+dt 1 · · · 
+
+Z tk−1
+
+> 0
+
+dt k exp iω 
+
+> k
+
+X
+
+> r=1
+
+sσ−1(r)ℓ(nσ−1(r))
+
+> jσ−1(r)
+
+tr
+
+!
+
+. (36) Therefore, to prove the vanishing of Mk(T ), it is sufficient to show that every nested oscillatory integral I(j, s, σ ) vanishes for k < K .For a fixed choice of ( n, j, s, σ ), define 
+
+ar := sσ−1(r)ℓ(nσ−1(r))
+
+> jσ−1(r)
+
+, r = 1 , . . . , k. (37) Then I(n, j, s, σ ) is precisely the nested oscillatory integral in Lemma 18 associ-ated with the sequence ( a1, . . . , a k). Since the driving frequencies satisfy Condition 17, every choice of I(n, j, s, σ )satisfies exactly one of the two alternatives in the admissibility condition. 15 (i) The signed sequence ( a1, . . . , a k) does not decompose into opposite-sign pairs. Since k < K , the exceptional K-term resonance in Condition 15 cannot occur. Therefore, if all selected components originate from a single frequency vector, the admissibility of that vector implies that no non-empty subset of the selected terms has zero sum. If the selected components involve more than one frequency vector, the same conclusion follows directly from condition (ii) of Condition 17. Hence, in either case, 
+
+X
+
+> r∈S
+
+ar̸ = 0 , ∅̸ = S ⊆ { 1, . . . , k }, (38) and by Lemma 18 the integral is vanishing, I(n, j, s, σ ) = 0. (ii) The selected terms admit a decomposition into opposite-sign pairs. In this case, the hypothesis of Lemma 18 is not satisfied, since some subsets of the sequence ( a1, . . . , a k) may have zero sum. We therefore show that all potentially non-vanishing contributions cancel pairwise. Consider a fixed contribution I to the integral I(n, j, s, σ ) arising from a particular choice of boundary evaluations in the recursive integration. Dur-ing the recursive integration, each coefficient generated for an integration variable is a sum of a subset of the selected coefficients a1, . . . , a k. If a given integration path contains no vanishing coefficient, then the corresponding contribution vanishes again by Lemma 18. Hence only paths containing a zero-sum block can contribute. Let an + · · · + am = 0 be a maximal consecutive block whose sum appears as a vanishing coefficient during the recursive integration. The maximality fixes the resonant segment uniquely. Since the selected terms consist entirely of opposite-sign pairs, this block contains an even number of terms. For each such contribution I, define the mirror contribution I′ with the same ( n, j, σ ) and flipping the sign vector 
+
+s′ 
+
+> r
+
+=
+
+(
+
+−sr , n ≤ r ≤ m, sr , otherwise . (39) 
+
+I′ is present in the Magnus sum because the sum contains all sign assign-ments. The opposite-sign pairing condition ensures that this operation defines a unique partner, and the corresponding contribution has exactly the same boundary-evaluation pattern as I.The integrations outside the resonant block are therefore identical for I
+
+and I′, while the integrations within the block differ only by the signs of their denominators. The final integration over the zero mode produces only the factor Z T
+
+> 0
+
+dt 1 = T (40) 16 and does not introduce an additional sign. Within the block, there are 
+
+m − n recursive integrations before the final zero-mode integration and every non-zero coefficient appearing in the recursive integration changes sign, and hence each integration in this block contributes an additional factor −1. 
+
+I′ = ( −1) m−nI. (41) Because the block contains an even number of entries, m − n + 1 is even, so m − n is odd and 
+
+I′ = −I . (42) Thus every non-zero contribution is paired with a unique mirror contribu-tion of opposite sign and the corresponding terms cancel in the Magnus sum, and therefore the total contribution from case (ii) vanishes. Combining the two cases, every term in the expansion of Mk(T ) either vanishes individually or cancels with its mirror partner, yielding Mk(T ) = 0 for 
+
+k < K as stated. □
+
+## 7.2 Leading-order Magnus terms 
+
+The coefficients appearing in the Magnus expansion are conveniently expressed in terms of the following Eulerian weights, which we will use throughout the paper. 
+
+Definition 20 (Eulerian weights) For a permutation σ ∈ SK , let 
+
+des( σ) := # {j ∈ { 1, . . . , K − 1} : σ(j) > σ (j + 1) }. (43) 
+
+denote the number of descents in σ. The associated Eulerian weight of σ is 
+
+w(σ) := (−1) des( σ)
+
+  K−1des( σ)
+
+ . (44) The vanishing of all orders below K leaves the K’th Magnus term as the leading contribution, whose explicit form we now derive. 
+
+Theorem 21 Let H(t) be of the form in Definition 14 with a single admissible frequency vector ℓ. Then the leading-order Magnus term is: 
+
+MK (T ) = ( −i)K (−1) ⌊ K−12 ⌋ 2T QKj=1 aj
+
+K2ωK−1
+
+X
+
+> μ∈SK
+
+[Aμ(1) , . . . , A μ(K)] X
+
+> σ∈SK
+
+w(σ) Ξ( μ σ −1, ℓ)(45) 
+
+where w(σ) is the Eulerian weight from Definition 20, and we define 
+
+Ξ( π, ℓ ) := 
+
+> K−1
+
+Y
+
+> J=1
+> J
+
+X
+
+> i=1
+
+ℓπ(i)
+
+!−1
+
+. (46) 17 Proof By Theorem 19, Mk(T ) = 0 for all k < K and the first potentially non-zero contribution to the Magnus expansion is the order-K term. Specialising the expansion in eq. (36) to k = K and d = 1, the relevant oscillatory integrals take the form 
+
+I(j, s, σ ) = 
+
+Z T
+
+> 0
+
+dt 1 · · · 
+
+Z tK−1
+
+> 0
+
+dt K exp iω
+
+> K
+
+X
+
+> r=1
+
+sσ−1(r)ℓjσ−1(r) tr
+
+!
+
+. (47) By the admissibility condition, any signed sum of fewer than K selected components either contains opposite-sign pairs or is non-resonant. The these contributions vanish by the argument in Theorem 19. However, at order K, the only remaining possibility is the full K-frequency resonance of Condition 15(i), where every frequency component appears exactly once with the same sign. Hence the remaining contributions MK (T ) correspond to the integrals eq. (47) for which {j1, . . . , j K } = {1, . . . , K } i.e. every frequency coefficient appears exactly once. Thus the index vector j is restricted to a permutation of {1, . . . , K },and can be relabelled by μ ∈ SK . The associated nested commutator therefore contains every operator A1, . . . , A K once and the K’th term is given by 
+
+MK (T ) = ( −i)K
+
+QKj=1 aj
+
+K2
+
+X
+
+> σ∈SK
+
+w(σ) X
+
+> μ∈SK
+
+[Aμ(1) , . . . , A μ(K)] X
+
+> s∈{± 1}K
+
+I(μ, s, σ ).
+
+(48) The next step is to evaluate P 
+
+> s
+
+I(μ, s, σ ) for a fixed commutator ordering μ
+
+and integration ordering σ. In the recursive evaluation of the nested integral, each integration produces two boundary terms, corresponding to evaluating the upper limit ( tr−1) or the lower limit (0). Any boundary choice involving a lower limit produces, at some stage, a partial sum over a proper subset of the frequency vector elements as the integration coefficient. This is non-zero by admissibility, and hence the corresponding contribution vanishes by Lemma 18. Therefore only the all-upper boundary path survives. For this path, the coefficient of the final integration variable t1 is the full signed sum KX
+
+> r=1
+
+sσ−1(r)ℓμ(σ−1(r)) . (49) Admissibility allows this sum to vanish only in the case (i) of Condition 15 with all signs equal. Therefore only the two uniform sign choices {+1 }K and {− 1}K
+
+contribute from the sum over s.For the two surviving s, the all-upper integrations over tK , . . . , t 2 generate a partial sums in the exponent 
+
+> J
+
+X
+
+> r=1
+
+ℓμ(σ−1(r)) , J = 1 , . . . , K − 1. (50) with each integration contributing a factor (i ω)−1 and the inverse of the previous partial sum. The remaining t1 integral has zero frequency by the resonance 18 condition, and hence contributes a factor of T . Thus, using eq. (46), 
+
+I μ, {+1 }K , σ  = T
+
+(−iω )K−1 Ξ( μ ◦ σ−1, ℓ), (51) 
+
+I μ, {− 1}K , σ  = (−1) K−1T
+
+(−iω )K−1 Ξ( μ ◦ σ−1, ℓ). (52) For odd K, the two uniform sign choices contribute with the same sign, since K − 1 is even contributing a factor of 2. Using i K−1 = ( −1) (K−1) /2 and substituting into eq. (48) gives 
+
+MK (T ) = ( −i)K (−1) K−12
+
+2T QKj=1 aj
+
+K2ωK−1
+
+X
+
+> μ∈SK
+
+[Aμ(1) , . . . , A μ(K)] X
+
+> σ∈SK
+
+w(σ) Ξ( μ◦σ−1, ℓ),
+
+(53) For even K, the two uniform sign choices acquire opposite signs from the 
+
+K − 1 integrations. However, the AK Fourier component in Definition 14 has coefficients −iaK and +i aK for the positive- and negative-frequency components, respectively. Thus flipping all signs introduces an additional factor of −1, which cancels the factor ( −1) K−1 = −1 from the integrations. The two contributions therefore again add, giving a factor of 2. Since K − 1 is odd, i−(K−1) = ( −1) (K−2) /2(−i) , (54) and the additional factor of i from the AK Fourier coefficient gives the overall sign ( −1) (K−2) /2.Since (−1) ⌊(K−1) /2⌋ =
+
+(
+
+(−1) (K−1) /2, K odd ,
+
+(−1) (K−2) /2, K even , (55) both cases are captured by the prefactor in the theorem statement. □
+
+The result for an admissible frequency vector immediately extends to an admissible frequency set: condition (ii) of Condition 17 ensures that any con-tribution involving components from different frequency vectors has a non-zero coefficient in the exponential. Hence, by Lemma 18, these contributions vanish upon integration over one period, and the leading-order term in the Magnus expansion is simply the sum of the leading-order terms for each vector. 
+
+Corollary 22 Let H(t) = Pdm=1 Hm(t),where each Hm(t) is of the form in Definition 14 with frequency vectors {ℓ(1) , . . . , ℓ(d)} that form an admissible frequency set. Then the leading-order Magnus term is 
+
+MK (T ) = 
+
+> d
+
+X
+
+> m=1
+
+M (m) 
+
+> K
+
+(T ), (56) 
+
+where M (m) 
+
+> K
+
+(T ) is the leading-order Magnus term associated with Hm(t), given by Theorem 21. 
+
+19 Proof By Theorem 19, Mk(T ) = 0 for all k < K .At order K, consider a contribution involving Fourier components from more than one frequency vector. Each coefficient arising during the recursive integration is a signed sum of a subset of these components. If this sum does not vanish, then the corresponding integral vanishes by Lemma 18. If it does vanish, then by Condition 17 it consists only of pairwise cancellations. The corresponding integral therefore vanishes by the mirror argument in Theorem 19. Thus, the only non-vanishing order-K contributions involve components from a single frequency vector ℓ(m). By Theorem 21, these contributions sum to 
+
+M (m) 
+
+> K
+
+(T ), and therefore 
+
+MK (T ) = 
+
+> d
+
+X
+
+> m=1
+
+M (m) 
+
+> K
+
+(T ). (57) 
+
+□
+
+# 8 Algebraic reduction via residues 
+
+We want to identify the space spanned by the rational functions {Ξ( π, ·)}π∈SK
+
+from Theorem 21. We do this by analysing their simple poles along subset-sum hyperplanes, because residues isolate the contribution of specific prefix/suffix factors and allow us to establish the image space. 3
+
+From eq. (46), we can write Ξ( π, ℓ ) in the form Ξ( π, ℓ ) := 
+
+> K−1
+
+Y
+
+> k=1
+
+1
+
+Sπk (ℓ) , Sπk (ℓ) := 
+
+> k
+
+X
+
+> j=1
+
+ℓπ(j), π ∈ SK , (58) viewed as a rational function on the affine hyperplane H0 restricted to the Zariski-open set U ⊂ H0 where all partial sums Sπk (ℓ) are non-zero. As these sets will be important throughout this section, we capture them in the following definition. 
+
+Definition 23 ( H(K)0 hyperplane and Zariski-open set U ) We define the zero-sum hyperplane 
+
+H(K)0 := 
+
+(
+
+ℓ ∈ CK :
+
+> K
+
+X
+
+> i=1
+
+ℓi = 0 
+
+)
+
+. (59) 
+
+We denote by U ⊂ H(K)0 the Zariski-open subset on which all partial sums appearing in the denominators of Ξ are non-zero: 
+
+U := 
+
+n
+
+ℓ ∈ H(K)0 : Sπk (ℓ)̸ = 0 for all π ∈ SK , k = 1 , . . . , K − 1
+
+o
+
+, (60) 
+
+where 
+
+Sπk (ℓ) := 
+
+> k
+
+X
+
+> j=1
+
+ℓπ(j). (61)   
+
+> 3The technique of isolating coefficients via residues is analogous to the study of the Orlik-Solomon algebra, where the Leray residue of a logarithmic form along a hyperplane corresponds to the algebraic restriction operation in Ref. [OT92, Sections 3.1 and 3.2].
+
+20 8.1 Hyperplanes and residues 
+
+In preparation for factorising Ξ via residues, we first formalise the relevant boundary hyperplanes of H0 and the corresponding notion of a simple pole. 
+
+Definition 24 (Subset-sum hyperplanes) For a non-empty proper subset 
+
+I ⊂ [K] of size r := |I|, we define the linear form gI (ℓ) := P 
+
+> i∈I
+
+ℓi and its associated subset-sum hyperplane 
+
+HI := ℓ ∈ H0 : gI (ℓ) = 0 . (62) 
+
+Because every point on H0 satisfies PKi=1 ℓi = 0 , we immediately have gIc (ℓ) = 
+
+−gI (ℓ), and therefore HI = HIc .
+
+With the geometry established, we say a rational function F (ℓ) on H0 has at most a simple pole along HI if, in some linear coordinates ( u, v ) on H0 with 
+
+u = gI (ℓ), one can write 
+
+F (u, v ) = A(v)
+
+u + B(u, v ), (63) where A and B are regular near u = 0 (i.e., have no poles in the neighbourhood). We then define the residue of F along HI as the function A(v) evaluated on HI :Res HI (F ) := A(v) (equivalently, Res HI (F ) = lim  
+
+> u→0
+
+u F (u, v )) . (64) For any permutation π ∈ SK and 1 ≤ k ≤ K − 1, we denote its prefix set of length k by 
+
+Pk(π) := {π(1) , . . . , π (k)}. (65) The remaining elements {π(k + 1) , . . . , π (K)} form the complementary suffix. Note that for a subset I of size r, the condition PK−r(π) = Ic is equivalent to the requirement that the suffix of π is exactly the set I.
+
+Lemma 25 Fix a proper subset I ⊂ [K] of size r := |I|. The function Ξ( π, ℓ )
+
+has a simple pole along HI if and only if 
+
+Pr (π) = I (prefix case) or PK−r (π) = Ic (suffix case) . (66) 
+
+In the prefix case, the pole arises from the factor 1/S πr (ℓ), where Sπr (ℓ) = gI (ℓ);in the suffix case, the pole comes from the denominator factor SπK−r(ℓ) where 
+
+SπK−r (ℓ) = gIc (ℓ) = −gI (ℓ) on H0.
+
+Proof A pole along HI occurs if and only if one of the partial sums Sπk (ℓ) equals 
+
+gI (ℓ) or gIc (ℓ) on H0. Since |I| = r and |Ic| = K − r, this can happen only in the two cases Pr (π) = I or PK−r (π) = Ic. In the first case, Pr (π) = I, we have 
+
+Sπr (ℓ) = gI (ℓ), so the pole comes from the factor 1 /S πr (ℓ). In the second case, 
+
+PK−r(π) = Ic, it holds SπK−r(ℓ) = gIc (ℓ) = −gI (ℓ) on H0, so the pole comes from the factor 1 /S πK−r (ℓ). In either instance, exactly one partial sum vanishes generically on HI while all others remain non-zero, hence the pole is simple. Conversely, if neither condition holds, no denominator factor equals gI (ℓ) or 
+
+gIc (ℓ) on H0; thus, none vanishes generically on HI and no pole is present. □
+
+21 When Pr (π) = I, we can write π uniquely as a concatenation 
+
+π = ( α, β ), α ∈ S(I) ∼= Sr , β ∈ S(Ic) ∼= SK−r , (67) meaning that the first r values of π are the sequence α(1) , . . . , α (r) (a permutation of I), followed by β(1) , . . . , β (K − r) (a permutation of Ic). For instance, if 
+
+K = 5 with I = {2, 4} and Ic = {1, 3, 5}, the permutation π = (4 , 2, 5, 1, 3) has prefix P2(π) = I and splits cleanly into α = (4 , 2) and β = (5 , 1, 3). From eq. (58), we define the lower-degree functions for these subsystems: ΞI (α, ℓ ) := 
+
+> r−1
+
+Y
+
+> k=1
+
+1
+
+Pkj=1 ℓα(j)
+
+, ΞIc (β, ℓ ) := 
+
+> K−r−1
+
+Y
+
+> s=1
+
+1
+
+Psj=1 ℓβ(j)
+
+. (68) 
+
+Lemma 26 Fix a proper subset I ⊂ [K] of size r := |I|.
+
+(Prefix case) If Pr(π) = I and π = ( α, β ), then Ξ( π, ℓ ) has a simple pole along 
+
+HI and 
+
+Res HI
+
+ Ξ( π, ℓ ) = Ξ I (α, ℓ ) · ΞIc (β, ℓ ). (69) (Suffix case) If PK−r(π) = Ic and π = ( β, α ), then Ξ( π, ℓ ) has a simple pole along HI and 
+
+Res HI
+
+ Ξ( π, ℓ ) = − ΞI (α, ℓ ) · ΞIc (β, ℓ ). (70) 
+
+Proof We detail the prefix case; the suffix case follows identically, except that the pole arises from SπK−r(ℓ) = gIc (ℓ) = −gI (ℓ) on H0, which contributes the overall minus sign. Assume Pr (π) = I and π = ( α, β ). By Lemma 25, the pole arises solely from the factor 1 /S πr (ℓ), where Sπr (ℓ) = gI (ℓ). Isolating this singularity, we write 
+
+gI (ℓ) Ξ( π, ℓ ) = 
+
+> r−1
+
+Y
+
+> k=1
+
+1
+
+Sπk (ℓ)
+
+!
+
+·
+
+> K−r−1
+
+Y
+
+> s=1
+
+1
+
+Sπr+s(ℓ)
+
+!
+
+. (71) We now restrict this expression to HI , where gI (ℓ) = 0. For the first product ( k < r ), the partial sum Sπk (ℓ) involves only elements from I. It is therefore identical to Pkj=1 ℓα(j), meaning the first product evaluates exactly to Ξ I (α, ℓ ). For the second product ( s ≥ 1), the partial sum extends into the suffix 
+
+Sπr+s(ℓ) = Sπr (ℓ) + 
+
+> s
+
+X
+
+> j=1
+
+ℓβ(j) = gI (ℓ) + 
+
+> s
+
+X
+
+> j=1
+
+ℓβ(j). (72) On HI , the gI (ℓ) term vanishes, leaving simply Psj=1 ℓβ(j). Thus, the second product in eq. (71) evaluates exactly to Ξ Ic (β, ℓ ). Multiplying these evaluated products together yields the residue Res HI
+
+ Ξ( π, ℓ ) =  gI (ℓ) Ξ( π, ℓ )
+
+> HI
+
+= Ξ I (α, ℓ ) · ΞIc (β, ℓ ). (73) 
+
+□
+
+22 Example 27 (Factorisation for K = 5) Consider the hyperplane H0 = {ℓ1 +
+
+ℓ2 + ℓ3 + ℓ4 + ℓ5 = 0 } and define the subset 
+
+I = {2, 4}, r := |I| = 2 , Ic = {1, 3, 5}. (74) 
+
+The associated pole hyperplane HI is defined by 
+
+HI = {ℓ ∈ H0 | ℓ2 + ℓ4 = 0 }. (75) Prefix case: Consider the permutation π = (4 , 2, 5, 1, 3) , which satisfies P2(π) = 
+
+{4, 2} = I. We factorise π = ( α, β ) as 
+
+α = (4 , 2) ∈ S(I) and β = (5 , 1, 3) ∈ S(Ic). (76) 
+
+The partial sums are 
+
+Sπ 
+
+> 1
+
+= ℓ4, Sπ 
+
+> 2
+
+= ℓ4 +ℓ2 = gI , Sπ 
+
+> 3
+
+= ℓ4 +ℓ2 +ℓ5, Sπ 
+
+> 4
+
+= ℓ4 +ℓ2 +ℓ5 +ℓ1.
+
+(77) 
+
+Hence, the integration factor is 
+
+Ξ( π, ℓ ) = 1
+
+ℓ4
+
+· 1
+
+ℓ4 + ℓ2
+
+· 1
+
+ℓ4 + ℓ2 + ℓ5
+
+· 1
+
+ℓ4 + ℓ2 + ℓ5 + ℓ1
+
+. (78) 
+
+Multiplying by gI (ℓ) = ℓ2 + ℓ4 and restricting to HI (where ℓ2 + ℓ4 = 0 ) yields 
+
+Res HI
+
+ Ξ( π, ℓ ) =  gI (ℓ) Ξ( π, ℓ )
+
+> HI
+
+= 1
+
+ℓ4
+
+· 1
+
+ℓ5
+
+· 1
+
+ℓ5 + ℓ1
+
+. (79) 
+
+Observing the subsystem definitions 
+
+ΞI (α, ℓ ) = 1
+
+ℓ4
+
+, ΞIc (β, ℓ ) = 1
+
+ℓ5
+
+· 1
+
+ℓ5 + ℓ1
+
+, (80) 
+
+we see that indeed Res HI
+
+ Ξ( π, ℓ ) = Ξ I (α, ℓ ) · ΞIc (β, ℓ ).
+
+Suffix case: Consider the permutation π′ = (5 , 1, 3, 4, 2) , which satisfies P3(π′) = 
+
+Ic. We factorise π′ = ( β, α ) as 
+
+β = (5 , 1, 3) ∈ S(Ic) and α = (4 , 2) ∈ S(I). (81) 
+
+With gIc (ℓ) = ℓ1 + ℓ3 + ℓ5, the relevant partial sums are 
+
+Sπ′ 
+
+> 1
+
+= ℓ5, Sπ′ 
+
+> 2
+
+= ℓ5 + ℓ1, Sπ′ 
+
+> 3
+
+= gIc , Sπ′ 
+
+> 4
+
+= gIc + ℓ4. (82) 
+
+Hence, 
+
+Ξ( π′, ℓ ) = 
+
+ 1
+
+ℓ5
+
+· 1
+
+ℓ5 + ℓ1
+
+
+
+· 1
+
+gIc (ℓ) · 1
+
+gIc (ℓ) + ℓ4
+
+. (83) 
+
+Multiplying by gI (ℓ) and restricting to HI (using gIc (ℓ) = −gI (ℓ) on H0 and 
+
+gIc (ℓ) = 0 on HI ) gives 
+
+Res HI
+
+ Ξ( π′, ℓ ) =  gI (ℓ) Ξ( π′, ℓ )
+
+> HI
+
+= −
+
+ 1
+
+ℓ5
+
+· 1
+
+ℓ5 + ℓ1
+
+
+
+· 1
+
+ℓ4
+
+. (84) 
+
+Since ΞIc (β, ℓ ) = 1 
+
+> ℓ5
+
+· 1 
+
+> ℓ5+ℓ1
+
+and ΞI (α, ℓ ) = 1 
+
+> ℓ4
+
+, we obtain 
+
+Res HI
+
+ Ξ( π′, ℓ ) = − ΞI (α, ℓ ) · ΞIc (β, ℓ ), (85) 
+
+as claimed in Lemma 26. 
+
+23 8.2 Shuffle identities and image of the functional Ξ
+
+We now turn from the local pole structure of individual denominators to the global linear relations among the family {Ξ( π, ·)}π∈SK . The residue machinery above will later be used to prove that a fixed-last-letter subfamily is linearly independent. Before doing so, we identify the universal relations that the full family satisfies. These are governed by shuffle identities: interleaving two ordered subwords gives a partial-fraction identity, which vanishes on the zero-sum hyperplane H0.
+
+Definition 28 (Shuffle product) Let α and β be two disjoint, non-empty ordered words whose union contains exactly the letters of 
+
+[K] := {1, 2, . . . , K }. (86) 
+
+The shuffle set Sh( α, β ) is the set of all permutations in SK obtained by inter-leaving the letters of α and β while preserving the internal order of the letters within α and within β.
+
+The following results proves a shuffling relation for Φ( α, β ). We note that our case is a special instance of the more general Chen’s shuffle identity [Che77, Eq. (1.5.6)]. 
+
+Lemma 29 For an ordered word w = ( w1, . . . , w m), define the ordered denomi-nator product Φ( w, ℓ ) := 
+
+> m
+
+Y
+
+> q=1
+
+
+
+> q
+
+X
+
+> j=1
+
+ℓwj
+
+
+
+> −1
+
+, (87) 
+
+with the convention Φ( ∅, ℓ ) = 1 . Then, for any two disjoint ordered words α
+
+and β,
+
+Φ( α, ℓ )Φ( β, ℓ ) = X
+
+> ρ∈Sh( α,β )
+
+Φ( ρ, ℓ ). (88) Note that if w = α is supported on a subset I, then Φ( α, ℓ ) = ΞI (α, ℓ )
+
+gI (ℓ) , (89) because Φ includes the final denominator gI (ℓ) whereas Ξ I omits it. 
+
+Proof We prove the identity by induction on |α| + |β|, with the convention Φ( ∅, ℓ ) = 1 . (90) The claim is immediate if one of the two words is empty. Assume now that both words are non-empty. Write 
+
+α = ( α′, a ), β = ( β′, b ), (91) 24 where a and b are the final letters of α and β, respectively. Set 
+
+A := X
+
+> i∈α
+
+ℓi, B := X
+
+> i∈β
+
+ℓi. (92) Every shuffle of α and β either ends in a or ends in b. Hence 
+
+X
+
+> ρ∈Sh( α,β )
+
+Φ( ρ, ℓ ) = 1
+
+A + B
+
+ X
+
+> σ∈Sh( α′,β )
+
+Φ( σ, ℓ ) + X 
+
+> τ∈Sh( α,β ′)
+
+Φ( τ, ℓ )
+
+ . (93) By the induction hypothesis, 
+
+X
+
+> σ∈Sh( α′,β )
+
+Φ( σ, ℓ ) = Φ( α′, ℓ )Φ( β, ℓ ), (94) and X 
+
+> τ∈Sh( α,β ′)
+
+Φ( τ, ℓ ) = Φ( α, ℓ )Φ( β′, ℓ ), (95) and Φ( α, ℓ ) = 1
+
+A Φ( α′, ℓ ), Φ( β, ℓ ) = 1
+
+B Φ( β′, ℓ ). (96) This yields to the identity 
+
+X
+
+> ρ∈Sh( α,β )
+
+Φ( ρ, ℓ ) = 1
+
+A + B (Φ( α′, ℓ )Φ( β, ℓ ) + Φ( α, ℓ )Φ( β′, ℓ )) (97) = 1
+
+A + B
+
+ 1
+
+B + 1
+
+A
+
+
+
+Φ( α′, ℓ )Φ( β′, ℓ ) (98) = 1
+
+AB Φ( α′, ℓ )Φ( β′, ℓ ) (99) = Φ( α, ℓ )Φ( β, ℓ ). (100) 
+
+□
+
+Lemma 30 For any partition of the letters [K] into two non-empty ordered words α and β, the Floquet denominators satisfy the shuffle relation 
+
+X
+
+> ρ∈Sh( α,β )
+
+Ξ( ρ, ℓ ) ≡ 0 (ℓ ∈ H0). (101) 
+
+Proof Let 
+
+S(ℓ) := 
+
+> K
+
+X
+
+> i=1
+
+ℓi, H0 := {S(ℓ) = 0 }. (102) We compare the possible simple pole along the hyperplane S(ℓ) = 0 near a point where the remaining denominators are non-zero. Thus every rational function with at most a simple pole along H0 has a Laurent expansion around it, whose principal part is its S(ℓ)−1 coefficient. 25 By Lemma 29, we have Φ( α, ℓ )Φ( β, ℓ ) = X
+
+> ρ∈Sh( α,β )
+
+Φ( ρ, ℓ ). (103) Recalling eq. (89), for every full word ρ ∈ SK the final denominator in Φ( ρ, ℓ ) is the total sum S(ℓ) independent of ρ. Hence summing over the shuffle identities 
+
+ρ ∈ Sh( α, β ) gives 
+
+X
+
+> ρ∈Sh( α,β )
+
+Φ( ρ, ℓ ) = S(ℓ)−1 X
+
+> ρ∈Sh( α,β )
+
+Ξ( ρ, ℓ ), (104) meaning that the coefficient of the pole S(ℓ)−1 on the right-hand side of eq. (103) is X
+
+> ρ∈Sh( α,β )
+
+Ξ( ρ, ℓ ). (105) On the other hand, α and β are proper subwords of [ K]. Therefore none of the denominators in Φ( α, ℓ )Φ( β, ℓ ) identifies with S(ℓ) and thus the left-hand side of eq. (103) has no S(ℓ)−1 pole along S(ℓ) = 0. Since both sides of eq. (103) agree as rational functions for S(ℓ)̸ = 0, their Laurent expansions near S(ℓ) = 0 have the same pole part. Although the rational functions themselves need not be defined at S(ℓ) = 0, the coefficient of S(ℓ)−1 is still a well-defined function after restricting to H0. The coefficient on the left-hand side is zero, and therefore eq. (104) gives X
+
+> ρ∈Sh( α,β )
+
+Ξ( ρ, ℓ ) ≡ 0 (ℓ ∈ H0). (106) 
+
+□
+
+Example 31 (A four-letter shuffle relation) Let K = 4 and consider the shuffle decomposition α = (2) , β = (1 , 3, 4) . Then 
+
+Sh( α, β ) = {2134 , 1234 , 1324 , 1342 } (107) 
+
+and Lemma 30 gives 
+
+Ξ(2134 , ℓ ) + Ξ(1234 , ℓ ) + Ξ(1324 , ℓ ) + Ξ(1342 , ℓ ) ≡ 0 (ℓ ∈ H0); (108) 
+
+indeed, grouping the first two terms results in 
+
+Ξ(1234 , ℓ )+Ξ(2134 , ℓ ) = 1(ℓ1 + ℓ2)( ℓ1 + ℓ2 + ℓ3)
+
+ 1
+
+ℓ1
+
++ 1
+
+ℓ2
+
+
+
+= 1
+
+ℓ1ℓ2(ℓ1 + ℓ2 + ℓ3) .
+
+(109) 
+
+On H0, this is 
+
+Ξ(1234 , ℓ ) + Ξ(2134 , ℓ ) = − 1
+
+ℓ1ℓ2ℓ4
+
+(110) 
+
+and similarly, 
+
+Ξ(1324 , ℓ ) + Ξ(1342 , ℓ ) = 1
+
+ℓ1(ℓ1 + ℓ3)
+
+ 1
+
+ℓ1 + ℓ2 + ℓ3
+
++ 1
+
+ℓ1 + ℓ3 + ℓ4
+
+
+
+. (111) 26 Using ℓ1 + ℓ2 + ℓ3 = −ℓ4 and ℓ1 + ℓ3 + ℓ4 = −ℓ2 on H0, this becomes 
+
+Ξ(1324 , ℓ ) + Ξ(1342 , ℓ ) = 1
+
+ℓ1ℓ2ℓ4
+
+. (112) 
+
+Hence the two grouped contributions cancel, as predicted by the shuffling relation. 
+
+Lemma 32 Let 
+
+WK := span C{Eπ : π ∈ SK } (113) 
+
+be the formal vector space generated by permutations, where Eπ is an independent basis vector indexed by π. For every permutation π ∈ SK not ending in K, write uniquely 
+
+π = ( u, K, v ), v̸ = ∅, (114) 
+
+and define the formal shuffle relation 
+
+Rπ := X
+
+> ρ∈Sh(( u,K ),v )
+
+Eρ. (115) 
+
+Then the family 
+
+{Rπ : π ∈ SK , π does not end in K} (116) 
+
+is linearly independent. In particular, the shuffle relations contain 
+
+K! − (K − 1)! (117) 
+
+linearly independent elements. 
+
+Proof The proof is triangular with respect to the position of the letter K: each 
+
+Rπ contains the distinguished term Eπ , while all other terms move K strictly to the right. We will show that this structure forces linear independence. For a permutation η ∈ SK , let pos K (η) denote the position of the letter K in 
+
+η. By construction, the relation Rπ contains the term Eπ with coefficient 1; this is the shuffle in which all letters of v are placed after the block ( u, K ): we call 
+
+Eπ the distinguished term of Rπ . Every other shuffle in Sh(( u, K ), v ) places at least one letter of v before K, hence every non-distinguished term Eρ appearing in Rπ satisfies pos K (ρ) > pos K (π). (118) Suppose that there is a linear dependence among the family eq. (116) 
+
+X   
+
+> π:πdoes not end in K
+
+aπ Rπ = 0 . (119) If not all aπ vanish, choose π0 among those with aπ0̸ = 0 such that pos K (π0) is minimal. We claim that the coefficient of Eπ0 in eq. (119) is exactly aπ0 . Indeed, 
+
+Eπ0 appears with coefficient 1 in Rπ0 , as its distinguished term. If pos K (π) ≥
+
+27 pos K (π0) and π̸ = π0, then Eπ0 does not appear in Rπ : it is not the distinguished term, and every non-distinguished term moves K strictly to the right. On the other hand, all terms with pos K (π) < pos K (π0) have coefficient aπ = 0 by the minimal choice of π0, so they do not contribute to the coefficient of Eπ0 .Thus as claimed the coefficient of Eπ0 in the dependence is aπ0 . Since the relation eq. (119) is zero in WK and Eπ0 is an independent vector, this coefficient must vanish, aπ0 = 0. This yields a contradiction of the initial assumption of the existence of a minimal aπ0̸ = 0. This forces all aπ to be 0, and the relations are linearly independent. There is one such relation for each permutation not ending in K, namely 
+
+K! − (K − 1)! (120) of them. This proves the claim. □
+
+Lemma 33 The (K − 1)! functions 
+
+{Ξ( σK, ·) : σ ∈ SK−1} (121) 
+
+are linearly independent over C on H0. Thus, 
+
+dim span {Ξ( π, ·) : π ∈ SK } ≥ (K − 1)! . (122) 
+
+Proof For K = 2 the claim is immediate, so assume K ≥ 3. Suppose that there is a linear dependence 
+
+X
+
+> σ∈SK−1
+
+cσ Ξ( σK, ℓ ) ≡ 0 (ℓ ∈ H0). (123) Fix σ∗ = ( σ∗ 
+
+> 1
+
+, . . . , σ ∗
+
+> K−1
+
+) ∈ SK−1 and write 
+
+π∗ = ( σ∗ 
+
+> 1
+
+, . . . , σ ∗
+
+> K−1
+
+, K ). (124) For 1 ≤ q ≤ K − 2, set 
+
+Aq := {σ∗ 
+
+> 1
+
+, . . . , σ ∗ 
+
+> q
+
+}; (125) the associated prefix flag is the sequence of subset-sum hyperplanes 
+
+HA1 , H A2 , . . . , H AK−2 , (126) where 
+
+HAq := 
+
+ℓ ∈ H0 : X
+
+> i∈Aq
+
+ℓi = 0 
+
+ . (127) The flag walk works as follows: the first residue is along the hyperplane 
+
+HA1 = {ℓσ∗ 
+
+> 1
+
+= 0 }. (128) A fixed-last-letter term Ξ( τ K, ℓ ) can have a pole there only if its first letter is 
+
+σ∗ 
+
+> 1
+
+. Indeed, the suffix alternative in Lemma 25 would require a proper prefix of 28 the word τ K to contain the final letter K, which is impossible. Hence the first residue kills every term whose first letter is not σ∗ 
+
+> 1
+
+, and for the surviving terms it peels off this first letter. Iteratively, since on the partial flag all previous frequency have been set to 0, the next hyperplane HAq is equivalent to imposing the vanishing of the single frequency ℓσ∗ 
+
+> q
+
+in the residual partial sum Pqj=1 = 0. Note that, by Lemma 25, a pole can again occur by a prefix- or by a suffix-mechanism: the suffix case is impossible for the same reason as before: the complementary set contains the final letter K, whereas a proper prefix of a residual word ending in K cannot contain K. Thus survival at the q-th residue follows the prefix mechanism and forces the next residual letter to be σ∗ 
+
+> q
+
+.If after the residues along HA1 , . . . , H Aq−1 , a term has survived, by Lemma 26 it must agree with π∗ in the first q − 1 positions, and the residual denominator is, up to the already peeled non-zero factor, the Floquet denominator associated with the remaining word. Since the original word belongs to the fixed-last-letter family and none of the peeled letters is K, this residual word still ends in K. In other words, for a term to survive the entire flag, it must satisfy 
+
+Pq (τ K ) = {σ∗ 
+
+> 1
+
+, . . . , σ ∗ 
+
+> q
+
+} (1 ≤ q ≤ K − 2) . (129) These nested conditions force the first K − 2 letters of τ K to agree with those of π∗. Since both words end in K, the remaining non-final letter is also forced. Hence τ K = π∗. Thus the iterated residue of eq. (123) isolates the single term 
+
+cσ∗ Ξ( π∗, ℓ ) and gives 
+
+cσ∗ Rσ∗ (ℓ) ≡ 0, (130) where Rσ∗ is non-zero. Hence cσ∗ = 0. Since σ∗ was arbitrary, all coefficients vanish, proving linear independence. □
+
+Corollary 34 The rational functions {Ξ( π, ·) : π ∈ SK } span a vector space of dimension 
+
+dim span {Ξ( π, ·) : π ∈ SK } = ( K − 1)!; (131) 
+
+where, the family 
+
+{Ξ( σK, ·) : σ ∈ SK−1} (132) 
+
+is a basis for this span. Moreover, every functional relation 
+
+X
+
+> π∈SK
+
+cπ Ξ( π, ·) = 0 (133) 
+
+is generated by the shuffle relations of Lemma 30. 
+
+Proof Let 
+
+WK := span C{Eπ : π ∈ SK } (134) and let 
+
+T : WK −→ span C{Ξ( π, ·) : π ∈ SK }, Eπ 7 −→ Ξ( π, ·). (135) 29 Then ker T is exactly the space of functional relations among the Ξ( π, ·). By Lemma 30, every shuffle relation lies in ker T . By Lemma 32, these shuffle relations contain at least K! − (K − 1)! linearly independent elements. Hence dim ker T ≥ K! − (K − 1)! , (136) and therefore dim Im T = K! − dim ker T ≤ (K − 1)! . (137) On the other hand, Lemma 33 shows that the ( K − 1)! functions {Ξ( σK, ·) : σ ∈
+
+SK−1} are linearly independent. Thus dim Im T ≥ (K − 1)! . (138) Combining the two inequalities gives dim Im T = ( K − 1)! and dim ker T = K! − (K − 1)! . (139) Hence the fixed-last-letter family is a basis. It remains to identify the full kernel. Since Lemma 32 gives exactly K!−(K −
+
+1)! independent shuffle relations inside ker T , these relations form a basis of ker T .Therefore all functional relations among the functions Ξ( π, ·) are generated by shuffle relations. □
+
+Lemma 35 Let F : SK → C and define 
+
+LF (A1, . . . , A K ) := X
+
+> π∈SK
+
+F (π)Aπ(1) · · · Aπ(K). (140) 
+
+If LF (A1, . . . , A K ) is a multilinear Lie element, then, for every decomposition of [K] into two non-empty ordered words α and β,
+
+X
+
+> ρ∈Sh( α,β )
+
+F (ρ) = 0 . (141) 
+
+Proof By Ree’s shuffle criterion [Ree58; Reu93], the coefficient vector of a multilinear Lie element annihilates every proper shuffle sum. This property immediately applies to the coefficient F (π). □
+
+Lemma 36 Let 
+
+VK := span C{Ξ( π, ·) : π ∈ SK }. (142) 
+
+A target vector F : SK → C can be realised by a linear functional on VK , meaning that there exists a linear map 
+
+Λ : VK → C (143) 
+
+such that 
+
+Λ(Ξ( π, ·)) = F (π) for all π ∈ SK , (144) 30 if and only if F annihilates every linear relation among the functions Ξ( π, ·);that is, whenever X
+
+> π∈SK
+
+c(π) Ξ( π, ·) ≡ 0, (145) 
+
+one has X
+
+> π∈SK
+
+c(π) F (π) = 0 . (146) 
+
+Proof First suppose that such a linear map Λ exists. If 
+
+X
+
+> π∈SK
+
+c(π) Ξ( π, ·) ≡ 0, (147) then applying Λ gives 0 = Λ X
+
+> π∈SK
+
+c(π) Ξ( π, ·)
+
+!
+
+= X
+
+> π∈SK
+
+c(π) Λ(Ξ( π, ·)) = X
+
+> π∈SK
+
+c(π) F (π). (148) Hence F annihilates every relation. Conversely, suppose that F annihilates every relation. We define Λ on VK as follows. For an element of VK written as 
+
+G = X
+
+> π∈SK
+
+c(π) Ξ( π, ·), (149) and we write the map Λ as Λ( G) := X
+
+> π∈SK
+
+c(π) F (π). (150) We need to check that this does not depend on the chosen representation of G.Suppose we can write it in a different form, 
+
+G = X
+
+> π∈SK
+
+c′(π) Ξ( π, ·), (151) then X
+
+> π∈SK
+
+ c(π) − c′(π)Ξ( π, ·) ≡ 0. (152) By assumption, F annihilates this relation, so 
+
+X
+
+> π∈SK
+
+ c(π) − c′(π)F (π) = 0 , (153) and therefore X
+
+> π∈SK
+
+c(π)F (π) = X
+
+> π∈SK
+
+c′(π)F (π), (154) which means that Λ is well-defined. It is plainly linear, and for each generator Ξ( π, ·) we obtain Λ(Ξ( π, ·)) = F (π). (155) 
+
+□
+
+31 We are finally able to state and prove the main result of this section. 
+
+Theorem 37 Let U ⊂ H(K)0 be the Zariski-open domain on which all functions 
+
+Ξ( π, ·), π ∈ SK , are well-defined. Let 
+
+LF (A1, . . . , A K ) := X
+
+> π∈SK
+
+F (π)Aπ(1) · · · Aπ(K) (156) 
+
+be any Lie algebra element LF , expanded in terms of permutations of the genera-tors Aj with corresponding coefficients F (π). Then we can construct d = ( K − 1)! 
+
+integer frequency vectors 
+
+ℓ(1) , . . . , ℓ(d) ∈ U ∩ ZK (157) 
+
+where the set L = {ℓ(1) , . . . , ℓ(d)} satisfies Condition 17, together with coefficients 
+
+α1, . . . , α d ∈ R, such that 
+
+∀π ∈ SK :
+
+> d
+
+X
+
+> m=1
+
+αm Ξ( π, ℓ(m)) = F (π). (158) 
+
+Proof Set d := ( K − 1)!. Since LF (A1, . . . , A K ) is a multilinear Lie element, Lemma 35 shows that F annihilates every shuffle relation: 
+
+X
+
+> ρ∈Sh( α,β )
+
+F (ρ) = 0 (159) for every decomposition of [ K] into two non-empty ordered words α and β. By Corollary 34, the shuffle relations generate all functional relations among the functions Ξ( π, ·). Hence, applying Lemma 36, F defines a valid linear target on 
+
+VK := span C{Ξ( π, ·) : π ∈ SK }. (160) It remains to realise this valid target by finitely many integer evaluations. By Corollary 34, VK has dimension d with basis {Ξ( σK, ·) : σ ∈ SK−1}. Choose 
+
+ℓ(1) , . . . , ℓ(d) ∈ U ∩ ZK (161) such that L = {ℓ(1) , . . . , ℓ(d)} satisfies Condition 17 and the evaluation matrix 
+
+Mσ,m := Ξ( σK, ℓ(m)), σ ∈ SK−1, m = 1 , . . . , d, (162) is invertible 4.
+
+> 4Such a choice exists because the vanishing determinant defines a proper algebraic ex-ceptional set, while failures of Condition 17 are contained in a finite union of proper linear subspaces of ( H0)d. Hence, by the same Zariski-density argument as in Corollary 53 applied to ( H0)d, we may choose integer points outside all these exceptional sets simultaneously.
+
+32 The point-evaluation functionals at ℓ(1) , . . . , ℓ(d) then form a basis of V∗ 
+
+> K
+
+.Therefore the linear functional Λ associated with F by Lemma 36 can be written as Λ( f ) = 
+
+> d
+
+X
+
+> m=1
+
+αmf (ℓ(m)) (f ∈ V K ) (163) for suitable coefficients α1, . . . , α d. Since the evaluation matrix and the target values F (π) are real, these coefficients can be chosen in R.Applying this identity to f = Ξ( π, ·) gives 
+
+F (π) = Λ(Ξ( π, ·)) = 
+
+> d
+
+X
+
+> m=1
+
+αm Ξ( π, ℓ(m)) (π ∈ SK ). (164) 
+
+□
+
+Remark 38 (Frequency dilation) Let ℓ ∈ U ∩ Zk, where U is the domain in Definition 23. For every s > 0,
+
+Ξ( π, s ℓ) = s−(k−1) Ξ( π, ℓ), π ∈ Sk, (165) 
+
+and thus if X
+
+> m
+
+αmΞ( π, ℓ(m)) = F (π), (166) 
+
+then X
+
+> m
+
+αmsk−1 
+
+> m
+
+Ξ( π, s mℓ(m)) = F (π) (167) 
+
+for all positive sm. Integer dilations preserve integrality, while joint admissibility is ensured by an appropriate choice of the sm.
+
+# 9 Canonical projection on a Lie polynomial 
+
+We are now in a position to show that suitable choices of driving frequencies allow arbitrary Lie polynomials to be constructed in the leading-order term of the Magnus expansion. The key mathematical insight underlying this step is that the sum over permutations in the leading-order Magnus term of Theorem 21 is closely related to the the canonical projection from the free associative algebra onto its free Lie subalgebra. 
+
+Definition 39 (Canonical projection [Reu93; Reu86; BS17]) The canon-ical projection π1 is a linear map from the free associative algebra R⟨A⟩ to the Lie algebra Lie( A). In particular, when the domain is restricted to the Lie algebra, then π1 acts as the identity. Formally, on a word A1A2 · · · Ak, π1 acts as: 
+
+π1(A1A2 . . . A k) = 1
+
+k
+
+X
+
+> σ∈Sk
+
+(−1) des σ
+
+  k−1des σ
+
+ Aσ(1) · Aσ(2) · · · Aσ(k), (168) 33 and equivalently in terms of right-ordered nested commutators [BS17, Theorem 1.8], 
+
+π1(A1A2 . . . A k) = 1
+
+k2
+
+X
+
+> σ∈Sk
+
+w(σ) Aσ(1) , A σ(2) , · · · , A σ(k)
+
+ (169) = 1
+
+k
+
+X
+
+> σ∈Sk−1
+
+w(σ) Aσ(1) , A σ(2) , · · · , A k
+
+ , (170) 
+
+where w(σ) are the Eulerian weights of Definition 20. 
+
+By choosing the driving frequencies and amplitudes to generate a Lie polyno-mial, the canonical projection acts as identity thereupon, and we arrive at the cornerstone theorem of this section: any homogeneous multilinear Lie polynomial of any degree K can be generated at leading-order in the Magnus expansion. 
+
+Theorem 40 Let LP (A1, . . . , A K ) ∈ Lie( A) be a homogeneous multilinear Lie polynomial of degree K. Then we can select d = ( K − 1)! integer frequency vectors ℓ(1) , . . . , ℓ(d) satisfying Condition 17, together with real amplitudes a(m) 
+
+> j
+
+,to construct a Hamiltonian H(t) of the form in Definition 16, such that the leading-order non-zero term in the Magnus expansion of H(t) is 
+
+MK (H, T ) = ( −i)K (−1) ⌊(K−1) /2⌋ 2cK TωK−1 LP (A1, . . . , A K ), (171) 
+
+where c ∈ R+ is an overall factor that can be chosen freely. 
+
+Proof Choose frequency coefficients ℓ(1) , . . . , ℓ(d) and coefficients αm according to Theorem 37, so that 
+
+> d
+
+X
+
+> m=1
+
+αm Ξ( π, ℓ(m)) = F (π) (π ∈ SK ). (172) For any freely chosen c > 0, choose real amplitudes a(m) 
+
+> j
+
+such that 
+
+αm := 1
+
+cKKY
+
+> j=1
+
+a(m) 
+
+> j
+
+. (173) Such a choice is always possible for every αm ∈ R.By Theorem 21 and Corollary 22, the leading-order non-zero terms in the Magnus expansion occur at order K, and have the form 
+
+MK (H, T ) = ( −i)K (−1) ⌊(K−1) /2⌋ 2cK TK2ωK−1
+
+X
+
+> μ∈SK
+
+[Aμ(1) , . . . , A μ(K)] X
+
+> σ∈SK
+
+w(σ)
+
+> d
+
+X
+
+> m=1
+
+αmΞ( μσ −1, ℓ(m))(174) = ( −i)K (−1) ⌊(K−1) /2⌋ 2cK TK2ωK−1
+
+X
+
+> μ∈SK
+
+[Aμ(1) , . . . , A μ(K)] X
+
+> σ∈SK
+
+w(σ)cL(μσ −1).
+
+(175) 34 Now, for each fixed permutation σ, set 
+
+π = μσ −1, μ = πσ (176) and relabel the sums to give 
+
+MK (H, T ) = ( −i)K (−1) ⌊(K−1) /2⌋ 2cK TK2ωK−1
+
+X
+
+> π∈SK
+
+cL(π) X
+
+> σ∈SK
+
+w(σ)[ Aπ(σ(1)) , . . . , A π(σ(K)) ].
+
+(177) For fixed π, define 
+
+Bj := Aπ(j) j = 1 , . . . , K (178) so that the commutator form of the canonical projection in Definition 39 can be rewritten as 
+
+X
+
+> σ∈SK
+
+w(σ)[ Aπ(σ(1)) , . . . , A π(σ(K)) ] = X
+
+> σ∈SK
+
+w(σ)[ Bσ(1) , . . . , B σ(K)] = K2π1(Aπ(1) · · · Aπ(K)).
+
+(179) By linearity of the canonical projection π1, eq. (177) reduces to 
+
+MK (H, T ) = ( −i)K (−1) ⌊(K−1) /2⌋ 2cK TωK−1 π1
+
+ X 
+
+> π∈SK
+
+cL(π)Aπ(1) · · · Aπ(K)
+
+
+
+(180) = ( −i)K (−1) ⌊(K−1) /2⌋ 2cK TωK−1 π1
+
+ LP (A1, . . . , A K ). (181) Since LP is an element of the Lie algebra, the canonical projection acts as identity on it: 
+
+π1
+
+ LP (A1, . . . , A K ) = LP (A1, . . . , A K ), (182) and the theorem follows. □
+
+# 10 Floquet universality 
+
+## 10.1 Mixed-degree synthesis and truncation 
+
+Here we extend the construction from homogeneous Lie polynomials to target Hamiltonians that contain Lie-polynomial contributions of different degrees. Up to this point, we have constructed a Lie polynomial of a fixed degree K, or, equivalently, a Hamiltonian whose leading non-zero Magnus contribution occurs at a common order K. We now combine such leading-order contributions of different degrees, to produce a target Hamiltonian of the form: 
+
+Htarget =
+
+> R
+
+X
+
+> r=1
+
+ır λr LP r , (183) where each LP r is a homogeneous multilinear Lie polynomial of degree Kr and 
+
+ır ∈ { 1, i } is chosen such that Htarget is Hermitian. 35 Recall that for each target Lie polynomial LP r of degree Kr , the construction of Theorem 40 uses an admissible frequency set of size dr = ( Kr − 1)!: 
+
+L(r) =
+
+n
+
+ℓ(r, 1) , . . . , ℓ(r,d r )o
+
+. (184) Here, r labels the target Lie polynomial, m labels the frequency vectors in that Lie polynomial’s construction, and j labels a component of that vector. Each frequency set L(r) is admissible, so by Condition 17 its only nontrivial zero-sum relations are the designed relations 
+
+> Kr
+
+X
+
+> j=1
+
+ℓ(r,m ) 
+
+> j
+
+= 0 . (185) When combining Lie polynomials of different degrees, however, there is no longer a common value of K governing all the frequency vectors. In particular, we must handle sums involving frequencies corresponding to different Lie polynomials of different orders, including sums containing up to 
+
+Kmax := max  
+
+> 1≤r≤R
+
+Kr (186) components. To this end, we impose the following additional separation condition on the frequencies. 
+
+Condition 41 (Admissible frequency families) We say that a family of frequency sets n
+
+L(r)oRr=1 
+
+(187) 
+
+consisting of admissible frequency sets 
+
+L(r) =
+
+n
+
+ℓ(r,m )o(Kr −1)! 
+
+> m=1
+
+, ℓ(r,m ) =
+
+
+
+ℓ(r,m )
+
+> j
+
+Kr
+
+> j=1
+
+. (188) 
+
+is admissible if, for every 1 ≤ k ≤ Kmax and every choice of signs s1, . . . , s k ∈{± 1}, the relation kX
+
+> q=1
+
+sq ℓ(rq ,m q ) 
+
+> jq
+
+= 0 (189) 
+
+holds iff the terms admit a partition into subsets of the following two types: (i) all components of a single frequency vector with a common sign, 
+
+n
+
+sℓ (r,m )1 , . . . , sℓ (r,m )
+
+> Kr
+
+o
+
+, s ∈ {± 1}; (190) 
+
+(ii) pairs of identical labelled frequency components with opposite signs. 
+
+36 A constructive procedure for generating admissible frequency families satisfying this global constraint is given in Section 10.3, based on a uniform recursive spacing factor. Whilst we do not claim this construction is optimal, it provides a constructive witness for the Zariski argument in Theorem 37, establishing the existence of infinitely many such admissible integer frequency configurations. This new admissibility condition prevents unintended interactions between frequency sets corresponding to different Lie polynomials, as we will show shortly. Nonetheless, even with this condition, intermediate orders in the Magnus expansion can still give rise to unwanted mixed terms involving different frequency sets. These mixed terms contribute to the error and are accounted for by a general intermediate-order error bound. One challenge of combining Lie polynomials of different degrees is that their leading Magnus contributions carry different powers of the fundamental frequency. We will show that these degree-dependent scalings can be compensated for, and the correct relative weights of the target terms can be generated, via integer dilations of the driving frequencies alone, without scaling the amplitudes. 
+
+## 10.2 Floquet synthesis with bounded Fourier-amplitudes 
+
+Throughout this subsection, we will assume 2 ≤ Kr ≤ K := Kmax , (191) that the A(r) 
+
+> j
+
+are normalised such that ∥A(r) 
+
+> j
+
+∥ ≤ 1, and that the Lie polynomials have real coefficients. We set ır = 1 for odd Kr and ır = i for even Kr , and keep the base frequency ω > 0 fixed. 
+
+Remark 42 (Eliminating degree-one terms) The restriction Kr ≥ 2 is without loss of generality whenever Lie( S) is perfect , namely, 
+
+[Lie( S), Lie( S)] = Lie( S). (192) 
+
+In this case, the linear span of all Lie words over S of degree at least two is the full algebra. In particular, su (D) is perfect, so this restriction plays no role in the key case of Floquet-universal S-driven Hamiltonians, where Lie( S) = su (D).
+
+The next technical result shows that by discarding terms with amplitudes below a cut-off, the degree-dependent scalings in the leading Magnus terms can be compensated for by suitably dilating the frequency vectors, whilst maintaining a constant bound on all amplitudes. 
+
+Definition 43 (Truncated Hamiltonian) Let 
+
+Htarget =
+
+> R
+
+X
+
+> r=1
+
+ır λr LP r (193) 
+
+be a decomposition of the Hamiltonian Htarget into homogeneous multilinear Lie polynomials LP r , where λr ∈ R and ır ∈ { 1, i }.
+
+37 For each LP r, let ℓ(r,m ) and α(r) 
+
+> m
+
+be the parameters constructed in Theo-rem 37, so that the dr = ( Kr − 1)! reference frequency vectors ℓ(r,m ) satisfy the admissibility condition of Lemma 54 up to order K. Let 
+
+wr,m := λr α(r) 
+
+> m
+
+(194) 
+
+and 
+
+LP r,m := X
+
+> π∈SKr
+
+Ξ( π, ℓ(r,m ))A(r) 
+
+> π(1)
+
+· · · A(r) 
+
+> π(Kr)
+
+. (195) 
+
+so that 
+
+Htarget = X
+
+> r,m
+
+ır wr,m LP r,m . (196) 
+
+Then for a cutoff tolerance η > 0, we define the corresponding truncated Hamiltonian to be bHtarget := X
+
+> (r,m )∈I
+
+ır wr,m LP r,m , (197) 
+
+where 
+
+I := {(r, m ) : |wr,m | ≥ ϑ} , ϑ := ηK! P 
+
+> r
+
+dr
+
+. (198) 
+
+Note that, since ∥LP r,m ∥ ≤ K!, we have the approximation 
+
+Htarget − bHtarget ≤ η. (199) The truncation isolates a finite set of synthesised contributions whose omission changes the target Hamiltonian by at most η. This allows us to transfer the weights of the remaining contributions to the frequency dilations while keeping all physical amplitudes within a constant ratio. That is, 
+
+Lemma 44 For any η > 0, let bHtarget be the truncated Hamiltonian correspond-ing to Htarget with cut-off η, and let I be the set of vectors surviving the cut-off in eq. (198) . Define 
+
+V := |I| , w∗ := max  
+
+> (r,m )∈I
+
+|wr,m |. (200) 
+
+together with the spacing constant 
+
+L := 2 + K2(2 K)K V K−1. (201) 
+
+Then for any 0 < y ≤ 1, we can construct Hamiltonians H(r)(t; y) of the form in Definition 16 with corresponding amplitudes ea(r,m ) 
+
+> j
+
+and frequency vec-tors eℓ(r,m )
+
+, such that the Hamiltonians H(r)(t) have individual leading-order Magnus contributions M(r) 
+
+> Kr
+
+(T ) satisfying 
+
+X
+
+> r
+
+M(r) 
+
+> Kr
+
+(T ) = −iδ bHtarget , (202) 38 with the parameter 
+
+δ = 4πy K
+
+w∗LK−1 . (203) 
+
+Moreover, for c0 := ωy , every amplitude ea(r,m ) 
+
+> j
+
+satisfies 
+
+c0 ≤ | ea(r,m ) 
+
+> j
+
+| < 2c0, max (r,m )∈I ,j |ea(r,m ) 
+
+> j
+
+|
+
+min (r,m )∈I ,j |ea(r,m ) 
+
+> j
+
+| < 2. (204) 
+
+Proof Fix 
+
+s⋆r,m =
+
+ 4πy Kr
+
+δ|wr,m |
+
+1/(Kr −1) 
+
+. (205) As proven in later Lemma 54, if the dilation parameters satisfy s⋆v ≥ L, then one can choose integers within the interval 
+
+sv ∈ [s⋆v , 2s⋆v ] ∩ N (206) and set eℓ(r,m ) 
+
+> j
+
+:= sr,m ℓ(r,m ) 
+
+> j
+
+, (207) so that the frequencies are jointly admissible as per Condition 41. Finally, define 
+
+hr,m := 
+
+ sr,m 
+
+s⋆r,m 
+
+(Kr −1) /K r
+
+. (208) and choose the amplitudes as 
+
+ea(r,m )1 := σr,m c0hr,m , σr,m := ( −1) Kr +1 sgn( wr,m ),
+
+ea(r,m ) 
+
+> j
+
+:= c0hr,m , 2 ≤ j ≤ Kr
+
+(209) From eq. (205), 
+
+s⋆r,m =
+
+ w∗
+
+|wr,m |
+
+1/(Kr −1) 
+
+L(K−1) /(Kr −1) y−(K−Kr )/(Kr −1) ≥ L, (210) so the choice in eqs. (206) and (207) is admissible. Recall from Theorem 40 that, after dilating the frequencies by sr,m and choosing amplitudes of magnitude 
+
+ωyh r,m , the magnitude of the leading-order coefficient associated with the vector (r, m ) is 4π(yh r,m )Kr
+
+sKr −1
+
+> r,m
+
+. (211) The factor hr,m was chosen precisely to compensate for replacing the ideal dilation s⋆r,m by the nearby integer sr,m . Indeed, 4π(yh r,m )Kr
+
+sKr −1
+
+> r,m
+
+= 4πy Kr
+
+(s⋆r,m )Kr −1 = δ|wr,m |. (212) 39 Together with the sign choice in eq. (209), this gives the contribution −iδı r wr,m LP r,m 
+
+vector ( r, m ) ∈ I . Summing over ( r, m ) ∈ I yields eq. (202). Finally, 1 ≤ sr,m /s ⋆r,m ≤ 2. (213) and therefore 1 ≤ hr,m < 2, (214) which implies eq. (204) since |ea(r,m ) 
+
+> j
+
+| = c0hr,m . □
+
+The preceding lemma transfers the relative scale of the coefficients surviving the cutoff to the integer frequency dilations, while keeping all non-zero physical amplitudes within a ratio of 2. It remains to control the higher Magnus orders: for this, we need a bound showing that whenever all components of a dilated frequency vector occur in a higher-order time-ordered integral, the contribution retains the factor s−(k−1) .
+
+Lemma 45 Fix (r, m ) ∈ I , set k = Kr, and let eℓ(r,m ) = sr,m ℓ(r,m ) be as in eq. (207) . For J ≥ k, consider the time-ordered integral 
+
+IJ =
+
+Z T
+
+> 0
+
+dt 1 · · · 
+
+Z tJ−1
+
+> 0
+
+dt J exp iω 
+
+> J
+
+X
+
+> ν=1
+
+aν tν
+
+!
+
+, T = 2πω , (215) 
+
+where a1, . . . , a J ∈ Z. Suppose that k of the entries aν are, in arbitrary order, 
+
+ϵ1 eℓ(r,m )1 , . . . , ϵ k eℓ(r,m ) 
+
+> k
+
+, ϵj ∈ {± 1}, (216) 
+
+while the remaining J − k entries are arbitrary. Then 
+
+|IJ | ≤ eπ/ 2(J + 1)4 J
+
+ωJ sk−1
+
+> r,m
+
+. (217) 
+
+Proof Write s = sr,m and ℓj = ℓ(r,m ) 
+
+> j
+
+for brevity. Rescale the integration variables as θν = ωt ν , and define 
+
+S0 := 0 , Sq := 
+
+> q
+
+X
+
+> ν=1
+
+aν , q = 1 , . . . , J. (218) Then 
+
+ωJ IJ =
+
+Z 2π
+
+> 0
+
+dθ 1 · · · 
+
+Z θJ−1
+
+> 0
+
+dθ J exp i
+
+> J
+
+X
+
+> ν=1
+
+aν θν
+
+!
+
+. (219) Using the contour representation of the time-ordered integral, 
+
+ωJ IJ = X 
+
+> u∈{ S0,...,S J}
+
+12πi 
+
+I
+
+> |z−iu |=1 /4
+
+e2πz 
+
+QJq=0 (z − iS q ) dz, (220) where the sum is over the distinct values among S0, . . . , S J .40 Fix one such value u and regard S0, . . . , S J as the vertices of a path whose edges are the increments a1, . . . , a J . Remove the J − k edges not belonging to the selected dilated vector. The remaining path has at most J − k + 1 connected components. Within any component containing fewer than all k selected edges, the differ-ence between two distinct vertices is 
+
+s X
+
+> j∈Q
+
+ϵj ℓj , ∅̸ = Q ⊊ {1, . . . , k }. (221) By admissibility of the reference vector, this is a non-zero integer multiple of 
+
+s, and hence has modulus at least s. If one component contains all k selected edges, only the difference between its two endpoints can involve all components; every other non-trivial difference again has modulus at least s.Consequently, at most J − k + 2 of the J + 1 vertices can lie within distance strictly smaller than s/ 2 from u. Hence at least k − 1 indices satisfy 
+
+|Sq − u| ≥ s
+
+2 . (222) On |z − iu | = 1 /4, the corresponding denominator factors obey 
+
+|z − iS q | ≥ s
+
+2 − 14 ≥ s
+
+4 . (223) Every remaining denominator has modulus at least 1 /4, since the Sq are integers, while |e2πz | ≤ eπ/ 2. Thus each contour contributes at most 
+
+eπ/ 24J s−(k−1) . (224) There are at most J + 1 distinct contours, and therefore 
+
+|IJ | ≤ eπ/ 2(J + 1)4 J
+
+ωJ sk−1 = eπ/ 2(J + 1)4 J
+
+ωJ sk−1
+
+> r,m
+
+, (225) which proves eq. (217). □
+
+Next, we will control both the tail bound of the Magnus expansion and the intermediate terms mixing letters from different Lie polynomials. For the first task, we will need the truncation bound presented in [ACO25], namely 
+
+Theorem 46 (Error bound for truncated Magnus series, Theorem 2 of [ACO25]) 
+
+Consider a general time-dependent Hamiltonian H, and assume that 
+
+A(t) := 
+
+Z t
+
+> 0
+
+∥H(s)∥op ds < ξ ≈ 1.086869 . (226) 
+
+Denote the truncation at term N by M(N )(t) = PNn=1 Mn(t). Then the trunca-tion error is bounded by 
+
+∥M (t) − M (N )(t)∥op ≤ KM
+
+(N + 1) 3/2
+
+(A(t)/ξ )N +1 
+
+1 − A(t)/ξ , (227) 
+
+where KM is a global constant. 
+
+41 In particular, A(t)/ξ < 1 is a sufficient criterion for convergence of the Magnus series. We can now state: 
+
+Theorem 47 Let 
+
+Htarget =
+
+> R
+
+X
+
+> r=1
+
+ır λr LP r (228) 
+
+be a decomposition of a Hamiltonian Htarget into homogeneous multilinear Lie polynomials. Let wr,m be the coefficients in Definition 43 of the truncated Hamiltonian, and define w∗ := max r,m |wr,m |.For any multiplicative error tolerance ϵ > 0 and any 0 < y ≤ y∗(ϵ) with a threshold y∗(ϵ) for which we can give an explicit expression, we can construct a Hamiltonian H(t) of the form of Definition 16 such that the Magnus series for 
+
+H(t) converges and satisfies the multiplicative error bound 
+
+iM(T ) − δH target ≤ ϵ δ ∥Htarget ∥, (229) 
+
+where δ = 4πy K 
+
+> w∗LK−1
+
+.
+
+Proof We decompose the Magnus series as 
+
+M(T ) = −iδ bHtarget + Rint (T ) + Rtail (T ), (230) where Rint (T ) contains all the unwanted contributions of order at most K, and 
+
+Rtail (T ) contains all terms of orders greater than K.Choose the cutoff 
+
+η := ϵ
+
+2 ∥Htarget ∥, (231) and define P := P 
+
+> r
+
+Kr dr and 
+
+Eint := w∗eπ/ 2
+
+8π
+
+> K
+
+X
+
+> J=2
+
+(J + 1) J!
+
+J2 (32 P )J , (232) 
+
+Etail := w∗LK−1
+
+4π
+
+2KM
+
+(K + 1) 3/2
+
+ 8πP ξ
+
+K+1 
+
+. (233) We first address convergence and the tail bound using Theorem 46. From eq. (204), every elementary amplitude has magnitude smaller than 2 c0. Since at most P elementary components are present, the integrated norm in eq. (226) satisfies 
+
+A(T ) = 
+
+Z T
+
+> 0
+
+∥ eH(s; y)∥ ds ≤ 4P c 0T = 8 πP y. (234) For y ≤ 1/(32 πP ), we have A(T )/ξ ≤ 1/(4 ξ) < 1/2, so the Magnus series converges. Applying Theorem 46 with N = K gives 
+
+∥R tail (T )∥ ≤ KM
+
+(K + 1) 3/2
+
+(A(T )/ξ )K+1 
+
+1 − A(T )/ξ (235) 
+
+≤ 2KM
+
+(K + 1) 3/2
+
+ 8πP y ξ
+
+K+1 
+
+= δy Etail . (236) 42 where the last equality follows from δ = 4 πy K /(w∗LK−1) and the definition of Etail in eq. (233). We now consider intermediate orders, namely J ≤ K, and consider a time-ordered integral that omits at least one component of every frequency vector. Since none of the designed complete resonances can occur, joint admissibility implies that any vanishing frequency sum arising in the recursive integration consists only of opposite-sign pairs. If no such vanishing sum occurs, the integral vanishes over one period by Lemma 18; otherwise, its resonant contributions cancel with their mirror partners as in the proof of Theorem 19. In conclusion, only integrals containing all Kr components of at least one complete vector ℓ(r,m )
+
+surviving the cut-off can contribute for J ≤ K.If J = Kr , the corresponding contribution belongs to the isolated leading term already subtracted in eq. (230), so every integral contributing to Rint (T ) must contain a complete vector with J ≥ Kr + 1. For each such contribution, choose one complete vector labelled by ( r, m ), so that the corresponding commutator term contains an occurrence of each of its Kr components, with arbitrary signs and positions. Therefore, by Lemma 45, the associated time-ordered integral IJ
+
+satisfies 
+
+|IJ | ≤ eπ/ 2(J + 1)4 J
+
+ωJ sKr −1
+
+> r,m
+
+. (237) Multiplying by the bound (2 ωy )J on the product of the J amplitude magni-tudes and using eq. (212) gives 
+
+|IJ |(2 ωy )J ≤ eπ/ 2(J + 1)8 J yJ
+
+sKr −1
+
+> r,m
+
+≤ δw ∗ye π/ 2
+
+4π (J + 1)8 J , (238) where we used yJ
+
+sKr −1
+
+> r,m
+
+= δ|wr,m |
+
+4πh Kr
+
+> r,m
+
+yJ−Kr ≤ δw ∗y
+
+4π , (239) since hr,m ≥ 1, J ≥ Kr + 1, and y ≤ 1. There are at most P J ordered component and 2 J sign choices, and J!permutations. The Eulerian commutator coefficient contributes a factor 1 /J 2,while the commutator norm contributes 2 J−1. Combining the combinatorial factors with eq. (238) gives 
+
+∥R int ,J (T )∥ ≤ J!
+
+J2 P J 2J 2J−1 δw ∗ye π/ 2
+
+4π (J + 1)8 J (240) = δw ∗ye π/ 2
+
+8π
+
+(J + 1) J!
+
+J2 (32 P )J . (241) Summing over J = 2 , . . . , K and using eq. (232) therefore gives 
+
+∥R int (T )∥ ≤ δw ∗ye π/ 2
+
+8π
+
+> K
+
+X
+
+> J=2
+
+(J + 1) J!
+
+J2 (32 P )J = δy Eint . (242) 43 Bringing together the two bounds, we set E := Eint + Etail and choose the threshold 
+
+y∗(ϵ) := min 
+
+ 132 πP , ϵ∥Htarget ∥
+
+2E
+
+
+
+. (243) This ensures that for every y ≤ y∗(ϵ) the Magnus series converges and also, combining eqs. (236) and (242), that 
+
+M(T ) + iδ bHtarget ≤ δy E ≤ ϵ
+
+2 δ∥Htarget ∥. (244) Finally, with eqs. (199) and (231), 
+
+M(T ) + iδH target ≤ M(T ) + iδ bHtarget + δ Htarget − bHtarget (245) 
+
+≤ ϵ
+
+2 δ∥Htarget ∥ + ϵ
+
+2 δ∥Htarget ∥ (246) = ϵδ ∥Htarget ∥. (247) 
+
+□
+
+Remark 48 One can make c0 in eq. (204) arbitrarily small by choosing a sufficiently large integer N , since 
+
+c0 = ωy = ω
+
+ w∗LK−1
+
+4πN 
+
+1/K 
+
+. (248) 
+
+The reduced Hamiltonian can then be amplified over the runtime of multiple periods N T .
+
+We finally arrive at our main Floquet Hamiltonian simulation result. 
+
+Theorem 49 (Floquet universality) For any Htarget ∈ Lie( S) where Lie( S)
+
+is perfect, and any ϵ > 0, the construction of Theorem 47 yields an S-driven Hamiltonian of the form in Definition 16 that satisfies 
+
+∥iM(N T ) − Htarget ∥ ≤ ϵ∥Htarget ∥, (249) 
+
+where M(N T ) is the Magnus expansion evaluated at a multiple of N periods. Moreover, the ratios of the amplitudes in Definition 16 satisfy 1 ≤ | a(m) 
+
+> j
+
+|/|a(n) 
+
+> k
+
+| <
+
+2 for any two |a(m) 
+
+> j
+
+| ≥ | a(n) 
+
+> k
+
+|
+
+In particular, any S-driven Hamiltonian for which Lie( S) = su (D) for every system size D is a universal Floquet simulator. 
+
+Proof Since Lie( S) is a perfect Lie algebra, Htarget admits a finite Lie-polynomial decomposition with all degrees at least two. Fix such a decomposition and let 
+
+K denote its maximal degree. Choose an integer 
+
+N ≥ w∗LK−1
+
+4πy ∗(ϵ)K (250) 44 and set 
+
+y := 
+
+ w∗LK−1
+
+4πN 
+
+1/K 
+
+, (251) so that y ≤ y∗(ϵ) from eq. (243) and 
+
+δ = 4πy K
+
+w∗LK−1 = 1
+
+N . (252) Then by Theorem 47 
+
+iM(T ) − δH target ≤ ϵδ ∥Htarget ∥. (253) Since the Hamiltonian is T -periodic, setting τ = N T gives 
+
+U (τ ) = U (T )N = exp  N M(T ), (254) and M(τ ) = N M(T ) is an anti-Hermitian exponent for the evolution over the physical time τ . From eq. (252) we have N δ = 1 and obtain 
+
+iM(τ ) − Htarget = N iM(T ) − δH target ≤ ϵ∥Htarget ∥. (255) Finally, if Lie( S) = su (D), by Remark 42 every target admits a decomposition with Kr ≥ 2. The amplitude-ratio bound is inherited from Lemma 44. □
+
+As an immediate consequence, there exists an anti-Hermitian operator Ω such that 
+
+U (τ ) = exp   − iH target + Ω , with ∥Ω∥ ≤ ϵ∥Htarget ∥. (256) We conclude the section with a scaling for the frequency coefficients in terms of the parameters K, R and ϵ.
+
+Lemma 50 Let the target Hamiltonian, 
+
+Htarget =
+
+> R
+
+X
+
+> r=1
+
+ır λr LP r , (257) 
+
+be a decomposition of a Hamiltonian Htarget into homogeneous multilinear Lie polynomials, with 2 ≤ Kr ≤ K, 0 < ϵ ≤ 1, and |λr | ≤ λ+, where ω > 0 and 
+
+λ+ > 0 are fixed. Let wr,m be the coefficients in Definition 43 of the truncated Hamiltonian and define w∗ := max r,m |wr,m |. Define 
+
+f∗ := max  
+
+> r
+
+max 
+
+> π∈SKr
+
+|Fr (π)|. (258) 
+
+Then the reference frequencies and the integer dilations in Theorem 47 can be chosen such that, for some constant C > 0 depending only on ω and λ+,
+
+max  
+
+> (r,m )∈I ,1≤j≤Kr
+
+|eℓ(r,m ) 
+
+> j
+
+| ≤ eCK 5
+
+RK3
+
+ 1 + f∗
+
+ϵ∥Htarget ∥
+
+K−1
+
+. (259) 45 In particular, note that the scaling of eq. (259) in terms of K, R, and ϵ is max  
+
+> (r,m )∈I ,1≤j≤Kr
+
+|eℓ(r,m ) 
+
+> j
+
+| = O
+
+
+
+epoly( K)RK3
+
+ϵ−K 
+
+. (260) Thus, for K constant, the frequencies are polynomial in both the number of target Lie-polynomial terms and the inverse simulation precision. 
+
+Proof (of Lemma 50) Set B = 4 K. For each r, write k = Kr and choose the reference vectors indexed by τ ∈ Sk−1 as 
+
+ℓ(r,τ )  
+
+> τ(j)
+
+= Bj−1 (1 ≤ j ≤ k − 1) , ℓ(r,τ ) 
+
+> k
+
+= −
+
+> k−2
+
+X
+
+> j=0
+
+Bj . (261) In increasing-power order, the net multiplicities of any vanishing signed sum of at most K components satisfy 
+
+> k−1
+
+X
+
+> j=1
+
+(nj − nk)Bj−1 = 0 , |nj − nk| ≤ K < B. (262) Successive reduction modulo B gives n1 = · · · = nk. Hence the relation consists of complete vectors with a common sign and opposite-sign pairs of the same labelled component, as required by Lemma 54. Also, 1 ≤ | ℓ(r,τ ) 
+
+> j
+
+| ≤ 2Bk−2. (263) Consider the matrix 
+
+M (k) 
+
+> σ,τ
+
+:= Ξ( σk, ℓ(r,τ )), σ, τ ∈ Sk−1, (264) and set Gk = B−(k−1)( k−2) /2. For positive x1, . . . , x n,
+
+X
+
+> σ∈Sn
+> n
+
+Y
+
+> j=1
+
+1
+
+xσ(1) + · · · + xσ(j)
+
+=
+
+> n
+
+Y
+
+> j=1
+
+1
+
+xj
+
+. (265) This follows by induction, grouping permutations by their last entry. For fixed 
+
+σ, varying τ permutes the entries 1 , B, . . . , B k−2, so every row of M (k) has sum 
+
+Gk. All entries are positive, and 
+
+M (k)
+
+> σ,σ
+
+Gk
+
+=
+
+> k−2
+
+Y
+
+> j=0
+
+Bj
+
+1 + B + · · · + Bj ≥ (1 − B−1)k−2 > 34 . (266) Thus ∥I − M (k)/G k∥∞ < 1/2 in the induced infinity norm. The Neumann series and Corollary 34 and Lemma 36 give a full synthesis with 
+
+∥(M (k))−1∥∞ ≤ 2G−1 
+
+> k
+
+, max  
+
+> m
+
+|α(r) 
+
+> m
+
+| ≤ 2f∗B(k−1)( k−2) /2, (267) 46 where joint admissibility is imposed by choosing integer dilations. Perform the cutoff with eq. (231). Then eqs. (194), (198) and (267) give 
+
+w∗ ≤ 2λ+f∗B(K−1)( K−2) /2, (268) 
+
+|wr,m | ≥ ϑ = ϵ∥Htarget ∥
+
+2K! P 
+
+> r
+
+dr
+
+, (r, m ) ∈ I , (269) and the target decomposition (with ∥A(r) 
+
+> j
+
+∥ ≤ 1) imply 
+
+∥Htarget ∥ ≤ X
+
+> r
+
+|λr | X
+
+> π∈SKr
+
+|Fr (π)| ≤ λ+RK !f∗. (270) We denote d = K2 − K + 2. Using V ≤ R(K − 1)!, P ≤ RK !, and eq. (268) in eq. (201) and Theorem 47, we obtain 
+
+L ≤ eO(K2 log K)RK−1, (271) 
+
+E ≤ eO(K3 log K)f∗Rd. (272) Note that here and below, the implicit constants depend at most on ω and λ+,The exponent d comes from the tail factor LK−1P K+1 , and the intermediate sum contributes at most RK . Choose 
+
+y0 := min {y∗(ϵ), (2 ω)−1}. (273) By eqs. (243), (270) and (272), 
+
+y−10 ≤ eO(K3 log K)Rd 1 + f∗
+
+ϵ∥Htarget ∥ . (274) We now set 
+
+N := 
+
+ w∗LK−1
+
+4πy K
+
+> 0
+
+
+
+, y := 
+
+ w∗LK−1
+
+4πN 
+
+1/K 
+
+, (275) then y ≤ y0 ≤ y∗(ϵ), c0 ≤ 1/2, and N δ = 1. The ceiling and eq. (269) give the bound 
+
+y−1 ≤ y−10 +
+
+ 4πw∗LK−1
+
+1/K 
+
+(276) 
+
+≤ y−10 +
+
+ 8πK ! P 
+
+> r
+
+dr
+
+ϵ∥Htarget ∥
+
+1/K 
+
+(277) 
+
+≤ eO(K3 log K)Rd 1 + f∗
+
+ϵ∥Htarget ∥ , (278) where the last inequality follows from eqs. (270) and (274) and f 1−1/K  
+
+> ∗
+
+≤ 1 + f∗.For each vector of degree k = Kr , eq. (205) yields 
+
+s⋆r,m =
+
+ w∗
+
+|wr,m |
+
+1/(k−1) 
+
+L(K−1) /(k−1) y−(K−k)/(k−1) . (279) 47 These scales are at least L, so Lemma 54 provides jointly admissible integers 
+
+sr,m ∈ [s⋆r,m , 2s⋆r,m ]. Since w∗/ϑ ≥ 1, L ≥ 1, y ≤ 1, and 2 ≤ k ≤ K, eqs. (263) and (279) imply max  
+
+> (r,m )∈I ,1≤j≤Kr
+
+|eℓ(r,m ) 
+
+> j
+
+| ≤ 4BK−2 w∗
+
+ϑ LK−1y−(K−2) , (280) whereas eqs. (268) and (269) give 
+
+w∗
+
+ϑ ≤ eO(K2 log K)R 1 + f∗
+
+ϵ∥Htarget ∥ . (281) Substituting eqs. (271), (276) and (281) into eq. (280), we obtain max  
+
+> (r,m )∈I ,1≤j≤Kr
+
+|eℓ(r,m ) 
+
+> j
+
+| ≤ eO(K4 log K)R1+( K−1) 2+d(K−2) 
+
+ 1 + f∗
+
+ϵ∥Htarget ∥
+
+K−1
+
+.
+
+(282) With the simple inequalities 1 + ( K − 1) 2 + d(K − 2) = K3 − 2K2 + 2 K − 2 ≤ K3
+
+and log K ≤ K, this proves eq. (259). □
+
+## 10.3 Explicit construction of admissible frequencies 
+
+We now refine the mixed-degree construction by transferring the relative scale of the target coefficients from the physical Fourier amplitudes to the driving frequencies. The construction proceeds in three steps. We first discard contribu-tions below a prescribed tolerance, then encode the remaining coefficient ratios through integer frequency dilations, and finally show that these dilations retain sufficient suppression of the higher-order Magnus terms. This yields a Floquet construction whose non-zero physical Fourier amplitudes differ by less than a factor of two. 
+
+Lemma 51 Consider the zero-sum hyperplanes H(Kr )0 from Definition 23, with 
+
+dr = ( Kr − 1)! as in Definition 43, and the finite product 
+
+P :=  H(K1)0
+
+d1
+
+×  H(K2)0
+
+d2
+
+× · · · ×  H(KR)0
+
+dR
+
+. (283) 
+
+Then the integer points of P are Zariski dense and thus every non-empty Zariski-open subset of P contains infinitely many integer points. 
+
+Proof For each K, consider the affine isomorphism 
+
+φK : CK−1 −→ H(K)0 , (z1, . . . , z K−1) 7 −→ z1, . . . , z K−1, −
+
+> K−1
+
+X
+
+> j=1
+
+zj
+
+!
+
+,
+
+(284) which maps ZK−1 bijectively onto H(K)0 ∩ ZK . The product map 
+
+φ :=  φK1
+
+d1
+
+×  φK2
+
+d2
+
+× · · · ×  φKR
+
+dR
+
+(285) 48 is an affine isomorphism from CD onto P, mapping ZD bijectively onto the integer points of P, where 
+
+D := 
+
+> R
+
+X
+
+> r=1
+
+dr (Kr − 1) . (286) Using the Schwartz–Zippel Lemma [Sch80], a non-zero polynomial f ∈
+
+C[z1, . . . , z D] of total degree d cannot vanish on every point of a finite grid SD
+
+whenever S ⊂ Z and |S| > d . Since such grids can be chosen arbitrarily large, 
+
+ZD is Zariski dense in CD . By the affine isomorphism eq. (285), it follows that the integer points are Zariski dense in P, and every non-empty Zariski-open subset of P contains infinitely many of them. Indeed, if any of these subsets contained only finitely many integer points, removing them would leave a non-empty Zariski-open subset, contradicting Zariski density of the integer points in 
+
+P. □
+
+To apply the above Lemma, we need to show that the subset defined by Condition 41 5 is Zariski open, namely 
+
+Lemma 52 The frequency configurations in P satisfying Condition 41 form a Zariski-open subset of P.
+
+Proof A configuration fails to satisfy Condition 41 only if some choice of at most Kmax labelled frequency components and signs, not corresponding to the allowed zero-sum blocks or pairwise cancellations, satisfies 
+
+> n
+
+X
+
+> ν=1
+
+sν ℓ(rν ,m ν ) 
+
+> jν
+
+= 0 , n ≤ Kmax . (287) Each such equation is polynomial in the frequency components, and hence defines a Zariski-closed subset of P. Given that only finitely many such equations arise, the configurations violating Condition 41 form a Zariski-closed subset of P and their complement is thus Zariski open. □
+
+To complete the argument, it remains to show that the Zariski-open set of frequency configurations satisfying Condition 41 is non-empty. We do so by constructing explicitly a sequence satisfying the separation constraints across blocks. 
+
+Witness construction. Let Kmax := max r Kr be the maximum degree, and set 
+
+B := Kmax + 1 . (288) Fix an ordering of all frequency vectors ℓ(r,m ) appearing in Condition 41, begin-ning with ℓ(1 ,1) , and set ℓ(1 ,1) 1 := 1.   
+
+> 5This is a subset of Pin eq. (283), since Condition 41 imposes additional non-vanishing constraints on signed sums.
+
+49 Proceeding through the components of each vector ℓ(r,m ), once ℓ(r,m )1 has been fixed, construct iteratively 
+
+ℓ(r,m ) 
+
+> j+1
+
+:= Bℓ (r,m ) 
+
+> j
+
+, j = 1 , . . . , K r − 2, (289) and choose the final frequency so that the entries sum to zero, 
+
+ℓ(r,m ) 
+
+> Kr
+
+:= − 
+
+> Kr−1
+
+X
+
+> j=1
+
+ℓ(r,m ) 
+
+> j
+
+. (290) After constructing a complete vector ℓ(r,m ), define the first component of the next vector ℓ(r′,m ′) in the chosen ordering by 
+
+ℓ(r′,m ′)1 := B ℓ(r,m ) 
+
+> Kr
+
+. (291) 
+
+Verification of the witness. Consider a vanishing signed multiset of at most Kmax labelled frequency components. First remove all pairs consisting of the same labelled component with opposite signs. It remains to show that the reduced multiset, R, is a disjoint union of complete blocks of the form in Condition 41. Let ℓ(r,m ) be the last vector in the chosen ordering that occurs in it. Set 
+
+k = Kr and a = ℓ(r,m )1 . Let αj ∈ Z be the signed multiplicity of ℓ(r,m ) 
+
+> j
+
+for 
+
+j = 1 , . . . , k − 1, let β ∈ Z be the signed multiplicity of ℓ(r,m ) 
+
+> k
+
+, and denote by Σ <
+
+the contribution of all preceding vectors. By construction, 
+
+ℓ(r,m ) 
+
+> j
+
+= aB j−1, ℓ(r,m ) 
+
+> k
+
+= −a
+
+> k−2
+
+X
+
+> j=0
+
+Bj , (292) and hence the vanishing relation becomes 
+
+a
+
+> k−1
+
+X
+
+> j=1
+
+(αj − β)Bj−1 + Σ < = 0 . (293) Now, note that every component belonging to a preceding vector (namely, not in ℓ(r,m )) has absolute value at most a/B . Since R contains at most Kmax = B−1components, 
+
+|Σ<| ≤ B − 1
+
+B a < a. (294) The first term in eq. (293) is an integer multiple of a, and thus so must be Σ <.It follows that Σ < = 0, and thus 
+
+> k−1
+
+X
+
+> j=1
+
+(αj − β)Bj−1 = 0 . (295) 50 Reducing eq. (295) modulo B removes all terms ( αj − β)Bj−1 except α1 − β;this implies α1 − β ≡ 0 (mod B). However, 
+
+|αj − β| ≤ | αj | + |β| ≤ B − 1, (296) because the reduced multiset has at most B − 1 components, hence the only possibility is α1 = β. Dividing eq. (295) by B and repeating the same argument gives iteratively 
+
+αj = β for all j = 1 , . . . , k − 1. (297) Thus all components of ℓ(r,m ) occur with the same signed multiplicity β, and therefore form |β| complete copies of the zero-sum relation eq. (290). Removing these (multiple) blocks for ℓ(r,m ) leaves the vanishing relation Σ< = 0, involving only preceding vectors. Applying the same argument to Σ <
+
+and iterating shows that the reduced multiset R is a disjoint union of complete zero-sum blocks. Restoring the pairwise cancellations removed at the beginning, the witness constructed above satisfies Condition 41. This construction is not intended to minimise the frequency magnitudes: more compressed configurations can for example be obtained with a greedy search. The witness constructed above, together with Lemmas 51 and 52, yields 
+
+Corollary 53 The integer frequency vectors satisfying Condition 41 are Zariski-dense in the corresponding subset of P, and thus there exist infinitely many such configurations. 
+
+Lemma 54 Fix K ≥ 2 and let 
+
+ℓ(v) ∈ ZKv , 2 ≤ Kv ≤ K, v = 1 , . . . , V, (298) 
+
+be reference frequency vectors up to length K. We recall the spacing constant in eq. (201) , L = 2 + K2(2 K)K V K−1; then, for any real numbers s⋆v ≥ L, there exist integers 
+
+sv ∈ [s⋆v , 2s⋆v ] ∩ N, v = 1 , . . . , V, (299) 
+
+such that the dilated frequency vectors 
+
+eℓ(v)
+
+:= sv ℓ(v) (300) 
+
+form an admissible frequency family in the sense of Condition 41. 
+
+Proof We choose the multipliers sv successively. Suppose that s1, . . . , s v−1 have already been chosen so that the corresponding dilated vectors are admissible, and consider the choice of sv .With the preceding multipliers fixed, any signed relation of length at most 
+
+K involving components of the new vector can be written as 
+
+As v + B = 0 , (301) 51 where A is a signed sum of components of ℓ(v), while B depends only on the previously fixed dilated vectors. If A̸ = 0, eq. (301) excludes at most one value of sv , and hence at most one integer; conversely for A = 0 the signed-sum property of ℓ(v) implies that the selected components of the new vector decompose into allowed zero-sum subsets. Removing these subsets leaves the relation B = 0, whereby the remaining terms form an allowed relation by the induction hypothesis; if B̸ = 0, the original relation cannot vanish. Thus the case A = 0 introduces no forbidden value of sv .It remains to bound the number of values excluded by relations with A̸ = 0. A direct overcount is obtained by choosing an ordered list of p ≥ 1 signed components from the new vector and an ordered list of q ≥ 0 signed components from the preceding vectors, with p + q ≤ K: there are at most (2 K)p choices for the former and (2 KV )q choices for the latter. Since p ≥ 1, we have q ≤ K − 1, and therefore the number of potentially forbidden values is at most 
+
+X
+
+> p≥1, q ≥0
+> p+q≤K
+
+(2 K)p(2 KV )q ≤ K2(2 K)K V K−1 = L − 2. (302) For s⋆v ≥ L, the interval [ s⋆v , 2s⋆v ] contains at least L integers. Since fewer than L of them can be forbidden, at least one admissible integer sv exists in this interval. Proceeding inductively for v = 1 , . . . , V gives the required admissible family. □
+
+## 10.4 Efficiency of Floquet Simulation 
+
+In the previous section, we arrived in Theorem 49 at a characterisation of the Floquet simulation power of sets of interactions and, as an immediate consequence, a complete characterisation of Floquet-universal Hamiltonians which can simulate any possible target Hamiltonian in this way. Moreover, this can be achieved whilst keeping all the interaction strengths O(1), with only the frequencies scaling as a function of the system size. Now, an arbitrary Hamiltonian on 
+
+n qudits contains exponentially (in n) many independent parameters. Since Floquet-universality requires the ability to simulate any Hamiltonian whatsoever, a simple counting argument implies that at least some of the parameters in any Floquet simulation construction must scale exponentially in general. And we see this explicitly in eq. (259), where the frequencies depend exponentially on 
+
+Kmax , the maximum degree in the Lie polynomial decomposition of the target Hamiltonian, which scales with n in general. However, for Hamiltonians that are specified by a polynomial (in n) number of parameters, we might hope for an efficient Floquet-simulation, where all parameters scale at most polynomially with the system size. In this section, we show exactly this for the most important class of efficiently-specifiable Hamiltonians: k-local Hamiltonians on a lattice: Floquet-simulation of any such Hamiltonian on n qudits can be performed with all amplitudes O(1) and all frequencies poly( n). In fact, we prove this for a slightly more general class of Hamiltonians: k-local Hamiltonian whose non-commutativity graph has 52 constant chromatic number, of which lattice Hamiltonians are an important special case. To show this, we need a slight strengthening of Lemma 50, in which frequency coefficients are reused within commuting families and constant phase shifts are introduced to keep the required integer dilations independent of the number of terms in each family. 
+
+Lemma 55 (Frequency scaling for commuting families) Let the target Hamil-tonian be decomposed as 
+
+Htarget =
+
+> R
+
+X
+
+> r=1
+> nr
+
+X
+
+> p=1
+
+ıKr,p λr,p LP r,p , (303) 
+
+where each LP r,p is a homogeneous multilinear Lie polynomial of degree 2 ≤
+
+Kr,p ≤ K, with real coefficients and λr,p ∈ R. Assume that, for each fixed r, the sets of letters corresponding to distinct p commute, i.e. 
+
+[A(r,p ) 
+
+> i
+
+, A (r,q ) 
+
+> j
+
+] = 0 for all p̸ = q and all i, j. (304) 
+
+For 2 ≤ k ≤ K, group together the indices p having the same polynomial degree, 
+
+Pr,k := {p : Kr,p = k}. (305) 
+
+Fix a base frequency ω > 0 and an error tolerance 0 < ϵ ≤ 1. For each frequency group g = ( r, k, m, ν ), with 1 ≤ m ≤ (k − 1)! and ν ∈ { +, −} , apply a common phase shift ϕg , shared by all p ∈ P r,k in that group, only to the k-th component of eq. (23) ,
+
+e±iωℓ k t 7 −→ e±i(ωℓ k t+ϕg ). (306) 
+
+Then the reference vectors can be assigned a common set of integer dilations 
+
+sνr,k,m , from which each group of degree k draws the (k − 1)! elements as required by the synthesis construction in Theorem 37. The resulting bound on the dilated frequency coefficients eℓ(r,k,m,ν ) 
+
+> j
+
+= sνr,k,m ℓ(r,k,m ) 
+
+> j
+
+is 
+
+max    
+
+> 1≤r≤R, 2≤k≤K, 1≤m≤(k−1)!
+> ν∈{ +,−} ,1≤j≤k
+
+|eℓ(r,k,m,ν ) 
+
+> j
+
+| ≤ eCK 5
+
+RK3
+
+, (307) 
+
+for a constant C > 0.With these frequency coefficients fixed, the physical amplitudes, phase shifts, and multi-period runtime can be chosen so that the simulation statement of eq. (249) of Theorem 49 is attained. In particular, eq. (307) is independent of the numbers n1, . . . , n R of Lie-polynomial terms within the commuting families. 
+
+Proof Use the synthesis and cutoff of Theorem 47, choosing the same degree-k
+
+reference vectors for all p ∈ P r,k at fixed r. The only modification is that we keep the integer dilations fixed at the level of these commuting degree-subfamilies and 53 use one constant phase shift ϕg per frequency group to produce the factor yK−k
+
+needed to bring every degree-k contribution to the same scale yK . Write wr,p,m =
+
+λr,p α(r,p ) 
+
+> m
+
+, let I denote the surviving triples, let W = max (r,p,m )∈I |wr,p,m |, and define 
+
+u± 
+
+> r,p,m
+
+= 1 + (±wr,p,m )+
+
+W , W (u+ 
+
+> r,p,m
+
+− u−
+
+> r,p,m
+
+) = wr,p,m , (308) so that 1 ≤ u± 
+
+> r,p,m
+
+≤ 2. For each g = ( r, k, m, ν ), define the aggregated letters 
+
+Bgj := X
+
+> p∈P r,k
+> (r,p,m )∈I
+
+ uνr,p,m 
+
+1/k A(r,p ) 
+
+> j
+
+. (309) From multilinearity, expanding LP (k) 
+
+> m
+
+(Bg 
+
+> 1
+
+, . . . , B gk ) gives a sum over choices 
+
+p1, . . . , p k, one from each aggregated letter. If two of these indices are different, the corresponding Lie word contains letters associated with distinct values of p
+
+and therefore vanishes by the commutation relations in eq. (304). Consequently, the only surviving contributions are those in which the same value of p is selected from every Bgj . For each such contribution, the product of the prefactors is 
+
+ (uνr,p,m )1/k k = uνr,p,m , yielding 
+
+LP (k) 
+
+> m
+
+(Bg 
+
+> 1
+
+, . . . , B gk ) = X
+
+> p∈P r,k
+> (r,p,m )∈I
+
+uνr,p,m LP r,p,m . (310) Therefore, frequency separation is required only between at most 2 R PKk=2 (k−1)! groups, independently of the numbers nr . Setting the spacing constant 
+
+L = 2 + K2(2 K)K 2R
+
+> K
+
+X
+
+> k=2
+
+(k − 1)! 
+
+!K−1
+
+, (311) Lemma 54 gives admissible sνr,k,m ∈ [L, 2L] shared by all p in the corresponding group, and using eq. (263), we bound the largest frequency coefficient by max  
+
+> r,k,m,ν,j
+
+|eℓ(r,k,m,ν ) 
+
+> j
+
+| ≤ 4(4 K)K−2L ≤ eCK 5
+
+RK3
+
+, (312) proving eq. (307). It remains to calibrate the different degrees without changing these frequencies. The first step is to apply to the k-th component of each group a phase shift 
+
+ϕg = π/ 2 + ψg . If we set the phase offsets ψg to zero, then the cancellation used in the proof of Theorem 47 applies straightforwardly: each complete degree-k
+
+resonance contributes reversal parity ( −1) k, while opposite-frequency pairs are invariant, giving the factor ( −1) J instead of ( −1) J+1 . Hence every unwanted Lie-polynomial contribution of degree J ≤ K containing such a resonance vanishes. 54 To retain the desired leading-order contributions, we choose the physical phase offsets according to sin ψg = ν (sνr,k,m )k−1
+
+2(2 L)K−1 yK−k, (313) so that each resonance containing all k components of a degree-k group as in eq. (212) occurs with the common scaling yK , while eqs. (308) and (310) reproduces the target coefficients up to the common factor 1 /W , which is absorbed into the overall scale and hence into the multi-period runtime. With the physical phase offsets of eq. (313), the unwanted contributions can reappear only at degree J ≥ k + 1 and are linear in the relevant |ψg | = O(yK−k). The corresponding contributions are of order 
+
+O(yJ |ψg |) = O(yJ+K−k) ⊆ O (yK+1 ). (314) The Magnus tail is likewise O(yK+1 ) by the truncation bound of Theorem 46, thus both are one order smaller in y than the target contribution, which scales as yK .The frequency construction itself thus depends only on the number of groups, which is bounded by 2 R PKk=2 (k − 1)!, and is therefore independent of the numbers nr. By contrast, the norms of the aggregated letters Bgj , and hence the constants entering the remainder bounds, may grow with the sizes of the commuting families. In conclusion, the required value of y, and therefore the runtime through the multi-period construction, may depend on n1, . . . , n R, but the frequency coefficients do not. □
+
+For local Hamiltonians, the commuting-family structure required by Lemma 55 arises naturally from a colouring of the corresponding intersection graph. The following lemma makes this connection precise, relating the number of commuting families to its chromatic number. 
+
+Lemma 56 Let Htarget = P 
+
+> x
+
+hx be any k-local Hamiltonian on n qudits. Let 
+
+S be a finite set of interactions such that each hx ∈ Lie( S).Then Htarget admits a decomposition of the form in eq. (303) of Lemma 55 into homogeneous multilinear Lie polynomials over the generators S, such that, for each fixed r, the sets of letters corresponding to distinct terms have disjoint supports and hence satisfy the commutation condition in eq. (304) .Moreover, R is a function only of k and χ, where χ is the vertex chromatic number of the intersection graph of {hx}.
+
+Proof Recall that the intersection graph of {hx} is the graph with vertices labelled by x and an edge ( x, y ) wherever hx, h y act on at least one qudit in common. Any vertex colouring of this graph partitions the local terms hx into mutually commuting subsets corresponding to each colour c. Choose the optimal such colouring, which by definition contains χ colours. 55 Label these subsets by c = 1 , . . . , χ , and write each hx in subset c as a finite sum of homogeneous multilinear Lie polynomials over S, which is possible by assumption. If any of the operators appearing in these Lie polynomials act on additional ancilla qudits not acted on by hx itself, introduce fresh such ancilla qudits for each hx as necessary. In this way, for fixed c, Lie-polynomial terms originating from distinct hx act on completely disjoint subsets of qudits. Since each hx is k-local, the number and maximal degree of the homogeneous multilinear terms required in this decomposition are bounded independently of n. Group the colour c together with the homogeneous-term index into a multi-index r, relabel the corresponding local terms by p, and absorb their scalar coefficients and parity factors into λr,p and ıKr,p . This gives the decomposition in eq. (303), while disjointness of the supports gives eq. (304). Since the number of homogeneous terms required for each hx depends only on k, the resulting number R of commuting families depends only on k and χ. □
+
+Following Lemma 56, the hypotheses of Lemma 55 are satisfied with R
+
+depending only on k and χ. Together with Theorem 49, this immediately gives: 
+
+Theorem 57 (Floquet efficiency) Let Htarget = P 
+
+> x
+
+hx be a k-local Hamilto-nian on n qudits. Let S be a finite set of interactions such that each hx ∈ Lie( S)
+
+and Lie( S) is perfect. Then Htarget can be (ϵ, N )-Floquet-simulated by an S-driven Hamiltonian of the form in Definition 16, whose physical amplitudes are O(1) and remain within a ratio of 2, and whose dilated frequency coefficients satisfy 
+
+max    
+
+> 1≤r≤R, 2≤k≤K, 1≤m≤(k−1)!
+> ν∈{ +,−} ,1≤j≤k
+
+|eℓ(r,k,m,ν ) 
+
+> j
+
+| ≤ eCK 5
+
+RK3
+
+. (315) 
+
+Here R depends only on χ and k, but not on n, K depends only on k, and 
+
+N = poly( n).
+
+In particular: 
+
+Corollary 58 Floquet-universal Hamiltonians can efficiently (in the sense of Theorem 57) Floquet-simulate all local Hamiltonians on n qudits whose inter-section graphs have chromatic number χ = O(1) (as a function of n), with O(1) 
+
+amplitudes and amplitude ratios. 
+
+Since lattice Hamiltonians are a special case of Hamiltonians whose intersec-tion graphs have constant chromatic number, this immediately implies that: 
+
+Corollary 59 Floquet-universal Hamiltonians can efficiently (in the sense of Theorem 57) Floquet-simulate all local lattice Hamiltonians, with O(1) amplitudes and amplitude ratios. 
+
+56 References 
+
+[AB25] Harriet Apel and Nou´ edyn Baspin. “Simulating Sparse Hamiltonians on 2D Lattices”. In: Phys. Rev. Lett. 134 (17 May 2025), p. 170602. 
+
+doi : 10.1103/PhysRevLett.134.170602 .[ACC18] Ana Arnal, Fernando Casas, and Cristina Chiralt. “A general formula for the Magnus expansion in terms of iterated integrals of right-nested commutators”. In: Journal of Physics Communications 2.3 (2018), p. 035024. doi : 10.1088/2399-6528/aab291 .[ACO25] Harriet Apel, Toby Cubitt, and Emilio Onorati. A sharper Magnus expansion bound woven in binary branches . 2025. arXiv: 2509.18312 [quant-ph] .[Ala+25] Faisal Alam et al. Fermionic dynamics on a trapped-ion quantum computer beyond exact classical simulation . 2025. arXiv: 2510.26300 [quant-ph] .[Ala+26] Faisal Alam et al. Programmable digital quantum simulation of 2D Fermi-Hubbard dynamics using 72 superconducting qubits . 2026. arXiv: 2510.26845 [quant-ph] .[AZ19] Dorit Aharonov and Leo Zhou. “Hamiltonian Sparsification and Gap-Simulation”. In: 10th Innovations in Theoretical Computer Science Conference (ITCS 2019) . Vol. 124. Leibniz International Proceedings in Informatics. 2019, 2:1–2:21. doi : 10.4230/LIPIcs.ITCS.2019.2 .[BH17] Sergey Bravyi and Matthew Hastings. “On Complexity of the Quan-tum Ising Model”. In: Communications in Mathematical Physics 
+
+349.1 (2017), pp. 1–45. doi : 10.1007/s00220-016-2787-4 .[BL20] Antoine Browaeys and Thierry Lahaye. “Many-body physics with individually controlled Rydberg atoms”. In: Nature Physics 16.2 (2020), pp. 132–142. [Blo29] Felix Bloch. “ ¨Uber die Quantenmechanik der Elektronen in Kristall-gittern”. In: Zeitschrift f¨ ur Physik 52.7-8 (July 1929), pp. 555–600. 
+
+doi : 10.1007/BF01339455 .[BS17] Ruggero Bandiera and Florian Schaetz. Eulerian idempotent, pre-Lie logarithm and combinatorics of trees . 2017. arXiv: 1702.08907 [math.CO] .[Che77] Kuo-Tsai Chen. “Iterated path integrals”. In: Bulletin of the Amer-ican Mathematical Society 83.5 (1977), pp. 831–879. [Cho+20] Joonhee Choi et al. “Robust Dynamic Hamiltonian Engineering of Many-Body Spin Systems”. In: Physical Review X 10 (2020), p. 031002. doi : 10.1103/PhysRevX.10.031002 .[CM16] Toby Cubitt and Ashley Montanaro. “Complexity Classification of Local Hamiltonian Problems”. In: SIAM Journal on Computing 
+
+45.2 (2016), pp. 268–316. doi : 10.1137/140998287 .57 [CMP18] Toby S. Cubitt, Ashley Montanaro, and Stephen Piddock. “Universal quantum Hamiltonians”. In: Proceedings of the National Academy of Sciences 115.38 (2018), pp. 9497–9502. doi : 10 . 1073 / pnas . 1804949115 . eprint: https://www.pnas.org/doi/pdf/10.1073/ pnas.1804949115 .[Dal+22] Andrew J. Daley et al. “Practical quantum advantage in quantum simulation”. In: Nature 607 (2022), pp. 667–676. doi : 10.1038/ s41586-022-04940-6 .[Dod+02] Jennifer L. Dodd, Michael A. Nielsen, Michael J. Bremner, and Robert T. Thew. “Universal quantum computation and simulation using any entangling Hamiltonian and local unitaries”. In: Physical Review A 65 (2002), p. 040301. doi : 10.1103/PhysRevA.65.040301 .[EBN16] Dominic V. Else, Bela Bauer, and Chetan Nayak. “Floquet Time Crystals”. In: Physical Review Letters 117 (2016), p. 090402. doi :
+
+10.1103/PhysRevLett.117.090402 .[Eck17] Andr´ e Eckardt. “Colloquium: Atomic quantum gases in periodically driven optical lattices”. In: Reviews of Modern Physics 89 (2017), p. 011004. doi : 10.1103/RevModPhys.89.011004 .[EMQ25] Kurusch Ebrahimi-Fard, Igor Mencattini, and Alexandre Quesney. “What is the Magnus expansion?” In: Journal of Computational Dynamics 12.1 (2025), pp. 115–159. doi : 10.3934/jcd.2024028 .[Flo83] G Floquet. “Sur les ´ equations diff´ erentielles lin´ eaires ` a coefficients p´ eriodiques”. In: Annales scientifiques de l’ ´E.N.S. (1883), pp. 47–88. [GD14] N. Goldman and J. Dalibard. “Periodically Driven Quantum Sys-tems: Effective Hamiltonians and Engineered Gauge Fields”. In: 
+
+Phys. Rev. X 4 (3 Aug. 2014), p. 031027. doi : 10.1103/PhysRevX. 4.031027 .[GH98] Milena Grifoni and Peter H¨ anggi. “Driven quantum tunneling”. In: 
+
+Physics Reports 304.5–6 (1998), pp. 229–354. doi : 10.1016/S0370-1573(98)00022-2 .[Har+24] Dylan Harley et al. “Going beyond gadgets: the importance of scala-bility for analogue quantum simulators”. In: Nature Communications 
+
+15 (2024), p. 6527. doi : 10.1038/s41467-024-50744-9 .[Jak+98] D. Jaksch, C. Bruder, J. I. Cirac, C. W. Gardiner, and P. Zoller. “Cold Bosonic Atoms in Optical Lattices”. In: Physical Review Letters 
+
+81.15 (1998), pp. 3108–3111. doi : 10.1103/PhysRevLett.81.3108 .[Jot+14] Gregor Jotzu et al. “Experimental realization of the topological Haldane model with ultracold fermions”. In: Nature 515 (2014), pp. 237–240. doi : 10.1038/nature13915 .[Khe+16] Vedika Khemani, Achilleas Lazarides, Roderich Moessner, and S. L. Sondhi. “Phase Structure of Driven Quantum Systems”. In: Physical Review Letters 116 (2016), p. 250401. doi : 10.1103/PhysRevLett. 116.250401 .58 [Koh+22] Tamara Kohler, Stephen Piddock, Johannes Bausch, and Toby Cu-bitt. “General Conditions for Universality of Quantum Hamilto-nians”. In: PRX Quantum 3 (2022), p. 010308. doi : 10 . 1103 / PRXQuantum.3.010308 .[Koy+25] Nazli Ugur Koyluoglu, Nishad Maskara, Johannes Feldmeier, and Mikhail D Lukin. “Floquet engineering of interactions and entangle-ment in periodically driven Rydberg chains”. In: Physical Review Letters 135.11 (2025), p. 113603. [Llo96] Seth Lloyd. “Universal Quantum Simulators”. In: Science 273.5278 (1996), pp. 1073–1078. doi : 10.1126/science.273.5278.1073 .[Mag54] Wilhelm Magnus. “On the exponential solution of differential equa-tions for a linear operator”. In: Communications on Pure and Ap-plied Mathematics 7.4 (1954), pp. 649–673. doi : 10 . 1002 / cpa . 3160070404 .[MIQ+22] Xiao Mi, Matteo Ippoliti, Chris Quintana, et al. “Time-crystalline eigenstate order on a quantum processor”. In: Nature 601 (2022), pp. 531–536. doi : 10.1038/s41586-021-04257-w .[Mon+21] Christopher Monroe et al. “Programmable quantum simulations of spin systems with trapped ions”. In: Reviews of Modern Physics 
+
+93.2 (2021), p. 025001. [MP15] Luca D’Alessio Marin Bukov and Anatoli Polkovnikov. “Universal high-frequency behavior of periodically driven systems: from dynam-ical stabilization to Floquet engineering”. In: Advances in Physics 
+
+64.2 (2015), pp. 139–226. doi : 10.1080/00018732.2015.1055918 .eprint: https://doi.org/10.1080/00018732.2015.1055918 .[NC10] Michael A. Nielsen and Isaac L. Chuang. Quantum Computation and Quantum Information . 10th Anniversary Edition. Cambridge University Press, 2010. [OK19] Takashi Oka and Sota Kitamura. “Floquet Engineering of Quantum Materials”. In: Annual Review of Condensed Matter Physics 10 (2019), pp. 387–408. doi : 10.1146/annurev-conmatphys-031218-013423 .[OT92] Peter Orlik and Hiroaki Terao. Arrangements of Hyperplanes . Vol. 300. Grundlehren der mathematischen Wissenschaften. Berlin: Springer-Verlag, 1992. doi : 10.1007/978-3-662-02772-1 .[Ree58] Rimhak Ree. “Lie elements and an algebra associated with shuffles”. In: Annals of Mathematics 68.2 (1958), pp. 210–220. [Reu86] Christophe Reutenauer. “Theorem of Poincar´ e–Birkhoff–Witt, log-arithm and symmetric group representations of degrees equal to Stirling numbers”. In: Combinatoire ´Enum´ erative . Ed. by Gilbert Labelle and Pierre Leroux. Berlin, Heidelberg: Springer Berlin Hei-delberg, 1986, pp. 267–284. doi : 10.1007/BFb0072520 .59 [Reu93] Christophe Reutenauer. Free Lie Algebras . Oxford University Press, 1993. doi : 10.1093/oso/9780198536796.001.0001 .[RGF03] Saar Rahav, Ido Gilary, and Shmuel Fishman. “Time Independent Description of Rapidly Oscillating Potentials”. In: Phys. Rev. Lett. 91 (11 Sept. 2003), p. 110404. doi : 10.1103/PhysRevLett.91.110404 .[Sam73] Hideo Sambe. “Steady States and Quasienergies of a Quantum-Mechanical System in an Oscillating Field”. In: Phys. Rev. A 7 (6 June 1973), pp. 2203–2213. doi : 10.1103/PhysRevA.7.2203 .[Sch80] Jacob T. Schwartz. “Fast Probabilistic Algorithms for Verification of Polynomial Identities”. In: Journal of the ACM 27.4 (1980), pp. 701–717. doi : 10.1145/322217.322225 .[Shi65] Jon H. Shirley. “Solution of the Schr¨ odinger Equation with a Hamil-tonian Periodic in Time”. In: Phys. Rev. 138 (4B May 1965), B979– B987. doi : 10.1103/PhysRev.138.B979 .[Zha+22] Xu Zhang et al. “Digital quantum simulation of Floquet symmetry-protected topological phases”. In: Nature 607.7919 (2022), pp. 468– 473. doi : 10.1038/s41586-022-04854-3 .60

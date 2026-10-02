@@ -1,0 +1,2754 @@
+Quantum Frozen–Oseen homotopy analysis method
+with LCHS for solving nonlinear partial differential
+equations
+Jinhao Yuana, Leyu Chena, Tiegang Liua,b, Kun Wanga,b,∗
+aLMIB and School of Mathematical Sciences, Beihang University, Beijing, 100191, P.R.
+China
+bInternational Research Center for Mathematics and Interdisciplinary Sciences, Hangzhou
+International Innovation Institute of Beihang University, Hangzhou, 311115, P.R. China
+Abstract
+Nonlinear partial differential equations (PDEs) underpin computational fluid
+dynamics, yet resolving nonlinear transport on fine grids remains computation-
+ally demanding. Quantum linear-evolution algorithms offer a possible route
+to large-scale simulation but cannot directly propagate nonlinear coupling.
+Here we develop a Frozen–Oseen quantum homotopy method (FOQHAM)
+framework that links transport-aware auxiliary-operator selection to the size
+of the resulting linear representation. We freeze the full Fréchet derivative
+at a prescribed flow profile, retaining transport and profile-gradient coupling
+and close each prescribed finite-order homotopy hierarchy as a fixed affine
+linear system by product lifting. We formulate its propagation through Linear
+Combinations of Hamiltonian Simulations (LCHS), without outer homotopy
+iterations or profile updates. For spatially semidiscrete equations, we establish
+local approximation bounds and exact closure of the finite-order hierarchy.
+Classical tests on Burgers, Korteweg–de Vries, Zakharov–Kuznetsov, and
+one- and two-dimensional isothermal compressible Navier–Stokes equations
+provide numerical evidence of accurate non-iterative approximations in the
+tested regimes. The framework thus connects nonlinear PDE approximation
+to quantum linear evolution and offers a conditional path toward quantum
+acceleration.
+∗Corresponding author
+Email address: wangkun@buaa.edu.cn (Kun Wang)
+arXiv:2609.39170v1  [math.NA]  30 Sep 2026
+
+
+Keywords:
+Quantum algorithms, Frozen–Oseen homotopy analysis method,
+LCHS, nonlinear partial differential equations
+1. Introduction
+Computational fluid dynamics (CFD) connects fluid physics to predictions
+used in aerodynamic and multiphysics design [1, 2]. Its numerical core is
+the solution of nonlinear partial differential equations (PDEs), including
+conservation laws and the Navier–Stokes equations [1–3]. Thin layers and
+interacting scales demand fine grids, while stiffness and long integration
+intervals increase computational and storage costs [4–8]. These demands
+motivate alternative representations of large discretized systems.
+Quantum computing encodes selected high-dimensional states in ampli-
+tudes and provides algorithms for linear systems and differential equations
+[9–13]. Quantum spectral and finite-element methods connect these algo-
+rithms to PDE discretizations [14–16]. Hamiltonian simulation implements
+unitary evolution [17, 18]; Schrödingerization embeds nonunitary linear dy-
+namics in Hamiltonian systems [19]. Linear Combinations of Hamiltonian
+Simulations (LCHS) instead represent nonunitary propagators as weighted
+unitary evolutions [20, 21]. Nonlinear transport, however, couples unknown
+components through products that these linear primitives cannot propagate
+directly [22–24].
+Carleman methods address this difficulty by lifting monomials into an
+infinite linear hierarchy, with problem-dependent truncation bounds [22,
+23, 25, 26].
+Liouville and Koopman formulations evolve distributions or
+observables, but finite-dimensional closure is problem dependent [24, 27].
+The homotopy analysis method (HAM) constructs a deformation series using
+an auxiliary linear operator and a convergence-control parameter [28–32].
+Xue et al.’s quantum HAM (QHAM) lifts retained coefficient products into
+tensor variables, closing a prescribed finite hierarchy as a linear system [33].
+Transport omitted from the auxiliary operator must be recovered through
+higher-order corrections or outer iteration. The resulting question is how
+auxiliary selection balances approximation order, representation size and
+implementation cost.
+Here we examine this balance through a Frozen–Oseen homotopy construc-
+tion. Classical Oseen and Picard linearizations incorporate prescribed flow
+information into linear transport operators [34, 35]. We freeze the full Fréchet
+2
+
+
+derivative at a prescribed profile, retaining transport and profile-gradient cou-
+pling together with the residual and nonlinear remainder. This choice relates
+to exponential Rosenbrock linearization [6], but keeps the profile and lifted
+generator fixed. For quadratic equations, it specializes Xue et al.’s QHAM
+while retaining its product-lifting principle. Local approximation bounds and
+exact finite-order closure connect sufficient homotopy order to representation
+size for spatially semidiscrete polynomial systems. Through our construction,
+we use LCHS to propagate the system without outer homotopy iteration and
+profile updates.
+Numerical tests cover Burgers, Korteweg–de Vries, Zakharov–Kuznetsov,
+and one- and two-dimensional isothermal compressible Navier–Stokes systems.
+Separate coefficient controls hold discretization and initialization fixed to
+isolate auxiliary selection from profile enrichment and other recipe choices.
+They show that more retained linearized physics can lower homotopy order,
+but need not minimize representation size. Spatial and finite-rule diagnostics
+distinguish approximation from propagation error; resource analysis retains
+matrix-access, normalization, source-integration and readout costs. Sections
+2–4 develop the method, resource conditions and numerical evidence; Sections
+5–6 discuss its scope and conclude.
+2. Quantum Frozen–Oseen homotopy analysis method
+2.1. Frozen–Oseen homotopy analysis
+2.1.1. Problem setting and boundary treatment
+On a real or complex Hilbert space X with homogenized boundaries,
+consider the autonomous problem
+du
+dt = F(u) + f,
+u(0) = uin,
+0 ≤t ≤T,
+(1)
+Here F : D(F) ⊂X →X, and f is time-independent.
+For a polynomial nonlinearity of maximum degree d,
+F(u) = Au +
+d
+X
+r=2
+Br(u, . . . , u),
+(2)
+where A is a closed linear differential operator and Br is an r-linear
+differential product on a common regularity domain. For example,
+3
+
+
+B2(v, w) = −v ∂xw
+(3)
+produces Burgers convection.
+Time-independent nonhomogeneous boundary data are removed by writing
+u(x, t) = b(x) + v(x, t),
+(4)
+where b satisfies the boundary values; known lifting terms enter f and F.
+All norm estimates below concern the finite-dimensional method-of-lines
+system, avoiding assumptions that unbounded PDE products map a Sobolev
+space into itself:
+˙u = Fn(u) + f,
+u ∈Cn.
+(5)
+Ordinary symbols denote continuous scalar fields u, Wj, bold upright
+symbols semidiscrete vectors u, Wj, and bold italic symbols continuous vector
+fields U. Uppercase letters denote matrices and calligraphic/script letters
+differential operators. Sections 2–3 use Euclidean norms and adjoints unless
+stated otherwise; local bounds may depend on n.
+For systems and exact spatial reductions, n denotes the active semidiscrete
+state dimension, not the number Nx of points per spatial direction: use nraw
+before reduction and nred = n after it. Product-symmetry compression is a
+separate operation on the lifted state.
+2.1.2. Exact frozen–Fréchet decomposition
+Let Un ⊂Cn be an admissible open neighborhood and let ¯u ∈Un be fixed
+in time, or fixed after a change to a co-moving coordinate. Define
+u = ¯u + w,
+w(0) = win := uin −¯u,
+(8)
+r¯u := Fn(¯u) + f,
+(9)
+R¯u(w) := Fn(¯u + w) −Fn(¯u) −DFn(¯u)w.
+(10)
+With the frozen Oseen matrix G¯u := DFn(¯u), Eq. (5) is exactly equivalent
+to
+˙w = G¯uw + r¯u + R¯u(w),
+w(0) = win.
+(11)
+Equation (11) is an exact regrouping that retains the nonlinear remainder
+in the homotopy hierarchy.
+4
+
+
+Before discretization, the corresponding differential operator for Eq. (2) is
+G¯uv = Av +
+d
+X
+r=2
+r
+X
+ℓ=1
+Br(¯u, . . . , v
+ℓ, . . . , ¯u).
+(12)
+2.1.3. Second-order remainder bound
+Theorem 1 (local quadratic bound for the semidiscrete frozen
+remainder).
+Let Xn = Cn, let Un ⊂Xn be open, and let Fn ∈C2(Un; Xn). For this result,
+assume the local regularity bound
+sup
+z∈Un
+∥D2Fn(z)∥≤CF,2.
+(12a)
+Fix ¯u ∈Un and define R¯u(w) := Fn(¯u + w) −Fn(¯u) −DFn(¯u)w. If the
+segment {¯u + θw : 0 ≤θ ≤1} lies in Un, then
+∥R¯u(w)∥Xn ≤CF,2
+2 ∥w∥2
+Xn.
+(13)
+If ¯u + BR(0) ⊂Un, then for ∥w∥Xn, ∥v∥Xn ≤R,
+∥R¯u(w) −R¯u(v)∥Xn ≤CF,2R∥w −v∥Xn.
+(14)
+Proof. Taylor’s integral remainder gives Eq. (13); the mean-value formula
+gives Eq. (14). □
+If only the discretization An of the original linear part A is used, define
+Nn(u) := Fn(u) −Anu. The correction equation then contains
+DNn(¯u)w + R¯u(w),
+(16)
+The first term is O(∥w∥), whereas the frozen–Oseen remainder is O(∥w∥2).
+This local improvement translates to a homotopy advantage when the semi-
+group of G¯u is sufficiently controlled.
+2.1.4. Mild solution and contraction criterion
+For this analysis, require the frozen operator
+G¯u := DFn(¯u)
+(12b)
+to generate a strongly continuous semigroup or group S¯u(t) satisfying
+5
+
+
+∥S¯u(t)∥≤M¯ueω¯ut,
+0 ≤t ≤T.
+(12c)
+The mild form of Eq. (11) is
+w(t) = S¯u(t)win +
+Z t
+0
+S¯u(t −s) [r¯u + R¯u(w(s))] ds.
+(17)
+Define
+Eω(T) = emax(ω,0)T,
+Φω(T) =
+(
+(eωT −1)/ω,
+ω̸ = 0,
+T,
+ω = 0. .
+(18)
+Theorem 2 (sufficient local existence and contraction condition).
+Assume the local second-derivative bound in Eq.
+(12a) and the frozen-
+semigroup estimate in Eq. (12c). Suppose there is R > 0 such that ¯u +
+BR(0) ⊂Un,
+M¯uEω¯u(T)∥win∥Xn
++ M¯uΦω¯u(T)
+
+∥r¯u∥Xn + CF,2
+2 R2
+
+≤R
+(19)
+and
+q¯u := M¯uCF,2RΦω¯u(T) < 1.
+(20)
+Then the Duhamel map in Eq. (17) is a contraction on the closed radius-R
+ball of C([0, T]; Xn), and Eq. (11) has a unique mild solution in that ball.
+Proof. Equations (12c) and (13) imply the self-map bound (19). Equa-
+tions (12c) and (14) imply that the Duhamel map has Lipschitz constant no
+larger than q¯u. The claim follows from the Banach fixed-point theorem. □
+2.1.5. Conditional comparison with the original linear operator
+Let MA, ωA denote a semigroup bound for An, and set L1 = ∥DNn(¯u)∥.
+Within a radius-R ball, the Lipschitz bounds for the two remainders are
+Lbase(R) ≤L1 + CF,2R,
+LOseen(R) ≤CF,2R.
+(21)
+Consequently, a sufficient condition for a strictly smaller contraction upper
+bound is
+M¯uΦω¯u(T)CF,2R < MAΦωA(T)(L1 + CF,2R),
+(22)
+6
+
+
+provided that the self-map condition holds for both decompositions.
+Equation (22) gives a conditional comparison: the reduction in the nonlin-
+ear Lipschitz constant must outweigh any increase in transient amplification
+by the linear propagator.
+2.1.6. Homotopy deformation hierarchy
+Let
+L¯u := ∂t −G¯u.
+(23)
+Let W0 denote the zeroth deformation coefficient. We use the standard
+homotopy deformation equation [28–30]
+(1 −q)L¯u[Φ(q) −W0] = qℏHHAM N¯u[Φ(q)],
+(24)
+where
+N¯u[w] = L¯uw −r¯u −R¯u(w).
+(25)
+The embedding parameter is q ∈[0, 1], ℏ̸ = 0 controls convergence, and
+HHAM is an auxiliary function. Expanding in the j-th deformation coefficients
+Wj,
+Φ(q) =
+∞
+X
+j=0
+qjWj
+(26)
+and taking the practical choice ℏ= −1, HHAM = 1, with
+L¯uW0 = r¯u,
+W0(0) = win,
+(27)
+yields
+L¯uWj = [qj−1]R¯u
+ j−1
+X
+ℓ=0
+qℓWℓ
+!
+,
+Wj(0) = 0,
+j ≥1.
+(28)
+For the polynomial remainder
+R¯u(w) =
+d
+X
+r=2
+eBr,¯u(w, . . . , w),
+(29)
+Eq. (28) becomes
+7
+
+
+L¯uWj =
+d
+X
+r=2
+X
+j1+···+jr=j−1
+jℓ≥0
+eBr,¯u(Wj1, . . . , Wjr).
+(30)
+All orders use the same frozen operator. The order-m approximation is
+u(m) = ¯u +
+m
+X
+j=0
+Wj.
+(31)
+Let CT := C([0, T]; Xn). If there exist an index j0 ≥0 and a constant
+0 < αHAM < 1 such that
+∥Wj+1∥CT ≤αHAM∥Wj∥CT ,
+j ≥j0,
+(32)
+then the deformation series converges absolutely in CT. In the semidiscrete
+polynomial setting, uniform convergence permits the limit to pass through
+the mild form of the finite-dimensional recursion. If w∞:= P∞
+j=0 Wj lies in
+the same closed radius-R ball used in Theorem 2, then it satisfies Eq. (17) at
+q = 1, and uniqueness in that ball identifies ¯u + w∞with u. Consequently,
+for every m ≥j0,
+u −u(m)
+CT ≤
+αHAM
+1 −αHAM
+∥Wm∥CT .
+(33)
+Equation (33) requires an infinite-tail ratio. Mesh-uniform order addi-
+tionally requires uniform control of that ratio and the first tail coefficient
+∥W(n)
+j0 ∥CT .
+For ℏ= −1, HHAM = 1, and Eq. (27), the zero-order equation is equiva-
+lently
+L¯uΦ(q) = r¯u + q R¯u(Φ(q)).
+(33a)
+Proposition 1 (a sufficient condition for convergence at q = 1).
+Assume that R¯u has a complex-analytic extension to the radius-R ball. If
+there is a ρ > 1 such that the self-map version of Eq. (19), with CF,2R2/2
+replaced by ρCF,2R2/2, holds and
+ρM¯uCF,2RΦω¯u(T) < 1,
+(33b)
+then the solution Φ(q) of Eq.
+(33a) is analytic for |q| ≤ρ.
+If
+sup|q|=ρ ∥Φ(q)∥CT ≤Cρ, Cauchy’s estimate gives
+8
+
+
+Φ(1) −
+m
+X
+j=0
+Wj
+
+CT
+≤Cρ ρ−(m+1)
+1 −ρ−1 .
+(33c)
+Proof. For every |q| ≤ρ, Eqs. (13)–(14) and the stated inequalities make
+the Duhamel map corresponding to Eq. (33a) a uniform contraction on the
+complex radius-R ball. Analytic dependence of a uniformly contractive fixed
+point on q gives analyticity of Φ. Applying Cauchy’s coefficient estimate and
+summing the geometric tail yields Eq. (33c). □
+QHAM [33] retains the affine residual and closes non-iterative quadratic
+coefficient products. In its notation, set N0 = r, N1(w) = Gw, N2 = R,
+L = ∂t −G, and U0 = W0(t) satisfying LW0 = r. The prescribed physical
+profile is added at reconstruction. Our contribution is the auxiliary-dependent
+convergence and resource analysis built on that closure.
+Auxiliary-dependent sufficient order. For comparison with the numerical
+diagnostics, write C2 := CF,2 for the same Hessian bound. Keep the profile,
+nonlinear semidiscrete system and interval fixed, and prescribe a finite set
+of candidate triples (A, R, ρ) with constant auxiliary matrix A, R > 0 and
+ρ > 1.
+Write ∆A = ∥G −A∥, ∥etA∥≤MAeωAt, bA = MAΦωA(T), and
+aA = MAEωA(T)∥win∥+ bA∥r∥. Corollary 1.1 (sufficient auxiliary-order
+certificate). Assume that the remainder is analytic on a neighborhood of
+the complex radius-R ball and satisfies Eqs. (13)–(14) there. If
+aA + ρbA(∆AR + CF,2R2/2) ≤R,
+ρbA(∆A + CF,2R) < 1,
+(33e)
+then the embedding (∂t −A)ΦA = r + q[(G −A)ΦA + R(ΦA)], with initial
+value win, converges at q = 1 to the same nonlinear solution, and
+∥u −u(m)
+A ∥CT ≤Rρ−m
+ρ −1 ,
+mcert
+A
+= max
+
+0,
+log[R/(εHAM(ρ −1))]
+log ρ
+
+(33f)
+is sufficient for an absolute semidiscrete homotopy tolerance εHAM > 0. Proof.
+The modified remainder has ball bound ∆AR+CF,2R2/2 and Lipschitz bound
+∆A + CF,2R. Equation (33e) gives a uniform self-map and strict contraction
+for |q| ≤ρ. Proposition 1’s Cauchy argument applies with Cρ ≤R; solving
+9
+
+
+the tail bound for m gives Eq. (33f). The added hierarchy term (G −A)Wj−1
+lowers the weight in Eq. (45) by d −1, so the same complete closure and
+dimension formulas remain valid. □
+Full linearization removes ∆A but can increase bA. For centered Burgers,
+frozen advection A = νD2 −diag(¯u)D1 gives G −A = −diag(D1¯u) and
+∆A = ∥D1¯u∥∞. A verified logarithmic-norm bound permits MA = 1 and
+ωA ≥µ2(A); eigenvalues alone do not. An empty certified set is inconclusive,
+not evidence of divergence. At fixed n, d, the smallest certified order minimizes
+the complete ordered or symmetric dimension among the certified choices,
+not the actual required order or total quantum cost. Comparing the latter
+also requires the candidate-specific access, shift, normalization and output
+factors of Section 3.
+Residual-based error tube. For a differentiable approximation v with the
+correct initial value, define d = ˙v −Fn(v) −f. Suppose ∥v −¯u∥≤S,
+∥d∥≤d∗, µ2(G) ≤ω, and the Hessian bound holds throughout the radius-
+(S + E) neighborhood. Then
+d∗Φω+CF,2S+CF,2E/2(T) < E
+=⇒
+∥u −v∥CT < E.
+(33g)
+Indeed, e = ∥u−v∥obeys D+e ≤(ω +CF,2S)e +CF,2e2/2 +d∗. Before a first
+crossing of E, linear comparison bounds e by the left-hand side, excluding
+that crossing. For a computed trajectory, a certified d∗must include its
+numerical evolution defect; residual samples alone are not upper bounds.
+2.1.7. Frozen-profile construction and selection
+The tested choices are tied to the governing dynamics and fixed before
+LCHS propagation. Table 1 lists only profile constructions used in Section 4;
+their numerical support is case-specific.
+Table 1: Frozen profiles used in the numerical experiments; evidence is limited to the cited
+tests.
+Profile
+Construction and tested cases
+Initial state
+¯u = uin; unfitted Burgers, KdV, 2D Burgers/ZK, and vortex pair
+(Tables 3, 4, 7; Fig. 7).
+Layer enrichment
+Multiplicative Burgers boundary-layer profile, Eq. (90), calibrated
+in-sample (Table 2).
+Acoustic mean
+Time average in Eq. (34) for 1D and 2D NS; a 1D endpoint
+average is also tested (Tables 7, 8).
+10
+
+
+Initial-state freezing removes the initial correction, while the Burgers layer
+enrichment and NS acoustic mean target their respective transport regimes.
+For the NS predictor variables aa in Eqs. (111) and (114), excluding the
+derived reciprocal variable, the fixed mean is
+¯aac = 1
+T
+Z T
+0
+aa(t) dt.
+(34)
+KdV still freezes the initial wave rather than tracking it. These tests do not
+rank profiles across PDEs, and profile preparation enters end-to-end resource
+accounting.
+Sensitivity to the selected profile. The effect of profile accuracy on the frozen
+propagator can be quantified independently of a particular optimization
+algorithm.
+Proposition 2 (profile perturbation bound).
+Let p and q be two admissible semidiscrete profiles whose connecting segment
+lies in Un, with ∥D2Fn∥≤CF,2 on that segment. Write Gp = DFn(p),
+Gq = DFn(q), and suppose ∥etGa∥≤Maeωat for a = p, q. Then
+∥Gp −Gq∥≤CF,2∥p −q∥,
+|µ2(Gp) −µ2(Gq)| ≤CF,2∥p −q∥,
+(35a)
+and
+∥etGp −etGq∥≤MpMqCF,2∥p −q∥
+Z t
+0
+eωp(t−s)+ωqs ds.
+(35b)
+With a common bound Mp, Mq ≤M, ωp, ωq ≤ω, the right-hand side is
+at most M 2CF,2∥p −q∥teωt.
+Proof. Integrating D2Fn along the segment gives the first bound. The
+largest eigenvalue of a Hermitian matrix is Lipschitz in the operator norm;
+applying this fact to the Hermitian parts of Gp and Gq gives the logarithmic-
+norm bound. Finally,
+etGp −etGq =
+Z t
+0
+e(t−s)Gp(Gp −Gq)esGq ds,
+(35c)
+and taking norms proves Eq. (35b). □
+Consequently, fitting a profile accurately in a norm that controls CF,2∥p −
+q∥can preserve an already favorable frozen propagator, but a small field
+11
+
+
+misfit alone is insufficient when the semidiscrete derivative constants grow
+under refinement. For a candidate p, Eq. (35a) also supplies a robustness
+margin: if µ2(Gp) ≤−γ0 < 0, then every profile q satisfying CF,2∥p−q∥< γ0
+retains a negative logarithmic norm.
+For fixed Fn, consistent recomputation of the residual and remainder
+preserves the exact solution. Changing the profile affects the finite-order
+tail, not the physical model. Profile-representation and assembly errors must
+therefore be distinguished from that tail; report residual and stability metrics
+alongside field-fit errors.
+2.2. Quantum-compatible linearization by product lifting
+Following the coefficient-product lifting of Ref. [33], we close the prescribed
+finite homotopy hierarchy. The remaining approximation is the homotopy
+tail, not an additional truncation of the lifted system.
+2.2.1. Finite closure of the quadratic hierarchy
+The spatially discretized quadratic hierarchy is
+˙Wj = GWj + δj0r + 1{j≥1}
+X
+a+b=j−1
+B(Wa, Wb),
+0 ≤j ≤m,
+(36)
+Here G ∈Cn×n, r ∈Cn, and B are the fixed Oseen matrix, residual, and
+bilinear map; δj0 and 1{j≥1} are the Kronecker delta and indicator.
+For an ordered multi-index α ∈Np
+0, with |α| = P
+ℓαℓ, retain
+Yα = Wα1 ⊗· · · ⊗Wαp,
+|α| + p ≤m + 1.
+(37)
+Differentiation preserves the weight |α| + p: replacing Wj by Wa ⊗Wb,
+a + b = j −1, leaves it unchanged, while residual insertion lowers it. Hence
+Eq. (37) closes exactly.
+2.2.2. Lifted dimension and target recovery
+Append to the product state Y the target block
+Y−1 :=
+m
+X
+j=0
+Wj.
+(42)
+The coordinate projector Ptar selects Y−1, and the physical approximation
+is ¯u + PtarY.
+12
+
+
+The resulting ordered, uniformly padded dimension is [33]
+Dm = n +
+m+1
+X
+p=1
+m + 1
+p
+
+np
+= (n + 1)m+1 + n −1.
+(44)
+An exact symmetry reduction may compress this representation if initial-
+ization, dynamics, and target recovery are preserved. Discarding required
+product variables is instead an additional approximation.
+2.2.3. Extension to general polynomial nonlinearities
+For the degree-d hierarchy, assign
+wtd(α) = (d −1)|α| + p.
+(45)
+Replacing Wj by r factors with 2 ≤r ≤d and Pr
+ℓ=1 jℓ= j −1 gives
+(d −1)
+r
+X
+ℓ=1
+jℓ+ r = (d −1)j + r −d + 1 ≤(d −1)j + 1.
+(46)
+Theorem 3 (finite polynomial closure).
+Fix a homotopy order m ≥0 and a polynomial degree d ≥2. Define the
+index set
+Im,d = {α ∈Np
+0 : 1 ≤p ≤1 + (d −1)m, wtd(α) ≤(d −1)m + 1}
+(47)
+The variables indexed by Im,d are closed under the product-rule dynamics
+of Eq. (30), with an affine source or one constant coordinate. Their maximum
+tensor degree satisfies
+pmax ≤1 + (d −1)m.
+(48)
+Proof. Linear terms preserve weight; Eq. (46) shows that nonlinear
+replacements cannot increase it. Replacing W0 by its affine source lowers the
+degree. Thus every product derivative is an affine linear combination within
+Im,d. □
+The retained products therefore satisfy
+˙Y(t) = AmY(t) + bm,
+Y(0) = Yin.
+(49)
+13
+
+
+where Am and bm remain fixed on [0, T]; propagation requires no nonlinear
+products.
+Corollary 3.1 (equivalence with the truncated deformation hier-
+archy).
+Initialize every lifted block consistently:
+Yα(0) =
+p
+O
+ℓ=1
+Wαℓ(0),
+Y−1(0) = win.
+(49a)
+Only the all-zero-index products w⊗p
+in are initially nonzero. Exact propa-
+gation preserves
+Yα(t) =
+p
+O
+ℓ=1
+Wαℓ(t),
+Y−1(t) =
+m
+X
+j=0
+Wj(t).
+(49b)
+Proof. Products formed from the unique triangular deformation solution
+satisfy the same affine system and initial data. Uniqueness proves the first
+identity; summing the deformation equations proves the target identity. □
+Thus exact lifting introduces no truncation beyond order m. Violations
+of Eq. (49b) diagnose initialization or propagation errors, separately from
+the HAM tail.
+For general degree d, define
+Jp =
+(d −1)m + 1 −p
+d −1
+
+,
+1 ≤p ≤1 + (d −1)m.
+(50a)
+The degree-p block count and total dimensions are
+Np =
+Jp + p
+p
+
+.
+(50b)
+Dlift
+m,d =
+1+(d−1)m
+X
+p=1
+Npnp,
+Dm,d = Dlift
+m,d + n
+(50c)
+including the target block. For d = 2, this recovers Eq. (44). Below,
+Dm := Dm,d for fixed d; its polynomial degree in n grows with m.
+Lemma 1 (exact product-symmetry quotient).
+Set xj,i = (Wj)i and give each tagged scalar variable (j, i) weight 1 + (d −1)j.
+Let M contain every nonempty multiset µ of these variables with total
+weight at most B = 1 + (d −1)m. If νa(µ) is the multiplicity of tag a, set
+14
+
+
+hµ = |µ|!/ Q
+a νa(µ)! and Y sym
+µ
+=
+p
+hµ
+Q
+a xνa(µ)
+a
+. Let the isometry S put
+Y sym
+µ
+/
+p
+hµ in each of the hµ ordered coordinates and act identically on the
+target block. For the complete ordered product-rule generator in Eq. (49),
+S∗S = I,
+AmS = SBsym
+m ,
+Bsym
+m
+= S∗AmS.
+(50c.1)
+If bm = Sβm and Yin = SYsym
+in , the exact trajectories satisfy Y(t) =
+SYsym(t), and their target fields coincide. In particular,
+Dsym
+m,d = n +
+B
+X
+ℓ=1
+[zℓ]
+m
+Y
+j=0
+(1 −z1+(d−1)j)−n.
+(50c.2)
+Proof. Write every scalar coefficient equation as ˙xa = P
+γ ca,γxγ, adding
+contributions from ordered, possibly nonsymmetric multilinear maps that
+yield the same commutative monomial. The product rule gives
+˙Y sym
+µ
+=
+X
+a,γ
+νa(µ)ca,γ
+s
+hµ
+hµ−ea+γ
+Y sym
+µ−ea+γ,
+Y sym
+∅
+= h∅= 1.
+(50c.3)
+Equation (46) keeps every nonconstant term within M. The right-hand side
+depends only on the multiset, so the ordered generator preserves im S and
+satisfies Eq. (50c.1). Compatible initialization and uniqueness prove the
+trajectory and target identities. □
+Here Ysym denotes unscaled quotient coordinates, distinct from the en-
+coded state Z = D−1Y introduced below. This equivalence concerns exact
+affine dynamics. A finite LCHS rule on Bsym
+m
+need not equal the projection of
+the same rule on Am, because A∗
+m need not preserve im S. The experiments
+apply the finite rule to a similarity-scaled compressed generator, map its out-
+put back, and compare it with exact compressed propagation. The isometry
+preserves this unscaled-coordinate error after embedding both states in the
+ordered space; it does not preserve norms in the similarity-scaled coordinates.
+The integer Dm need not itself be a power of two. The following padding
+applies equally to the ordered system or its exact symmetric quotient, with
+the corresponding active dimension, generator, source, initialization, and
+target map. For an amplitude-encoded implementation, set qm = ⌈log2 Dm⌉,
+bDm = 2qm, and let J : CDm →C b
+Dm append zero coordinates. We use the
+exact block embedding
+bAm = Am ⊕0 b
+Dm−Dm,
+bbm = Jbm,
+bYin = JYin,
+bPtar = PtarJ∗.
+(50d)
+15
+
+
+The inactive coordinates remain zero, so J∗bY(t) = Y(t); the homogeneous
+and source-channel finite-LCHS rules likewise preserve this subspace because
+every simulated Hermitian matrix is block diagonal, provided the spectral
+shift and quadrature parameters are retained from the active block. If the
+source is implemented by one affine coordinate, it is appended before padding
+and requires ⌈log2(Dm + 1)⌉system qubits. Here qstate := qm counts only
+state-register qubits, and NQ := bDm is the padded dimension; for compression,
+replace Dm by the actually encoded active dimension Dact. The padding
+factor is below two, and no spatial grid is coarsened solely to make Dm a
+power of two. The reported classical experiments act on the unpadded active
+block; Eq. (50d) specifies the mathematically equivalent register embedding,
+not an implemented quantum circuit.
+2.2.4. Sparse-access requirements
+Suppose the spatial matrix has row sparsity σ, and each multilinear
+contraction has computable O(1) or polylog n row access. Degree-p Kronecker
+sums have sparsity O(pσ). With s local bilinear channels, the quadratic
+construction gives [33]
+sm = O(mσ + s m2).
+(51)
+where sm is the lifted row sparsity. Implicit access avoids explicit enumer-
+ation of Dm; dense spectral or nonlocal operators instead require a structured
+block encoding.
+LCHS also uses A†
+m, so a sparse-Hamiltonian implementation needs efficient
+row and column access.
+A dense residual in I ⊗r can destroy column
+sparsity; structured source encoding must then include its preparation cost
+and normalization ∥r∥. Equation (51) alone does not bound these costs.
+A centered-difference, constant-kinematic-viscosity NS model admits ex-
+plicit ordered row/column access and finite input preparation. Dense residual
+insertion creates O(Pn) reverse candidates at maximum degree P = m + 1; a
+structured alternative charges P∥r∥/η. This local ordered construction does
+not certify the Fourier, symmetry-compressed production layouts.
+2.3. LCHS realization of the lifted linear dynamics
+2.3.1. Homogeneous and source propagation
+Set A = −Am and b = bm. Then
+16
+
+
+˙Y = −AY + b.
+(52)
+with solution
+Y(t) = e−AtYin +
+Z t
+0
+e−A(t−s)b ds.
+(53)
+Direct exponential-action methods [6, 36–41] provide verification diagnos-
+tics, not LCHS experiment curves.
+Let
+A = L + iH,
+L = A + A†
+2
+,
+H = A −A†
+2i
+.
+(54)
+When L ⪰0, the exact Cauchy-kernel identity is [20]
+e−Atv =
+Z
+R
+g0(k) e−i(H+kL)tv dk,
+g0(k) =
+1
+π(1 + k2).
+(55)
+Generalized kernels require the hypotheses of Ref. [21]. A finite rule is
+QK,M(t)v =
+M
+X
+ℓ=1
+ω(K)
+ℓ
+e−i(H+kℓL)tv,
+|kℓ| ≤K.
+(56)
+where K is the cutoff half-width and M the node count.
+The experiments use the Gaussian-damped Cauchy kernel
+gγker,cker(k) = exp(cker −(k2 + 1)/(4γ2
+ker) −ickerk)
+π(1 + k2)
+,
+γker = c−1
+ker
+p
+cker + log[(1 + 1/(2π))/εker].
+(57)
+We discretize the k-integral by the equally spaced finite sum of Low and
+Somma [42]. For M = 2J + 1, h = K/J, and kj = jh, its coefficients and
+propagator are
+ωj = h gγker,cker(kj),
+QK,M(t) =
+J
+X
+j=−J
+ωje−i(H+kjL)t.
+(57a)
+Both endpoints carry the full weight h, and the complex coefficient sum
+is not divided out. This is the finite truncation of the uniform trapezoidal
+sum in Ref. [42], not the half-endpoint trapezoid rule on a bounded interval.
+17
+
+
+For K = 2ckerγ2
+ker and sufficiently small h, that reference bounds the raw
+finite-sum operator error for L ⪰0, without requiring H and L to commute.
+Numerical parameters are stated in Section 4.
+2.3.2. Separate K1 and K2
+Separate cutoffs and node counts control homogeneous and source propa-
+gation:
+e−AtYin ≈QK1,M1(t)Yin,
+(58)
+Z t
+0
+e−A(t−s)b ds ≈SK2,M2(t; b).
+(59)
+The emulator integrates each source node by one-coordinate affine aug-
+mentation. Quantum access to that source map is assumed in Section 3. Over
+Nt intervals, K1 stays fixed while K2(tj) may vary.
+Source accuracy requires a uniform propagator bound over the integration
+interval (Eq. (59b)); sufficient Low–Somma choices are stated in Eq. (68a).
+Joint cutoff/node refinement is essential because interval refinement alone
+can approach the wrong generator (Proposition C.2).
+2.3.3. Similarity scaling and spectral shifting
+To balance tensor blocks, use
+Y = DZ,
+D|degree p = ηp−1I,
+D|Y−1 = D|p=1 = I
+(62)
+which maps A and b to D−1AD and D−1b, preserving the exact physical
+solution and eigenvalues.
+For ρ0 = ∥win∥> 0, P = 1 + (d −1)m, and consistent initialization,
+∥Zin∥2 = ρ2
+0
+"
+1 +
+P
+X
+p=1
+(ρ0/η)2(p−1)
+#
+,
+ptar,in =
+"
+1 +
+P
+X
+p=1
+(ρ0/η)2(p−1)
+#−1
+.
+(62a)
+Thus ρ0/η > 1 yields exponentially small initial target weight as P grows;
+balancing the matrix can worsen state preparation. This initial probability
+does not bound the final one.
+If needed, make the Hermitian part positive semidefinite using
+18
+
+
+Lδsh = L + δshI,
+δsh ≥max{0, −λmin(L)}
+(63)
+and compensate by
+e−At = eδshte−(A+δshI)t,
+(63a)
+The amplification eδsht enters normalization, conditioning and success
+probability. The emulator chooses its shift from a numerical estimate of
+λmin(L) and checks finite sums against direct lifted propagation. An operator-
+level LCHS guarantee additionally requires a certified lower spectral bound,
+with its shift cost charged in Eq. (68).
+2.3.4. Error budget
+Finite-rule operator defects are weighted by the interval-start state, source
+norm and subsequent propagation. The experiments report physical-field,
+spatial and complete-lift errors separately.
+2.3.5. Non-iterative workflow
+Algorithm 1: Non-iterative Frozen–Oseen HAM-LCHS
+Input: Fn, f, uin, order m, profile family, time partition {tj}Nt
+j=0, and tolerances
+Output: Requested observables and verified error/resource diagnostics
+1 Homogenize boundaries and choose a declared fixed ¯u
+2 Freeze G = DFn(¯u), r = Fn(¯u) + f, and win = uin −¯u
+3 Construct consistent products and verify access to Am, bm, Yin, Ptar in the
+actually encoded layout under the stated access model
+4 Choose D, the spectral shift, K1, M1, and {K2(tj), M2(tj)}
+5 Build the scaled, shift-compensated rules; set Z0 = D−1Yin, eb = D−1bm
+6 for j = 0, . . . , Nt −1 do
+7
+∆tj ←tj+1 −tj
+8
+Zj+1 ←QK1,M1(∆tj)Zj + SK2(tj),M2(tj)(∆tj; eb)
+9 end
+10 Recover requested observables from u(m)(T) = ¯u + PtarDZNt
+11 Check product identities and independent spatial, HAM, and finite-rule
+refinements
+12 Report parameters, error contributions in Eq. (64), and resource costs
+The profile and lifted matrix remain fixed throughout; the time loop
+composes linear propagation, not iterative HAM updates.
+19
+
+
+3. Resource analysis and conditional scaling comparison
+3.1. Explicit classical lifted evolution
+For fixed m, d, Eq. (50c) gives Dm = Θ(npmax), pmax = 1 + (d −1)m.
+With row sparsity sm, explicit matrix storage, materialized-state storage and
+Nt-step work with rmv matrix–vector products per step satisfy
+Smatrix
+C
+= O(smDm),
+(65)
+Sstate
+C
+= Ω(Dm),
+(66)
+T lift
+C
+= eO(NtrmvsmDm).
+(67)
+Profile construction, matrix assembly and reference-solution generation
+are additional costs beyond Eq. (67). Writing the full lifted state takes Ω(Dm)
+time, whereas few-observable tasks have different classical baselines. Where
+exact symmetry reduction is used, both classical and quantum lifted costs
+use Dsym and its actual sparsity.
+The same-output classical comparator may solve the original nonlinear
+PDE directly: local discretizations can take O(n) work per explicit step, and
+FFT-based methods can take O(n log n), subject to stability and accuracy
+requirements. Low-rank or symmetric tensor implementations may also avoid
+materializing all Dm coordinates. Equation (67) measures explicit-lift work.
+3.2. Quantum access model
+All quantum normalizations below use the encoded coordinates Z = D−1Y,
+with AD = −D−1AmD = L + iH, Z0 = D−1Yin and bD = D−1bm. The
+degree scaling in Eq. (62) preserves the target; general decoding is stated
+separately. A block encoding of a matrix B is a unitary UB whose success
+subblock satisfies
+(⟨0a| ⊗I)UB(|0a⟩⊗I) = B/αB,
+αB ≥∥B∥.
+(67b)
+Matrix normalization αB, the outer LCU normalization B, and the target
+signal norm are distinct quantities.
+Quantum PDE costs depend on input access and the requested output
+as well as dimension [15, 16]. The following circuit accounting concerns a
+finite unitary-sum realization; it is not a gate count for the classical affine-
+augmentation exponential used by the emulator in Eq. (59). Let αH, αL be
+20
+
+
+block-encoding normalizations of H and Lδsh = L+δshI ⪰0, respectively. Let
+Cbe be the cost of one such oracle call, Cprep the cost of preparing normalized
+Z0 and bD, and Crecon the additional physical-field preparation cost. The
+matrix, source, coefficient, and target-projector oracles must all act without
+enumerating Dm entries. Write Ptar for the orthogonal projector onto the
+block in Eq. (42), and εalg for the coherent error budget before measurement.
+The target block is the correction w(m) = PtarZ, whereas the physical field
+is u(m) = ¯u + w(m). The normalized state |w(m)⟩alone does not determine its
+amplitude or the sum with ¯u. Staged reconstruction requires the correction
+norm, phase-consistent profile preparation and linear combination of unitaries
+(LCU) addition, with normalization-to-signal ratio
+Γrecon = ∥¯u∥+ ∥w(m)∥
+∥¯u + w(m)∥.
+(67a)
+Equation (67a) applies to staged reconstruction from an already prepared
+correction state. Alternatively, the known profile can enter the original LCU
+as a third branch, avoiding intermediate correction-state postselection. Dense
+classical reconstruction remains an n-component output task.
+The time-independent lifted system permits direct evaluation of Eq. (53)
+at a requested time t; interval composition is needed for the reported emulator
+but is not intrinsic to the affine equation. To specify a quantum circuit,
+replace the source-node affine exponential by a finite Duhamel time sum of
+unitaries. Let the homogeneous and source k-rules have coefficient one-norms
+λi = PMi
+ℓ=1 |ω(i)
+ℓ|, i = 1, 2, and let R2 be the number of source-time nodes. For
+positive time-bin weights summing to Φδsh(t), an outer LCU has the explicit
+normalization and target success probability
+B(t) = eδshtλ1∥Z0∥+ Φδsh(t)λ2∥bD∥,
+psig(t) = ∥PtareZ(t)∥2
+B(t)2
+.
+(68)
+Equation (68) uses an orthogonal target projector in the encoded co-
+ordinates, with inputs transformed consistently. A general decoding map
+F = PtarD requires a block encoding F/βF, where βF ≥∥F∥; its success
+probability is ∥F eZ∥2/(βFB)2.
+Low and Somma [42] give an a priori sufficient prescription for this rule.
+Restrict to cker > 0, 0 < εker,i ≤0.9, and 0 < εq,i ≤4/15, within their
+Theorems 2–3 ranges. For L ⪰0, choose γi by Eq. (57) and set
+21
+
+
+Ki = 2ckerγ2
+i ,
+Mi = 2Ki/hi + 1,
+hi ≤
+π
+1
+2t∥L∥+ log[64e3cker/2/(15εq,i)],
+Ki/hi ∈N.
+(68a)
+For admissible error parameters, Eq. (68a) bounds the homogeneous
+operator defect by εker,1 + εq,1. By Eq. (59b), a uniform integrand bound
+εker,2 + εq,2 on 0 ≤τ ≤t bounds the source-map defect by t(εker,2 + εq,2),
+before source-time discretization. At fixed cker and t∥L∥, the sufficient choices
+have Ki = O(log(1/ηi)) and Mi = O([t∥L∥+ log(1/ηi)] log(1/ηi)), where ηi is
+the allocated integrand error. A shift replaces L by Lδsh and multiplies the
+corresponding defects by up to eδsht. The experimental K = 32, M = 385
+are tested through full-lift errors; they are not asserted to meet Eq. (68a) at
+εker = 10−8.
+For target-preserving scaling, adding the known profile directly to the
+LCU gives
+Bphys = B + ∥¯u∥,
+pphys = ∥¯u + PtareZ∥2
+B2
+phys
+.
+(68b)
+This requires phase-consistent profile preparation, but no intermediate esti-
+mate of the correction norm.
+For the unitary source-time sum, a midpoint bin width ht adds at most
+1
+2htλ2ΩK2Φδsh(t) to the source-map defect, where ΩK2 = ∥H∥+ K2∥Lδsh∥.
+Hence an error allocation εt is ensured by R2 = O(1 + tλ2ΩK2Φδsh(t)/εt)
+equal-width bins. This is a sufficient construction, not the cost of the affine-
+augmentation emulator.
+Let Ccoeff(M1, M2, R2) include coherent preparation of the complex coeffi-
+cient magnitudes and phases and Csel include their controlled selection. A
+block-encoded Hamiltonian simulation of any selected node has query cost
+eO((αH + KmaxαL)t + log(1/εsim)), where Kmax = max(K1, K2), under the
+usual controlled-simulation access assumptions [42]. With a known positive
+lower bound on psig, coherent amplitude amplification gives the following
+one-output-time, conditional gate-accounting bound:
+Tstate(t) = eO
+"
+B(t)
+∥PtareZ(t)∥
+n
+Cprep + Ccoeff + Csel
++ Cbe
+
+(αH + KmaxαL)t + log(1/εsim)
+o#
+.
+(69)
+22
+
+
+For bD = 0, δsh = 0, Ptar = I, fixed cker and efficient coefficient access,
+Eq. (68a) gives K1 = O(log(1/εalg)). Substitution in Eq. (69) yields the
+homogeneous query scaling of Ref. [42], still multiplied by λ1∥Z0∥/∥eZ(t)∥; it
+does not prove optimality for an affine lifted PDE. General coefficient loading
+can cost O(M1 + M2R2). For a constant source, the R2 = 2q exponential-
+bin label can instead be prepared with q rotations, without eliminating
+source access or controlled simulation. Physical-field preparation additionally
+requires Eq. (67a) or (68b).
+For a direct coherent implementation of the Nt-interval recurrence in
+Algorithm 1, define ah,j = eδsh∆tj P
+ℓ|ω(1)
+ℓ,j | and let as,j be the one-norm of its
+finite source-time coefficients. One valid LCU normalization obeys
+B0 = ∥Z0∥,
+Bj+1 = ah,jBj + as,j∥bD∥,
+psig,Nt = ∥PtareZNt∥2
+B2
+Nt
+.
+(69a)
+Thus its cost contains BNt/∥PtareZNt∥, not merely Nt maxj ah,j. If ah,j =
+a > 1, this normalization can grow as aNt. For the tested kernel weights
+before shift compensation at cker = 1, εker = 10−8, K = 32, and M = 385, the
+coefficient one-norm is approximately 2.373, so a16 is about 106. This diagnoses
+a naive multistep circuit, not a lower bound for all LCHS algorithms. If the
+target norm tends to zero, no uniform finite bound on this implementation’s
+preparation cost is possible without a signal assumption. One-shot Eq. (69),
+a normalized positive rule, or a proved stable multistep construction avoids
+silently assuming linear-in-Nt success overhead.
+Using the saved finite-rule correction states as signal proxies, the
+normalization-to-signal ratios from Eq. (68) are 1.15 × 1018 for the one-
+dimensional constant-µ Navier–Stokes order-two run and 7.81 × 105 for the
+refined two-dimensional compression run. Direct composition of the twelve
+recorded intervals in Eq. (69a) gives 1.55 × 1022 and 1.04 × 1010, respectively.
+These are normalization-to-archived-signal diagnostics, not measured circuit
+success probabilities or lower bounds for other implementations. Their size
+shows that the non-small-signal premise of Theorem 4 remains unverified for
+these examples despite small classical field errors.
+For reconstructed stored NS matrices, outward-rounded weighted bounds
+certify sufficient shifts 20, 35, 11 for the one-dimensional constant-µ orders
+one/two and refined two-dimensional compression, respectively. These exceed
+the production shifts and increase their homogeneous normalization factors
+23
+
+
+by about 3.63 × 103, 1.04 × 107, 9.98. They are not reruns or certificates of
+the old shifts; failure of the sufficient test does not establish indefiniteness. A
+base-operator Lyapunov/block-path alternative remains an unimplemented
+backend.
+If the simulated Hermitian matrices admit efficient row and column sparse
+oracles with at most sbi entries per row/column and maximum entry magni-
+tude amax, a standard sparse block encoding has representative normalization
+and per-call cost
+αH, αL = O(sbiamax),
+Cbe = eO(Crow + Ccol + Cval + log Dm).
+(70)
+The oracle costs on the right must themselves be specified. Equation (51)
+gives only lifted row sparsity and cannot be substituted for sbi. Structured
+block encodings may avoid column enumeration, but must report their own
+normalizations and preparation costs.
+For the one-shot finite sum, the state and label registers require
+SQ = O
+
+log Dm + log(M1 + M2R2) + log 1
+εalg
++ Soracle
+
+.
+(71)
+Here Soracle is the ancilla/workspace cost of matrix, coefficient, source,
+and observable oracles; a multistep circuit may also need O(log Nt) time-
+label qubits. This qubit count excludes classical memory for oracle data or
+coefficient tables. Equation (69) prepares an amplitude-encoded state and
+excludes readout. Let T max
+state = maxt∈Tout Tstate(t), where Tout contains the Nout
+requested times, and let Nobs denote the number of bounded observables
+evaluated at each time. Coherent amplitude estimation repeats controlled
+state preparation and its inverse, so, suppressing constant and logarithmic
+overheads,
+T AE
+Q
+= eO
+NoutNobs
+εmeas
+T max
+state
+
+,
+T samp
+Q
+= O
+NoutNobs
+ε2
+meas
+T max
+state
+
+.
+(71a)
+Thus measurement cost multiplies, rather than adds to, state-preparation
+cost. Recovering the physical field at all grid points requires at least Ω(n) clas-
+sical outputs; tomography of the entire lifted state has dimension-dependent
+sample complexity [43], and dense-output PDE algorithms require separate
+24
+
+
+structure [44]. Amplitude estimation requires the preparation circuit and its
+inverse; physical-field observables additionally require the reconstruction or
+direct-profile costs specified above.
+Signed linear modes require interference, not only an expectation value
+of the normalized correction. Let W have Nobs orthonormal real rows wT
+i .
+Prepare the known modal reference with all success ancillas set to zero, orthog-
+onal to the LCU failure branch. For target-preserving scaling, a controlled
+Hadamard test gives
+pi = 1
+2
+
+1 + Re(wT
+i PtareZ)/B
+
+,
+byi = wT
+i ¯u + B(2bpi −1).
+(71c)
+Probability error ζ adds at most 2B√Nobsζ; normalized reference-state error εv
+adds B√Nobsεv. Complex modes need a second phase-shifted test. With a cer-
+tified external normalization B ≥B and computable 0 < s0 ≤∥Wuref∥, ampli-
+tude estimation [45] has sufficient cost eO(N 3/2
+obs BCU/(εobss0)) for a relative ad-
+ditional backend/readout tolerance; sampling has cost eO(N 2
+obsB
+2CU/(ε2
+obss2
+0)).
+Here CU includes preparation, simulation, inverse circuits and reflections.
+This contract does not bound the homotopy/model error. For compressible
+NS, ρ = eq is reconstructed classically and is not priced by this linear-output
+bound.
+3.3. Conditional quantum upper bound and scaling comparison
+For grid-dependent statements, a mesh-consistent choice is ∥v∥2
+Mn =
+v∗Mnv, where a positive mass matrix Mn approximates the spatial inte-
+gral; product blocks use tensor powers of Mn. On a uniform Cartesian grid,
+Mn = hdxI in spatial dimension dx, so a sampled constant has O(1) norm
+rather than the artificial O(√n) Euclidean growth. To apply the preced-
+ing Euclidean estimates in this norm, transform each spatial operator by
+M 1/2
+n GM −1/2
+n
+and consistently transform multilinear maps, sources, target
+projectors, and their product-lift blocks. All logarithmic norms, operator
+bounds, and block-encoding costs must then be computed in these coordi-
+nates. Mass weighting alone does not uniformly bound discrete derivatives
+or homotopy tails; Theorem 4 assumes those estimates, which the finite-grid
+experiments do not establish.
+For a one-shot call at t > 0 with bD̸ = 0, a transparent absolute lifted-state
+25
+
+
+error allocation is
+η1 =
+εL
+3∥Z0∥,
+η2 =
+εL
+3t∥bD∥,
+εt =
+εL
+3∥bD∥,
+with absent channels omitted and the denominator adjusted accordingly.
+Choose Eq. (68a) to make the homogeneous and source-integrand defects at
+most η1, η2, and choose the source-time rule to make its operator defect at most
+εt. Then the triangle inequality bounds the total finite-rule lifted-state error
+by εL. For a normalized target state with a known lower bound σ ≤∥PtarZ(t)∥,
+the normalized-state error is at most 2εL/σ; bounded-observable error and
+other coherent errors require a corresponding share of the total budget. The
+ratios of the input/source norms to σ govern the necessary k- and time-node
+precision. Norm and phase estimation for the physical field consume their own
+budgets. In the multistep emulator, these one-shot allocations are replaced
+by the amplification-weighted sum.
+Theorem 4 (conditional sparse-observable scaling).
+Fix the polynomial degree d. Suppose, uniformly over the spatial grids under
+comparison:
+1. With a specified mesh-consistent norm on Xn, the homotopy tail has
+a mesh-independent index j0, bound CW = supn ∥W(n)
+j0 ∥CT < ∞, and
+ratio ∥W(n)
+j+1∥CT ≤¯αHAM∥W(n)
+j ∥CT for all j ≥j0, where 0 < ¯αHAM < 1.
+Its sum solves the same semidiscrete mild equation and lies in the
+uniqueness ball of Theorem 2. Consequently, m = O(log(1/εHAM)) if
+j0, CW, ¯αHAM are uniform as specified after Eq. (33).
+2. The block encodings and their adjoints, normalized Z0 and bD,
+Low–Somma coefficients, source-time labels, and target/observable
+projectors admit coherent access without enumerating Dm
+en-
+tries.
+Assume a known lower bound 0
+<
+σ
+≤
+∥PtarZ(t)∥.
+The
+costs
+Cbe, Cprep, Ccoeff, Csel, Crecon, Soracle
+are
+bounded
+by
+poly(m, log(n + 1), 1/εalg). The same bound holds for (αH + KmaxαL)T,
+T∥Lδsh∥, TΩK2, eδshT, B(t)/σ, and Γrecon.
+3. At each of Nout requested times, the finite rules and source-time
+sum meet the allocation displayed above with 2εL/σ charged to the
+normalized-state budget, the coherent simulation and reconstruction
+errors keep the total bounded-observable error below εalg, and
+Nobs = O(1) bounded observables are requested.
+The preparation
+circuit and inverse are available for amplitude estimation.
+26
+
+
+Then the one-shot finite-unitary-sum construction has the conditional
+bounds
+T AE
+Q
+= eO
+NoutNobs
+εmeas
+poly
+
+m, d, log(n + 1), 1
+εalg
+
+,
+SQ = poly
+
+m, d, log(n + 1), log 1
+εalg
+
++ Soracle.
+(71b)
+By contrast, the two separate tasks of writing and materializing the full
+lifted state satisfy
+T full output
+C
+= Ω(Dm),
+Smaterialized state
+C
+= Ω(Dm).
+(72)
+Proof. The geometric tail bound following Eq. (33) gives the stated m.
+Equation (50c) implies log Dm = Od(m log(n + 1)). Under item 2, Eq. (68a)
+gives logarithmic cutoff and at most polynomially many k- and source-time
+labels in 1/εalg; their coherent preparation cost is separately bounded in that
+item. Equations (69) and (71) then give the claimed dimension and workspace
+dependence, and Eq. (71a) supplies the multiplicative measurement factor.
+The two bounds in Eq. (72) follow solely from the number of written or stored
+scalars. □
+Theorem 4 gives a conditional sparse-observable upper bound. Equation
+(72) instead concerns full lifted-state output, using Dsym when both sides
+apply exact compression. Assessing a same-observable quantum advantage
+requires comparison with direct classical PDE solvers and accounting for profile
+generation, data loading, source-time quadrature and output preparation.
+The current theorem supplies the quantum-side conditions, not a matched
+classical query lower bound.
+3.4. Dependence on spatial resolution
+For a one-dimensional grid with n points and h = O(n−1), the derivative,
+frozen-operator and unscaled lift bounds are
+∥D1∥= O(n),
+∥D2∥= O(n2),
+∥D3∥= O(n3),
+(73)
+∥GB∥= O
+ νn2 + ∥¯u∥∞n + ∥¯ux∥∞
+
+,
+(74)
+∥GK∥= O
+ n3 + (|c| + 6∥¯u∥∞)n + 6∥¯ux∥∞
+
+,
+(75)
+∥Am∥≤pmax∥G∥+ ∥Acoupling∥.
+(76)
+27
+
+
+These bounds are not block-encoding constructions. For standard finite
+differences, ∥D2∥= Θ(n2) and a nondegenerate third-derivative stencil has
+∥D3∥= Θ(n3); therefore the sufficient Hamiltonian-simulation cost in Eq.
+(69) is not polylogarithmic in grid resolution merely because its state register
+is. Similarity scaling, spectral shifting, and the chosen encoding can further
+increase normalization or reduce the success amplitude. For example, the
+second-order constant-dynamic-viscosity one-dimensional Navier–Stokes run
+uses δsh ≃24.23 over T = 1.5, giving eδshT ≃6.1 × 1015 in Eq. (68); this is a
+normalization factor, not a measured failure probability. Theorem 4’s access
+and signal assumptions are thus not verified by the reported finite-rule field
+errors. Preconditioning, spectral bases, an interaction picture, or structured
+block encodings might improve the dependence, but each requires a separate
+construction and analysis.
+4. Numerical experiments
+All plotted Frozen–Oseen fields are classical emulations of the equidistant
+Low–Somma rule with K1 = K2 = 32, M1 = M2 = 385, c = 1, and εker = 10−8;
+the profile remains fixed. The active symmetric-lift dimension Dsym is padded
+to NQ = 2⌈log2 Dsym⌉, including one affine-source coordinate. This counts
+state-register qubits only, not ancillary qubits or a quantum execution.
+The complete-lift diagnostic is
+Elift = ∥YK −Ydir∥2
+∥Ydir∥2
+,
+YK = DZK,
+Ydir = DZdir.
+(76a)
+Both states use the same compressed coordinates after undoing tensor scaling;
+physical-field errors have separately stated denominators.
+Comparison protocol. Each comparison fixes the physical target, grid, initial
+data, and output norm. Conventional HAM and IQHAM are classically
+integrated; matched auxiliary controls additionally fix the zeroth coefficient
+and ℏ.
+4.1. Forced Burgers equation
+4.1.1. Governing equation and exact Oseen split
+We consider the classical viscous Burgers equation [46, 47], here augmented
+by a stationary body force,
+28
+
+
+ut + uux = νuxx + sin(πx),
+0 < x < 1,
+(77)
+u(0, t) = u(1, t) = 0,
+u(x, 0) = 0.3 sin(πx),
+(78)
+with
+ν = 0.01,
+T = 1.
+(79)
+For
+FB(u) = νuxx −uux,
+fB(x) = sin(πx),
+(80)
+the full Fréchet–Oseen operator at ¯u is
+GBv = νvxx −¯u vx −¯uxv.
+(81)
+The residual and exact nonlinear remainder are
+rB = ν¯uxx −¯u¯ux + sin(πx),
+RB(w) = −wwx.
+(82)
+Thus
+wt = GBw + rB −wwx.
+(83)
+With LB = ∂t −GB, the homotopy equations are
+LBW0 = rB,
+W0(x, 0) = 0.3 sin(πx) −¯u(x),
+(84)
+LBWj = −
+X
+a+b=j−1
+Wa ∂xWb,
+Wj(x, 0) = 0,
+j ≥1.
+(85)
+For homogeneous Dirichlet data, integration by parts and the Poincaré
+inequality give
+µ2(GB) ≤−νπ2 + 1
+2∥(¯ux)−∥∞,
+(87)
+where a−= max(−a, 0). A sharp negative profile slope can reduce the
+residual while increasing linear amplification, so the fitted layer width and
+propagator must be checked together [48].
+29
+
+
+4.1.2. Frozen profile
+For the steady balance ν¯u′′ −¯u¯u′ + sin(πx) = 0, the outer approximation
+is
+¯uout(x) =
+2
+√π sin πx
+2 ,
+UR = ¯uout(1) =
+2
+√π.
+(88)
+The right-layer coordinate y = (1 −x)/ν gives Uyy + UUy = 0, U(0) = 0,
+U(∞) = UR, and
+U(y) = UR tanh URy
+2 .
+(89)
+This balance motivates the O(ν) width and tanh factor, but not the fitted
+constants [4, 49].
+The implemented profile uses a multiplicative boundary-layer enrichment:
+¯uθ(x) = s 2
+√π sin πx
+2 tanh
+1 −x
+δBL
+
++ a sin(πx),
+(90)
+δBL = b
+2ν
+s(2/√π).
+(91)
+The stored run used
+s = 0.905,
+b = 1.064,
+a = 0.090,
+δBL = 2.083857345 × 10−2.
+(92)
+The profile satisfies both boundaries. Its parameters were fitted once
+on this benchmark and held fixed across orders; the main-case errors are
+therefore in-sample.
+4.1.3. Discretization and results
+The lifted test has n = 5 interior correction points and ℏ= −1. Diffu-
+sion uses centered differences; transport uses backward differences. Profile
+derivatives are evaluated analytically from Eq. (90), giving
+˙w = νD2w −p ⊙D1w −px ⊙w + νpxx −p ⊙px + f −w ⊙D1w, (92a)
+Here D1, D2 are difference matrices and ⊙is componentwise multiplication.
+The analytic profile derivatives make this an enriched semidiscrete model;
+n = 5 does not resolve the O(ν) layer.
+30
+
+
+Equivalently, the reconstructed nodal variable u = p + w solves
+˙u = Fh,p(u) = νD2u −u ⊙D1u + f
++ ν(pxx −D2p) + u ⊙(D1p −px).
+(92b)
+The frozen operator is the Jacobian of this fixed enriched model at p; varying
+the enrichment would change the spatial model. All curves reconstruct the
+analytic profile plus a piecewise-linear correction. The same-grid nonlinear
+reference differs from a 400-node PDE proxy by 8.51 × 10−3.
+All three methods use the same five-point semidiscrete target and nonlinear
+nodal reference, with error
+enode = ∥uh −uh,ref∥2
+∥uh,ref∥2
+.
+(93)
+The Frozen–Oseen hierarchy uses 16 fixed linear substeps and exact symmetric-
+product compression. The other two hierarchies are integrated classically;
+their curves are not LCHS results.
+Table 2: Common-grid Burgers comparison at T = 1. Dsym is the active lifted dimension,
+NQ its exact register embedding, and both errors are relative to the same n = 5 nonlinear
+semidiscrete reference. The conventional HAM uses a diffusion auxiliary and classical
+hierarchy propagation.
+m
+Dsym
+NQ
+Frozen–Oseen LCHS
+Conventional HAM
+1
+30
+32
+1.05269 × 10−2
+3.096 × 10−1
+2
+95
+128
+4.87970 × 10−3
+2.033 × 10−1
+3
+285
+512
+2.37859 × 10−3
+1.349 × 10−1
+4
+791
+1,024
+1.20068 × 10−3
+9.453 × 10−2
+5
+2,056
+4,096
+6.19361 × 10−4
+7.388 × 10−2
+At order five, Frozen–Oseen HAM-LCHS has nodal error 6.19 × 10−4
+versus 7.39 × 10−2 for diffusion-auxiliary HAM (Table 2).
+IQHAM [33]
+reaches 5.69 × 10−4 after 26 outer updates: it improves the diffusion auxiliary
+by iteration, whereas the present method changes the fixed auxiliary. The
+complete-lift LCHS/direct discrepancy is 1.13 × 10−6.
+Validation. Four unfitted n = 17 holdouts with ¯u = uin improve at order
+two but remain grid-underresolved: their n = 17 to 129 discrepancies are
+5.23 × 10−2–8.53 × 10−2.
+31
+
+
+0.0
+0.5
+1.0
+x
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+u(x, T)
+a
+Frozen-Oseen HAM-LCHS
+Reference
+m = 3
+m = 1
+m = 5
+0.0
+0.5
+1.0
+x
+b HAM
+Reference
+m = 3
+m = 1
+m = 5
+0.0
+0.5
+1.0
+x
+c
+IQHAM
+Reference
+ℓ= 12
+ℓ= 0
+ℓ= 26
+Figure 1: Burgers profiles at T = 1 on the common n = 5 semidiscrete grid. (a) Finite-
+K1/K2 Frozen–Oseen HAM-LCHS at orders m = 1, 3, 5.
+(b) Conventional diffusion-
+auxiliary HAM, integrated classically at the same orders. (c) IQHAM denotes the iterative
+QHAM introduced by Xue et al. [33]; its outer indices ℓ= 0, 12, 26 are integrated classically
+here. The dotted line is the same-grid nonlinear reference. The n = 5 grid does not resolve
+the boundary layer.
+Independent auxiliary-operator ablation. For the four unfitted parameter
+pairs, we compare diffusion, mean transport νD2 −⟨p⟩D1, frozen advection
+νD2 −diag(p)D1, and the full Jacobian J = DFn(p) with p = uin. The
+same centered grids, ℏ= −1, and initial coefficient are used. Table 3 reports
+classical hierarchy diagnostics, not additional LCHS curves.
+Table 3: Unfitted Burgers auxiliary-operator ablation at Nx = 127, m = 5, T = 0.75.
+Entries are relative nodal errors against the same-grid nonlinear reference. The last column
+compares that reference with a 511-node nonlinear proxy. All rows are retained.
+(a, f)
+Diffusion
+Mean transport
+Frozen advection
+Full J
+Spatial proxy
+(0.2, 0.8)
+4.107 10−2
+1.124 10−2
+7.643 10−3
+4.550 10−3
+1.141 10−4
+(0.2, 1.2)
+2.137 10−1
+8.366 10−2
+6.397 10−2
+5.055 10−2
+3.587 10−4
+(0.4, 0.8)
+2.830 10−1
+2.775 10−2
+2.015 10−2
+2.227 10−2
+5.187 10−4
+(0.4, 1.2)
+9.157 10−1
+1.600 10−1
+1.172 10−1
+1.770 10−1
+1.090 10−3
+Transport improves all four fifth-order controls over diffusion, but full
+J is not uniformly best (Table 3). In the first case it reaches 1% error one
+order earlier than frozen advection, reducing the symmetric-lift dimension
+by factors 7.46, 12.94, and 23.71 on the three tested grids; the other cases
+32
+
+
+do not reach that target through order five. These are representation counts
+from classical hierarchy diagnostics, not measured quantum speedups. The
+short-time sufficient test does not certify the full T = 0.75 interval.
+4.2. Korteweg–de Vries equation
+4.2.1. Periodic traveling-wave benchmark
+We consider
+ut + 6uux + uxxx = 0,
+x ∈[−π, π],
+0 ≤t ≤1,
+(94)
+with periodic boundary conditions. An exact cnoidal wave is
+u∗(x, t) = a+2ηβ2 cn2 β(x−ct); η
+
+,
+β = K(η)
+π
+,
+c = 6a+4β2(2η−1), (95)
+Here η = 0.1 is the elliptic parameter, K the complete elliptic integral, and
+cn the Jacobi elliptic cosine.
+We set a = 0.5 and uin = u∗(·, 0), giving
+c = 2.1570184182 [50]; the computation stays in laboratory coordinates.
+Set ¯u = uin once and write u = ¯u + w. The exact correction equation is
+wt = GKw + rK −6wwx,
+w(x, 0) = 0,
+(96)
+where
+GKw = −wxxx −6¯uwx −6¯uxw,
+rK = −6¯u¯ux −¯uxxx = −c¯ux.
+(97)
+The initial-state profile is fixed and has a nonzero residual, so the K2 source
+channel is used. With LK = ∂t −GK, the hierarchy is
+LKW0 = rK,
+LKWj = −6
+X
+p+q=j−1
+Wp∂xWq,
+Wj(x, 0) = 0
+(j ≥0),
+(98)
+and u[m] = ¯u + Pm
+j=0 Wj.
+Although the wave translates, its small modulation makes the initial profile
+useful: if b is its mean, translation invariance gives
+∥u∗(·, t) −¯u∥Hs ≤2∥¯u −b∥Hs = O(η),
+η →0.
+(99)
+Thus the frozen operator retains mean transport and variable-profile coupling
+while the remainder is O(η2) for this family; a dispersion-only auxiliary leaves
+33
+
+
+first-order transport in the forcing. This local comparison does not establish
+uniform convergence. On a fixed-grid ball of radius ρ,
+∥−6w ⊙D1w + 6z ⊙D1z∥2 ≤12ρ∥D1∥2∥w −z∥2.
+(100)
+The convergence condition also depends on the frozen propagator (Section 2).
+For smooth periodic functions,
+Re⟨w, GKw⟩= −3
+Z π
+−π
+¯ux|w|2 dx ≤3∥¯ux∥∞∥w∥2
+2.
+(101)
+Because ¯ux = O(η), this bounds finite-time growth but does not imply
+contractivity of the laboratory-frame operator [50].
+4.2.2. Discretization and error control
+We use seven-point periodic Fourier collocation with pointwise products.
+The residual and frozen operator use the same discrete map,
+Fn(v) = −D3v −6v ⊙D1v,
+rn = Fn(¯un),
+Gn = DFn(¯un).
+(102)
+The correction is Fourier-interpolated onto 512 comparison points and added
+to the analytic initial profile, without phase alignment. The wave-normalized
+metric is
+ewave = ∥unum −u∗∥2
+∥u∗−b5121∥2
+.
+(103)
+Here b512 is the sampled exact-wave mean. The seven-point nonlinear spatial
+error is 1.5663 × 10−5; nine and 13 points reduce it to 6.3359 × 10−8 and
+3.9201 × 10−12 for this smooth wave.
+The separate propagation metric is
+Eprop,wave = ∥uLCHS −udir∥2
+∥u∗−b5121∥2
+.
+This real-field discrepancy is distinct from the complete complex-lift error
+Elift.
+The exact symmetric-product compression retains the complete hierarchy.
+Finite LCHS uses four fixed intervals and tensor scale 0.06.
+Wave error reaches the 1.57 × 10−5 spatial-error level by order four, and
+all LCHS/direct wave discrepancies are below 6.2 × 10−9 (Table 4).
+34
+
+
+Table 4: Cnoidal-wave lift sizes and errors. NQ is the exact zero-padded register dimension.
+Every order uses K1 = K2 = 32, 385 equidistant rectangle nodes, and four intervals. Times
+are single-run propagation costs of a three-worker classical emulator with one BLAS thread
+per worker, excluding construction and direct diagnostics. The last column is Eprop,wave
+for real-projected physical fields reconstructed on 512 points, not Elift.
+(a) Lift dimensions and propagation cost
+m
+Full dimension
+Symmetric dimension
+NQ
+Symmetric nonzeros
+Time (s)
+1
+70
+49
+64
+602
+2.243
+2
+518
+189
+256
+3,255
+4.953
+3
+4,102
+679
+1,024
+14,721
+14.353
+4
+32,774
+2,226
+4,096
+58,002
+27.409
+5
+262,150
+6,748
+8,192
+204,936
+87.094
+(b) Wave-normalized errors
+m
+Direct/exact
+LCHS/exact
+Eprop,wave
+1
+2.843 × 10−3
+2.843 × 10−3
+6.164 × 10−9
+2
+1.587 × 10−4
+1.587 × 10−4
+4.424 × 10−9
+3
+2.287 × 10−5
+2.287 × 10−5
+3.469 × 10−9
+4
+1.551 × 10−5
+1.551 × 10−5
+5.195 × 10−9
+5
+1.565 × 10−5
+1.565 × 10−5
+1.744 × 10−9
+4.2.3. Matched auxiliary controls and HAM recipes
+At common ℏ= −1 and zeroth-coefficient initialization, matched classical
+hierarchy controls isolate auxiliary choice (Table 5). Mean transport uses
+A = −D3 −6bD1, where b is the known initial-wave mean; frozen advection
+uses A = −D3 −6 diag(¯un)D1. Mean transport reaches the 10−4 PDE-wave
+target at order two, one order before full Gn; both approach the spatial-error
+level by order five. These controls do not compare quantum runtimes.
+In the separate recipe comparison (Fig. 2), dispersion-auxiliary HAM has
+order-five wave error 0.66028; IQHAM [33] reaches 1.5626 × 10−5 after nine
+outer updates. These recipes also differ in the zeroth trajectory and ℏ; the
+matched controls above isolate only the auxiliary.
+35
+
+
+Table 5: Matched KdV auxiliary control: PDE-wave errors on the same seven-point system,
+forced zeroth coefficient and ℏ= −1. m∗is the first tested order reaching 10−4; a dash
+means none through order five. All entries are classical coefficient diagnostics.
+Auxiliary
+m = 2
+m = 3
+m = 5
+m∗
+Dispersion
+2.512
+1.699
+8.492 10−1
+–
+Mean transport
+7.822 10−5
+1.895 10−5
+1.568 10−5
+2
+Frozen advection
+3.772 10−4
+3.088 10−5
+1.571 10−5
+3
+Full Jacobian
+1.587 10−4
+2.287 10−5
+1.565 10−5
+3
+−π
+0
+π
+x
+0.450
+0.475
+0.500
+0.525
+0.550
+0.575
+0.600
+u(x, T)
+a
+Frozen-Oseen HAM-LCHS
+Exact wave
+m = 3
+m = 1
+m = 5
+−π
+0
+π
+x
+b HAM
+Exact wave
+m = 3
+m = 1
+m = 5
+−π
+0
+π
+x
+c
+IQHAM
+Exact wave
+ℓ= 3
+ℓ= 0
+ℓ= 9
+Figure 2: KdV recipe comparison at T = 1 on the common n = 7 Fourier grid. (a) Finite-
+K1/K2 Frozen–Oseen HAM-LCHS at m = 1, 3, 5. (b) Conventional dispersion-auxiliary
+HAM at the same orders. (c) IQHAM, the iterative QHAM of Xue et al. [33], at ℓ= 0, 3, 9.
+Panels (b,c) use classical hierarchy integration; their zeroth trajectory and ℏdiffer from
+(a). The dotted line is the exact cnoidal wave, with common axes and no phase alignment.
+Table 5 isolates the auxiliary choice.
+Representation and resource tradeoff. At the common 10−4 target, mean
+transport uses a smaller complete lift and lower output-aware query proxy
+than full Gn under the stated access model (Table 6). The proxy is not a
+gate count or measured runtime.
+36
+
+
+Table 6: KdV resource diagnostic at a common 10−4 PDE-wave threshold, not identical
+achieved errors. Both systems use scale 0.06, K1 = K2 = 48.3471, 1077 raw rectangle
+nodes and one interval. B is the source-branch normalization. Qproxy concerns two signed
+Fourier modes at the same additional readout tolerance; it is not a gate count or runtime.
+Auxiliary
+m
+Dsym
+NQ
+PDE error
+B
+Qproxy
+Mean transport
+2
+189
+256
+7.822 10−5
+40.309
+1.048 1013
+Full Jacobian
+3
+679
+1024
+2.287 10−5
+311.384
+1.298 1014
+4.3. Two-dimensional Burgers and Zakharov–Kuznetsov equations
+On the periodic square [−π, π]2, we consider the vector Burgers equation
+U t + (U · ∇)U = 0.1∆U,
+U = (u, v)T,
+(104)
+with the smooth exact solution U = b −0.2∇log ϕ, where
+b = (0.8, 0.4)T,
+ξ = x −0.8t,
+η = y −0.4t,
+ϕ = 1 + 0.15e−0.1t(cos ξ + cos η) + 0.05e−0.2t cos ξ cos η.
+(105)
+This is a smooth Cole–Hopf solution with ϕ ≥0.65; we use its initial data
+and T = 1 [51].
+The second problem is the Zakharov–Kuznetsov (ZK)
+equation [52],
+ut + 6uux + ∂x∆u = 0,
+u(x, y, 0) = 0.5 + 0.05 cos x + 0.04 cos y + 0.03 cos(x + y).
+(106)
+at T = 0.5. Both profiles are frozen at the initial state. The operators are
+GZ = 0.1∆Z−( ¯U·∇)Z−(Z·∇) ¯U for Burgers and Gz = −∂x∆z−6¯uzx−6¯uxz
+for ZK.
+Both tests use 9×9 Fourier grids, first-order lifts, four fixed linear substeps,
+and tensor scale 0.1. Burgers uses the exact solution as reference; ZK uses a
+refined nonlinear reference. For these and the Navier–Stokes (NS) tests, we
+report
+Efluc =
+∥zh −zref∥2
+∥zref −⟨zref⟩∥2
+,
+(107)
+where the numerator stacks the sampled physical-field differences and each
+reference component is centered only in the denominator. First-order Efluc is
+3.49 × 10−5 for Burgers and 7.03 × 10−4 for ZK (Table 7); the corresponding
+complete-lift LCHS/direct discrepancies are 3.06 × 10−9 and 4.62 × 10−9.
+Figure 3 shows the full fields and signed errors.
+37
+
+
+−π
+0
+π
+y
+a
+Nonlinear reference
+b Frozen-Oseen HAM-LCHS
+c
+Signed error
+0.78
+0.8
+0.82
+-2e-06
+0
+2e-06
+−π
+0
+π
+y
+d
+e
+f
+0.38
+0.4
+0.43
+-1.5e-06
+0
+1.5e-06
+−π
+0
+π
+x
+−π
+0
+π
+y
+g
+−π
+0
+π
+x
+h
+−π
+0
+π
+x
+i
+0.48
+0.56
+-0.0001
+0
+0.0001
+Burgers u
+Burgers v
+ZK u
+2D Burgers and ZK · N = 9 · m = 1 · 385-node finite-K LCHS; display interpolation only
+Figure 3: Two-dimensional Burgers and ZK fields at T = 1 and T = 0.5, respectively,
+for Eqs. (104) and (106). Rows show Burgers u, Burgers v, and ZK u; columns show
+the reference, first-order finite-K1/K2 Frozen–Oseen HAM-LCHS result, and pointwise
+signed error eϕ = ϕLCHS −ϕref for the displayed field ϕ. Each reference/result pair shares
+a scale; error maps use separate zero-centered scales. The aggregate error Efluc is defined
+in Eq. (107). Resampling to 128 × 128 is for display only.
+38
+
+
+4.4. One-dimensional isothermal compressible Navier–Stokes equations
+We solve
+ρt + (ρu)x = 0,
+(ρu)t + (ρu2 + ρ)x = (η(ρ)ux)x
+(108)
+on [−π, π] with periodic boundaries, T = 1.5, ρ(x, 0) = e0.3 cos x, and u(x, 0) =
+−0.6 sin x. We distinguish constant kinematic viscosity, η(ρ) = νρ, from
+constant dynamic viscosity, η(ρ) = µ, with ν = µ = 0.005. With q = log ρ,
+the former is quadratic:
+qt = −uqx −ux,
+ut = −uux −qx + ν(uxx + qxux).
+(109)
+For constant µ, introducing s = e−q instead gives the polynomial system
+qt = −uqx −ux,
+st = suqx + sux,
+ut = −uux −qx + µsuxx.
+(110)
+Its cubic terms are included in the product lift.
+The fixed profile is obtained from the linear acoustic–viscous predictor
+qa
+t = −ua
+x,
+ua
+t = −qa
+x + 0.005ua
+xx,
+(qa, ua)(0) = (q, u)(0).
+(111)
+Writing V a = (qa, ua)T, we use the time average (¯q, ¯u)T = T −1 R T
+0 V a(t) dt,
+evaluated by 16-point Gauss quadrature. For constant µ, we also test (¯q, ¯u)T =
+[V a(0) + V a(T)]/2; in both cases ¯s = e−¯q is formed afterwards. The time
+average is the constant profile closest in integrated squared distance to the
+linear predictor; it uses no nonlinear reference. Because it differs from the
+initial state, the complete lifted initial products include W0(0) = ah(0) −¯ah
+for the polynomial variables ah.
+The constant-ν and constant-µ tests use 17 and 13 Fourier points,
+reflection-symmetry reduction, tensor scale 0.5, and twelve fixed linear
+substeps. Density is reconstructed classically as ρ = eq after interpolation
+to the 129-point reference grid. With the acoustic-mean profile, Efluc falls
+from 1.04 × 10−2 to 5.81 × 10−4 by order three for constant ν, and from
+1.04 × 10−2 to 2.373 × 10−3 by order two for constant µ (Table 7). The µ
+endpoint average improves pooled first-order error to 8.85 × 10−3, but its
+velocity-component error increases from 1.260% to 1.396%. At µ, m = 2,
+the reciprocal constraint maxi |sieqi −1| = 2.004 × 10−3 and complete-lift
+LCHS/direct error is 4.793 × 10−6; Fig. 4 shows the reconstructed fields.
+39
+
+
+Table 7: Finite-LCHS extension tests using the equidistant Low–Somma rectangle rule.
+Dsym is the active dimension after exact symmetry reduction; NQ is its exact zero-padded
+register dimension. Efluc is defined in Eq. (107). All rows use K1 = K2 = 32 and 385
+nodes.
+Problem / profile
+Grid
+m
+Dsym
+NQ
+Efluc
+2D Burgers / initial
+9 × 9
+1
+13,689
+16,384
+3.49 × 10−5
+2D ZK / initial
+9 × 9
+1
+3,564
+4,096
+7.03 × 10−4
+NS, ν / mean
+17
+1
+204
+256
+1.04 × 10−2
+NS, ν / mean
+17
+2
+1,479
+2,048
+2.40 × 10−3
+NS, ν / mean
+17
+3
+9,384
+16,384
+5.81 × 10−4
+NS, µ / mean
+13
+1
+1,810
+2,048
+1.04 × 10−2
+NS, µ / mean
+13
+2
+57,789
+65,536
+2.373 × 10−3
+NS, µ / endpoints
+13
+1
+1,810
+2,048
+8.85 × 10−3
+0.50
+0.75
+1.00
+1.25
+1.50
+ρ
+a
+Density · constant ν
+−0.2
+0.0
+0.2
+u
+b
+Velocity · constant ν
+−π
+0
+π
+x
+0.50
+0.75
+1.00
+1.25
+1.50
+ρ
+c
+Density · constant μ
+−π
+0
+π
+x
+−0.2
+0.0
+0.2
+u
+d
+Velocity · constant μ
+Reference
+m=1
+m=2
+m=3 (ν)
+m=1, endpoints (μ)
+Figure 4: One-dimensional strong-compression isothermal Navier–Stokes test for Eq. (108)
+at T = 1.5. Columns show density and velocity; rows use constant kinematic (ν) and
+dynamic (µ) viscosity. Dotted black curves are the corresponding 129-point nonlinear
+references. Colored curves are finite-K1/K2 Frozen–Oseen HAM-LCHS results at the
+indicated orders; the µ row also shows a first-order endpoint-profile result. Frozen profiles
+use only the linear acoustic predictor.
+40
+
+
+4.5. Two-dimensional isothermal compressible Navier–Stokes equations
+On [−π, π)2 with periodic boundaries, we take p = ρ and τ = νρ[∇U +
+(∇U)T], where U = (u, v)T and ν is the constant kinematic shear viscosity.
+The dynamic shear viscosity is νρ and the second viscosity coefficient is zero.
+With q = log ρ, the smooth positive-density equations become the quadratic
+system
+qt = −U · ∇q −∇· U,
+U t = −(U · ∇)U −∇q
++ ν{∆U + ∇(∇· U) + [∇U + (∇U)T]∇q}.
+(112)
+This retains cross-stress terms; its one-dimensional longitudinal viscosity is
+2ν, not the coefficient in Section 4.4. Both cases start from
+q0 = 0.18 cos x + 0.12 cos y + 0.06 cos x cos y.
+(113)
+The coupled-compression case uses u0 = −0.45 sin x(1 + 0.2 cos y), v0 =
+−0.35 sin y(1 + 0.15 cos x), (ν, T) = (0.02, 1.2). The vortex–acoustic case
+uses u0 = −0.25 sin x + 0.25 sin x cos y, v0 = −0.20 sin y −0.25 cos x sin y,
+(ν, T) = (0.01, 1.25).
+We compare initial-state freezing with the time average of the linear
+acoustic–viscous predictor
+qa
+t = −∇· U a,
+U a
+t = −∇qa + ν{∆U a + ∇(∇· U a)},
+(114)
+initialized at (q0, U 0); no nonlinear reference enters the profile. We freeze the
+full semidiscrete derivative G = DFh(¯ah) once, with ah = (q, u, v). Reflection
+symmetry and exact symmetric-product lifting give first-order dimensions
+2340 and 4944 on 9 × 9 and 11 × 11 Fourier grids. The runs use tensor scale
+0.5 and twelve fixed linear substeps.
+The 31 × 31 nonlinear reference is independently grid-refined. At 9 × 9,
+acoustic averaging reduces Efluc from 1.974 × 10−2 to 2.522 × 10−3 for com-
+pression and from 9.399×10−3 to 2.288×10−3 for vortex–acoustic interaction.
+At 11 × 11 the errors are 1.632 × 10−3 and 1.077 × 10−3 (Table 8). Figures 5
+and 6 show the full fields and signed errors. The plotted fields use finite
+LCHS; direct propagation is diagnostic only.
+Across all six runs, complete-lift LCHS/direct discrepancies stay below
+4.4 × 10−8. The refined compression case nevertheless has an u-component
+error above 1% (Table 8).
+41
+
+
+−π
+0
+π
+y
+a
+Nonlinear reference
+b Frozen-Oseen HAM-LCHS
+c
+Signed error
+0.8
+1.6
+2.4
+-0.002
+0
+0.002
+−π
+0
+π
+y
+d
+e
+f
+-0.08
+0
+0.08
+-0.0008
+0
+0.0008
+−π
+0
+π
+x
+−π
+0
+π
+y
+g
+−π
+0
+π
+x
+h
+−π
+0
+π
+x
+i
+-0.06
+0
+0.06
+-0.0004
+0
+0.0004
+Density ρ
+Velocity u
+Velocity v
+Coupled compression · T = 1.2 · mean frozen profile · N = 11 · m = 1
+Figure 5: Full spatial fields for the coupled-compression case of Eq. (112) at T = 1.2. Rows
+show ρ, u, and v; columns show the 31 × 31 nonlinear reference, the 11 × 11 first-order
+finite-K1/K2 Frozen–Oseen HAM-LCHS result with a time-averaged frozen profile, and
+pointwise signed error eϕ = ϕLCHS −ϕref for the displayed field ϕ. Each reference/result
+pair shares a scale; errors use separate zero-centered scales. Physical errors are evaluated
+after Fourier interpolation of q, u, v to the common 31 × 31 grid and reconstruction of
+ρ = eq; only the separate 128 × 128 resampling is for display.
+42
+
+
+−π
+0
+π
+y
+a
+Nonlinear reference
+b Frozen-Oseen HAM-LCHS
+c
+Signed error
+0.8
+1.2
+1.6
+-0.0008
+0
+0.0008
+−π
+0
+π
+y
+d
+e
+f
+-0.3
+0
+0.3
+-0.0006
+0
+0.0006
+−π
+0
+π
+x
+−π
+0
+π
+y
+g
+−π
+0
+π
+x
+h
+−π
+0
+π
+x
+i
+-0.2
+0
+0.2
+-0.0003
+0
+0.0003
+Density ρ
+Velocity u
+Velocity v
+Vortex–acoustic interaction · T = 1.25 · mean frozen profile · N = 11 · m = 1
+Figure 6: Full spatial fields for the vortex–acoustic case of Eq. (112) at T = 1.25. Rows
+show ρ, u, and v; columns show the 31×31 nonlinear reference, the 11×11 first-order finite-
+K1/K2 Frozen–Oseen HAM-LCHS result with a time-averaged frozen profile, and pointwise
+signed error eϕ = ϕLCHS −ϕref for the displayed field ϕ. Reference/result pairs share a scale;
+errors use separate zero-centered scales. Physical errors use Fourier interpolation of q, u, v
+and density reconstruction on the common 31 × 31 grid; separate 128 × 128 resampling is
+for display only. No fitting to the nonlinear reference or phase alignment is applied.
+43
+
+
+Table 8: First-order finite-LCHS results for two-dimensional NS using 385 equidistant
+Low–Somma rectangle nodes. NQ is the padded dimension; mean profiles use the time-
+averaged linear predictor. Efluc pools the fields: for refined compression the component
+errors (ρ, u, v) are (1.29 × 10−3, 1.13 × 10−2, 4.91 × 10−3), so u remains above 1%.
+Case
+Profile
+Grid
+Dsym
+NQ
+Efluc
+Compression
+Initial
+9 × 9
+2,340
+4,096
+1.974 × 10−2
+Mean
+9 × 9
+2,340
+4,096
+2.522 × 10−3
+Mean
+11 × 11
+4,944
+8,192
+1.632 × 10−3
+Vortex–acoustic
+Initial
+9 × 9
+2,340
+4,096
+9.399 × 10−3
+Mean
+9 × 9
+2,340
+4,096
+2.288 × 10−3
+Mean
+11 × 11
+4,944
+8,192
+1.077 × 10−3
+4.6. Exploratory two-dimensional incompressible vortex-pair test
+To test stronger nonlinear transport beyond the smooth manufactured
+cases, we consider a pair of like-signed vortices on [−π, π)2 [53]. In vorticity–
+streamfunction variables,
+ωt + V (ω) · ∇ω = ν∆ω,
+−∆ψ = ω,
+V (ω) = (ψy, −ψx)T,
+(115)
+with zero spatial mean and periodic boundaries. We set ν = 0.02, T = 3, and
+ω0 = g −⟨g⟩, where
+g(x, y) = 1.5
+X
+σ=±1
+exp{2[cos(x −0.8σ) + cos y −2]} .
+(116)
+We freeze ¯ω = ω0, giving Gz = ν∆z −V (ω0)·∇z −V (z)·∇ω0. Rotational
+symmetry and zero mean reduce the 11×11 system to 60 physical coordinates
+and a 2010-dimensional first-order lift, padded to 2048. With twelve fixed
+linear substeps and tensor scale 0.1, finite LCHS gives final vorticity error
+7.33 × 10−3 against the 31 × 31 nonlinear reference; the 11 × 11 spatial
+discrepancy is 5.95 × 10−3 and complete-lift LCHS/direct discrepancy 1.13 ×
+10−7. Figure 7 shows the two peaks merging; this remains an exploratory
+first-order test.
+44
+
+
+−π
+0
+π
+y
+a
+Initial two-vortex field
+b
+Nonlinear reference, T = 3
+−π
+0
+π
+x
+−π
+0
+π
+y
+c
+Frozen-Oseen HAM-LCHS
+−π
+0
+π
+x
+d
+Signed error, T = 3
+-0.8
+0
+0.8
+ω
+-0.008
+0
+0.008
+Δω
+Double-vortex merger · N = 11 · m = 1 · 385-node finite-K LCHS
+Figure 7: Exploratory vortex-pair test for Eq. (115) at T = 3. Panels show (a) initial
+vorticity, (b) the 31 × 31 nonlinear reference, (c) the 11 × 11 first-order finite-K1/K2
+Frozen–Oseen HAM-LCHS result, and (d) pointwise signed error eω = ωLCHS −ωref. Panels
+(a)–(c) share a color scale; (d) uses a separate zero-centered scale. Periodic resampling is
+for display only.
+45
+
+
+4.7. Matched linear-observable comparison
+We compare two fixed Fourier-mode outputs of each saved finite-LCHS
+field with direct nonlinear integration on the same semidiscrete system. For a
+row-orthonormal observable matrix W acting on the computational variables
+ah, the relative error is Eobs = ∥Wah −Wah,ref∥2/∥Wah,ref∥2. Burgers uses
+two sine modes; constant-µ NS uses one q = log ρ cosine mode and one
+velocity sine mode.
+Table 9: Same-output comparison at the existing Burgers n = 5, m = 5, T = 1 and
+constant-µ NS Nx = 13, m = 2, T = 1.5 settings. DOP853 uses relative tolerance 10−3.
+Classical times include model construction, integration and observable evaluation; they are
+medians of five warmed runs with one BLAS thread, not quantum runtimes. Reference
+generation and prior profile calibration are excluded.
+Case
+Eobs, finite LCHS
+Eobs, DOP853
+Time (ms)
+Burgers
+4.985 × 10−4
+3.517 × 10−6
+0.884
+1D NS
+3.582 × 10−5
+5.384 × 10−7
+3.401
+At these small-grid tolerances, DOP853 is more accurate and faster than
+explicit lifted propagation (Table 9). The comparison does not establish a
+quantum speedup or make explicit-lift storage a necessary classical baseline.
+5. Conclusions and discussion
+The central FOQHAM framework connects transport-aware auxiliary-
+operator selection to the finite linear representation of nonlinear PDE dynam-
+ics. Freezing the full Fréchet derivative retains transport and profile-gradient
+coupling, with an exact residual and a locally quadratic remainder. Prod-
+uct lifting then closes each prescribed finite-order polynomial hierarchy as
+a fixed affine linear system. LCHS propagates the linear system without
+outer homotopy iterations and profile updates. Local approximation and
+profile-sensitivity bounds characterize conditions under which the chosen
+auxiliary can improve the approximation.
+Numerical experiments on Burgers, Korteweg–de Vries, Zakharov–Kuznetsov
+and isothermal compressible Navier–Stokes equations support accurate
+non-iterative approximations in the tested regimes.
+Matched auxiliary
+controls connect a reduced homotopy order to a smaller lifted representation
+in a Burgers case. The KdV comparison instead favors mean transport over
+the full frozen derivative at the prescribed accuracy. These results identify
+46
+
+
+auxiliary selection as a joint approximation and resource-design problem,
+involving the nonlinear remainder, propagator growth and representation
+size.
+The framework complements quantum linear-evolution algorithms by
+organizing nonlinear approximation before propagation. Under the stated
+matrix-access, normalization, signal and readout conditions, its resource anal-
+ysis provides a basis for quantum implementation. Structured compressed
+encodings and independently validated profiles are concrete next steps towards
+larger, spatially resolved systems. More broadly, this work shows how physi-
+cally informed auxiliary operators can connect nonlinear PDE approximation
+to quantum linear evolution, providing a systematic foundation for further
+quantum algorithm development.
+Acknowledgments
+Human authors came up with the Frozen-Oseen operator. OpenAI GPT-
+5.6 and 6 assisted with language polishing in chapter 2-4, theorem proofs in
+chapter 2, mathematical and citation checks, numerical tests’ code improving.
+The final proofs, algorithms, numerical tests’ code was independently written
+, reviewed, verified and approved by the human authors, who take full
+responsibility for the work.
+References
+[1] P. Moin, K. Mahesh, Direct numerical simulation: A tool in turbulence
+research, Annual Review of Fluid Mechanics 30 (1998) 539–578. doi:
+10.1146/annurev.fluid.30.1.539.
+[2] J. P. Slotnick, A. Khodadoust, J. J. Alonso, D. L. Darmofal, W. D.
+Gropp, E. A. Lurie, D. J. Mavriplis, CFD vision 2030 study: A path to
+revolutionary computational aerosciences, Tech. Rep. NASA/CR-2014-
+218178, NASA Langley Research Center (2014).
+URL https://ntrs.nasa.gov/citations/20140003093
+[3] J. G. Heywood, R. Rannacher, Finite element approximation of the
+nonstationary Navier–Stokes problem. I. regularity of solutions and
+second-order error estimates for spatial discretization, SIAM Journal on
+Numerical Analysis 19 (2) (1982) 275–311. doi:10.1137/0719018.
+47
+
+
+[4] S. Gowrisankar, S. Natesan, An efficient robust numerical method for
+singularly perturbed Burgers’ equation, Applied Mathematics and Com-
+putation 346 (2019) 385–394. doi:10.1016/j.amc.2018.10.049.
+[5] A.-K. Kassam, L. N. Trefethen, Fourth-order time-stepping for stiff
+PDEs, SIAM Journal on Scientific Computing 26 (4) (2005) 1214–1233.
+doi:10.1137/S1064827502410633.
+[6] M. Hochbruck, A. Ostermann, Exponential integrators, Acta Numerica
+19 (2010) 209–286. doi:10.1017/S0962492910000048.
+[7] S. M. Cox, P. C. Matthews, Exponential time differencing for stiff
+systems, Journal of Computational Physics 176 (2) (2002) 430–455.
+doi:10.1006/jcph.2002.6995.
+[8] M. Tokman, Efficient integration of large stiff systems of ODEs with expo-
+nential propagation iterative (EPI) methods, Journal of Computational
+Physics 213 (2) (2006) 748–776. doi:10.1016/j.jcp.2005.08.032.
+[9] A. W. Harrow, A. Hassidim, S. Lloyd, Quantum algorithm for linear
+systems of equations, Physical Review Letters 103 (2009) 150502. doi:
+10.1103/PhysRevLett.103.150502.
+[10] D. W. Berry, P. C. S. Costa, Quantum algorithm for time-dependent
+differential equations using Dyson series, Quantum 8 (2024) 1369. doi:
+10.22331/q-2024-06-13-1369.
+[11] D. Jennings, M. Lostaglio, R. B. Lowrie, S. Pallister, A. T. Sornborger,
+The cost of solving linear differential equations on a quantum computer:
+Fast-forwarding to explicit resource counts, Quantum 8 (2024) 1553.
+doi:10.22331/q-2024-12-10-1553.
+[12] D. W. Berry, High-order quantum algorithm for solving linear differential
+equations, Journal of Physics A: Mathematical and Theoretical 47 (2014)
+105301. doi:10.1088/1751-8113/47/10/105301.
+[13] A. M. Childs, R. Kothari, R. D. Somma, Quantum algorithm for systems
+of linear equations with exponentially improved dependence on precision,
+SIAM Journal on Computing 46 (6) (2017) 1920–1950. doi:10.1137/
+16M1087072.
+[14] A. M. Childs, J.-P. Liu, Quantum spectral methods for differential
+equations, Communications in Mathematical Physics 375 (2020) 1427–
+1457. doi:10.1007/s00220-020-03699-z.
+[15] A. M. Childs, J.-P. Liu, A. Ostrander, High-precision quantum algorithms
+for partial differential equations, Quantum 5 (2021) 574. doi:10.22331
+48
+
+
+/q-2021-11-10-574.
+[16] A. Montanaro, S. Pallister, Quantum algorithms and the finite element
+method, Physical Review A 93 (2016) 032324. doi:10.1103/PhysRevA
+.93.032324.
+[17] D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, R. D. Somma, Simulat-
+ing Hamiltonian dynamics with a truncated Taylor series, Physical Review
+Letters 114 (2015) 090502. doi:10.1103/PhysRevLett.114.090502.
+[18] G. H. Low, I. L. Chuang, Hamiltonian simulation by qubitization, Quan-
+tum 3 (2019) 163. doi:10.22331/q-2019-07-12-163.
+[19] S. Jin, N. Liu, Y. Yu, Quantum simulation of partial differential equations
+via Schrödingerization, Physical Review Letters 133 (2024) 230602. doi:
+10.1103/PhysRevLett.133.230602.
+[20] D. An, J.-P. Liu, L. Lin, Linear combination of Hamiltonian simulation
+for nonunitary dynamics with optimal state preparation cost, Physical
+Review Letters 131 (2023) 150603. doi:10.1103/PhysRevLett.131.15
+0603.
+[21] D. An, A. M. Childs, L. Lin, Quantum algorithm for linear non-unitary
+dynamics with near-optimal dependence on all parameters, Communica-
+tions in Mathematical Physics 407 (2026) 19. doi:10.1007/s00220-0
+25-05509-w.
+[22] H. Krovi, Improved quantum algorithms for linear and nonlinear differ-
+ential equations, Quantum 7 (2023) 913. doi:10.22331/q-2023-02-0
+2-913.
+[23] J.-P. Liu, H. Ø. Kolden, H. K. Krovi, N. F. Loureiro, K. Trivisa, A. M.
+Childs, Efficient quantum algorithm for dissipative nonlinear differential
+equations, Proceedings of the National Academy of Sciences of the United
+States of America 118 (2021) e2026805118. doi:10.1073/pnas.20268
+05118.
+[24] S. Jin, N. Liu, Y. Yu, Time complexity analysis of quantum algorithms
+via linear representations for nonlinear ordinary and partial differential
+equations, Journal of Computational Physics 487 (2023) 112149. doi:
+10.1016/j.jcp.2023.112149.
+[25] T. Carleman, Application de la théorie des équations intégrales linéaires
+aux systèmes d’équations différentielles non linéaires, Acta Mathematica
+59 (1932) 63–87. doi:10.1007/BF02546499.
+[26] A. Amini, C. Zheng, Q. Sun, N. Motee, Carleman linearization of
+49
+
+
+nonlinear systems and its finite-section approximations, Discrete and
+Continuous Dynamical Systems - B 30 (2) (2025) 577–603.
+doi:
+10.3934/dcdsb.2024102.
+[27] S. L. Brunton, M. Budišić, E. Kaiser, J. N. Kutz, Modern Koopman
+theory for dynamical systems, SIAM Review 64 (2) (2022) 229–340.
+doi:10.1137/21M1401243.
+[28] S. Liao, An approximate solution technique not depending on small
+parameters: A special example, International Journal of Non-Linear
+Mechanics 30 (1995) 371–380. doi:10.1016/0020-7462(94)00054-E.
+[29] S. Liao, On the homotopy analysis method for nonlinear problems,
+Applied Mathematics and Computation 147 (2004) 499–513. doi:10.1
+016/S0096-3003(02)00790-7.
+[30] S. Liao, Y. Tan, A general approach to obtain series solutions of nonlinear
+differential equations, Studies in Applied Mathematics 119 (2007) 297–
+354. doi:10.1111/j.1467-9590.2007.00387.x.
+[31] M. Turkyilmazoglu, A note on the homotopy analysis method, Applied
+Mathematics Letters 23 (10) (2010) 1226–1230. doi:10.1016/j.aml.20
+10.06.003.
+[32] S. Abbasbandy, M. Jalili, Determination of optimal convergence-control
+parameter value in homotopy analysis method, Numerical Algorithms 64
+(2013) 593–605. doi:10.1007/s11075-012-9680-9.
+[33] C. Xue, X.-F. Xu, X.-N. Zhuang, T.-P. Sun, Y.-J. Wang, M.-Y. Tan, C.-C.
+Ye, H.-Y. Liu, Y.-C. Wu, Z.-Y. Chen, G.-P. Guo, Quantum homotopy
+analysis method with quantum-compatible linearization for nonlinear
+partial differential equations, Science China Physics, Mechanics & As-
+tronomy 68 (2025) 104702. doi:10.1007/s11433-024-2584-2.
+[34] C. W. Oseen, Über die Stokes’sche formel und über eine verwandte
+aufgabe in der hydrodynamik, Arkiv för Matematik, Astronomi och
+Fysik 6 (29) (1910) 1–20.
+URL https://cir.nii.ac.jp/crid/1572261549999017600
+[35] B. M. DeBlois, Linearizing convection terms in the Navier–Stokes equa-
+tions, Computer Methods in Applied Mechanics and Engineering 143
+(1997) 289–297. doi:10.1016/S0045-7825(96)01153-X.
+[36] Y. Saad, Analysis of some Krylov subspace approximations to the matrix
+exponential operator, SIAM Journal on Numerical Analysis 29 (1) (1992)
+209–228. doi:10.1137/0729014.
+50
+
+
+[37] M. Hochbruck, C. Lubich, On Krylov subspace approximations to the
+matrix exponential operator, SIAM Journal on Numerical Analysis 34 (5)
+(1997) 1911–1925. doi:10.1137/S0036142995280572.
+[38] M. Hochbruck, C. Lubich, H. Selhofer, Exponential integrators for large
+systems of differential equations, SIAM Journal on Scientific Computing
+19 (5) (1998) 1552–1574. doi:10.1137/S1064827595295337.
+[39] R. B. Sidje, EXPOKIT: A software package for computing matrix ex-
+ponentials, ACM Transactions on Mathematical Software 24 (1) (1998)
+130–156. doi:10.1145/285861.285868.
+[40] A. H. Al-Mohy, N. J. Higham, Computing the action of the matrix
+exponential, with an application to exponential integrators, SIAM Journal
+on Scientific Computing 33 (2) (2011) 488–511. doi:10.1137/10078886
+0.
+[41] J. Niesen, W. M. Wright, Algorithm 919: A Krylov subspace algorithm
+for evaluating the φ-functions appearing in exponential integrators, ACM
+Transactions on Mathematical Software 38 (3) (2012) 22:1–22:19. doi:
+10.1145/2168773.2168781.
+[42] G. H. Low, R. D. Somma, Optimal quantum simulation of linear non-
+unitary dynamics (2025). arXiv:2508.19238, doi:10.48550/arXiv.2
+508.19238.
+[43] J. Haah, A. W. Harrow, Z. Ji, X. Wu, N. Yu, Sample-optimal tomography
+of quantum states, IEEE Transactions on Information Theory 63 (2017)
+5628–5641. doi:10.1109/TIT.2017.2719044.
+[44] J.-P. Liu, L. Lin, Dense outputs from quantum simulations, Journal of
+Computational Physics 514 (2024) 113213. doi:10.1016/j.jcp.2024
+.113213.
+[45] G. Brassard, P. Høyer, M. Mosca, A. Tapp, Quantum amplitude am-
+plification and estimation, in:
+S. J. Lomonaco, Jr., H. E. Brandt
+(Eds.), Quantum Computation and Information, Vol. 305 of Contem-
+porary Mathematics, American Mathematical Society, 2002, pp. 53–74.
+arXiv:quant-ph/0005055, doi:10.1090/conm/305/05215.
+[46] E. Hopf, The partial differential equation ut + uux = µuxx, Com-
+munications on Pure and Applied Mathematics 3 (1950) 201–230.
+doi:10.1002/cpa.3160030302.
+[47] J. D. Cole, On a quasi-linear parabolic equation occurring in aerody-
+namics, Quarterly of Applied Mathematics 9 (1951) 225–236.
+doi:
+51
+
+
+10.1090/qam/42889.
+[48] G. Kreiss, H.-O. Kreiss, Stability of steady solutions of Burgers’s equation,
+SIAM Journal on Numerical Analysis 35 (1998) 2329–2349. doi:10.113
+7/S0036142997316001.
+[49] C. Basdevant, M. Deville, P. Haldenwang, J.-M. Lacroix, J. Ouazzani,
+R. Peyret, P. Orlandi, A. T. Patera, Spectral and finite difference solutions
+of the Burgers equation, Computers & Fluids 14 (1) (1986) 23–41. doi:
+10.1016/0045-7930(86)90036-8.
+[50] N. Bottman, B. Deconinck, KdV cnoidal waves are spectrally stable,
+Discrete and Continuous Dynamical Systems 25 (4) (2009) 1163–1180.
+doi:10.3934/dcds.2009.25.1163.
+[51] C. A. J. Fletcher, Generating exact solutions of the two-dimensional
+Burgers’ equations, International Journal for Numerical Methods in
+Fluids 3 (3) (1983) 213–216. doi:10.1002/fld.1650030302.
+[52] C. Klein, S. Roudenko, N. Stoilov, Numerical study of Zakharov–
+Kuznetsov equations in two dimensions, Journal of Nonlinear Science 31
+(2021) 26. doi:10.1007/s00332-021-09680-x.
+[53] M. V. Melander, N. J. Zabusky, J. C. McWilliams, Symmetric vortex
+merger in two dimensions: causes and conditions, Journal of Fluid
+Mechanics 195 (1988) 303–340. doi:10.1017/S0022112088002435.
+52

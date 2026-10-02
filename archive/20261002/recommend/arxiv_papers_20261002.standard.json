@@ -1,0 +1,384 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-02T22:31:27.430328+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 3,
+    "deep_cap": 7,
+    "deep_selected": 3,
+    "quick_candidates": 6,
+    "quick_skim_target": 12,
+    "quick_selected": 6
+  },
+  "deep_dive": [
+    {
+      "id": "2609.39170v1",
+      "source": "arxiv",
+      "title": "Quantum Frozen--Oseen homotopy analysis method with LCHS for solving nonlinear partial differential equations",
+      "abstract": "Nonlinear partial differential equations (PDEs) underpin computational fluid dynamics, yet resolving nonlinear transport on fine grids remains computationally demanding. Quantum linear-evolution algorithms offer a possible route to large-scale simulation but cannot directly propagate nonlinear coupling. Here we develop a Frozen--Oseen quantum homotopy method (FOQHAM) framework that links transport-aware auxiliary-operator selection to the size of the resulting linear representation. We freeze the full Fréchet derivative at a prescribed flow profile, retaining transport and profile-gradient coupling and close each prescribed finite-order homotopy hierarchy as a fixed affine linear system by product lifting. We formulate its propagation through Linear Combinations of Hamiltonian Simulations (LCHS), without outer homotopy iterations or profile updates. For spatially semidiscrete equations, we establish local approximation bounds and exact closure of the finite-order hierarchy. Classical tests on Burgers, Korteweg--de Vries, Zakharov--Kuznetsov, and one- and two-dimensional isothermal compressible Navier--Stokes equations provide numerical evidence of accurate non-iterative approximations in the tested regimes. The framework thus connects nonlinear PDE approximation to quantum linear evolution and offers a conditional path toward quantum acceleration.",
+      "authors": [
+        "Jinhao Yuan",
+        "Leyu Chen",
+        "Tiegang Liu",
+        "Kun Wang"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "quant-ph"
+      ],
+      "published": "2026-09-30T07:30:21+00:00",
+      "link": "https://arxiv.org/pdf/2609.39170v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Quantum homotopy method with LCHS for solving nonlinear PDEs",
+      "llm_evidence_cn": "结合LCHS的量子同伦方法求解非线性偏微分方程",
+      "llm_evidence": "结合LCHS的量子同伦方法求解非线性偏微分方程",
+      "canonical_evidence": "结合LCHS的量子同伦方法求解非线性偏微分方程",
+      "llm_tldr_en": "FOQHAM freezes the Frechet derivative of nonlinear transport PDEs and closes each homotopy order as an affine linear system, solved via linear combination of Hamiltonian simulation.",
+      "llm_tldr_cn": "非线性偏微分方程在精细网格上求解代价高昂，而量子线性演化算法无法直接处理非线性耦合。本文提出冻结-Oseen 量子同伦方法 FOQHAM，冻结流场处的 Fréchet 导数，通过乘积提升将同伦层级闭合为仿射线性系统，并借助线性组合哈密顿模拟求解。该框架把辅助算子选择与线性表示规模联系起来，为非线性输运问题提供了可扩展的量子求解路径。",
+      "llm_tldr": "非线性偏微分方程在精细网格上求解代价高昂，而量子线性演化算法无法直接处理非线性耦合。本文提出冻结-Oseen 量子同伦方法 FOQHAM，冻结流场处的 Fréchet 导数，通过乘积提升将同伦层级闭合为仿射线性系统，并借助线性组合哈密顿模拟求解。该框架把辅助算子选择与线性表示规模联系起来，为非线性输运问题提供了可扩展的量子求解路径。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.37207v1",
+      "source": "arxiv",
+      "title": "Near-Optimal Quantum Algorithm and Complexity Analysis for Riccati Problems",
+      "abstract": "We develop quantum algorithms that construct block-encodings of solution matrices for continuous- and discrete-time algebraic Riccati equations (CAREs and DAREs), differential Riccati equations (DREs), and finite Riccati recursions. The Quantum Weighted Riesz Method, unifying four kinds of Riccati problems, constructs projectors onto the solution graphs using weighted Riesz branching operators and recovers the solution matrices. Under the stated access and normalization assumptions, our algorithms for CAREs and DAREs have near-optimal query complexity $Θ(\\mathcal Rα)$ up to logarithmic factors, with the generalized singularity factor $\\mathcal R$ that reflects spectral separation, and the output normalization $α$. For DREs and finite-horizon problems, the query complexity has an additional initialization conditioning factor $κ_{\\rm init}$. We establish product query lower bounds for specified input-oracle families, demonstrating necessary joint dependence on spectral separation and initialization or output scale. We also prove that selected-value promise problems are BQP-complete on explicit circuit-generated families of single-control discrete-time algebraic and zero-terminal differential Riccati equations. Applications include classical feedback evaluation for linear-quadratic control, a query-complexity comparison for stable random-phase approximation Riccati equations in quantum chemistry, and heated boundary control with numerical validation.",
+      "authors": [
+        "Jingyao Wang",
+        "Yanqiao Wang",
+        "Bowen Li",
+        "Jin-Peng Liu",
+        "Zhengfeng Ji"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math-ph"
+      ],
+      "published": "2026-09-29T10:25:40+00:00",
+      "link": "https://arxiv.org/pdf/2609.37207v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "quantum algorithms for differential Riccati equations with near-optimal query complexity and block encodings",
+      "llm_evidence_cn": "针对微分Riccati方程的量子算法，近最优查询复杂度与块编码",
+      "llm_evidence": "针对微分Riccati方程的量子算法，近最优查询复杂度与块编码",
+      "canonical_evidence": "针对微分Riccati方程的量子算法，近最优查询复杂度与块编码",
+      "llm_tldr_en": "A quantum weighted Riesz method unifies CARE, DARE, DRE and finite Riccati recursions, constructing block-encodings of solution matrices with near-optimal query complexity governed by spectral separation.",
+      "llm_tldr_cn": "连续与离散代数Riccati方程、微分Riccati方程等此前缺乏统一的量子算法与复杂度分析。本文提出量子加权Riesz方法，用加权Riesz分支算子构造解图的投影并生成解矩阵的块编码，统一处理四类Riccati问题。在给定访问与归一化假设下，代数Riccati方程达到近最优查询复杂度，由反映谱分离的广义奇异性因子刻画。该结果为矩阵微分方程的量子求解提供了可证明的复杂度保证。",
+      "llm_tldr": "连续与离散代数Riccati方程、微分Riccati方程等此前缺乏统一的量子算法与复杂度分析。本文提出量子加权Riesz方法，用加权Riesz分支算子构造解图的投影并生成解矩阵的块编码，统一处理四类Riccati问题。在给定访问与归一化假设下，代数Riccati方程达到近最优查询复杂度，由反映谱分离的广义奇异性因子刻画。该结果为矩阵微分方程的量子求解提供了可证明的复杂度保证。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms with provable complexity improvements for ordinary differential equation and partial differential equation solvers",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.40174v1",
+      "source": "arxiv",
+      "title": "Dissipation accelerates quantum and classical simulation of open-system dynamics",
+      "abstract": "Simulating open quantum systems reveals how environmental coupling shapes relaxation, excitation transport, and the dynamics of quantum correlations. On quantum hardware, dissipative channels add operations and might seem to increase cost. However, we show that a broad class of Pauli noise, including depolarization, can ease quantum and classical simulation by exponentially suppressing high-weight components of Heisenberg-evolved observables. For bounded-degree Lindblad dynamics, this permits system-size-independent Trotter steps when estimating local observables. Combining this compression with Richardson extrapolation, we provide classical and quantum error bounds with respect to the 2-norm of the propagated observable. These give high-probability expectation-value guarantees for random input states or random Hamiltonians acting on a fixed state and control (out-of-time-order) correlators. Concretely, we show that expectation values of local observables at time $t$ can be estimated to accuracy $\\varepsilon$ using circuits of maximum depth $O\\!\\left(\\left[1+\\left(t/γ\\right)^{3/2}\\right]\\log^2(1/\\varepsilon)\\right)$, independent of the system size $n$. Classically, we show that sparse Pauli propagation runs in time polynomial in $n$, $t$ and $1/\\varepsilon$ for every fixed $γ>0$, with polynomial degree $O(1/γ)$ in the weak dissipation limit. The gap between our quantum and classical upper bounds leaves room for a substantial polynomial quantum advantage as dissipation weakens, an observation further supported by our numerical results.",
+      "authors": [
+        "Armando Angrisani",
+        "Ricard Puig",
+        "Yanting Teng",
+        "Zoë Holmes"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cond-mat.stat-mech"
+      ],
+      "published": "2026-09-30T17:02:15+00:00",
+      "link": "https://arxiv.org/pdf/2609.40174v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "quantum simulation of open-system and Lindblad dissipative dynamics",
+      "llm_evidence_cn": "开放系统与Lindblad耗散动力学的量子模拟",
+      "llm_evidence": "开放系统与Lindblad耗散动力学的量子模拟",
+      "canonical_evidence": "开放系统与Lindblad耗散动力学的量子模拟",
+      "llm_tldr_en": "Dissipative channels are usually thought to add cost in open-system simulation. The paper shows Pauli noise exponentially suppresses high-weight components of Heisenberg-evolved observables, giving system-size-independent Trotter steps for local observables in bounded-degree Lindblad dynamics.",
+      "llm_tldr_cn": "开放量子系统的模拟通常被认为会因耗散信道而增加量子硬件成本。本文表明一类Pauli噪声（含去极化）可指数压低Heisenberg演化观测量的高权重分量，从而同时简化量子与经典模拟。对有限度Lindblad动力学，估计局部观测量时Trotter步数可与系统规模无关，结合Richardson外推给出以2-范数度量的经典与量子误差界，说明耗散反而能加速开放系统动力学模拟。",
+      "llm_tldr": "开放量子系统的模拟通常被认为会因耗散信道而增加量子硬件成本。本文表明一类Pauli噪声（含去极化）可指数压低Heisenberg演化观测量的高权重分量，从而同时简化量子与经典模拟。对有限度Lindblad动力学，估计局部观测量时Trotter步数可与系统规模无关，结合Richardson外推给出以2-范数度量的经典与量子误差界，说明耗散反而能加速开放系统动力学模拟。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.40167v1",
+      "source": "arxiv",
+      "title": "Shadow Quantum Singular Value Transformation with Shallow Quantum Circuits",
+      "abstract": "We introduce shadow quantum singular value transformation (Shadow QSVT): given an initial state $|ψ\\rangle$, a Hermitian matrix $H$, a polynomial $f$, and a set of observables $\\{O_1,\\dots,O_m\\}$, the goal is to estimate $\\langleψ|f(H)^{\\dagger}O_j f(H)|ψ\\rangle$ for all $j\\in\\{1,\\dots,m\\}$. Shadow QSVT provides a systematic route to reduce the quantum resources required by standard QSVT, which constructs a unitary block-encoding of $f(H)$. It uses structure in the input state and observables, together with the fact that many applications require only observable estimates rather than synthesizing the full unitary.   We present three algorithms that exploit structure in the initial state and observables to reduce quantum circuit depth. First, we develop a state-aware QSVT algorithm that prepares the target state with low circuit depth when the Krylov subspace associated with $H$ and $|ψ\\rangle$ is low-dimensional or admits an accurate low-dimensional approximation. Second, we introduce an observable-aware Shadow QSVT algorithm that combines a new observable-aware Krylov subspace with history states to further reduce circuit depth and gate complexity. Finally, we develop Classical Shadow QSVT, which constructs a classical representation from $H$, $f$, and $|ψ\\rangle$ without prior knowledge of the observables or explicit preparation of the target state proportional to $f(H)|ψ\\rangle$. This representation enables estimation of the target quantities for observables specified after the quantum computation. Together, these three algorithms provide tools for reducing the circuit depth of QSVT-based computations across a range of settings.",
+      "authors": [
+        "Nai-Hui Chia",
+        "Hyunseong Kim",
+        "Chia-Ying Lin"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.DS"
+      ],
+      "published": "2026-09-30T17:00:16+00:00",
+      "link": "https://arxiv.org/pdf/2609.40167v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Shadow QSVT estimates observables of f(H) with shallow circuits, reducing standard QSVT resources",
+      "llm_evidence_cn": "影子量子奇异值变换用浅层电路估计f(H)可观测量，降低标准QSVT资源",
+      "llm_evidence": "影子量子奇异值变换用浅层电路估计f(H)可观测量，降低标准QSVT资源",
+      "canonical_evidence": "影子量子奇异值变换用浅层电路估计f(H)可观测量，降低标准QSVT资源",
+      "llm_tldr_en": "Shadow QSVT estimates expectation values of f(H) using shallow circuits, exploiting state and observable structure to cut the resources of standard block-encoded QSVT.",
+      "llm_tldr_cn": "标准量子奇异值变换需构造 f(H) 的块编码，电路深度与量子资源开销大。本文提出影子量子奇异值变换，利用初态与可观测量的结构，直接估计 〈ψ|f(H)†O_j f(H)|ψ〉。给出三种浅层电路算法，显著降低电路深度与所需量子资源，避免合成完整酉算子。该框架为仅需可观测量估计的应用提供了更实用的 QSVT 实现路径。",
+      "llm_tldr": "标准量子奇异值变换需构造 f(H) 的块编码，电路深度与量子资源开销大。本文提出影子量子奇异值变换，利用初态与可观测量的结构，直接估计 〈ψ|f(H)†O_j f(H)|ψ〉。给出三种浅层电路算法，显著降低电路深度与所需量子资源，避免合成完整酉算子。该框架为仅需可观测量估计的应用提供了更实用的 QSVT 实现路径。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum singular value transformation for matrix functions and polynomial approximation",
+      "matched_requirement_id": "req-14",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.39452v1",
+      "source": "arxiv",
+      "title": "From Wavefunction Regularity to Eigenvector Conditioning: Accuracy--Cost Trade-offs of Quantum Algorithms for Non-Hermitian Transcorrelated Hamiltonians",
+      "abstract": "The electron--electron Coulomb singularity forces cusp structure in electronic wavefunctions. This cusp structure limits wavefunction regularity and slows the convergence of expansions in smooth bases, requiring large basis sets to reach a target accuracy. The transcorrelated (TC) method incorporates this short-range behavior into the Hamiltonian, thereby improving the regularity of the transformed wavefunction and accelerating convergence toward the complete-basis-set limit. The resulting Hamiltonian is non-Hermitian and non-normal, which limits the direct applicability of standard quantum algorithms. For such non-normal operators, the complexity of several recent quantum algorithms depends explicitly on quantities related to eigenvector conditioning and eigenvalue sensitivity. Understanding these quantities is essential for assessing both algorithmic complexity and quantum resource requirements. In this work, we address these issues in two stages. We first study a solvable model, which provides a controlled setting for isolating how transcorrelation affects basis convergence and eigenvector conditioning. Within this setting, we investigate two distinct one-parameter Jastrow correlators. We derive the asymptotic energy-error scaling: $N^{-1/2}$ for the bare projection and $N^{-3/2}$ for both TC correlators at generic fixed parameters, with $N$denoting the basis size. Furthermore, we show that this faster convergence can yield a polynomial improvement in the asymptotic query-complexity upper bound. We then extend the analysis to second-quantized electronic-structure Hamiltonians and use particle-number-sector diagnostics to distinguish target-sector from auxiliary-sector conditioning. Our work provides a framework for understanding the central accuracy--cost trade-off in TC Hamiltonians.",
+      "authors": [
+        "Cheng-Lin Hong",
+        "Emiel Koridon",
+        "Paul K. Faehrmann",
+        "Thomas D. Kühne",
+        "Stefano Polla",
+        "Werner Dobrautz"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "physics.chem-ph"
+      ],
+      "published": "2026-09-30T10:26:00+00:00",
+      "link": "https://arxiv.org/pdf/2609.39452v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "accuracy-cost trade-offs and eigenvector conditioning for quantum algorithms on non-normal non-Hermitian operators",
+      "llm_evidence_cn": "非厄米非正规算子的量子算法复杂度与精度—条件数权衡",
+      "llm_evidence": "非厄米非正规算子的量子算法复杂度与精度—条件数权衡",
+      "canonical_evidence": "非厄米非正规算子的量子算法复杂度与精度—条件数权衡",
+      "llm_tldr_en": "Non-Hermitian transcorrelated Hamiltonians are non-normal, limiting standard quantum algorithms; the paper analyzes how wavefunction regularity and eigenvector conditioning govern accuracy-cost trade-offs.",
+      "llm_tldr_cn": "该文关注电子结构计算中库仑奇点导致的波函数尖点问题，指出transcorrelated方法虽改善波函数正则性，却产生非厄米非正规哈密顿量，限制标准量子算法的直接适用。作者分析特征向量条件数与量子算法复杂度之间的关系，给出精度—成本权衡的定量刻画。结果表明非正规性与条件数显著影响量子算法效率，为面向非厄米算子的量子算法设计提供依据。",
+      "llm_tldr": "该文关注电子结构计算中库仑奇点导致的波函数尖点问题，指出transcorrelated方法虽改善波函数正则性，却产生非厄米非正规哈密顿量，限制标准量子算法的直接适用。作者分析特征向量条件数与量子算法复杂度之间的关系，给出精度—成本权衡的定量刻画。结果表明非正规性与条件数显著影响量子算法效率，为面向非厄米算子的量子算法设计提供依据。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "reducing dependence on evolution time, precision, condition number, and spatial discretization in quantum differential equation solvers",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.40254v1",
+      "source": "arxiv",
+      "title": "Quantum oblique eigenprojection",
+      "abstract": "Every square matrix decomposes its underlying Hilbert space into generalized, nonorthogonal eigensubspaces. We show that a quantum computer can perform such an oblique eigenprojection $Π$ given block encoding access to the input matrix. Our approach has a query complexity nearly linear in the inverse gap and a normalization factor close to $\\lVertΠ\\rVert$ under a spectral-set condition on the input. This covers common assumptions on the numerical range or diagonalizability and matches known results for orthogonal eigenprojections. We achieve this with a two-sided block preconditioning that uses a discrete Fourier transform of the matrix resolvent. We describe applications to: (i) preparing eigenstates of matrices with complex eigenvalues, extending the quantum eigenvalue transformation algorithm of Low and Su beyond real spectra; (ii) solving continuous-time algebraic Riccati equations, cubically speeding up a prior solver of Rodenas-Ruiz, Zhao, and Lee; and (iii) solving ordinary Sylvester equations, quadratically improving a direct augmented method of Wang and Liu. Our result suggests a promising route to applying nonanalytic matrix functions on quantum computers.",
+      "authors": [
+        "Alexander M. Dalzell",
+        "Yuan Su"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.DS",
+        "physics.chem-ph"
+      ],
+      "published": "2026-09-30T17:40:15+00:00",
+      "link": "https://arxiv.org/pdf/2609.40254v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "block-encoding based quantum algorithm for oblique eigenprojection and eigenvalue transformation",
+      "llm_evidence_cn": "基于块编码的量子斜本征投影与特征值变换算法",
+      "llm_evidence": "基于块编码的量子斜本征投影与特征值变换算法",
+      "canonical_evidence": "基于块编码的量子斜本征投影与特征值变换算法",
+      "llm_tldr_en": "Shows a quantum computer can perform oblique eigenprojection given block encoding access, achieving query complexity nearly linear in inverse gap via two-sided block preconditioning.",
+      "llm_tldr_cn": "任意方阵将其希尔伯特空间分解为广义非正交本征子空间，但在量子算法中高效实现这类斜本征投影一直缺乏通用方法。本文证明在给定输入矩阵块编码访问时，量子计算机可执行斜本征投影，其查询复杂度与逆谱隙近似线性，归一化因子接近投影范数。方法核心是双边块预处理，利用矩阵预解式的离散傅里叶变换。该结果推广了正交本征投影的已知结论，并应用于复本征值矩阵的本征态制备，扩展了量子本征值变换算法。",
+      "llm_tldr": "任意方阵将其希尔伯特空间分解为广义非正交本征子空间，但在量子算法中高效实现这类斜本征投影一直缺乏通用方法。本文证明在给定输入矩阵块编码访问时，量子计算机可执行斜本征投影，其查询复杂度与逆谱隙近似线性，归一化因子接近投影范数。方法核心是双边块预处理，利用矩阵预解式的离散傅里叶变换。该结果推广了正交本征投影的已知结论，并应用于复本征值矩阵的本征态制备，扩展了量子本征值变换算法。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "block encoding techniques for accessing matrices in quantum algorithms",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.40214v2",
+      "source": "arxiv",
+      "title": "Quantum Markov State Models for Metastable Dynamics",
+      "abstract": "Open quantum systems can rapidly lose most microscopic information, leaving only a few degrees of freedom to govern their long-time dynamics. Classical Markov state models (MSMs) describe such metastable dynamics as transitions among a few representative phases and are widely used to reduce complex-system dynamics in condensed matter and chemical physics. In quantum systems, however, phase labels alone are insufficient when coherence persists between metastable states. Even when the slow modes are known, their spectral projection need not produce valid quantum states. We construct quantum Markov state models (QMSMs) that describe the surviving information and its evolution on a small physical state space containing classical sectors and quantum matrix blocks. We quantify metastability by assuming that the evolution channel $\\mathcal C$ changes little when applied a second time, with sufficiently small defect $η=\\|\\mathcal C^2-\\mathcal C\\|_\\diamond$, and that the number of slow degrees of freedom is bounded independently of the full system size. Under these assumptions, we construct compression and reconstruction channels whose composition recovers every reduced state exactly, while the reverse composition gives an exactly idempotent channel approximating $\\mathcal C$, answering Kitaev's exact-rounding question [Kit25]. Our constructions give an optimal diamond-norm bound of $\\mathcal{O}(η^{1/3})$ on all input states, as well as an improved bound of $\\mathcal{O}(η^{1/2})$ on metastable states prepared by $\\mathcal C$, with constants depending only on the slow dimension. The reduced transition channel can be iterated to predict the microscopic dynamics with controlled error. We illustrate the QMSM through a weakly driven dissipative spin chain supporting either a metastable logical qubit or long-lived classical phases.",
+      "authors": [
+        "Hao-En Li",
+        "Lin Lin",
+        "Michael Ragone"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math-ph",
+        "math.FA",
+        "math.OA"
+      ],
+      "published": "2026-09-30T17:24:35+00:00",
+      "link": "https://arxiv.org/pdf/2609.40214v2",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "quantum Markov state models for open quantum system metastable dynamics",
+      "llm_evidence_cn": "面向开放量子系统亚稳态动力学的量子马尔可夫状态模型",
+      "llm_evidence": "面向开放量子系统亚稳态动力学的量子马尔可夫状态模型",
+      "canonical_evidence": "面向开放量子系统亚稳态动力学的量子马尔可夫状态模型",
+      "llm_tldr_en": "Proposes quantum Markov state models that capture surviving information in open quantum systems whose metastable dynamics retain coherence, extending classical MSMs to include quantum matrix blocks.",
+      "llm_tldr_cn": "开放量子系统在长时间演化中会迅速丢失微观信息，仅剩少数自由度主导其动力学，经典马尔可夫状态模型以相位间跃迁描述此类亚稳态过程。本文指出当亚稳态间仍存在相干性时仅用相位标签不足，且慢模的谱投影未必给出合法量子态，因而提出量子马尔可夫状态模型。该模型在小物理态空间上包含经典扇区与量子矩阵块，刻画幸存信息及其演化。这一工作为开放量子系统与非幺正耗散动力学的粗粒化建模提供了新工具。",
+      "llm_tldr": "开放量子系统在长时间演化中会迅速丢失微观信息，仅剩少数自由度主导其动力学，经典马尔可夫状态模型以相位间跃迁描述此类亚稳态过程。本文指出当亚稳态间仍存在相干性时仅用相位标签不足，且慢模的谱投影未必给出合法量子态，因而提出量子马尔可夫状态模型。该模型在小物理态空间上包含经典扇区与量子矩阵块，刻画幸存信息及其演化。这一工作为开放量子系统与非幺正耗散动力学的粗粒化建模提供了新工具。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.40277v1",
+      "source": "arxiv",
+      "title": "Conditioning-Free Non-Uniform Quantum Fourier and Chebyshev Transforms",
+      "abstract": "We present an efficient quantum algorithm for the non-uniform Chebyshev transform. It is defined as the projection of a function onto Chebyshev polynomials sampled at given nodes that are uniform in $x\\in[-1,1]$, and hence non-uniform in the angle $θ=\\arccos x$, a setting that QFT-based quantum Chebyshev transforms cannot handle. Our construction is based on an improvement of an existing Non-uniform Quantum Fourier Transform (NUQFT) whereby we remove the conditioning from non-uniform node sampling. Hence, error bounds are independent of the geometry-dependent parameter $κ$ of prior work. We use the fact that Chebyshev transform matrix is the average of two Type-II non-uniform DFTs, which we implement with a single controlled NUQFT circuit. We provide explicit oracle constructions, including the row-access oracle previously left as an assumption. The resulting $\\varepsilon$-accurate block encoding has $O(1)$ normalization and uses $O(L)$ qubits and $\\widetilde O(L^2)$ gates, where $L=\\log N+\\log(1/\\varepsilon)$. We give an end-to-end implementation with complexity analysis, including the success probability and output-state error.",
+      "authors": [
+        "Chaowen Guan",
+        "Akshit Katiyar"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.DS"
+      ],
+      "published": "2026-09-30T17:46:17+00:00",
+      "link": "https://arxiv.org/pdf/2609.40277v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "quantum algorithm for non-uniform Chebyshev transform and polynomial approximation",
+      "llm_evidence_cn": "非均匀切比雪夫变换的量子算法，与多项式逼近相关",
+      "llm_evidence": "非均匀切比雪夫变换的量子算法，与多项式逼近相关",
+      "canonical_evidence": "非均匀切比雪夫变换的量子算法，与多项式逼近相关",
+      "llm_tldr_en": "Presents a conditioning-free quantum algorithm for the non-uniform Chebyshev transform, implemented via a controlled non-uniform QFT circuit with error bounds independent of geometry.",
+      "llm_tldr_cn": "基于量子傅里叶变换的切比雪夫变换无法处理在角度上非均匀采样的节点，且先前算法的误差界依赖几何相关的条件数参数。本文提出高效的非均匀切比雪夫变换量子算法，将其视为函数在切比雪夫多项式上的投影，并改进非均匀量子傅里叶变换以去除节点采样中的条件数依赖。由于切比雪夫变换矩阵是两类II型非均匀DFT的平均，作者用单个受控NUQFT线路实现。所得误差界不再依赖几何参数，为量子多项式逼近与矩阵函数实现提供了更稳健的工具。",
+      "llm_tldr": "基于量子傅里叶变换的切比雪夫变换无法处理在角度上非均匀采样的节点，且先前算法的误差界依赖几何相关的条件数参数。本文提出高效的非均匀切比雪夫变换量子算法，将其视为函数在切比雪夫多项式上的投影，并改进非均匀量子傅里叶变换以去除节点采样中的条件数依赖。由于切比雪夫变换矩阵是两类II型非均匀DFT的平均，作者用单个受控NUQFT线路实现。所得误差界不再依赖几何参数，为量子多项式逼近与矩阵函数实现提供了更稳健的工具。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum singular value transformation for matrix functions and polynomial approximation",
+      "matched_requirement_id": "req-14",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.01878v1",
+      "source": "arxiv",
+      "title": "Floquet-Universal Hamiltonian Simulation",
+      "abstract": "Analogue and digital Hamiltonian simulation represent two distinct approaches to making one quantum system replicate the physical properties of another, with consequences ranging from practical applications to complexity theory and quantum gravity. They are rooted in two distinct regimes of quantum dynamics: time-independent Hamiltonians for the former; fully controllable time-dependent quantum circuits in the latter. Time-periodic Hamiltonians represent an intermediate regime. In this work, we establish a theory of Floquet simulation where we use periodically driven Hamiltonians to synthesise time-independent ones.   We show that a set of interactions $S$ can Floquet-simulate every Hamiltonian in the Lie algebra $\\mathrm{Lie}(S)$, and consequently we give a complete and constructive characterisation of Floquet-universal Hamiltonians that are able to produce any target Hamiltonian. Notably, our construction uses only $O(1)$ local interaction strengths and ratios thereof, avoiding the impractical multi-scale local interaction strengths often required in analogue simulation via time-independent Hamiltonians. Instead, the construction requires a range of driving frequencies which scales polynomially with system size for important classes such as $k$-local lattice Hamiltonians. This has immediate complexity-theoretic implications, including numerous BQP-completeness and QMA-hardness results for natural physical properties and quantities studied in Floquet physics.",
+      "authors": [
+        "Emilio Onorati",
+        "Harriet Apel",
+        "Michael M. Wolf",
+        "Toby Cubitt"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math-ph"
+      ],
+      "published": "2026-10-01T15:34:41+00:00",
+      "link": "https://arxiv.org/pdf/2610.01878v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Hamiltonian simulation theory using periodically driven Hamiltonians",
+      "llm_evidence_cn": "用周期驱动哈密顿量合成时间无关哈密顿量的模拟理论",
+      "llm_evidence": "用周期驱动哈密顿量合成时间无关哈密顿量的模拟理论",
+      "canonical_evidence": "用周期驱动哈密顿量合成时间无关哈密顿量的模拟理论",
+      "llm_tldr_en": "The paper establishes a theory of Floquet simulation, using periodically driven Hamiltonians to synthesize time-independent ones, and shows a set of interactions can Floquet-simulate every Hamiltonian in its Lie algebra.",
+      "llm_tldr_cn": "类比与数字哈密顿量模拟分别适用于时间无关与完全可控时变体系，而时间周期驱动这一中间情形此前缺乏系统理论。本文建立Floquet模拟理论，用周期驱动的哈密顿量合成时间无关哈密顿量，并证明相互作用集合S能够模拟其李代数中的任意哈密顿量。作者给出完整且可构造的模拟方案，刻画了可合成的时间无关哈密顿量范围。该工作统一了类比与数字两种模拟范式，并为哈密顿量模拟的复杂度理论提供新的分析工具。",
+      "llm_tldr": "类比与数字哈密顿量模拟分别适用于时间无关与完全可控时变体系，而时间周期驱动这一中间情形此前缺乏系统理论。本文建立Floquet模拟理论，用周期驱动的哈密顿量合成时间无关哈密顿量，并证明相互作用集合S能够模拟其李代数中的任意哈密顿量。作者给出完整且可构造的模拟方案，刻画了可合成的时间无关哈密顿量范围。该工作统一了类比与数字两种模拟范式，并为哈密顿量模拟的复杂度理论提供新的分析工具。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "efficient Hamiltonian simulation algorithms with rigorous gate and query complexity guarantees",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

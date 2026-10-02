@@ -1,0 +1,2483 @@
+Title: Quantum oblique eigenprojection
+
+URL Source: https://arxiv.org/pdf/2609.40254v1
+
+Published Time: Thu, 01 Oct 2026 02:18:43 GMT
+
+Number of Pages: 41
+
+Markdown Content:
+# Quantum oblique eigenprojection 
+
+Alexander M. Dalzell and Yuan Su AWS Center for Quantum Computing, Pasadena, CA 91106, USA 
+
+Abstract 
+
+Every square matrix decomposes its underlying Hilbert space into generalized eigensub-spaces. These subspaces are typically nonorthogonal, and performing their projections amounts to applying a discontinuous, and hence nonanalytic, function of a complex variable to the input matrix. We show that a quantum computer can perform such an oblique eigenprojection Π given block encoding access to the input matrix. Our approach has a query complexity nearly linear in the inverse gap and a normalization factor close to ∥Π∥ under a spectral-set condition on the input, satisfied in particular under common assumptions on its numerical range or diagonaliz-ability. Our main technical contribution is a two-sided block preconditioning that employs a discrete Fourier transform of the matrix resolvent. This achieves the desired normalization factor while maintaining the same query complexity as the standard block encoding approach based on resolvent integration, matching known results for orthogonal eigenprojections. We describe applications to: (i) preparing eigenstates of matrices with complex eigenvalues, extending the quantum eigenvalue transformation algorithm of Low and Su beyond real spectra; (ii) solving continuous-time algebraic Riccati equations, cubically speeding up a prior solver of Rodenas-Ruiz, Zhao, and Lee; and (iii) solving ordinary Sylvester equations, quadratically improving a direct augmented method of Wang and Liu. Our result suggests a promising route to applying nonanalytic matrix functions on quantum computers. 
+
+1arXiv:2609.40254v1 [quant-ph] 30 Sep 2026 Contents 
+
+1 Introduction 32 Resolvent integral and its block encoding 53 Two-sided block preconditioning of resolvent integral 74 Quantum oblique eigenprojection for more general regions 11 5 Applications 13 
+
+5.1 Eigenstate preparation for complex spectra . . . . . . . . . . . . . . . . . . . . . . . 14 5.2 Continuous-time algebraic Riccati equations . . . . . . . . . . . . . . . . . . . . . . . 15 5.3 Ordinary Sylvester equations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 
+
+6 Discussion 16 A Standard block encoding of resolvent integral 19 
+
+A.1 Resolvent integral and generalized eigensubspaces . . . . . . . . . . . . . . . . . . . . 19 A.2 Block encoding of resolvent integral . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20 
+
+B Discrete Fourier transform of resolvent and preconditioning 24 
+
+B.1 Block encoding matrix resolvent in the Fourier basis . . . . . . . . . . . . . . . . . . 24 B.2 Discrete Fourier transform of matrix resolvent . . . . . . . . . . . . . . . . . . . . . . 25 B.3 Two-sided block preconditioning of resolvent integral . . . . . . . . . . . . . . . . . . 28 
+
+C Extension to general regions 30 
+
+C.1 Reduction to the unit disk . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30 C.2 Half-plane construction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 32 
+
+D Further analysis on applications 34 
+
+D.1 Eigenstate preparation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 34 D.2 Continuous-time algebraic Riccati equation . . . . . . . . . . . . . . . . . . . . . . . 36 D.3 Sylvester equation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 37 1 Introduction 
+
+Quantum computers hold the promise of solving numerous computational problems faster than their classical counterparts [15, 39]. A prominent example is the ground state projection prob-lem, whose solution gives access to the static properties of many-body quantum systems relevant to application areas like chemistry, nuclear physics, and materials science. In this problem, we are given a description of a many-body Hamiltonian A along with an assumption on the gap δ
+
+between the ground energy and the first excited energy, and the goal is to efficiently perform the eigenprojection Π λ0 onto the eigenstate associated with the ground energy λ0. One solution to this problem—known already in the early days of quantum algorithms research—applies the phase estimation algorithm to the time evolution unitary eiAt , effecting the projection Π λ0 [1, 8, 21]. To resolve the ground and excited states this way, the evolution must be performed out to time 
+
+t = Θ ΘΘ(1 /δ )—a fundamental lower bound related to the energy–time uncertainty principle. Modern approaches to eigenprojection for Hermitian matrices indeed achieve optimal total query cost Θ ΘΘ(1 /δ ) [13, 25], but they are better viewed through the lens of linear algebra: one starts with a description of the input matrix A and aims to perform a particular matrix function f (A) on a quantum computer. When A is Hermitian, its singular values agree with eigenvalues in magnitude, whereas its eigenstates form an orthonormal basis. Then the task can be accomplished by the Quantum Singular Value Transformation (QSVT) [14]. Crucially, QSVT can perform polynomial transformations to Hermitian input matrices with a query complexity linear in the degree of the polynomial, and thus can remain efficient even when the underlying Hilbert space has an expo-nentially large dimension. For example, QSVT optimally solves the orthogonal eigenprojection problem by using a degree-O(1 /δ ) polynomial f that approximates the indicator function on the target part of the spectrum, so that f (A) ≈ Πλ0 [14, Lemma 29]. But QSVT applies far more widely, providing a unified framework for developing many quantum algorithms [31] with nearly optimal query complexity [33], including Hamiltonian simulation [27], Gibbs state preparation, and solving linear systems [14], which correspond to different choices of the function f .Performing f (A) for a general, non-normal matrix A is considerably harder, as the eigenvalues and singular values of A no longer relate and the associated generalized eigensubspaces are typically oblique. Nonetheless, the ability to implement Quantum EigenValue Transformation (QEVT) for non-normal operators is broadly useful: it arises in simulating non-Hermitian physics [4], in transcorrelated approaches to quantum chemistry [32], in solving differential equations [6, 7, 23], and in studying irreversible Markov chains [5]. When the target function f is analytic, several approaches have been developed to transform non-normal matrices on a quantum computer, which can be broadly grouped into three methodologies: those based on resolvent integration [18, 43–45, 49], those based on solving a system of linear equations built from a matrix generating function [28], and those based on a linear combination of Hamiltonian simulations or a linear combination of Hermitian matrices [3, 34, 50]. An even more challenging task is to perform nonanalytic functions of general matrices. Asimple yet fundamental example is the eigenprojection Π associated with a target region of the spectrum in the complex plane, corresponding to the indicator function of that region—a natural generalization of the influential ground state projection problem discussed above. As illustrated in Figure 1, a polynomial can approximate this indicator function when the spectrum is real, but doing so is fundamentally obstructed when the spectrum is complex [22, Corollary B.24][17, Theorem 11.5.5], where it is unclear how to polynomially approximate the indicator function in every direction [9]. Such oblique eigenprojections are nonetheless useful in a variety of settings, including preparing eigenstates of non-normal matrices, solving Sylvester equations, and solving Riccati equations arising in quantum chemistry [35, 51]. 3−1        
+
+> −0.500.51
+> zf(z)
+> δδ(a) Real spectrum δ
+> ℜ(z)
+> ℑ(z)(b) Complex spectrum
+> Figure 1: The eigenprojection problem asks to project onto generalized eigensubspaces associated with eigenvalues (open circles) lying within a particular target region (blue region), promised that all other eigenvalues lie at least δ-far (red region) from the target region. We illustrate the target region as a disk, but we also consider more general regions. (a) If all eigenvalues are real, there exist suitable polynomials f
+> with degree linear in 1 /δ which approximate the indicator function, that is, a function which is 1 on the blue region, 0 on the red region, and arbitrary in the gray region where there are no eigenvalues. This enables optimal (in 1 /δ ) eigenprojection via QSVT or QEVT. (b) The same does not hold when the spectrum is complex. It is unclear how to construct a polynomial (or even analytic) function which approximates the analogous indicator function on the blue and red regions.
+
+Resolvent integrals offer a way around this obstruction of nonanalyticity. The strategy is to se-lect a contour enclosing the target spectrum and integrate the resolvent along it, which recovers the oblique eigenprojection through Cauchy’s integral formula for matrices. This resolvent-integration approach was first used to estimate the eigenvalue density in a target region [12], and was sub-sequently developed within the block encoding framework and analyzed in detail in [35]. In the special case where the target region is a half-plane, one can instead integrate the resolvent along the axis [51]. However, a drawback with this approach is that it introduces a normalization factor 
+
+α = Θ ΘΘ( ∥Π∥ /δ ) with δ the gap between the spectrum of A and boundary of the target region, which is much larger than the desired normalization factor ∥Π∥. This is in stark contrast to the QSVT and QEVT frameworks for analytic functions, where f (A) can be implemented with a normaliza-tion factor as small as ∥f (A)∥. The inflated normalization factor significantly increases the cost of the resulting quantum algorithms when the eigenprojection is used as a subroutine within a larger computation—as in the solution of Riccati equations that we discuss in this paper. In this work, we show that a quantum computer can perform the oblique eigenprojection Π given block encoding access to the input matrix A. Our approach has a query complexity nearly in 1 /δ , and it produces a block encoding with a normalization factor close to α = Θ ΘΘ( ∥Π∥) under a spectral-set condition on A, covering common assumptions on its numerical range or diagonaliz-ability. As ∥Π∥ is the smallest factor achievable by any block encoding of Π, this normalization is necessarily nearly optimal. Compared with the standard resolvent integration approach, our result quadratically improves the cost of oblique eigenprojection as a subroutine in a larger computation, and it matches analogous results previously established only for the orthogonal case [25] and real spectrum [28]. 4|0⟩                        
+
+> OA
+> |ψ⟩A|ψ⟩∥A|ψ⟩∥ with amplitude ∥A|ψ⟩∥ /α Figure 2: Block encoding as a unitary access model: initialize the ancilla register in |0⟩, apply the joint unitary OA, and measure the ancilla. Suppose that A/α = ( ⟨0| ⊗ I)OA(|0⟩ ⊗ I). Conditioned on the desired outcome |0⟩, the input register |ψ⟩is transformed by the matrix Awith success amplitude ∥A|ψ⟩∥ /α .
+
+Our main technical contribution is a two-sided block preconditioning that uses a discrete Fourier transform of the matrix resolvent. Whereas the standard resolvent integral extracts only the top-left corner carrying the projector, we characterize every block through the discrete Fourier transform of the resolvent. This exposes a circulant structure of the block encoding, and preconditioning against it suppresses the inverse-gap growth of the normalization factor down to nearly ∥Π∥, while maintaining the same query complexity as the standard approach. As the oblique eigenprojection serves as a fundamental primitive in the design of quantum algorithm, our result can be used to extend and improve a variety of prior results. We describe three such applications. First, we prepare eigenstates of matrices with complex eigenvalues, extending the QEVT algorithm of Low and Su [28] beyond real spectra. Second, we solve continuous-time algebraic Riccati equations, cubically improving a prior solver of Rodenas-Ruiz, Zhao, and Lee [35]. Third, we solve ordinary Sylvester equations, quadratically improving a direct augmented method of Wang and Liu [51]. These applications suggest a promising route toward applying more general nonanalytic matrix functions on quantum computers. 
+
+# 2 Resolvent integral and its block encoding 
+
+A common framework for developing and analyzing quantum algorithms in linear algebra is the block encoding framework [14], which provides a unitary model of access to an input matrix A. To describe it, consider a typical quantum computation consisting of three steps: we first initialize an ancilla register in a fixed state |0⟩, then apply a joint unitary OA to the ancilla and input register, and finally measure the ancilla with the desired measurement outcome flagged by |0⟩. Conditioned on this outcome, the computation enacts a transformation on the input register. Bundling these steps together, we may abstract away the ancilla and refocus on how the overall procedure transforms the input state, which is precisely the action of the matrix A we wish to access. Formally, a unitary OA is said to be a block encoding of a matrix A if 
+
+A = ( ⟨0| ⊗ I) OA (|0⟩ ⊗ I) , (1) where |0⟩ denotes the fixed initial state of the ancilla register. Equivalently, using the matrix representation |0⟩ = [ 10 ] and ⟨0| = [ 1 0 ], A appears as the top-left block of OA,
+
+OA =
+
+A ·· ·
+
+
+
+, (2) with the remaining blocks left unspecified, subject only to the unitarity of OA. A key feature of this framework is that common matrix arithmetic operations can be performed directly at the level of block encodings: given block encodings of matrices A and B, one can construct block encodings of their linear combination, product AB , Hermitian conjugate A†, and tensor product A ⊗ B, as 5well as the inverse A−1 [14]. More generally, the quantum singular value transformation allows one to block encode a polynomial transformation of the singular values of A, with query complexity linear in the polynomial degree. For a general matrix A, the above definition must be relaxed to allow for a normalization factor 
+
+α, so that the unitary OA block encodes the rescaled matrix A/α rather than A itself: 
+
+A/α = ( ⟨0| ⊗ I) OA (|0⟩ ⊗ I) . (3) Since the left-hand side is a submatrix of a unitary, its spectral norm is at most one, and hence 
+
+α ≥ ∥ A∥ is necessary for such a block encoding to exist. This lower bound is purely a property of A;in practice, the normalization factor achieved by a specific construction depends on the algorithm used and can be larger than ∥A∥. The normalization factor directly governs the cost of the resulting quantum algorithm. Indeed, when OA is applied to an input state |ψ⟩, the desired outcome is heralded with success amplitude ∥A|ψ⟩∥ /α , so a larger α means a smaller success probability and a correspondingly higher cost to prepare the output near deterministically. Reducing the normalization factor of a block encoding is therefore essential to reducing the overall cost of quantum algorithms. See Figure 2 for a circuit illustration of this point. We now introduce the central problem of this work. Given an arbitrary square matrix A, the underlying Hilbert space decomposes into the generalized eigensubspaces of A, associated with its complex eigenvalues Spec (A). Any partition of the spectrum into two disjoint groups Spec in (A)and Spec out (A) then induces a corresponding decomposition of the space into a pair of complemen-tary invariant subspaces, together with an associated eigenprojection Π in , Π out onto each of them. For presentational purpose, we first consider the case in which the eigenvalues are separated by the unit circle, so that the spectrum splits into those lying inside the circle and those lying outside. The problem is then to perform the oblique eigenprojection Π in onto the generalized eigensubspaces whose eigenvalues Spec in (A) lie inside the unit circle. The eigenprojection Π in admits a classical representation as a contour integral of the resolvent (ζI − A)−1, known as the Riesz projector [17]. Taking the target region to be the unit disk, the contour is the unit circle, which we parametrize as ζ = e iθ with d ζ = i e iθ dθ. Factoring e iθ out of the resolvent then yields the simplified expression Πin = 12πi
+
+Z
+
+> |ζ|=1
+
+(ζI − A)−1 dζ = 12π
+
+Z 2π
+
+> 0
+
+
+
+I − e−iθA
+
+−1
+
+dθ, (4) where the integrand depends on A only through the shifted resolvent ( I − e−iθA)−1 along the unit circle. We now review the standard approach to implementing this oblique eigenprojection on a quan-tum computer [35]. We first discretize the integral using the n-point trapezoidal rule at the equally spaced nodes θj = 2 πj/n , giving Π in ≈ 1
+
+> n
+
+Pn−1
+
+> j=0
+
+
+
+I − ω−jn A
+
+−1
+
+, ωn = e 2πi/n , which converges rapidly as n increases. To implement the right-hand side, we assemble the block-diagonal matrix 
+
+M = Pn−1 
+
+> j=0
+
+|j⟩⟨ j| ⊗ 
+
+
+
+I − ω−jn A
+
+
+
+, each of whose blocks is a shifted copy of A and hence admits a block encoding through linear combination. Applying QSVT to invert M yields a block encoding of 
+
+M −1 =
+
+
+
+(I − A)−1
+
+ I − ω−1 
+
+> n
+
+A−1
+
+. . .
+
+
+
+I − ω−(n−1)  
+
+> n
+
+A
+
+−1
+
+
+
+. (5) 6Preparing the uniform superposition Had |0⟩ = 1√n
+
+Pn−1 
+
+> j=0
+
+|j⟩ by a Hadamard operation on each side and extracting the average of the diagonal blocks, we obtain (⟨0| Had ⊗I) M −1 (Had |0⟩ ⊗ I) = 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+ I − ω−jn A−1 ≈ Πin , (6) so that the composite operation block encodes the Riesz projector. Equivalently, in the matrix representation, the Hadamard-conjugated inverse is an n × n array of blocks, (Had ⊗I) M −1 (Had ⊗I) ≈
+
+
+
+Πin · · · · ·· · · · · ·
+
+... ... . . . ...
+
+· · · · · ·
+
+ , (7) with the eigenprojection Π in appearing in the top-left block and all remaining blocks left unspecified. Let us examine the normalization factor incurred by this approach. Using QSVT, each shifted resolvent can be block encoded with normalization factor Θ ΘΘ
+
+
+
+(I − ω−jn A)−1
+
+
+
+to accuracy ϵ, using ΘΘΘ
+
+
+
+(I − ω−jn A)−1 log(1 /ϵ )
+
+
+
+queries to the input block encoding of A. Taking the linear combi-nation then yields a block encoding of Π in with normalization factor Θ ΘΘ( αres ) at the same query complexity, where 
+
+αres = max 
+
+> θ∈[0 ,2π)
+
+
+
+I − e−iθA
+
+−1
+
+. (8) This can be far larger than the desired value ∥Πin ∥: already when A is normal, αres = 1 /δ scales as the inverse distance between the spectrum of A and the unit circle, whereas ∥Πin ∥ = 1. See Ap-pendix A for details. As noted earlier, this inflated normalization factor increases the cost of the resulting quantum algorithm, especially when the eigenprojection is used as a subroutine within a larger computation, such as in solving the Riccati equations discussed in this paper. 
+
+# 3 Two-sided block preconditioning of resolvent integral 
+
+The inefficiency of the standard approach can be traced to how little it uses of the matrix M −1.As shown above, the Hadamard conjugation exposes only a single block, the eigenprojection Π in ,while every remaining block is left undetermined by the construction. A valid block encoding must nonetheless accommodate all of these blocks, and normalizing the entire matrix forces the large factor αres , even though only the top-left block is the oblique eigenprojection of interest. Our key insight is that these blocks are not, in fact, arbitrary. Rather than conjugating M −1
+
+by the Hadamard operation, which extracts only the average of the diagonal blocks, we conjugate by the quantum Fourier transform. This resolves M −1 into a complete array of blocks, (QFT ⊗I) M −1 
+
+QFT † ⊗I
+
+
+
+=
+
+
+
+S0 Sn−1 Sn−2 · · · S1
+
+S1 S0 Sn−1 · · · S2
+
+S2 S1 S0 · · · S3
+
+... ... ... . . . ...
+
+Sn−1 Sn−2 Sn−3 · · · S0
+
+
+
+(9) 7in which every block is explicitly determined: the ( k, l ) block depends only on the difference k − l
+
+and is given by the discrete Fourier transform of the shifted resolvent 
+
+Sm = 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+ωjm n
+
+ I − ω−jn A−1 . (10) In particular, the top-left block S0 = 1
+
+> n
+
+Pn−1
+
+> j=0
+
+
+
+I − ω−jn A
+
+−1
+
+approximately recovers the eigen-projection Π in , exactly as in the Hadamard construction, but now the surrounding blocks carry structure we can exploit rather than merely accommodate. To make this structure explicit, we split A across the two complementary invariant subspaces. Writing Π out = I − Πin for the complementary eigenprojection, we define 
+
+Ain = A Πin , Aout = A Πout , (11) so that A = Ain + Aout , with Ain supported on the image of eigenprojection Hin = Im (Π in ) and 
+
+Aout on Hout = Im (Π out ). By construction, Ain has all its eigenvalues inside the unit circle, hence spectral radius less than one. The restriction of A to Hout has all its eigenvalues outside the unit circle and is thus invertible on that subspace; we write A−1out for the inverse of this restriction, so that A−1out has spectral radius less than one on Hout , extended by zero on Hin .We can now evaluate the discrete Fourier transform in closed form. On each subspace, the shifted resolvent expands as a geometric series: in nonnegative powers of Ain on Hin , and in negative powers of Aout on Hout . Carrying out the discrete Fourier sum then yields, for 0 ≤ m ≤ n − 1, 
+
+Sm =
+
+
+
+A m 
+
+> in
+
+(I − A n
+
+> in
+
+)−1 on Hin ,
+
+− A m−n
+
+> out
+
+ I − A−n
+
+> out
+
+−1 on Hout . (12) Since Π in acts as the identity on Hin and as zero on Hout , the deviation of the zeroth mode from the oblique eigenprojection is 
+
+S0 − Πin =
+
+
+
+A n 
+
+> in
+
+(I − A n
+
+> in
+
+)−1 on Hin ,
+
+− A−n
+
+> out
+
+ I − A−n
+
+> out
+
+−1 on Hout . (13) The correction terms A n 
+
+> in
+
+and A−n 
+
+> out
+
+are exponentially small in n, since both Ain and A−1out have spectral radius below one. Thus S0 = Π in + O(∥A n
+
+> in
+
+∥ ∥ Πin ∥ + A−n 
+
+> out
+
+∥Πout ∥) recovering S0 ≈ Πin ,while the remaining are uniformly bounded as Sm = O(αin ∥Πin ∥ + αout ∥Πout ∥), where αin =max 0≤j≤n−1 A j 
+
+> in
+
+and αout = max 1≤k≤n A−k 
+
+> out
+
+collect the largest powers of Ain and A−1out . We formally state and prove this discrete Fourier transform formula for matrix resolvent in Theorem 1. The block preconditioning technique we now describe was introduced in recent work on quantum linear system solvers, where it was employed to obtain an optimal query complexity of block encoding and improved complexity of initial state preparation [29], and subsequently to develop solvers whose cost is governed by instance-dependent quantities beyond the worst-case condition number [11, 24]. At a high level, the idea is to block encode a scaling operator and bundle it together with the input matrix, so that the composite block encoding represents a rescaled version of the original. A judicious choice of scaling operator leaves the condition number of the matrix unchanged, while amplifying selected blocks—equivalently, reducing their normalization factors. It is precisely this selective reduction of the normalization factor that we exploit below: when applied 8to the Fourier modes of the resolvent, it drives the normalization of the Π in block encoding down from αres toward its optimal value ∥Πin ∥.We use a two-sided variant of the block preconditioning. Let T1 and T2 be scaling operators, diagonal in the computational basis, that act nontrivially only on the top-left entry, 
+
+T1 =
+
+
+
+t1
+
+1. . .1
+
+ , T2 =
+
+
+
+t2
+
+1. . .1
+
+ , 0 < t 1, t 2 < 1. (14) Rather than inverting M directly, we assemble a block encoding of the preconditioned matrix (T1 ⊗ I) ( QFT ⊗I) M  QFT † ⊗I (T2 ⊗ I), which is available at no additional query cost, since the quantum Fourier transform QFT and the diagonal scalings T1, T 2 can all be block encoded with normalization factor one. Applying QSVT to invert it then yields a block encoding of 
+
+ T −12 ⊗ I (QFT ⊗I) M −1 
+
+QFT † ⊗I
+
+  T −11 ⊗ I =
+
+
+
+1
+
+t1t2
+
+S0
+
+1
+
+t2
+
+Sn−1
+
+1
+
+t2
+
+Sn−2 · · · 1
+
+t2
+
+S1
+
+1
+
+t1
+
+S1 S0 Sn−1 · · · S2
+
+1
+
+t1
+
+S2 S1 S0 · · · S3
+
+... ... ... . . . ...1
+
+t1
+
+Sn−1 Sn−2 Sn−3 · · · S0
+
+
+
+.
+
+(15) This implies 
+
+αprecond =  T −12 ⊗ I (QFT ⊗I) M −1 
+
+QFT † ⊗I
+
+  T −11 ⊗ I
+
+≤ 1
+
+t1t2
+
+∥S0∥ +
+
+√n − 1
+
+t2
+
+max  
+
+> m
+
+∥Sm∥ +
+
+√n − 1
+
+t1
+
+max  
+
+> m
+
+∥Sm∥ + M −1
+
+= O
+
+ ∥Πin ∥
+
+t1t2
+
++
+
+ √nt1
+
++
+
+√nt2
+
+
+
+(αin ∥Πin ∥ + αout ∥Πout ∥) + αres 
+
+
+
+.
+
+(16) Here, the four terms bound the four structural parts of the inverse matrix: the top-left entry  
+
+> 1
+> t1t2
+
+S0, the remainder of the top row (scaled by 1 
+
+> t2
+
+), the remainder of the left column (scaled by  
+
+> 1
+> t1
+
+), and the bottom-right ( n − 1) × (n − 1) block of unscaled modes. Continuing, the bottom-right block has norm at most M −1 = max 0≤j≤n−1 (I − ω−jn A)−1 ≤ αres due to the resolvent bound. The top row and left column are controlled by the individual modes, which satisfy max m ∥Sm∥ =
+
+O(αin ∥Πin ∥ + αout ∥Πout ∥), while the top-left entry is exponentially close to ∥Πin ∥.Quantities such as αin , α out , α res can all be controlled under a natural geometric assumption on the spectrum. Recall that the numerical range of a matrix B is the set 
+
+W(B) = { ⟨ ψ|B|ψ⟩ : ∥| ψ⟩∥ = 1 } , (17) a compact convex subset of the complex plane. It may be regarded as a relaxed notion of the spectrum: it always contains the eigenvalues of B, and coincides with their convex hull when B is normal, but is generally larger for a non-normal matrix. The numerical range is a standard tool for 9studying non-normal matrices [47], and has been widely used in previous quantum algorithms for non-normal inputs [23, 28, 34, 50]. Its usefulness here stems from the Crouzeix–Palencia bound [10]: for any function f analytic on a neighborhood of W(B), 
+
+∥f (B)∥ ≤ (1 + √2) max  
+
+> z∈W (B)
+
+|f (z)| , (18) which bounds the norm of a matrix function purely by the behavior of the scalar function f over 
+
+W(B). Very recently, it has been claimed that the above constant 1 + √2 can be improved to the optimal value 2, resolving Crouzeix’s conjecture [19, 26]. Using this improved constant would reduce the constant prefactor of our algorithm, but leave the asymptotic analysis unchanged. Let us analyze the block preconditioning under the numerical-range assumption. Suppose the per-block numerical ranges are separated from the unit circle by a gap δ,
+
+W(Ain ) ⊆ { z : |z| ≤ 1 − δ }, W(A−1out ) ⊆ { z : |z| ≤ 1 − δ }. (19) By the Crouzeix–Palencia bound applied on each subspace [10], the powers are uniformly bounded: 
+
+A j 
+
+> in
+
+≤ (1 + √2)(1 − δ)j , A−k 
+
+> out
+
+≤ (1 + √2)(1 − δ)k, so that αin , α out = O(1). Summing the geometric series and applying [10], we bound the resolvent likewise: 
+
+αres = O
+
+ ∥Πin ∥
+
+δ
+
+
+
+, (20) Finally, applying the Crouzeix–Palencia bound again, the discretization error ∥S0 − Πin ∥ = O((1 −
+
+δ)n ∥Πin ∥) falls below ϵ as long as n = O
+
+ 1 
+
+> δ
+
+log ∥Πin ∥
+
+> ϵ
+
+
+
+. Substituting αin , α out = O(1), αres =
+
+O(∥Πin ∥ /δ ) and n = O
+
+ 1 
+
+> δ
+
+log ∥Πin ∥
+
+> ϵ
+
+
+
+with the balanced choice t1 = t2 = ΘΘΘ
+
+√δ
+
+
+
+, the precondi-tioned inverse has norm at most 
+
+αprecond = O
+
+ ∥Πin ∥
+
+δ
+
+q
+
+log ∥Πin ∥
+
+> ϵ
+
+
+
+, (21) which sets the condition number for the QSVT inversion. Meanwhile, extracting the top-left entry and rescaling, the resulting block encoding of Π in has reduced normalization factor 
+
+αΠ = t1t2αprecond = O
+
+
+
+∥Πin ∥
+
+q
+
+log ∥Πin ∥
+
+> ϵ
+
+
+
+. (22) Compared with the unpreconditioned algorithm, whose condition number is O(αres ) = O(∥Πin ∥ /δ ), the preconditioned inversion has condition number αprecond = O
+
+ ∥Πin ∥
+
+> δ
+
+q
+
+log ∥Πin ∥
+
+> ϵ
+
+
+
+, larger only by a factor 
+
+q
+
+log ∥Πin ∥ 
+
+> ϵ
+
+. The query complexity of the eigenprojection therefore remains almost the same as the standard approach, while the normalization factor is significantly reduced to nearly its optimal value ∥Πin ∥.The numerical range enters only through the Crouzeix–Palencia bound, which makes it a specific instance of spectral set . We say a compact set K is a spectral set with constant c if it contains the spectrum of B such that 
+
+∥g(B)∥ ≤ c max  
+
+> z∈K
+
+|g(z)| (23) for every g analytic near K. For a normal matrix B, the spectrum is a spectral set with c = 1. For non-normal B, one may enlarge the set K or pay a larger constant c. Taking g(z) = zj on a spectral 10 set inside {z : |z| ≤ 1 − δ} gives the geometric decay Bj ≤ c(1 − δ)j that our analysis needs. So any such spectral sets for Ain and A−1out suffice, with c entering the normalization factor linearly. For example, when A is diagonalizable, the spectrum is a spectral set with c equal to the eigenbasis condition number, and no numerical-range assumption is needed. We defer this general treatment to Appendix B, with the quantum oblique eigenprojection algorithm established in Theorem 2 for the unit disk. 
+
+# 4 Quantum oblique eigenprojection for more general regions 
+
+In the previous section, we described a quantum algorithm for the oblique eigenprojection onto the generalized eigensubspaces of A associated with eigenvalues inside the unit disk. Our approach is based on a two-sided block preconditioning of the matrix resolvent, which is easiest to explain for the unit disk, where the discrete Fourier transform of the resolvent admits a closed-form expression. However, the same approach can be adapted to more general regions of the complex plane, allowing us to project onto the eigensubspace associated with any region whose boundary separates the spectrum of A into Spec in (A) and Spec out (A). We describe this extension in the present section. Let C be a closed curve enclosing Spec in (A) but not Spec out (A), and disjoint from Spec (A). The oblique eigenprojection onto Spec in (A) is the Riesz projector Π in = 12πi
+
+R 
+
+> C
+
+(wI − A)−1 dw. Let 
+
+Sin and Sout be subsets of the complex plane satisfying: (i) Spec in (A) ⊆ S in and Spec out (A) ⊆ S out ;(ii) Sin ∩ S out = ∅;(iii) Sin and Sout are open. Now let f be analytic on Sin ∪ S out and separate the two components in modulus, 
+
+|f (w)| < 1 (w ∈ S in ), |f (w)| > 1 (w ∈ S out ). (24) By the holomorphic functional calculus, the eigenprojection of A for the general region then coin-cides with the eigenprojection of f (A) for the unit disk: Πin = 12πi
+
+Z
+
+> C
+
+(wI − A)−1 dw = 12πi
+
+Z
+
+> |z|=1
+
+ zI − f (A)−1 dz. (25) One can view this as a change-of-variable formula for resolvent integration, though it is an identity of projectors rather than a literal substitution. Specifically, both integrals compute the Riesz projector, the left in the spectral plane of A and the right in that of f (A), and these agree because 
+
+A and f (A) share the same invariant subspaces while f carries Spec in (A) inside the unit circle and 
+
+Spec out (A) outside by the spectral mapping theorem [17, Theorem 12.7.1][36, Theorem 8.3]. The general-region problem thus reduces to the unit-disk construction applied to f (A) in place of A.Crucially, f only needs to separate Sin and Sout by modulus—it need not be injective, conformal, or boundary-preserving—so we are free to choose it to be a low-degree rational function, making 
+
+f (A) inexpensive to block encode. This suggests separating the design of the algorithm from the construction of f : we first treat f (A) as an oracle, assuming a block encoding of it is given, and apply the oblique eigenprojection to the unit disk. In this oracle model, the construction of Section 3 applies verbatim with A replaced by f (A), yielding a block encoding of Π in with normalization factor close to ∥Πin ∥ and query complexity governed by the gap of f (A) to the unit circle. The oracle model requires only a relatively weak analyticity hypothesis. Because f (A) is given as input 11 rather than approximated, f need only be analytic on neighborhoods of the two block numerical ranges Sin = W(Ain ) and Sout = W(Aout ) separately , and not on the full numerical range W(A). This distinction is important: W(A) is convex and generally strictly larger than the two block ranges, so a singularity of f may lie inside W(A) while remaining outside of each block range. This makes the oracle model more flexible, as it admits any separating map whose singularities fall between the blocks, including maps that an explicit polynomial approximation of f (A) over the whole numerical range could not accommodate. We formally present this algorithm in Theorem 3. We now turn to constructing a block encoding of f (A) from a block encoding of A. Let K
+
+be a spectral set for A, meaning that ∥g(A)∥ ≤ c sup z∈K |g(z)| for every function g analytic on a neighborhood of K, where c is a constant depending only on K and A. Let f be analytic on K and separate the spectrum, 
+
+|f (w)| < 1 (w ∈ Spec in (A)) , |f (w)| > 1 (w ∈ Spec out (A)) . (26) Approximating f by a polynomial p and applying the definition of spectral set to g = f − p, we obtain the error bound ∥f (A) − p(A)∥ ≤ c sup z∈K |f (z)−p(z)|, so a polynomial that approximates 
+
+f uniformly on K yields a block encoding of f (A) to matching accuracy. As mentioned previously, a common choice is the numerical range S = W(A), which is a spectral set for every A with the dimension-independent constant c = 1 + √2 by the Crouzeix–Palencia theorem [10]. With this choice, f need only be analytic on a neighborhood of W(A). The polynomial p is then applied by the QEVT algorithm [28, Section 8 and Appendix B] at a cost of O(d) queries to the block encoding of A, where d is the degree of p. The required degree can be obtained from the Bernstein–Walsh theorem [41, Section III.3]. In particular, if f is analytic on a neighborhood of W(A), the best degree-d polynomial approximation on W(A) decays geometrically, so that d = O(log(1 /ε )) suffices for accuracy ε, with the rate set by how far the nearest singularity of f lies beyond W(A). This generalizes the approximation of a function on [ −1, 1] through its analyticity within a Bernstein ellipse [46, Theorem 8.1 and 8.2]. Finally, the separating map partitions the spectral set into 
+
+Sin = {z : |f (z)| < 1} and Sout = {z : |f (z)| > 1}, which are open, disjoint, and cover Spec in (A)and Spec out (A) respectively. Hence, the block encoding of f (A) can be supplied to the unit-disk construction to produce Π in .It remains to construct a separating map f for a given target region. For a simply connected region, the Riemann mapping theorem guarantees a conformal map onto the unit disk, which separates the region from its complement and extends across an analytic boundary; more generally, one may relax the requirement and seek only a rational function whose modulus separates the two spectral parts, with poles placed outside the numerical range so that analyticity on W(A) is preserved. In practice, the regions arising in applications are bounded by lines and circular arcs— half-planes, disks, strips, and sectors—for which a separating map is built directly from elementary M¨ obius factors, with no approximation required. Here, we work out the half-plane case in detail, as it underlies our applications to solving the Riccati and Sylvester equations, where the spectrum is split across a line. To this end, suppose the spectrum is separated by the imaginary axis, with the target part 
+
+Spec in (A) in the open right half-plane ℜ(z) > 0 and Spec out (A) in the open left half-plane ℜ(z) <
+
+0. A separating map is then given by the degree-two rational function 
+
+f (z) = (z − 1) 2
+
+(z + 1) 2 , (27) with a double zero at z = 1 and a double pole at z = −1. f sends the right half-plane into the unit disk, the imaginary axis onto the unit circle, and the left half-plane outside, separating the spectrum as required. 12 ℜ(z)                    
+
+> ℑ(z)
+> |f|<1|f|>1|f|= 1 −ΘΘΘ( δ)
+> (inside disk)
+> |f|= 1 + Θ ΘΘ( δ)
+> (outside disk)
+> |f|= 1
+> δ−δ
+> zero: z= 1 pole: z=−1
+
+Figure 3: The rational map f (z) = ( z − 1) 2/(z + 1) 2 separates the complex plane by the imaginary axis. The right half-plane (blue) is mapped inside the unit circle ( |f | < 1) and the left half-plane (red) outside (|f | > 1), with the imaginary axis ( |f | = 1) mapped onto the unit circle. The double zero at z = 1 and double pole at z = −1 lie in the right and left half-planes respectively. Darker shading indicates the gapped regions |ℜ (z)| ≥ δ, on which |f | = 1 − ΘΘΘ( δ) (right) and |f | = 1 + Θ ΘΘ( δ) (left), so the gap to the unit circle is preserved, δf = Θ ΘΘ( δ). 
+
+Assume for simplicity that a block encoding of A is given with ∥A∥ ≤ 12 . Then A + I is well-conditioned: its singular values lie in [ 12 , 32 ], since ∥A + I∥ ≤ 1 + ∥A∥ ≤ 32 and (A + I)−1 ≤
+
+(1 − ∥ A∥)−1 ≤ 2, giving a condition number at most 3. QSVT-based matrix inversion therefore block encodes ( A + I)−1 to error ε with normalization O(1) using O(log(1 /ε )) queries to the block encoding of A. Applying ( A + I)−1 twice and multiplying by ( A − I)2 yields a block encoding of 
+
+f (A) = (A−I)2 
+
+> (A+I)2
+
+with normalization ∥f (A)∥ = O(1), again at O(log(1 /ε )) query cost. Thus, under 
+
+∥A∥ ≤ 12 , the map f is applied directly with only a constant-factor overhead in normalization and a logarithmic-factor query cost. Additionally, for the reduction to be efficient, the map f must not crush the gap. Suppose the spectrum is separated from the imaginary axis by δ, in the sense that |ℜ (λ)| ≥ δ for every 
+
+λ ∈ Spec (A). Under the normalization ∥A∥ ≤ 12 , the image spectrum Spec (f (A)) is then separated from the unit circle by a gap δf = Θ ΘΘ( δ), so the map preserves the spectral gap up to a constant factor. The same holds at the level of the numerical range: if the per-block numerical ranges 
+
+W(Ain ) and W(Aout ) are separated from the imaginary axis by δ, then |f | is bounded by 1 − ΘΘΘ( δ)on W(Ain ) and by 1 + Θ ΘΘ( δ) from below on W(Aout ), so applying the Crouzeix–Palencia bound to the composite function over each per-block numerical range yields the desired estimates with a comparable gap. More generally, the same argument applies to any spectral sets for Ain and 
+
+Aout separated from the imaginary axis by δ, with the Crouzeix–Palencia constant replaced by the spectral-set constant c. Consequently the corresponding cost bounds apply to f (A) with δ replaced by δf = Θ ΘΘ( δ). See Figure 3 for an illustration. We defer a detailed treatment to Appendix C. 
+
+# 5 Applications 
+
+The oblique eigenprojection developed above is a general-purpose primitive, which we now instanti-ate in three settings. In each, our two-sided block preconditioning reduces the normalization factor 13 of the block-encoded projector to near its optimal value, and this reduction carries through to a lower overall cost, sharpening a recent quantum algorithm. 
+
+5.1 Eigenstate preparation for complex spectra 
+
+Preparing an eigenstate of a given operator is among the most fundamental tasks in quantum com-putation, which is relevant for studying static properties of the underlying physical system. For a Hermitian Hamiltonian the eigenstates are orthogonal, and the task is well understood. Indeed, given an initial state with nonnegligible overlap on the target eigenspace and a spectral gap δ sep-arating it from the rest of the spectrum, one can prepare the target eigenstate efficiently [25]. The same task is natural for an arbitrary, non-normal matrix A, whose eigenvalues may lie anywhere in the complex plane and whose eigenspaces are oblique. Such matrices arise in simulating non-Hermitian physics [4], in transcorrelated approaches to quantum chemistry [32], and in studying irreversible Markov chains [5], among other settings. Here the goal is similar: given a target eigen-value (or cluster) separated from the rest of the spectrum, and an initial state with nonnegligible overlap on the corresponding invariant subspace, one aims to prepare the associated eigenstate (or project the initial state onto the associated eigensubspaces). When the spectrum of A lies on the real line, this can be accomplished by the QEVT algorithm of Low and Su [28], which applies a polynomial transformation to the eigenvalues of A through the Chebyshev and Faber history states. Choosing the polynomial to be close to one near the target eigenvalue and close to zero elsewhere, as in Figure 1a, prepares the corresponding eigenstate at a cost scaling as 1 /δ in the spectral gap, recovering the nearly optimal scaling of ground-state preparation for Hermitian Hamiltonians. This filtering is effective because the target eigenvalues lie on a line: a polynomial can approximate an indicator along the real axis. However, for eigenval-ues distributed in the complex plane, as depicted in Figure 1b, there is an intrinsic obstruction. A polynomial—indeed any analytic function—cannot approximate the indicator of a region uniformly in all directions: by the maximum modulus principle its magnitude attains its maximum on the boundary, so it cannot be close to one inside a region and close to zero just outside it [9]. Preparing an eigenstate of a matrix with complex eigenvalues therefore calls for a genuinely different mech-anism. To this end, one may instead form the Riesz projector through the resolvent integral of Section 2, as done by Rodenas-Ruiz, Zhao, and Lee [35]; this bypasses the analyticity requirement and applies to complex spectra. Its cost, however, scales as 1 /δ 2: the block-encoded projector carries a normalization factor αres = O(∥Πin ∥ /δ ) set by the resolvent norm on the contour, and this leads the 1 /δ factor to enter the eigenstate-preparation cost twice—once in the O(1 /δ ) queries needed to block encode the projector, and again in the O(1 /δ ) rounds of amplitude amplification needed to project the initial state onto the target subspace. Our algorithm applies oblique eigenprojection at a cost matching the result of Low and Su while handling complex spectra. For simplicity, suppose the target eigenvalue or cluster is enclosed by a disk {z : |z − c| < ρ } that separates it from the rest of the spectrum with a gap δ, where c
+
+and ρ are here considered constants, independent of δ. The separating map is the linear function 
+
+f (z) = ( z − c)/ρ , so f (A) = ( A − cI )/ρ is obtained from the block encoding of A by a shift and a rescaling, at only a constant-factor overhead in normalization for a center |c| = O(1). Feeding 
+
+f (A) into the unit-disk construction of Section 3 block encodes the eigenprojection Π in onto the enclosed invariant subspace with a query complexity scaling as 1 /δ and, after two-sided block preconditioning, a normalization factor close to its optimal value ∥Πin ∥. Because the normalization no longer grows with the inverse gap, the amplitude amplification that projects the initial state onto the target subspace needs only eO(1) rounds, and the eigenstate is prepared in eO(1 /δ ) total queries. This quadratically improves the resolvent-integral approach and matches the scaling in 1 /δ of Low 14 and Su for nonnormal matrices with real spectra—in other words, preparing an eigenstate associated with a complex eigenvalue is no more expensive, in δ, than filtering a real one. See Appendix D.1 for details. 
+
+5.2 Continuous-time algebraic Riccati equations 
+
+As a second application we consider the continuous-time algebraic Riccati equation, 
+
+XQX − XP − P †X − R = 0 , (28) where P, Q, R are square matrices of the same size with Q, R Hermitian, and the matrix X is the sought solution. Riccati equations are central to optimal control, filtering, and stability theory, and in quantum chemistry they arise directly in ring coupled-cluster doubles and the random-phase approximation [35]. The stabilizing solution of the Riccati equation is characterized through an invariant subspace of the associated Hamiltonian matrix 
+
+J =
+
+ P −Q
+
+−R −P †
+
+
+
+, (29) whose spectrum is symmetric about the imaginary axis. Splitting the spectrum along the imaginary axis into a stable part ( ℜ(λ) < 0) and an antistable part ( ℜ(λ) > 0), the stable invariant subspace is spanned by the columns of  UV
+
+, and the stabilizing solution is recovered as X = V U −1. Solving the Riccati equation thus reduces to projecting onto an invariant subspace of a non-normal matrix split by the imaginary axis—an oblique eigenprojection of exactly the kind our primitive provides. Recently, Rodenas-Ruiz, Zhao, and Lee [35] solve the Riccati equation on a quantum computer along these lines. The stable invariant subspace spanned by  IX
+
+ is the kernel of the projector Π in 
+
+onto the antistable subspace, so writing Π in = [ Π1 Π2 ] gives Π 1 + Π 2X = 0 and hence X = −Π+2 Π1
+
+where ( ·)+ denotes the pseudoinverse. They therefore block encode the antistable projector Π in 
+
+through the resolvent integral of Section 2, and then extract X from its sub-blocks by implementing Π+2 through QSVT. Writing δ = min λ |ℜ (λ)| for the gap from the imaginary axis, the block-encoded projector carries a normalization factor αres = O(∥Πin ∥ /δ ) set by the resolvent norm on the contour. Beyond the O(1 /δ ) queries needed to block encode the projector, this normalization enters the extraction twice more—in the condition number of the pseudoinverse that forms X = −Π+2 Π1, and in the normalization of the resulting solution—so that preparing the Riccati solution costs eO(1 /δ 3)queries in the gap ignoring polylogarithmic factors. Applying our oblique eigenprojection removes the two normalization-driven factors. Since the spectrum is split by the imaginary axis, we use the half-plane construction of Section 4, with a degree-two rational map sending the antistable half-plane into the unit disk and the imaginary axis onto the unit circle, and the per-block numerical-range hypotheses of Section 3 inherited with a transformed gap δf = Θ ΘΘ( δ). Two-sided block preconditioning then block encodes the projector with a normalization factor close to its optimal value ∥Πin ∥, in place of αres = O(∥Πin ∥ /δ ). The pseudoinverse condition number and the solution normalization then no longer grow with the inverse gap, so the two extra factors collapse to eO(1) and the Riccati solution is prepared in eO(1 /δ )queries—a cubic improvement over the standard resolvent-integral solver of [35]. We describe this improvement in detail in Appendix D.2. 
+
+5.3 Ordinary Sylvester equations 
+
+As a final application we consider the Sylvester equation 
+
+AX + XB = C, (30) 15 where A, B, C are given matrices of the same size and one seeks to construct a block-encoding of the solution X with normalization within a constant factor of the optimal value ∥X∥ [40]. Sylvester equations arise throughout control theory, model reduction, and the numerical solution of matrix and differential equations. As with the Riccati equation, the solution is encoded in an invariant subspace of an associated block matrix: 
+
+M =
+
+A C
+
+0 −B
+
+
+
+. (31) Its spectrum is the union of the spectra of A and −B, and it has two invariant subspaces: the 
+
+A branch is spanned by  I
+
+> 0
+
+, while the −B branch is spanned by  −XI
+
+, since the invariance condition M  −XI
+
+ =  −XI
+
+ (−B) is precisely the Sylvester equation AX + XB = C. Stacking these bases into S =  I −X 
+
+> 0I
+
+, the oblique projector onto the A branch along the B branch is Πin = S  I 00 0 
+
+ S−1 =  I X 
+
+> 0 0
+
+, so the solution X appears directly in its off-diagonal block. When the spectra of A and −B lie in opposite open half-planes—separated, after a shift and rotation, by the imaginary axis—this is again an oblique eigenprojection handled by our algorithm, now with X
+
+read off from a single block of the projector. Unlike the Riccati equation, the extraction requires no further pseudoinverse. Recently, Wang and Liu [51] give a quantum algorithm for the Sylvester equation along these lines. We compare against their direct augmented method [51, Remark 6.4], which block encodes the projector through the resolvent integral of Section 2 applied to the augmented matrix M , so that— exactly as for the eigenstate-preparation and Riccati applications—the block-encoded projector carries a normalization factor αres = O(∥Πin ∥ /δ ) set by the resolvent norm on the contour with δ
+
+the gap from the imaginary axis. Since the solution is the off-diagonal block of the projector, no pseudoinverse is needed, and this normalization enters the cost only once (for amplifying the block-encoding), on top of the O(1 /δ ) queries needed to block encode the projector, so that preparing the solution costs eO(1 /δ 2) queries in the gap. Our oblique eigenprojection applies directly and improves on this complexity. Using the half-plane construction of Section 4 to project onto the invariant subspace of the A branch, two-sided block preconditioning replaces the normalization factor αres = O(∥Πin ∥ /δ ) with one close to its optimal value ∥Πin ∥ =
+
+q
+
+∥X∥2 + 1 and the extra inverse-gap factor collapses to eO(1). Thus, one directly obtains a near-normalized block-encoding of X, and the O(1 /δ ) cost of amplifying the resulting block-encoding is avoided. The total query complexity to obtain the solution is eO(1 /δ )queries—a quadratic improvement over the direct augmented method of [51, Remark 6.4]. We discuss this in detail in Appendix D.3. 
+
+# 6 Discussion 
+
+We have shown that a quantum computer can perform an oblique eigenprojection Π in given block encoding access to a non-normal input matrix. Our method has a query complexity near linearly in the inverse gap and a normalization factor close to its optimal value ∥Πin ∥. This improves the standard resolvent-integral approach and matches known results for the orthogonal case. The improvement carries through to concrete applications: preparing eigenstates of matrices with com-plex eigenvalues, and solving the continuous-time algebraic Riccati and Sylvester equations, where it sharpens the gap dependence of recent quantum algorithms by a quadratic to cubic factor. Underlying the result is a complete characterization of the block encoding produced by the standard resolvent integral. Rather than tracking only the top left corner that carries the projec-tor, we express every block through the discrete Fourier transform of the resolvent, and it is this 16 full description of the otherwise uninteresting entries that makes the two-sided block precondition-ing possible. A similar attention to the entire structure of a block encoding, rather than a single distinguished entry, appears in several works, for reducing the ancilla overhead of block encodings through uncomputing [48], for maintaining matrix encoding in the off-diagonal blocks of a Hamil-tonian to compose arithmetic operations [20], and for constraining the powers of a block encoding to reproduce those of the encoded matrix [16, 30]. We expect that a further understanding of this kind will find use in the design of quantum algorithms. Our preconditioning rests on the closed-form expression for the discrete Fourier transform of the matrix resolvent, and it does not directly apply to every construction. In particular, the main approach of Wang and Liu [51] represents the matrix sign through a product of two resolvents rather than a single one, for which we do not have an analogous closed form for the discrete Fourier transform, so the two-sided block preconditioning does not carry over. Adapting it to reduce the normalization factor in that setting is an interesting open direction. It would also be valuable to better understand the case of more general spectral regions. Our construction there first block encodes f (A) for a separating map f and then applies the unit-disk algorithm, so the cost and the spectral-set hypotheses are inherited through f . It would be desirable to avoid the explicit block encoding of f (A), and instead work with the resolvent of A itself, integrated over a general curve enclosing the target spectrum. Such a construction could considerably simplify the algorithm, but would require preconditioning directly against the geometry of the region. A different route to the eigenprojection is through quantum eigenvalue estimation: one estimates the eigenvalues of the input matrix in an ancillary register and then projects by selecting those in the target region. Beyond the QEVT technique from [28], a number of algorithms estimate eigenvalues of non-normal or non-Hermitian matrices [2, 37, 38, 52]. This approach, however, requires resolving individual eigenvalues to high precision and it typically imposes additional structural assumptions on spectrum of the input matrix and properties of the initial state. Our construction instead projects by location in the complex plane, requiring only separation of the numerical range from the region boundary, and never estimates an eigenvalue. A further contrast is worth noting. For a Hermitian operator, one can transform it by QSVT and its cost is solely determined by the function alone: implementing a window function, for instance, costs inversely in its transition width independently of the input matrix. Our oblique eigenprojection algorithm does not admit such a feature. Because the indicator of a spectral region is nonanalytic, it cannot be approximated uniformly and applied blindly; our construction instead controls the resolvent on the boundary of the region, which requires the spectrum of the input to be separated from that boundary by a gap. Our cost is therefore governed by a property of the input matrix—its gap—rather than by a property of the target function. It would be interesting to know whether an eigenprojection can be implemented at a cost depending only on the geometry of the target region, as in the Hermitian case, rather than on the spectral gap of the input. More broadly, our result suggests a route to applying nonanalytic matrix functions on quan-tum computers. The oblique eigenprojection corresponds to the indicator of a spectral region, a discontinuous and hence nonanalytic function; our resolvent-based construction sidesteps the ana-lytic obstruction that rules out a direct polynomial or singular value implementation. Whether the same discrete Fourier transform and preconditioning ideas extend to other nonanalytic functions of a non-normal matrix is an intriguing direction for future work. 17 Acknowledgements 
+
+A.M.D. and Y.S. thank Fernando Brand˜ ao, Oskar Painter, James Hamilton, Nafea Bshara, Peter DeSantis, and Andy Jassy for their involvement and support of the research activities at the AWS Center for Quantum Computing, and Lin Lin for reviewing an earlier draft. 18 A Standard block encoding of resolvent integral 
+
+In this appendix, we provide details on the technical results from Section 2. 
+
+A.1 Resolvent integral and generalized eigensubspaces 
+
+Let A be a square matrix acting on a Hilbert space H. By the primary decomposition theorem [17, Theorem 12.2.14][36, Theorem 7.6], the entire space splits as a direct sum of generalized eigensub-spaces 
+
+H = M
+
+> λ∈Spec (A)
+
+Hλ, Hλ = Ker (( A − λI )mλ ) , (32) for positive integers mλ ≤ dim( H). Each Hλ is invariant under A, and the restriction Nλ := (A − λI )|Hλ is nilpotent, with N mλ 
+
+> λ
+
+= 0. Let C be a closed curve that encloses part of the spectrum Spec in (A) and excludes the rest 
+
+Spec out (A), so that Spec (A) = Spec in (A) ∪ Spec out (A) with Spec in (A) inside C and Spec out (A)outside. The Riesz projector associated with Spec in (A) is defined by Πin = 12πi
+
+Z
+
+> C
+
+(zI − A)−1 dz, (33) the curve traversed counterclockwise. The following proposition shows that Π in is precisely the oblique projection onto the enclosed generalized eigensubspaces L 
+
+> λ∈Spec in (A)
+
+Hλ along the excluded ones L 
+
+> λ∈Spec out (A)
+
+Hλ.
+
+Lemma 1. Let A be a square matrix on H with the generalized eigensubspace decomposition 
+
+H = L 
+
+> λ∈Spec (A)
+
+Hλ as in (32) , and let Πin be the Riesz projector (33) for a curve C enclosing 
+
+Spec in (A) ⊆ Spec (A) and excluding Spec out (A) = Spec (A) \ Spec in (A). Then 
+
+Π2in = Π in , Im (Π in ) = M
+
+> λ∈Spec in (A)
+
+Hλ, Ker (Π in ) = M
+
+> λ∈Spec out (A)
+
+Hλ. (34) 
+
+Proof. The resolvent ( zI − A)−1 preserves the decomposition (32), so it suffices to evaluate Π in on each summand Hλ.Writing A = λI + Nλ on Hλ, for z / ∈ Spec (A) the restricted resolvent is the finite Neumann series (zI − A)−1 
+
+> Hλ
+
+= (( z − λ)I − Nλ)−1 =
+
+> mλ−1
+
+X
+
+> k=0
+
+N kλ
+
+(z − λ)k+1 , (35) terminating because N mλ 
+
+> λ
+
+= 0. Integrating term by term over C,12πi
+
+Z
+
+> C
+
+dz
+
+(z − λ)k+1 =
+
+(
+
+1 k = 0 and λ ∈ Spec in (A),
+
+0 otherwise , (36) since the integrand has vanishing residue for k ≥ 1, and for k = 0 the integral is the winding number of C about λ.Thus Π in restricts to the identity on Hλ for λ ∈ Spec in (A) and to 0 for λ ∈ Spec out (A). The first of these gives Hλ ⊆ Im (Π in ) and Π 2in = Π in on Hλ; the second gives Hλ ⊆ Ker (Π in ) and again Π2in = Π in . Summing over the decomposition (32) yields Π 2in = Π in , Im (Π in ) = L 
+
+> λ∈Spec in (A)
+
+Hλ,and Ker (Π in ) = L 
+
+> λ∈Spec out (A)
+
+Hλ.19 A.2 Block encoding of resolvent integral 
+
+Appendix A.1 treated a general curve C. We now specialize to the unit circle. Parametrizing z = e iθ
+
+in (33), with d z = ie iθ dθ and e iθ(e iθI − A)−1 = ( I − e−iθA)−1, the Riesz projector (33) becomes Πin = 12πi
+
+Z
+
+> |z|=1
+
+(zI − A)−1 dz = 12π
+
+Z 2π
+
+> 0
+
+(I − e−iθA)−1 dθ. (37) This can be seen as the zeroth Fourier coefficient of the periodic function θ 7 → (I − e−iθA)−1.We discretize the integral (37) by the n-point trapezoidal rule at the roots of unity ωjn, where 
+
+ωn = e 2πi/n and j = 0 , . . . , n − 1, Πin ≈ S0 := 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+(I − ω−jn A)−1. (38) Because the integrand is analytic on an annulus containing the unit circle, this approximation converges geometrically in n, with a rate we quantify in Appendix B. The node count n enters only through the size ⌈log 2 n⌉ of the ancilla register indexing the roots of unity, and does not affect the query complexity of the construction below, which depends only on the normalization factor of the block encoding and the target precision. The discretization (38) expresses Π in through resolvents of A, which can be realized on a quan-tum computer via block encodings. We recall standard block-encoding operations used throughout, referring to [14, 28] for details. In all complexity statements, the parameters are known bounds on the underlying quantities, such as upper bounds on normalization factors, norms, and spectral-set constants, and lower bounds on gaps, overlaps, and smallest nonzero singular values. The algo-rithms use these bounds to choose their internal parameters, and the stated costs hold with the bounds in place of the exact values. 
+
+Lemma 2 (Linear combination) . Given block encodings of matrices A1/α 1, . . . , A m/α m with nor-malization factors α1, . . . , α m > 0, and coefficients c1, . . . , c m, one can construct a block encoding of 
+
+1
+
+Pmk=1 |ck| αkmX
+
+> k=1
+
+ckAk (39) 
+
+with normalization factor Pmk=1 |ck| αk, using a single query to a controlled unitary that selects among the input block encodings, whose cost is the maximum of their individual query costs. 
+
+Lemma 3 (Product) . Given block encodings of matrices A1/α 1 and A2/α 2 with normalization factors α1, α 2 > 0, one can construct a block encoding of 
+
+1
+
+α1α2
+
+A1A2 (40) 
+
+with normalization factor α1α2, using a single query to each of the two input block encodings. 
+
+Lemma 4 (Inversion) . Given a block encoding of A/α A with normalization factor αA > 0, and an upper bound αA−1 ≥ A−1 on the inverse, for any ε > 0 one can construct a block encoding of 
+
+12αA−1
+
+A−1 (41) 20 with normalization factor 2αA−1 and accuracy ε, using 
+
+O
+
+
+
+αAαA−1 log 1
+
+ε
+
+
+
+(42) 
+
+queries to the block encoding of A/α A.
+
+Lemma 5 (Scaling) . Given a block encoding of A/α A with normalization factor αA > 0, and a value α′ 
+
+> A
+
+≥ ∥ A∥ upper bounding the norm: 1. if α′ 
+
+> A
+
+≥ αA, one can construct a block encoding of 
+
+1
+
+α′
+
+> A
+
+A (43) 
+
+with normalization factor α′
+
+> A
+
+, using a single query to the block encoding of A/α A;2. if α′ 
+
+> A
+
+< α A, then for any ε > 0 one can construct a block encoding of 
+
+12α′
+
+> A
+
+A (44) 
+
+with normalization factor 2α′ 
+
+> A
+
+and accuracy ε, using 
+
+O
+
+ αA
+
+α′
+
+> A
+
+log 1
+
+ε
+
+
+
+(45) 
+
+queries to the controlled block encoding of A/α A and its inverse. 
+
+When applied to implementing the resolvent integral, the standard block encoding approach has a normalization factor governed by the maximum size of the resolvent on the unit circle 
+
+αres = max 
+
+> θ∈[0 ,2π)
+
+
+
+I − e−iθA
+
+−1
+
+, (46) which can be bounded under two standard assumptions on A. We denote the compressions onto the inner and outer invariant subspaces (32) by Ain = AΠin and Aout = AΠout .The first assumption controls the resolvent through the numerical range. Recall that for a matrix 
+
+B, W(B) = { ⟨ ψ|B|ψ⟩ : ∥ψ∥ = 1 } is its numerical range. We assume the per-block numerical ranges are separated from the unit circle, 
+
+W(Ain ) ⊆ { z : |z| ≤ 1 − δnum }, W(A−1out ) ⊆ { z : |z| ≤ 1 − δnum }, (47) for some 0 < δ num < 1. The Crouzeix–Palencia bound [10] then applies to each block, giving 
+
+∥g(Ain )∥ ≤ (1 + √2) max z∈W (Ain ) |g(z)| for any g analytic on a neighborhood of W(Ain ), and likewise for A−1out .The second assumption is diagonalizability. We assume the compressions Ain = Vin Λin V −1in and 
+
+Aout = Vout Λout V −1out are respectively diagonalizable, so that ∥g(Ain )∥ ≤ κV max λ∈Spec (Ain ) |g(λ)|
+
+for any g analytic on a neighborhood of Spec (Ain ), and likewise for Aout , where 
+
+κV = max  ∥Vin ∥ V −1in , ∥Vout ∥ V −1out 
+
+ , δeig = min  
+
+> λ∈Spec (A)
+
+|λ| − 1 (48) is the per-block eigenbasis condition number replacing the Crouzeix–Palencia constant. This anal-ysis extends to generic matrices through the Jordan condition number [47, Page 444]. Both assumptions on the input matrices are instances of a single condition, which we now formalize. 21 Definition 1 (Spectral set) . Let B be a square matrix and let K ⊆ C be a compact set containing 
+
+Spec (B). We call K a spectral set for B with constant c ≥ 1 if 
+
+∥g(B)∥ ≤ c sup 
+
+> z∈K
+
+|g(z)| (49) 
+
+for every function g analytic on a neighborhood of K.
+
+Lemma 6 (Instances of spectral sets) . Let B be a square matrix. 1. The numerical range W(B) is a spectral set for B with constant c = 1 + √2.2. If B = V ΛV −1 with Λ diagonal, then Spec (B) is a spectral set for B with constant c =
+
+∥V ∥ V −1 .Proof. Part (1) is the Crouzeix–Palencia bound [10]. For part (2), any g analytic on a neighborhood of Spec (B) satisfies g(B) = V g (Λ) V −1. Since g(Λ) is diagonal with entries g(λ), λ ∈ Spec (B), 
+
+∥g(B)∥ ≤ ∥ V ∥ V −1 max  
+
+> λ∈Spec (B)
+
+|g(λ)| . (50) We say that the compressions Ain and A−1out admit spectral sets Kin and Kout (49) with constant 
+
+c and gap δ if both sets have the common constant c and satisfy 
+
+Kin ⊆ { z : |z| ≤ 1 − δ }, Kout ⊆ { z : |z| ≤ 1 − δ } (51) for some 0 < δ < 1. Here, for a compression such as Ain = AΠin , spectra, numerical ranges, and spectral sets are taken for its restriction to the invariant subspace Hin , and similarly for Aout 
+
+and A−1out on Hout . By Lemma 6, this condition holds in two cases. Under the numerical-range assumption (47), take Kin = W(Ain ) and Kout = W(A−1out ), with c = 1 + √2 and δ = δnum . Under the diagonalizability assumption, take Kin = Spec (Ain ) and Kout = Spec (A−1out ), with c = κV (48). Every eigenvalue of Aout has modulus at least 1 + δeig . So the eigenvalues of A−1out have modulus at most 1 /(1 + δeig ) ≤ 1 − δeig /2, and the condition holds with δ = δeig /2. 
+
+Proposition 7 (Resolvent norm bound) . Let A be a square matrix with Riesz projector Πin (37) 
+
+and compressions Ain = AΠin , Aout = AΠout . If Ain and A−1out admit spectral sets (49) with constant 
+
+c and gap δ satisfying (51) , then the maximum resolvent norm satisfies 
+
+αres = max  
+
+> θ∈[0 ,2π)
+
+(I − e−iθA)−1 ≤ 2c ∥Πin ∥
+
+δ . (52) 
+
+Moreover: 1. under the numerical-range assumption (47) with gap δnum ,
+
+αres ≤ 2(1 + √2) ∥Πin ∥
+
+δnum 
+
+. (53) 
+
+2. if Ain and Aout are diagonalizable with per-block eigenbasis condition number κV and spectrum gap δeig (48) ,
+
+αres ≤ 2 κV ∥Πin ∥
+
+δeig 
+
+. (54) 22 Proof. The resolvent splits along the invariant subspaces as (I − e−iθA)−1 = ( I − e−iθAin )−1Πin + ( I − e−iθAout )−1Πout , (55) so that 
+
+(I − e−iθA)−1 ≤ (I − e−iθAin )−1 ∥Πin ∥ + (I − e−iθAout )−1 ∥Πout ∥ . (56) For an oblique projector and its complement, we have the tight bound ∥Πout ∥ = ∥I − Πin ∥ = ∥Πin ∥
+
+by Lemma 8 below, so it remains to bound the two restricted resolvents. For the purpose of deriving asymptotic bounds, the looser estimate ∥Πout ∥ ≤ 1 + ∥Πin ∥ from triangle inequality would also suffice. For the inner block, take g(z) = (1 − e−iθz)−1. Its only pole, z = e iθ, lies outside Kin , and 
+
+1 − e−iθz ≥ δ on Kin . By (49), (I − e−iθAin )−1 ≤ c/δ .For the outer block, write ( I − e−iθAout )−1 = h(A−1out ) with h(w) = w(w − e−iθ)−1. Its only pole, 
+
+w = e −iθ, lies outside Kout , and |h(w)| ≤ (1 − δ)/δ ≤ 1/δ on Kout . By (49), (I − e−iθAout )−1 ≤
+
+c/δ .Combining the two blocks gives (52). By Lemma 6, (51) holds with c = 1 + √2 and δ = δnum 
+
+under the numerical-range assumption, which gives (53). Under the diagonalizability assumption, it holds with c = κV and δ = δeig /2, which gives (54) with prefactor 4 κV .In the diagonalizable case, the prefactor can be improved to 2 κV by bounding the outer block directly rather than through A−1out . For every λ ∈ Spec (A), 
+
+1 − e−iθλ = eiθ − λ ≥ |λ| − 1 ≥ δeig , (57) whether λ lies inside or outside the unit circle. Applying the eigenbasis bound of Lemma 6 to 
+
+g(z) = (1 − e−iθz)−1 on each block gives (I − e−iθAin )−1 , (I − e−iθAout )−1 ≤ κV /δ eig . Hence 
+
+αres ≤ 2κV ∥Πin ∥ /δ eig .
+
+Lemma 8 (Norm of an oblique projection [42]) . Let Π2 = Π be an oblique projection, with Π̸ = 0 
+
+and Π̸ = I. Then ∥Π∥ = ∥I − Π∥.Proof. The entire space admits the orthogonal decomposition H = Im (Π) ⊕ Im (Π) ⊥. Every vector in Im (Π) is fixed by Π, and Π maps Im (Π) ⊥ into Im (Π), so with respect to this splitting Π = 
+
+I P
+
+0 0
+
+
+
+, I − Π = 
+
+0 −P
+
+0 I
+
+
+
+, (58) for some operator P : Im (Π) ⊥ → Im (Π). Then ΠΠ † =
+
+I + P P † 00 0
+
+
+
+, (I − Π) †(I − Π) = 
+
+0 00 I + P †P
+
+
+
+, (59) so ∥Π∥2 = ΠΠ † = 1 + P P † = 1 + ∥P ∥2 and ∥I − Π∥2 = (I − Π) †(I − Π) = 1 + P †P =1 + ∥P ∥2. Hence ∥Π∥ = ∥I − Π∥.We now assemble the standard block encoding. Introduce an ancilla register indexing the roots of unity and form the block-diagonal matrix 
+
+M =
+
+> n−1
+
+X
+
+> j=0
+
+|j⟩⟨ j| ⊗ (I − ω−jn A), (60) 23 whose blocks are the shifted matrices appearing in the discretization (38). Each block is the combination I −ω−jn A of I and A, so Lemma 2 block encodes M with normalization factor αA +1 = 
+
+O(αA) from the block encoding of A/α A. Applying the inversion of Lemma 4 block encodes 
+
+M −1 = Pn−1 
+
+> j=0
+
+|j⟩⟨ j|⊗ (I−ω−jn A)−1, and preparing the ancilla in the uniform superposition Had |0⟩ =
+
+> 1√n
+
+Pn−1 
+
+> j=0
+
+|j⟩ extracts the average (⟨0| Had ⊗I) M −1 (Had |0⟩ ⊗ I) = 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+(I − ω−jn A)−1 = S0. (61) 
+
+Proposition 9 (Standard block encoding of the oblique eigenprojection) . Let A/α A be a block encoding of a square matrix A with Riesz projector Πin = 12πi
+
+R
+
+> |z|=1
+
+(zI − A)−1 dz, and let αres =max θ∈[0 ,2π) (I − e−iθA)−1 be the maximum resolvent norm. For any ε > 0, Πin can be block encoded with normalization factor O(αres ) and accuracy ε, using 
+
+O
+
+
+
+αA αres log 1
+
+ε
+
+
+
+(62) 
+
+queries to the block encoding of A/α A.If the compressions Ain and A−1out admit spectral sets (49) with constant c and gap δ satisfying 
+
+(51) , then αres = O(c ∥Πin ∥ /δ ) by Proposition 7. In particular: 1. under the numerical-range assumption (47) , αres = O(∥Πin ∥ /δ num );2. under the diagonalizability assumption (48) , αres = O(κV ∥Πin ∥ /δ eig ).Proof. The block encoding of M (60) follows from Lemma 2, each block being the combination 
+
+I − ω−jn A of I and A, with normalization factor αA + 1 = O(αA). The nonzero singular values of M are bounded below by 1 /α res , since M −1 = max j (I − ω−jn A)−1 ≤ αres , so Lemma 4 block encodes M −1 with the query count (62) and normalization factor O(αres ). The Hadamard sandwich (61) is a linear combination of the diagonal blocks, which preserves the normalization factor and adds only the ancilla preparation. The resulting block encoding is that of S0, which is 
+
+ε-close to Π in by (38) once n is chosen as in Appendix B. The two specializations are the bounds of Proposition 7. 
+
+# B Discrete Fourier transform of resolvent and preconditioning 
+
+In this appendix, we provide details on the technical results from Section 3. 
+
+B.1 Block encoding matrix resolvent in the Fourier basis 
+
+Recall the block-diagonal matrix (60) whose inverse collects the shifted resolvents, 
+
+M −1 =
+
+> n−1
+
+X
+
+> j=0
+
+|j⟩⟨ j| ⊗ (I − ω−jn A)−1. (63) 24 Conjugating by the quantum Fourier transform QFT , acting on the ancilla register as QFT |j⟩ =
+
+> 1√n
+
+Pn−1 
+
+> k=0
+
+ωjk n |k⟩, its ( k, l ) block is (⟨k| ⊗ I) ( QFT ⊗I) M −1 (QFT † ⊗I) ( |l⟩ ⊗ I) = 
+
+> n−1
+
+X
+
+> j=0
+
+⟨k| QFT |j⟩⟨ j| QFT † |l⟩ (I − ω−jn A)−1
+
+=
+
+> n−1
+
+X
+
+> j=0
+
+ωjk n
+
+√n · ω−jl n
+
+√n (I − ω−jn A)−1
+
+= 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+ωj(k−l) 
+
+> n
+
+(I − ω−jn A)−1.
+
+(64) This depends only on k − l mod n, so defining the discrete Fourier transform of the resolvent 
+
+Sm = 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+ωjm n (I − ω−jn A)−1, m = 0 , . . . , n − 1, (65) the conjugated operator is block circulant, (QFT ⊗I) M −1 
+
+QFT † ⊗I
+
+
+
+=
+
+
+
+S0 Sn−1 Sn−2 · · · S1
+
+S1 S0 Sn−1 · · · S2
+
+S2 S1 S0 · · · S3
+
+... ... ... . . . ...
+
+Sn−1 Sn−2 Sn−3 · · · S0
+
+
+
+. (66) The zeroth mode S0 is the trapezoidal discretization (38) of the oblique eigenprojection Π in . The standard approach of Appendix A extracts S0 alone through the Hadamard conjugation (61), leaving the remaining blocks undetermined. The Fourier transform (66) instead characterizes the entire operator with Fourier modes S1, . . . , S n−1, which is what makes the preconditioning below possible. 
+
+B.2 Discrete Fourier transform of matrix resolvent 
+
+The Sm of (65) are related to the continuous Fourier coefficients of the resolvent, 
+
+Cm = 12π
+
+Z 2π
+
+> 0
+
+eimθ (I − e−iθA)−1 dθ, m ∈ Z, (67) by aliasing. This aliasing relation is a form of the Poisson summation formula; we give an elementary proof using only the orthogonality of roots of unity. 
+
+Lemma 10 (Aliasing identity) . Fixing n, the discrete Fourier transform (65) of the resolvent and its continuous Fourier coefficients (67) satisfy 
+
+Sm = X
+
+> q∈Z
+
+Cm+qn . (68) 
+
+Proof. Since the resolvent θ 7 → (I − e−iθA)−1 is analytic on an annulus containing the unit circle, its Fourier series converges absolutely, (I − e−iθA)−1 = X
+
+> p∈Z
+
+Cp e−ipθ , (69) 25 with the coefficients Cp of (67). Evaluating (69) at the nodes θj = 2 πj/n , where e −iθj = ω−jn , and substituting into the definition (65), 
+
+Sm = 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+ωjm n
+
+X
+
+> p∈Z
+
+Cp ω−jp n = X
+
+> p∈Z
+
+Cp
+
+ 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+ωj(m−p)
+
+> n
+
+ , (70) where the interchange of the two sums is justified by the absolute convergence of (69). The inner sum is the orthogonality relation of the roots of unity, 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+ωj(m−p) 
+
+> n
+
+=
+
+(
+
+1 p ≡ m (mod n),
+
+0 otherwise , (71) which retains exactly the terms p = m + qn , q ∈ Z, giving Sm = P 
+
+> q∈Z
+
+Cm+qn .By Lemma 10, the discrete Fourier transform is determined by the continuous coefficients Ck
+
+through aliasing, which we now compute explicitly on each invariant subspace. 
+
+Lemma 11 (Continuous Fourier transform of matrix resolvent) . Let A be a square matrix whose spectrum is disjoint from the unit circle, with Riesz projector Πin (37) , complementary projector 
+
+Πout = I − Πin , and compressions Ain = AΠin , Aout = AΠout . The continuous Fourier coefficients 
+
+Ck (67) of the resolvent are 
+
+Ck =
+
+
+
+Ak 
+
+> in
+
+k ≥ 1,
+
+Πin k = 0 ,
+
+−Ak 
+
+> out
+
+k ≤ − 1,
+
+(72) 
+
+where Ak 
+
+> out
+
+for k ≤ − 1 denotes a power of the inverse of Aout on Hout , extended by zero on Hin .Proof. On Hin all eigenvalues of Ain have modulus below 1, so the integrand of (67) expands as the norm-convergent series eiθ(e iθI − Ain )−1 = ( I − e−iθAin )−1 = X
+
+> m≥0
+
+Am 
+
+> in
+
+e−imθ . (73) Multiplying by e ikθ and integrating over [0 , 2π] selects the term m = k, giving Ak 
+
+> in
+
+for k ≥ 0 and 0 otherwise. On Hout all eigenvalues of Aout have modulus above 1, so A−1out < 1 and eiθ(e iθI − Aout )−1 = −A−1out 
+
+eiθ
+
+I − eiθA−1out 
+
+= − X
+
+> m≥0
+
+A−(m+1) out ei( m+1) θ. (74) Multiplying by e ikθ and integrating selects m + 1 = −k, that is m = −k − 1 ≥ 0, which requires 
+
+k ≤ − 1; this yields −Ak 
+
+> out
+
+for k ≤ − 1 and 0 otherwise. 
+
+Theorem 1 (Discrete Fourier transform of matrix resolvent) . Let A be a square matrix whose spectrum is disjoint from the unit circle, with Riesz projector Πin (37) , complementary projector 
+
+Πout = I − Πin , and compressions Ain = AΠin , Aout = AΠout . For 0 ≤ m ≤ n − 1, the discrete Fourier transform (65) of the resolvent is given by 
+
+Sm = 1
+
+n
+
+> n−1
+
+X
+
+> j=0
+
+ωjm n (I − ω−jn A)−1 = Am 
+
+> in
+
+(I − An
+
+> in
+
+)−1Πin − Am−n 
+
+> out
+
+(I − A−n
+
+> out
+
+)−1Πout , (75) 
+
+where A−1out denotes the inverse of Aout on Hout and ωn = e 2πi/n .
+
+26 Proof. By Lemma 10, Sm = P 
+
+> q∈Z
+
+Cm+qn , and by Lemma 11 the coefficients Ck are nonzero only when k ≥ 0 on Hin and k ≤ − 1 on Hout . On Hin , for 0 ≤ m ≤ n − 1 the surviving terms are 
+
+m, m + n, m + 2 n, . . . ,
+
+Sm Hin = X
+
+> q≥0
+
+Am+qn  
+
+> in
+
+= Am 
+
+> in
+
+(I − An
+
+> in
+
+)−1. (76) On Hout the surviving terms are m − n, m − 2n, . . . ,
+
+Sm Hout = − X
+
+> q≥1
+
+Am−qn  
+
+> out
+
+= −Am−n 
+
+> out
+
+(I − A−n
+
+> out
+
+)−1. (77) Summing the two contributions gives (75). The closed form of Theorem 1 reduces the bounds we need on the Fourier modes Sm to the growth of the powers Aj 
+
+> in
+
+and the inverse powers A−j
+
+> out
+
+, which decay geometrically under either of our assumptions on A.
+
+Corollary 12 (Fourier mode bounds) . Let A be a square matrix with Riesz projector Πin (37) and compressions Ain = AΠin , Aout = AΠout , and let Sm (65) be the discrete Fourier transform of the resolvent (75) .1. If the compressions Ain and A−1out admit spectral sets (49) with constant c and gap δ satisfying 
+
+(51) , then their powers decay geometrically, 
+
+Aj 
+
+> in
+
+≤ c (1 − δ)j , A−j 
+
+> out
+
+≤ c (1 − δ)j , j ≥ 0. (78) 
+
+In particular, this holds with: (a) c = 1 + √2 and δ = δnum under the numerical-range assumption (47) ;(b) c = κV and δ = δeig /2 under the diagonalizability assumption (48) .2. Whenever (78) holds, once n ≥ 1 
+
+> δ
+
+log(2 c):(a) the zeroth mode approximates the eigenprojection, 
+
+∥S0 − Πin ∥ ≤ 4c (1 − δ)n ∥Πin ∥ ; (79) 
+
+(b) every Fourier mode is uniformly bounded, 
+
+∥Sm∥ ≤ 4c ∥Πin ∥ , 0 ≤ m ≤ n − 1. (80) 
+
+Proof. For part (1), apply (49) to g(z) = zj on Kin for Ain , and on Kout for A−1out . Both sets lie in 
+
+{z : |z| ≤ 1 − δ}, so Aj 
+
+> in
+
+≤ c(1 − δ)j and A−j 
+
+> out
+
+≤ c(1 − δ)j . The two special cases follow from Lemma 6. In case (b), every eigenvalue of Aout has modulus at least 1 + δeig , so every eigenvalue of A−1out has modulus at most 1 /(1 + δeig ) ≤ 1 − δeig /2. This gives δ = δeig /2. For part (2), assume (78). Since n ≥ 1 
+
+> δ
+
+log(2 c) and (1 − δ)n ≤ e−δn ,
+
+∥An
+
+> in
+
+∥ , A−n 
+
+> out
+
+≤ c (1 − δ)n ≤ c e−δn ≤ 12 , (81) so ( I − An
+
+> in
+
+)−1 and ( I − A−n
+
+> out
+
+)−1 have norm at most 2. For (2a), setting m = 0 in the closed form (75) and subtracting Π in = ( I − An
+
+> in
+
+)−1(I − An
+
+> in
+
+)Π in ,
+
+S0 − Πin = An
+
+> in
+
+(I − An
+
+> in
+
+)−1Πin − A−n
+
+> out
+
+(I − A−n
+
+> out
+
+)−1Πout . (82) 27 Taking norms with ∥Πout ∥ = ∥Πin ∥ (Lemma 8), the inverse factors at most 2, and ∥An
+
+> in
+
+∥ , A−n 
+
+> out
+
+≤
+
+c(1 − δ)n gives (79). For (2b), the closed form (75) with ∥Am 
+
+> in
+
+∥ , Am−n 
+
+> out
+
+≤ c for 0 ≤ m ≤ n − 1, the inverse factors (I − An
+
+> in
+
+)−1 and ( I − A−n
+
+> out
+
+)−1 at most 2 in spectral norm, and ∥Πout ∥ = ∥Πin ∥ gives 
+
+∥Sm∥ ≤ ∥ Am 
+
+> in
+
+∥ (I − An
+
+> in
+
+)−1 ∥Πin ∥ + Am−n 
+
+> out
+
+(I − A−n
+
+> out
+
+)−1 ∥Πout ∥ ≤ 4c ∥Πin ∥ . (83) 
+
+B.3 Two-sided block preconditioning of resolvent integral 
+
+The standard block encoding of Appendix A inverts the block-diagonal matrix M = Pn−1 
+
+> j=0
+
+|j⟩⟨ j| ⊗ 
+
+(I − ω−jn A) (60) and extracts the single block S0 ≈ Πin . However, this normalizes Π in by the norm of the whole inverse matrix M −1 = αres = O(∥Πin ∥ /δ ), even though the extracted block has norm only O(∥Πin ∥) by Corollary 12. The two-sided preconditioning rescales the ancilla registers so that the extracted block is normalized near ∥Πin ∥, while the condition number of the inversion, and hence its query complexity of quantum implementation, is preserved up to a logarithmic factor. Fix two scaling parameters 0 < t 1, t 2 ≤ 1 and define diagonal scaling operators on the ancilla register, 
+
+T1 = t1|0⟩⟨ 0|+
+
+> n−1
+
+X
+
+> k=1
+
+|k⟩⟨ k| =
+
+
+
+t1
+
+1. . .1
+
+ , T2 = t2|0⟩⟨ 0|+
+
+> n−1
+
+X
+
+> k=1
+
+|k⟩⟨ k| =
+
+
+
+t2
+
+1. . .1
+
+ . (84) A block encoding of the preconditioned matrix (T1 ⊗ I)( QFT ⊗I) M (QFT † ⊗I)( T2 ⊗ I) (85) is then obtained from the block encoding of M using the product rule from Lemma 3. Note that 
+
+T1 and T2 are diagonal contractions and the quantum Fourier transform QFT is a unitary; hence the preconditioned matrix can be block encoded with no normalization overhead. Applying the inversion rule of Lemma 4 block encodes the inverse of the preconditioned matrix (85): 
+
+h
+
+(T1 ⊗ I)( QFT ⊗I) M (QFT † ⊗I)( T2 ⊗ I)
+
+i−1
+
+= ( T −12 ⊗ I)( QFT ⊗I) M −1 (QFT † ⊗I)( T −11 ⊗ I).
+
+(86) Here, the middle factor ( QFT ⊗I) M −1 (QFT † ⊗I) is the block-circulant operator (66), with ( k, l )block Sk−l. Taking the scaling operators T1 and T2 into account, the ( k, l ) block is Sk−l scaled by 1/(t1t2) when k = l = 0, by 1 /t 2 on the rest of row 0, by 1 /t 1 on the rest of column 0, and left 28 unchanged otherwise: 
+
+ T −12 ⊗ I (QFT ⊗I) M −1 
+
+QFT † ⊗I
+
+  T −11 ⊗ I =
+
+
+
+1
+
+t1t2
+
+S0
+
+1
+
+t2
+
+Sn−1
+
+1
+
+t2
+
+Sn−2 · · · 1
+
+t2
+
+S1
+
+1
+
+t1
+
+S1 S0 Sn−1 · · · S2
+
+1
+
+t1
+
+S2 S1 S0 · · · S3
+
+... ... ... . . . ...1
+
+t1
+
+Sn−1 Sn−2 Sn−3 · · · S0
+
+
+
+.
+
+(87) 
+
+Proposition 13 (Preconditioned norm bound) . Let 0 < t 1, t 2 ≤ 1, and let Sm (65) be the discrete Fourier transform of the resolvent. The inverse (87) of the preconditioned matrix has norm bounded by 
+
+αprecond = (T −12 ⊗ I)( QFT ⊗I)M −1(QFT † ⊗I)( T −11 ⊗ I)
+
+≤ ∥S0∥
+
+t1t2
+
++
+
+√n − 1
+
+t1
+
+max  
+
+> m
+
+∥Sm∥ +
+
+√n − 1
+
+t2
+
+max  
+
+> m
+
+∥Sm∥ + M −1 .
+
+(88) 
+
+Proof. Applying the triangle inequality to the four blocks of (87)—the corner, the rest of the top row, the rest of the left column, and the remaining submatrix—gives 
+
+αprecond ≤ ∥S0∥
+
+t1t2
+
++ 1
+
+t2
+
+Sn−1 · · · S1
+
+ + 1
+
+t1
+
+
+
+S1
+
+...
+
+Sn−1
+
+ +
+
+
+
+S0 · · · S2
+
+... . . . ...
+
+Sn−2 · · · S0
+
+ . (89) Here, the first term is ∥S0∥ 
+
+> t1t2
+
+. The second is a single row of n − 1 blocks, with norm at most 
+
+Sn−1 · · · S1
+
+ = Sn−1 · · · S1
+
+
+
+S†
+
+> n−1
+
+...
+
+S†
+
+> 1
+
+
+
+> 1/2
+
+=
+
+> n−1
+
+X
+
+> l=1
+
+Sn−lS†
+
+> n−l
+> 1/2
+
+≤
+
+> n−1
+
+X
+
+> l=1
+
+∥Sn−l∥2
+
+!1/2
+
+≤ √n − 1 max  
+
+> m
+
+∥Sm∥ .
+
+(90) The third is a single column of n − 1 blocks and can be handled similarly. Finally, the fourth is a principal submatrix of the unscaled block-circulant operator (66), so its norm is at most 
+
+(QFT ⊗I) M −1  QFT † ⊗I = M −1 . Substituting these into (89) gives (88). As t1, t 2 decrease, the corner and the block row and column in (88) grow, so αprecond increases; but the extracted block encoding is normalized by t1t2 αprecond , which decreases at a higher rate. To manage this tradeoff, we take 
+
+t1 = t2 = 1
+
+√n . (91) Substituting into (88), 
+
+αprecond ≤ n ∥S0∥ + 2 pn(n − 1) max  
+
+> m
+
+∥Sm∥ + αres ≤ 3n max  
+
+> m
+
+∥Sm∥ + αres , (92) 29 and the extracted normalization factor becomes 
+
+αΠ = t1t2 αprecond ≤ 3 max  
+
+> m
+
+∥Sm∥ + αres 
+
+n . (93) 
+
+Theorem 2 (Quantum oblique eigenprojection on the unit disk) . Let A be a square matrix accessed through a block encoding A/α A with normalization factor αA, whose spectrum is disjoint from the unit circle, with Riesz projector Πin (37) and compressions Ain = AΠin , Aout = AΠout .Assume the compressions Ain and A−1out admit spectral sets (49) with constant c and gap δ
+
+satisfying (51) . For any ε > 0, the two-sided block preconditioning (87) with t1 = t2 = 1 /√n and 
+
+n = Θ ΘΘ( 1 
+
+> δ
+
+log c ∥Πin ∥ 
+
+> ε
+
+) block encodes Πin with normalization factor 
+
+αΠ = O(c ∥Πin ∥), (94) 
+
+near its optimal value ∥Πin ∥, and accuracy ε, using 
+
+O
+
+ c α A ∥Πin ∥
+
+δ log c ∥Πin ∥
+
+ε log 1
+
+ε
+
+
+
+(95) 
+
+queries to the block encoding A/α A. In particular, this holds: 1. with c = 1 + √2 and δ = δnum under the numerical-range assumption (47) ;2. with c = κV and δ = δeig /2 under the diagonalizability assumption (48) .Proof. By Proposition 13 with t1 = t2 = 1 /√n, the extracted normalization factor is αΠ ≤
+
+3 max m ∥Sm∥ + αres /n (93), and the norm of the inverse preconditioned matrix is αprecond ≤
+
+3n max m ∥Sm∥ + αres (92). By part (1) of Corollary 12, the spectral-set hypothesis gives the geometric decay (78). Part (2) of Corollary 12 then gives max m ∥Sm∥ = O(c ∥Πin ∥). Proposition 7 gives αres = O(c ∥Πin ∥ /δ ). The choice of n balances two competing effects. It must be large enough that the discretization error (79) falls below ε, which requires n = Ω ΩΩ( 1 
+
+> δ
+
+log c ∥Πin ∥ 
+
+> ε
+
+). It must also be no larger than this, since the condition number αprecond = O(n c ∥Πin ∥ + c ∥Πin ∥ /δ ) grows linearly in n. The choice 
+
+n = Θ ΘΘ( 1 
+
+> δ
+
+log c ∥Πin ∥ 
+
+> ε
+
+) meets both. For sufficiently small ε, it also meets the threshold n ≥ 1 
+
+> δ
+
+log(2 c)of Corollary 12. With this n, the discretization error is at most ε by Corollary 12, and αres /n = O(c ∥Πin ∥). So 
+
+αΠ = O(c ∥Πin ∥), which is (94). Also, αprecond = O(n c ∥Πin ∥) = O( c ∥Πin ∥ 
+
+> δ
+
+log c ∥Πin ∥ 
+
+> ε
+
+). By (85), the preconditioned matrix is block encoded at normalization O(αA). Inverting it with Lemma 4 uses 
+
+O(αA αprecond log 1 
+
+> ε
+
+) queries, which is (95). Extracting the top-left block gives the block encoding of Π in at normalization αΠ. The two special cases follow from Lemma 6, with δ = δeig /2 in case (ii) as in Corollary 12. 
+
+# C Extension to general regions 
+
+In this appendix, we provide details on the technical results from Section 4. 
+
+C.1 Reduction to the unit disk 
+
+Appendix B treats the unit disk. We now reduce a general region to that case through a separating map. 30 Let A be a square matrix with spectrum split into Spec in (A) and Spec out (A), and C be a closed curve enclosing Spec in (A) but not Spec out (A), disjoint from Spec (A). Then, the oblique eigenprojection onto Spec in (A) is given by the Riesz projector Π in = 12πi
+
+R 
+
+> C
+
+(wI − A)−1 dw.Suppose that Sin and Sout are disjoint open sets covering Spec in (A) and Spec out (A). Let f be analytic on Sin ∪ S out and separate the two sets in modulus, 
+
+|f (w)| < 1 (w ∈ S in ), |f (w)| > 1 (w ∈ S out ). (96) The next lemma states that the eigenprojection of A for the target region coincides with the eigenprojection of f (A) for the unit disk. 
+
+Lemma 14 (Change of variables) . Let A be a square matrix with spectrum split into Spec in (A)
+
+and Spec out (A), and C be a closed curve enclosing Spec in (A) but not Spec out (A), disjoint from 
+
+Spec (A). Suppose that Sin and Sout are disjoint open sets covering Spec in (A) and Spec out (A).Let f be analytic on Sin ∪ S out with |f (w)| < 1 ( w ∈ S in ) and |f (w)| > 1 ( w ∈ S out ). Then, 
+
+Πin = 12πi
+
+Z
+
+> C
+
+(wI − A)−1 dw = 12πi
+
+Z
+
+> |z|=1
+
+(zI − f (A)) −1 dz. (97) 
+
+Proof. Both integrals are Riesz projectors. By Lemma 1, the first is the projection onto the invariant subspaces of A associated with Spec in (A), and the second is the projection onto the invariant subspaces of f (A) associated with the part of its spectrum inside the unit circle. By the spectral mapping theorem [17, Theorem 12.7.1][36, Theorem 8.3], Spec (f (A)) = f (Spec (A)). The modulus separation map f sends Spec in (A) inside the unit circle and Spec out (A) outside, so the two projections have matching spectral parts. The holomorphic functional calculus preserves the invariant subspaces of A, so f (A) acts on each invariant subspace of A and shares its spectral projection onto Spec in (A). The two integrals therefore coincide. 
+
+Theorem 3 (Quantum oblique eigenprojection for general regions) . Let A be a square matrix with Riesz projector Πin (97) for a region whose boundary is the separating curve C, and compressions 
+
+Ain = AΠin , Aout = AΠout . Let f be an analytic separating map (96) , and suppose f (A) is accessed through a block encoding f (A)/α f (A) with normalization factor αf (A).If the compressions Ain and Aout admit spectral sets Kin and Kout (49) with constant c, and f
+
+is analytic on neighborhoods of Kin and Kout with gap δf satisfying 
+
+max 
+
+> z∈K in
+
+|f (z)| ≤ 1 − δf , min 
+
+> z∈K out
+
+|f (z)| ≥ 1 + δf , (98) 
+
+then for any ε > 0, the two-sided block preconditioning of Theorem 2 applied to f (A) block encodes 
+
+Πin with normalization factor 
+
+αΠ = O(c ∥Πin ∥), (99) 
+
+near its optimal value ∥Πin ∥, and accuracy ε, using 
+
+O
+
+ c α f (A) ∥Πin ∥
+
+δf
+
+log c ∥Πin ∥
+
+ε log 1
+
+ε
+
+
+
+(100) 
+
+queries to the block encoding f (A)/α f (A). In particular, this holds: 1. with c = 1+ √2, Kin = W(Ain ), and Kout = W(Aout ), under the numerical-range assumption; 2. with c = κV (48) , Kin = Spec (Ain ), and Kout = Spec (Aout ), under the diagonalizability assumption. 
+
+31 Proof. By Lemma 14, Π in is the unit-disk Riesz projector of f (A). We apply Theorem 2 to f (A), with f (A)/α f (A) as the input block encoding. It remains to show that the compressions f (A)in and 
+
+f (A)−1out admit spectral sets (49) with constant c and gap δf /2 satisfying (51). Since f preserves the invariant subspaces, f (A)in acts on Hin as f (Ain ). Similarly, f (A)−1out 
+
+acts on Hout as (1 /f )( Aout ). The function 1 /f is analytic on a neighborhood of Kout , because 
+
+|f | ≥ 1 + δf > 0 there. We claim that f (Kin ) is a spectral set for f (Ain ) with constant c. The set f (Kin ) is compact, and it contains Spec (f (Ain )) = f (Spec (Ain )) by the spectral mapping theorem. Let g be analytic on a neighborhood of f (Kin ). Then g ◦ f is analytic on a neighborhood of Kin , and g(f (Ain )) = (g ◦ f )( Ain ). Applying (49) to g ◦ f gives 
+
+∥g(f (Ain )) ∥ ≤ c sup 
+
+> z∈K in
+
+|g(f (z)) | = c sup  
+
+> w∈f(Kin )
+
+|g(w)| . (101) The same argument with 1 /f in place of f shows that (1 /f )( Kout ) is a spectral set for f (A)−1out with constant c.By (98), f (Kin ) lies in {| w| ≤ 1−δf }. The out-block gap converts to a reciprocal bound: |1/f | ≤  
+
+> 11+ δf
+
+≤ 1 − δf 
+
+> 2
+
+on Kout . So (1 /f )( Kout ) lies in {| w| ≤ 1 − δf /2}. Both sets lie in {| w| ≤ 1 − δf /2},so (51) holds with gap δf /2. Theorem 2 with δ = δf /2 = Θ ΘΘ( δf ) then gives the normalization factor (99) and the query count (100). The two special cases follow from Lemma 6. When f (z) = z, Theorem 3 reduces to the unit-disk setting, with the out-block hypothesis placed on Aout rather than A−1out . In the diagonalizable case, taking Kout = Spec (Aout ) reproduces case (ii) of Theorem 2. In the numerical-range case, taking Kout = W(Aout ) gives a different condition from (47), and in general neither condition implies the other. Case (i) of Theorem 2 corresponds instead to the reciprocal set Kout = 1 /W(A−1out ). This set is not the numerical range of Aout . But it is still a spectral set for Aout with constant 1 + √2, since the Crouzeix–Palencia bound applies to g(1 /z ) over W(A−1out ). More generally, the set f (W(Ain )) is not the numerical range of f (Ain ), and need not even be convex. It is nevertheless a spectral set for f (Ain ) with constant 1 + √2, since the Crouzeix– Palencia bound applies to g ◦ f over W(Ain ). The numerical range W(f (Ain )) may be larger and may even meet the unit circle. This is why we state and apply Theorem 2 for spectral sets rather than numerical ranges in the proof of Theorem 3. 
+
+C.2 Half-plane construction 
+
+We now focus on the case where the spectrum is split along the imaginary axis, which underlies the applications of Section 5. We instantiate Theorem 3 with a degree-two rational map sending the right half-plane into the unit disk. Take 
+
+f (z) = (z − 1) 2
+
+(z + 1) 2 , (102) with a double zero at z = 1 and a double pole at z = −1. The map sends the right half-plane into the unit disk, the imaginary axis onto the unit circle, and the left half-plane outside. Moreover, the following lemma shows that a spectrum separation between half-planes transfers to the unit circle. 
+
+Lemma 15 (Gap preservation) . Let f be the map f (z) = (z−1) 2 
+
+> (z+1) 2
+
+, and write z = x + iy . Then 
+
+|f (z)| = (x − 1) 2 + y2
+
+(x + 1) 2 + y2 = 1 − 4x
+
+(x + 1) 2 + y2 , (103) 32 so |f (z)| < 1 for x > 0, |f (z)| = 1 for x = 0 , and |f (z)| > 1 for x < 0. Moreover, for |z| ≤ 1/2:1. |f (z)| ≤ 1 − 16 9 δ if x ≥ δ;2. |f (z)| ≥ 1 + 16 9 δ if x ≤ − δ.Proof. Since f (z) = 
+
+ z−1
+
+> z+1
+
+2
+
+, its modulus is the squared M¨ obius modulus |f (z)| = z−1
+
+> z+1
+> 2
+
+= 
+
+> (x−1) 2+y2
+> (x+1) 2+y2
+
+, which gives the explicit formula in (103). The sign of 4 x determines whether |f (z)| is below, equal to, or above 1. For |z| ≤ 1/2 the denominator ( x + 1) 2 + y2 is the squared distance from −1 to z, maximized at z = 1 /2, so it is at most (3 /2) 2 = 9 /4. Hence for x ≥ δ,
+
+|f (z)| = 1 − 4x
+
+(x + 1) 2 + y2 ≤ 1 − 4δ
+
+9/4 = 1 − 16 9 δ. (104) The case x ≤ − δ is symmetric, giving |f (z)| ≥ 1 + 16 9 δ.The map f (A) is applied without polynomial approximation. Under ∥A∥ ≤ 1/2, the shifted matrix A+I has singular values in [1 /2, 3/2], since ∥A + I∥ ≤ 32 and (A + I)−1 ≤ (1 −∥ A∥)−1 ≤ 2. Inverting it with Lemma 4 block encodes ( A+I)−1 at normalization O(1), using O(log(1 /ε )) queries to the block encoding of A. The product f (A) = ( A − I)2(A + I)−2 then follows from Lemma 3, with 
+
+∥f (A)∥ ≤ ∥ A − I∥2 (A + I)−1 2 ≤ (3 /2) 2 (2) 2 = 9 . (105) So f (A) is block encoded at normalization αf (A) = O(1) using O(log(1 /ε )) queries. For the half-plane, the spectral-set hypothesis of Theorem 3 takes a concrete geometric form. Suppose the compressions Ain and Aout admit spectral sets Kin and Kout (49) with constant c,separated from the imaginary axis into opposite half-planes, 
+
+Kin ⊆ { z : ℜ(z) ≥ δ, |z| ≤ 12 }, Kout ⊆ { z : ℜ(z) ≤ − δ, |z| ≤ 12 }. (106) Since Lemma 15 bounds |f (z)| pointwise, it applies to every point of these sets. This gives max z∈K in |f (z)| ≤ 1 − 16 9 δ and min z∈K out |f (z)| ≥ 1 + 16 9 δ. The only pole of f is at z = −1, which lies outside the disk {| z| ≤ 12 }. So f is analytic on a neighborhood of each set. The hypothesis of Theorem 3 therefore holds with δf = 16 9 δ.In particular, (106) holds with c = 1 + √2 when the per-block numerical ranges W(Ain ) and 
+
+W(Aout ) satisfy it. It holds with c = κV when Ain and Aout are diagonalizable and their spectra 
+
+Spec (Ain ) and Spec (Aout ) satisfy it. In both cases, the condition |z| ≤ 12 is automatic under 
+
+∥A∥ ≤ 12 .
+
+Corollary 16 (Quantum oblique eigenprojection for the half-plane) . Let A be a square matrix accessed through a block encoding A/α A with normalization factor αA. Let Πin be the Riesz projector onto the right-half-plane invariant subspace, with compressions Ain = AΠin , Aout = AΠout .If the compressions Ain and Aout admit spectral sets Kin and Kout (49) with constant c and gap 
+
+δ satisfying 
+
+Kin ⊆ { z : ℜ(z) ≥ δ, |z| ≤ αA }, Kout ⊆ { z : ℜ(z) ≤ − δ, |z| ≤ αA }, (107) 
+
+then for any ε > 0, the eigenprojection Πin can be block encoded with normalization factor 
+
+αΠ = O(c ∥Πin ∥), (108) 33 near its optimal value ∥Πin ∥, and accuracy ε, using 
+
+O
+
+ c α A ∥Πin ∥
+
+δ polylog c α A ∥Πin ∥
+
+δε 
+
+
+
+(109) 
+
+queries to the block encoding A/α A. In particular, this holds: 1. with c = 1 + √2, when the per-block numerical ranges W(Ain ) and W(Aout ) satisfy (107) ;2. with c = κV (48) , when Ain and Aout are diagonalizable and their spectra Spec (Ain ) and 
+
+Spec (Aout ) satisfy (107) .In both cases, the condition |z| ≤ αA is automatic, since ∥A∥ ≤ αA.Proof. Scaling the block encoding A/α A by 1 /2 block encodes A2 = A/ (2 αA) at normalization 
+
+O(1), with ∥A2∥ ≤ 1/2. Scaling by the positive real 1 /(2 αA) fixes the imaginary axis. So A2 has the same invariant subspaces as A, the same right- and left-half-plane split, and the same projector Πin . Spectral sets rescale with the same constant: if K is a spectral set for B with constant c,then K/s is a spectral set for B/s with constant c, by applying (49) to g(z/s ). So Kin /(2 αA) and 
+
+Kout /(2 αA) are spectral sets for the compressions of A2 with constant c. By (107), they satisfy (106) with gap δ′ = δ/ (2 αA). Take f to be the map (102). Under ∥A2∥ ≤ 1/2, the product f (A2) = ( A2 − I)2(A2 + I)−2 is block encoded at normalization O(1) using O(log(1 /ε )) queries to the block encoding of A2. By the discussion following (106), the hypothesis of Theorem 3 holds for A2 with δf = 16 9 δ′ = Θ ΘΘ( δ/α A). Applying Theorem 3 to f (A2) gives the normalization factor (108), using 
+
+qf = O
+
+ c α A ∥Πin ∥
+
+δ log c ∥Πin ∥
+
+ε log 1
+
+ε
+
+
+
+(110) queries to the block encoding of f (A2). Each of the qf queries to f (A2) is realized by an ε′-accurate block encoding. Since block-encoding errors compose linearly, taking ε′ = Θ ΘΘ( ε/q f ) gives final accuracy ε. This uses O(log( qf /ε )) queries to A/α A per query to f (A2). Since qf is polynomial in the parameters, this adds only a polylogarithmic factor, which is included in (109). 
+
+# D Further analysis on applications 
+
+In this appendix, we provide details on the technical results from Section 5. 
+
+D.1 Eigenstate preparation 
+
+Suppose the target eigenvalue or cluster is enclosed by a disk {z : |z − z0| < ρ }, with the target invariant subspace separated from the circle |z − z0| = ρ by an absolute gap δ. The separating map is the linear f (z) = ( z − z0)/ρ , so f (A) = ( A − z0I)/ρ is obtained from the block encoding of A by a shift and a rescaling. 
+
+Corollary 17 (Eigenstate preparation) . Let A be a square matrix accessed through a block encoding 
+
+A/α A, and let Πin be the Riesz projector onto the invariant subspace whose eigenvalues lie in the disk { z : |z − z0| < ρ } of center z0 and radius ρ, with compressions Ain = AΠin , Aout = AΠout .Let |ψ⟩ be an initial state prepared by a unitary Oψ, with overlap η = ∥Πin |ψ⟩∥ .
+
+34 If the compressions Ain − z0I and (Aout − z0I)−1 admit spectral sets Kin and Kout (49) with constant c and gap 0 < δ < ρ satisfying 
+
+Kin ⊆ { z : |z| ≤ ρ − δ }, Kout ⊆
+
+n
+
+z : |z| ≤ 1
+
+ρ + δ
+
+o
+
+, (111) 
+
+then the projected state Πin |ψ⟩/η can be prepared to accuracy ε using 
+
+O c2 (αA + |z0|) ∥Πin ∥2
+
+η δ polylog c ∥Πin ∥
+
+η ε 
+
+!
+
+(112) 
+
+queries to the block encoding A/α A. The initial state is prepared 
+
+O
+
+ c ∥Πin ∥
+
+η
+
+
+
+(113) 
+
+times, using that many queries to Oψ and its inverse. In particular, 1. with c = 1 + √2 when the numerical ranges W(Ain − z0I) and W(( Aout − z0I)−1) satisfy 
+
+(111) ;2. with c = κV (48) when Ain and Aout are diagonalizable and the spectra Spec (Ain − z0I) and 
+
+Spec (( Aout − z0I)−1) satisfy (111) .Proof. Form a block encoding of f (A) = ( A−z0I)/ρ from the block encoding of A by Lemma 2. Its normalization factor is αf (A) = ( αA +|z0|)/ρ . The block encoding is exact and uses one query to the block-encoding of A. Π in is the unit-disk Riesz projector of f (A). When rescaling by ρ, the spectral sets also rescale by ρ, so Kin /ρ and ρ Kout are spectral sets for f (A)in and f (A)−1out = ρ (Aout −z0I)−1,respectively, both with constant c. By (111), the first set lies in {z : |z| ≤ 1 − δ/ρ }. The second lies in {z : |z| ≤ ρ/ (ρ + δ)}, and ρ/ (ρ + δ) ≤ 1 − δ/ (2 ρ). So (51) holds for f (A) with gap δ/ (2 ρ). Theorem 2 applied to f (A) block encodes Π in with normalization factor αΠ = O(c ∥Πin ∥). It uses 
+
+O
+
+ c α f (A) ∥Πin ∥
+
+δ/ (2 ρ) log c ∥Πin ∥
+
+ε′ log 1
+
+ε′
+
+
+
+= O
+
+ c (αA + |z0|) ∥Πin ∥
+
+δ log c ∥Πin ∥
+
+ε′ log 1
+
+ε′
+
+
+
+(114) queries per application to accuracy ε′. The factor ρ cancels between αf (A) and the relative gap 
+
+δ/ (2 ρ). Applying this block encoding to |ψ⟩ produces Π in |ψ⟩ with success amplitude η/α Π. So fixed-point amplitude amplification prepares the normalized state to constant success amplitude with 
+
+O(αΠ/η ) = O(c ∥Πin ∥ /η ) applications. Taking each application to accuracy ε′ = Θ ΘΘ( εη/α Π) gives final accuracy ε. Then each logarithm is O(log c ∥Πin ∥ 
+
+> η ε
+
+). Multiplying the number of applications by the queries per application gives (112). The two special cases follow from Lemma 6. Alternatively, the resolvent-integral construction of Appendix A (and [35]) applied to f (A)block encodes the same projector with normalization factor αres = O(ρ ∥Πin ∥ /δ ) by Proposition 7. Each application has the same query cost as before. Amplitude amplification then needs O(αres /η )rounds instead of O(αΠ/η ), a factor of order ρ/δ more. For ρ = Θ ΘΘ(1), the total gap dependence of queries to block encoding is 1 /δ 2 for the resolvent integral versus 1 /δ with preconditioning. The latter matches the gap dependence of eigenstate preparation for nonnormal matrices with real spectra [28]. Separately, the initial state is prepared once per round. So the resolvent integral uses 
+
+O(ρ ∥Πin ∥ /(η δ )) queries to Oψ and its inverse, compared with our gap-independent count (113). 35 D.2 Continuous-time algebraic Riccati equation 
+
+Consider the continuous-time algebraic Riccati equation XQX −XP −P †X −R = 0, where P, Q, R 
+
+are square matrices of the same size with Q, R Hermitian. Its associated Hamiltonian matrix is 
+
+J =
+
+h P −Q  
+
+> −R−P†
+
+i
+
+. The spectrum of J splits across the imaginary axis. Let Π in be the projector onto the antistable (right-half-plane) invariant subspace, and write it in column blocks as Π in = [ Π1 Π2 ]. Then the stabilizing solution is X = −Π+2 Π1 [35], where ( ·)+ is the pseudoinverse. Here, the smallest nonzero singular value of Π 2 satisfies Sval min (Π 2) ≥ 1/
+
+q
+
+1 + ∥X∥2 [35]. This bound does not depend on the gap. 
+
+Corollary 18 (Riccati equation) . Let P, Q, R be square matrices of the same size with Q, R Hermi-tian, and let J =
+
+h P −Q  
+
+> −R−P†
+
+i
+
+be the associated Hamiltonian matrix, accessed through a block encoding 
+
+J/α J . Let Πin = [ Π1 Π2 ] be the projector onto its antistable invariant subspace, with compressions 
+
+Jin = JΠin , Jout = JΠout , and let σ > 0 be a lower bound on Sval min (Π 2).Assume the compressions Jin and Jout admit spectral sets (49) with constant c and gap δ sat-isfying (107) with αJ in place of αA. For any ε > 0, the stabilizing solution X = −Π+2 Π1 of the continuous-time algebraic Riccati equation XQX − XP − P †X − R = 0 can be block encoded with normalization factor 
+
+αX = O
+
+ c ∥Πin ∥
+
+σ
+
+
+
+(115) 
+
+and accuracy ε, using 
+
+O c2 αJ ∥Πin ∥2
+
+σ δ polylog c α J ∥Πin ∥
+
+σ δ ε 
+
+!
+
+(116) 
+
+queries to the block encoding J/α J .Proof. By hypothesis, Corollary 16 applies to J. It block encodes the projector Π in with normal-ization factor αΠ = O(c ∥Πin ∥) and accuracy ε′, using 
+
+O
+
+ c α J ∥Πin ∥
+
+δ polylog c α J ∥Πin ∥
+
+δ ε ′
+
+
+
+(117) queries to J/α J . Restricting the input register to the first or the second column block gives block encodings of Π 1/α Π and Π 2/α Π, with no additional queries. The nonzero singular values of Π 2/α Π are at least σ/α Π. So the pseudoinverse version of quantum singular value transformation [14] block encodes Π +2 with normalization factor O(1 /σ )and accuracy ε/ 2. This uses O( αΠ 
+
+> σ
+
+log 1 
+
+> ε
+
+) applications of the block encoding of Π 2/α Π. Lemma 3 then multiplies by Π 1/α Π and absorbs the sign into a phase. The result is a block encoding of 
+
+X = −Π+2 Π1 with normalization factor O(αΠ/σ ), which is (115). In total, the projector block encoding is applied O( αΠ 
+
+> σ
+
+log 1 
+
+> ε
+
+) times. Errors in block encodings add up at most linearly. Taking ε′ = Θ ΘΘ( εσ/ (αΠ log 1 
+
+> ε
+
+)) therefore keeps the final accuracy at ε. The argument of every logarithm in the cost is then polynomial in c, αJ , ∥Πin ∥, 1 /σ , 1 /δ , and 1 /ε ,so each logarithm is O(log c α J ∥Πin ∥ 
+
+> σ δ ε
+
+). Multiplying the number of applications by the cost of each application gives (116). The lower bound Sval min (Π 2) ≥ 1/
+
+q
+
+1 + ∥X∥2 [35] does not depend on the gap. Taking 
+
+σ = 1 /
+
+q
+
+1 + ∥X∥2, the normalization factor (115) becomes αX = O(c ∥Πin ∥
+
+q
+
+1 + ∥X∥2), which does not depend on δ. In comparison, the resolvent-integral construction [35] block encodes the 36 same projector with normalization factor αres = O(∥Πin ∥ /δ ) in place of αΠ. This introduces a factor of 1 /δ to both the number of pseudoinverse applications and the solution normalization. Together with the 1 /δ cost of each projector application, the overall gap dependence is 1 /δ 3. Preconditioning removes the two factors driven by the normalization, leaving only 1 /δ .
+
+D.3 Sylvester equation 
+
+Consider the Sylvester equation AX + XB = C, where A, B, C are square matrices of the same size. Its augmented matrix is K =  A C 
+
+> 0−B
+
+, whose spectrum is the union of the spectra of A and 
+
+−B. The projector onto the invariant subspace of the A branch, along that of the −B branch, is Πin =  I X 
+
+> 0 0
+
+. The solution X is therefore the top-right block of Π in , and no pseudoinverse is needed to extract it. 
+
+Corollary 19 (Sylvester equation) . Let A, B, C be square matrices of the same size, and let K = A C 
+
+> 0−B
+
+ be the associated augmented matrix, accessed through a block encoding K/α K . Suppose the spectra of A and −B lie in the right and left half-planes, respectively. Let Πin =  I X  
+
+> 00
+
+ be the projector onto the right-half-plane invariant subspace of K, with compressions Kin = KΠin ,
+
+Kout = KΠout .Assume the compressions Kin and Kout admit spectral sets (49) with constant c and gap δ
+
+satisfying (107) with αK in place of αA. For any ε > 0, the solution X of the Sylvester equation 
+
+AX + XB = C can be block encoded with normalization factor 
+
+αX = O(c ∥Πin ∥) (118) 
+
+and accuracy ε, using 
+
+O
+
+ c α K ∥Πin ∥
+
+δ polylog c α K ∥Πin ∥
+
+δ ε 
+
+
+
+(119) 
+
+queries to the block encoding K/α K .Proof. By hypothesis, Corollary 16 applies to K. It block encodes the projector Π in with nor-malization factor αΠ = O(c ∥Πin ∥) and accuracy ε, using the query count (119). Restricting the output register to the first block and the input register to the second block extracts the top-right block X, with no additional queries. This gives a block encoding of X with the same normalization factor and accuracy, which is (118). The special cases c = 1 + √2 and c = κV carry over from Corollary 16. The normalization factor (118) is close to optimal. From the block form of Π in ,Πin Π† 
+
+> in
+
+=
+
+I + XX † 00 0
+
+
+
+, (120) so ∥Πin ∥ =
+
+q
+
+1 + ∥X∥2. Any block encoding of X has normalization factor at least ∥X∥, so 
+
+αX = O(c
+
+q
+
+1 + ∥X∥2) is within a factor O(c) of max(1 , ∥X∥). In comparison, the direct augmented method [51, Remark 6.4] block encodes the same projector through the resolvent integral. Its normalization factor is αres = O(∥Πin ∥ /δ ) by Proposition 7. Preconditioning removes this factor of 1 /δ while keeping the query complexity essentially unchanged. 37 References 
+
+[1] Daniel S. Abrams and Seth Lloyd, Quantum algorithm providing exponential speed increase for finding eigenvalues and eigenvectors , Physical Review Letters 83 (1999), 5162–5165, arXiv:quant-ph/9807070, DOI:10.1103/PhysRevLett.83.5162. (Cited on page 3). [2] Abhijeet Alase and Salini Karuvade, Resolvent-based quantum phase estimation: Towards esti-mation of parametrized eigenvalues , 2024, arXiv:2410.04837, DOI:10.48550/arXiv.2410.04837. (Cited on page 17). [3] Dong An, Andrew M. Childs, Lin Lin, and Lexing Ying, Laplace transform–based quantum eigenvalue transformation via linear combination of Hamiltonian simulation , SIAM Journal on Computing 55 (2026), no. 2, 376–409, arXiv:2411.04010, DOI:10.1137/24M1720160. (Cited on page 3). [4] Yuto Ashida, Zongping Gong, and Masahito Ueda, Non-Hermitian physics , Advances in Physics 69 (2020), no. 3, 249–435, arXiv:2006.01837, DOI:10.1080/00018732.2021.1876991. (Cited on pages 3 and 14). [5] Avah Banerjee, Asim Sharma, and Sooraj Soman, Quantum fast-forwarding beyond reversibil-ity: The α-perturbed n-cycle , 2026, arXiv:2606.26584, DOI:10.48550/arXiv.2606.26584. (Cited on pages 3 and 14). [6] Dominic W. Berry and Pedro C. S. Costa, Quantum algorithm for time-dependent differential equations using Dyson series , Quantum 8 (2024), 1369, arXiv:2212.03544, DOI:10.22331/q-2024-06-13-1369. (Cited on page 3). [7] Dominic W. Berry, Andrew M. Childs, Aaron Ostrander, and Guoming Wang, Quantum algorithm for linear differential equations with exponentially improved dependence on preci-sion , Communications in Mathematical Physics 356 (2017), 1057–1081, arXiv:1701.03684, DOI:10.1007/s00220-017-3002-y. (Cited on page 3). [8] Richard Cleve, Artur Ekert, Chiara Macchiavello, and Michele Mosca, Quantum algorithms revisited , Proceedings of the Royal Society A 454 (1998), no. 1969, 339–354, quant-ph/9708016, DOI:10.1098/rspa.1998.0164. (Cited on page 3). [9] John D. Cook, Not even close , https://www.johndcook.com/blog/2020/07/24/ not-even-close/, 2020, Accessed 2026-09-20. (Cited on pages 3 and 14). [10] M. Crouzeix and C. Palencia, The numerical range is a (1 + √2) -spectral set , SIAM Jour-nal on Matrix Analysis and Applications 38 (2017), no. 2, 649–655, arXiv:1702.00668, DOI:10.1137/17M1116672. (Cited on pages 10, 12, 21, and 22). [11] Alexander M. Dalzell, Jianqiang Li, and Yuan Su, Faster quantum linear system solver beyond the condition number , 2026, arXiv:2607.07691, DOI:10.48550/arXiv.2607.07691. (Cited on page 8). [12] Yasunori Futamura, Xiucai Ye, and Tetsuya Sakurai, Contour integral-based quan-tum algorithm for estimating matrix eigenvalue density , 2021, arXiv:2112.05395, DOI:10.48550/arXiv.2112.05395. (Cited on page 4). 38 [13] Yimin Ge, Jordi Tura, and J. Ignacio Cirac, Faster ground state preparation and high-precision ground energy estimation with fewer qubits , Journal of Mathematical Physics 60 (2019), no. 2, 022202, arXiv:1712.03193, DOI:10.1063/1.5027484. (Cited on page 3). [14] Andr´ as Gily´ en, Yuan Su, Guang Hao Low, and Nathan Wiebe, Quantum singular value trans-formation and beyond: exponential improvements for quantum matrix arithmetics , Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing, pp. 193–204, 2019, arXiv:1806.01838, DOI:10.1145/3313276.3316366. (Cited on pages 3, 5, 6, 20, and 36). [15] Lov K. Grover, A fast quantum mechanical algorithm for database search , Proceedings of the Twenty-Eighth Annual ACM Symposium on Theory of Computing (STOC), pp. 212–219, 1996, arXiv:quant-ph/9605043, DOI:10.1145/237814.237866. (Cited on page 3). [16] Xabier Guti´ errez, Lorenzo Laneve, and Mikel Sanz, Quantum eigenvalue transformations for arbitrary matrices , 2026, arXiv:2604.19688, DOI:10.48550/arXiv.2604.19688. (Cited on page 17). [17] Jeffrey Humpherys, Tyler J. Jarvis, and Emily J. Evans, Foundations of applied mathematics, volume 1: Mathematical analysis , Society for Industrial and Applied Mathematics, Philadel-phia, PA, 2017, DOI:10.1137/1.9781611974904. (Cited on pages 3, 6, 11, 19, and 31). [18] Shan Jiang and Dong An, Contour-integral based quantum eigenvalue transformation: analysis and applications , 2026, arXiv:2601.11959, DOI:10.48550/arXiv.2601.11959. (Cited on page 3). [19] Shanmu Jin, The numerical range is a 2-spectral set , 2026, DOI:10.20944/preprints202607.1919.v4, Preprints. (Cited on page 10). [20] Christopher Kang and Yuan Su, Quantum matrix arithmetics with Hamiltonian evolu-tion , ACM Transactions on Quantum Computing 7 (2026), no. 4, 1–86, arXiv:2510.06316, DOI:10.1145/3816436. (Cited on page 17). [21] A Yu Kitaev, Quantum measurements and the abelian stabilizer problem , 1995, arXiv:quant-ph/9511026, DOI:10.48550/arXiv.quant-ph/9511026. (Cited on page 3). [22] Anthony W. Knapp, Basic real analysis , digital second ed., Birkh¨ auser, 2016, DOI:10.3792/euclid/9781429799997. (Cited on page 3). [23] Hari Krovi, Improved quantum algorithms for linear and nonlinear differential equations , Quan-tum 7 (2023), 913, arXiv:2202.01054, DOI:10.22331/q-2023-02-02-913. (Cited on pages 3 and 10). [24] Jianqiang Li, A new quantum linear system algorithm beyond the condition number and its application to solving multivariate polynomial systems , 2025, arXiv:2510.05588, DOI:10.48550/arXiv.2510.05588. (Cited on page 8). [25] Lin Lin and Yu Tong, Near-optimal ground state preparation , Quantum 4 (2020), 372, arXiv:2002.12508, DOI:10.22331/q-2020-12-14-372. (Cited on pages 3, 4, and 14). [26] Emiel Lorist and Felix Schwenninger, A solution to Crouzeix’s conjecture , 2026, arXiv:2608.03841, DOI:10.48550/arXiv.2608.03841. (Cited on page 10). [27] Guang Hao Low and Isaac L. Chuang, Optimal Hamiltonian simulation by quan-tum signal processing , Physical Review Letters 118 (2017), 010501, arXiv:1606.02685, DOI:10.1103/PhysRevLett.118.010501. (Cited on page 3). 39 [28] Guang Hao Low and Yuan Su, Quantum eigenvalue processing , SIAM Journal on Computing 
+
+55 (2026), no. 1, 135–215, arXiv:2401.06240, DOI:10.1137/24M1689363. (Cited on pages 3, 4, 5, 10, 12, 14, 17, 20, and 35). [29] Guang Hao Low and Yuan Su, Quantum linear system algorithm with optimal queries to initial state preparation , Quantum 10 (2026), 2041, arXiv:2410.18178, DOI:10.22331/q-2026-03-23-2041. (Cited on page 8). [30] Guang Hao Low and Nathan Wiebe, Hamiltonian simulation in the interaction picture , 2018, arXiv:1805.00675, DOI:10.48550/arXiv.1805.00675. (Cited on page 17). [31] John M. Martyn, Zane M. Rossi, Andrew K. Tan, and Isaac L. Chuang, Grand uni-fication of quantum algorithms , PRX Quantum 2 (2021), 040203, arXiv:2105.02859, DOI:10.1103/PRXQuantum.2.040203. (Cited on page 3). [32] Sam McArdle and David P. Tew, Improving the accuracy of quantum computational chemistry using the transcorrelated method , 2020, arXiv:2006.11181, DOI:10.48550/arXiv.2006.11181. (Cited on pages 3 and 14). [33] Ashley Montanaro and Changpeng Shao, Quantum and classical query complexities of func-tions of matrices , Proceedings of the 56th Annual ACM Symposium on Theory of Computing, pp. 573–584, 2024, arXiv:2311.06999, DOI:10.1145/3618260.3649665. (Cited on page 3). [34] Hongkang Ni and Lexing Ying, Quantum eigenvalue transformation via linear combi-nation of Hamiltonian simulation: A Weyl calculus approach , 2026, arXiv:2606.29848, DOI:10.48550/arXiv.2606.29848. (Cited on pages 3 and 10). [35] Pablo Rodenas-Ruiz, Andrew Zhao, and Joonho Lee, Quantum solvers for nonlinear ma-trix equations in quantum chemistry , 2026, arXiv:2605.16189, DOI:10.48550/arXiv.2605.16189. (Cited on pages 3, 4, 5, 6, 14, 15, 35, and 36). [36] Steven Roman, Advanced linear algebra , 3 ed., Graduate Texts in Mathematics, vol. 135, Springer, New York, 2008, DOI:10.1007/978-0-387-72831-5. (Cited on pages 11, 19, and 31). [37] Changpeng Shao, Computing eigenvalues of diagonalizable matrices on a quantum com-puter , ACM Transactions on Quantum Computing 3 (2022), no. 4, 1–20, arXiv:1912.08015, DOI:10.1145/3527845. (Cited on page 17). [38] Changpeng Shao and Jin-Peng Liu, Solving generalized eigenvalue problems by ordinary dif-ferential equations on a quantum computer , Proceedings: Mathematical, Physical and Engi-neering Sciences 478 (2022), no. 2262, 1–25, arXiv:2010.15027, DOI:10.1098/rspa.2021.0797. (Cited on page 17). [39] Peter W. Shor, Polynomial-time algorithms for prime factorization and discrete logarithms on a quantum computer , SIAM Journal on Computing 26 (1997), no. 5, 1484–1509, arXiv:quant-ph/9508027, DOI:10.1137/S0097539795293172. (Cited on page 3). [40] Rolando D. Somma, Guang Hao Low, Dominic W. Berry, and Ryan Babbush, Quan-tum algorithm for linear matrix equations , npj Quantum Information (2026), Early access, arXiv:2508.02822, DOI:10.1038/s41534-026-01360-6. (Cited on page 16). [41] P. K. Suetin and EV Pankratiev, Series of Faber polynomials , vol. 1, CRC Press, 1998. (Cited on page 12). 40 [42] Daniel B. Szyld, The many proofs of an identity on the norm of oblique projections , Numerical Algorithms 42 (2006), no. 3–4, 309–323, DOI:10.1007/s11075-006-9046-2. (Cited on page 23). [43] Souichi Takahira, Asuka Ohashi, Tomohiro Sogabe, and Tsuyoshi S. Usuda, Quantum algo-rithm for matrix functions by Cauchy’s integral formula , Quantum Information and Compu-tation 20 (2020), 14–36, arXiv:2106.08075, DOI:10.26421/QIC20.1-2-2. (Cited on page 3). [44] Souichi Takahira, Asuka Ohashi, Tomohiro Sogabe, and Tsuyoshi S Usuda, Quantum al-gorithms based on the block-encoding framework for matrix functions by contour integrals ,Quantum Information and Computation 22 (2022), no. 11&12, 965–979, arXiv:2106.08076, DOI:10.26421/QIC22.11-12-4. (Cited on page 3). [45] Yu Tong, Dong An, Nathan Wiebe, and Lin Lin, Fast inversion, preconditioned quantum linear system solvers, fast Green’s-function computation, and fast evalua-tion of matrix functions , Physical Review A 104 (2021), 032422, arXiv:2008.13295, DOI:10.1103/PhysRevA.104.032422. (Cited on page 3). [46] Lloyd N Trefethen, Approximation theory and approximation practice, extended edition , Society for Industrial and Applied Mathematics, 2019, DOI:10.1137/1.9781611975949. (Cited on page 12). [47] Lloyd N. Trefethen and Mark Embree, Spectra and pseudospectra: The behavior of nonnormal matrices and operators , Princeton university press, 2005, DOI:10.1515/9780691213101. (Cited on pages 10 and 21). [48] Francisca Vasconcelos and Andr´ as Gily´ en, Methods for reducing ancilla-overhead in block en-codings , 2025, arXiv:2507.07900, DOI:10.48550/arXiv.2507.07900. (Cited on page 17). [49] Chao Wang, Xi-Ning Zhuang, Menghan Dou, Zhao-Yun Chen, and Guo-Ping Guo, A uni-fied Poisson summation framework for generalized quantum matrix transformations , 2026, arXiv:2604.02874, DOI:10.48550/arXiv.2604.02874. (Cited on page 3). [50] Yanqiao Wang, Yixuan Liang, Hongjia Chen, and Jin-Peng Liu, Optimal quantum eigen-value transformation via linear combinations of Hermitian matrices , 2026, arXiv:2607.25812, DOI:10.48550/arXiv.2607.25812. (Cited on pages 3 and 10). [51] Yanqiao Wang and Jin-Peng Liu, Sign embedding quantum algorithms for matrix equations and matrix functions , 2026, arXiv:2604.25333, DOI:10.48550/arXiv.2604.25333. (Cited on pages 3, 4, 5, 16, 17, and 37). [52] Xiao-Ming Zhang, Yukun Zhang, Wenhao He, and Xiao Yuan, Exponential quantum advan-tages for practical non-Hermitian eigenproblems , Physical Review Letters 135 (2025), 140601, arXiv:2401.12091, DOI:10.1103/3n8f-k8pl. (Cited on page 17). 41

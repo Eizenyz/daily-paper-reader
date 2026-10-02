@@ -1,0 +1,153 @@
+{
+  "date": "20261002",
+  "date_label": "",
+  "generated_at": "2026-10-02 22:34:19 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.39170v1",
+      "route": "202610/02/2609.39170v1-quantum-frozen--oseen-homotopy-analysis-method-with-lchs-for-solving-nonlinear-partial-differential-equations",
+      "title": "Quantum Frozen--Oseen homotopy analysis method with LCHS for solving nonlinear partial differential equations",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "结合LCHS的量子同伦方法求解非线性偏微分方程",
+      "first_seen_at": "2026-10-02 22:34:19 UTC",
+      "updated_at": "2026-10-02 22:34:19 UTC"
+    },
+    {
+      "paper_id": "2609.37207v1",
+      "route": "202610/02/2609.37207v1-near-optimal-quantum-algorithm-and-complexity-analysis-for-riccati-problems",
+      "title": "Near-Optimal Quantum Algorithm and Complexity Analysis for Riccati Problems",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "针对微分Riccati方程的量子算法，近最优查询复杂度与块编码",
+      "first_seen_at": "2026-10-02 22:34:19 UTC",
+      "updated_at": "2026-10-02 22:34:19 UTC"
+    },
+    {
+      "paper_id": "2609.40174v1",
+      "route": "202610/02/2609.40174v1-dissipation-accelerates-quantum-and-classical-simulation-of-open-system-dynamics",
+      "title": "Dissipation accelerates quantum and classical simulation of open-system dynamics",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "开放系统与Lindblad耗散动力学的量子模拟",
+      "first_seen_at": "2026-10-02 22:34:19 UTC",
+      "updated_at": "2026-10-02 22:34:19 UTC"
+    },
+    {
+      "paper_id": "2609.40167v1",
+      "route": "202610/02/2609.40167v1-shadow-quantum-singular-value-transformation-with-shallow-quantum-circuits",
+      "title": "Shadow Quantum Singular Value Transformation with Shallow Quantum Circuits",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "影子量子奇异值变换用浅层电路估计f(H)可观测量，降低标准QSVT资源",
+      "first_seen_at": "2026-10-02 22:34:19 UTC",
+      "updated_at": "2026-10-02 22:34:19 UTC"
+    },
+    {
+      "paper_id": "2609.40254v1",
+      "route": "202610/02/2609.40254v1-quantum-oblique-eigenprojection",
+      "title": "Quantum oblique eigenprojection",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "基于块编码的量子斜本征投影与特征值变换算法",
+      "first_seen_at": "2026-10-02 22:34:19 UTC",
+      "updated_at": "2026-10-02 22:34:19 UTC"
+    },
+    {
+      "paper_id": "2609.39452v1",
+      "route": "202610/02/2609.39452v1-from-wavefunction-regularity-to-eigenvector-conditioning-accuracy--cost-trade-offs-of-quantum-algorithms-for-non-hermitian-transcorrelated-hamiltonians",
+      "title": "From Wavefunction Regularity to Eigenvector Conditioning: Accuracy--Cost Trade-offs of Quantum Algorithms for Non-Hermitian Transcorrelated Hamiltonians",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "非厄米非正规算子的量子算法复杂度与精度—条件数权衡",
+      "first_seen_at": "2026-10-02 22:34:19 UTC",
+      "updated_at": "2026-10-02 22:34:19 UTC"
+    },
+    {
+      "paper_id": "2609.40214v2",
+      "route": "202610/02/2609.40214v2-quantum-markov-state-models-for-metastable-dynamics",
+      "title": "Quantum Markov State Models for Metastable Dynamics",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向开放量子系统亚稳态动力学的量子马尔可夫状态模型",
+      "first_seen_at": "2026-10-02 22:34:19 UTC",
+      "updated_at": "2026-10-02 22:34:19 UTC"
+    },
+    {
+      "paper_id": "2609.40277v1",
+      "route": "202610/02/2609.40277v1-conditioning-free-non-uniform-quantum-fourier-and-chebyshev-transforms",
+      "title": "Conditioning-Free Non-Uniform Quantum Fourier and Chebyshev Transforms",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "非均匀切比雪夫变换的量子算法，与多项式逼近相关",
+      "first_seen_at": "2026-10-02 22:34:19 UTC",
+      "updated_at": "2026-10-02 22:34:19 UTC"
+    },
+    {
+      "paper_id": "2610.01878v1",
+      "route": "202610/02/2610.01878v1-floquet-universal-hamiltonian-simulation",
+      "title": "Floquet-Universal Hamiltonian Simulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "用周期驱动哈密顿量合成时间无关哈密顿量的模拟理论",
+      "first_seen_at": "2026-10-02 22:34:19 UTC",
+      "updated_at": "2026-10-02 22:34:19 UTC"
+    }
+  ]
+}

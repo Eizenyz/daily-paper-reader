@@ -1,0 +1,3889 @@
+Title: From Wavefunction Regularity to Eigenvector Conditioning: Accuracy–Cost Trade-offs of Quantum Algorithms for Non-Hermitian Transcorrelated Hamiltonians
+
+URL Source: https://arxiv.org/pdf/2609.39452v1
+
+Published Time: Thu, 01 Oct 2026 01:27:12 GMT
+
+Number of Pages: 69
+
+Markdown Content:
+## From Wavefunction Regularity to Eigenvector Conditioning: Accuracy–Cost Trade-offs of Quantum Algorithms for Non-Hermitian Transcorrelated Hamiltonians 
+
+Cheng-Lin Hong, 1, 2 Emiel Koridon, 3, 4 Paul K. Faehrmann, 5, 6 
+
+Thomas D. K¨ uhne, 1, 2, 7 Stefano Polla, 8, 3 and Werner Dobrautz 1, 2, 9, 10 1Center for Advanced Systems Understanding (CASUS), 02826 G¨ orlitz, Germany 
+
+> 2
+
+Helmholtz-Zentrum Dresden-Rossendorf (HZDR), 01328 Dresden, Germany 
+
+> 3
+
+⟨aQa L⟩ Applied Quantum Algorithms, Leiden University, the Netherlands 
+
+> 4
+
+Covestro Deutschland AG, Leverkusen, Nordrhein-Westfalen 51373, Germany 
+
+> 5
+
+Dahlem Center for Complex Quantum Systems, Freie Universit¨ at Berlin, 14195 Berlin, Germany 
+
+> 6
+
+Walrus Computing, Munich, Germany 
+
+> 7
+
+Institute of Artificial Intelligence, Technische Universit¨ at Dresden, Helmholtzstraße 10, 01069 Dresden, Germany 
+
+> 8
+
+QuSoft, HIMS & IvI, University of Amsterdam, the Netherlands 
+
+> 9
+
+Center for Scalable Data Analytics and Artificial Intelligence (ScaDS.AI) Dresden/Leipzig, 01069 Dresden, Germany 
+
+> 10
+
+Technical University Dresden, 01069 Dresden, Germany 
+
+(Dated: October 1, 2026) 
+
+1arXiv:2609.39452v1 [quant-ph] 30 Sep 2026 Abstract 
+
+The electron–electron Coulomb singularity forces cusp structure in electronic wavefunctions. This cusp structure limits wavefunction regularity and slows the convergence of expansions in smooth bases, requiring large basis sets to reach a target accuracy. The transcorrelated (TC) method incorporates this short-range behavior into the Hamiltonian, thereby improving the regularity of the transformed wavefunction and accelerating convergence toward the complete-basis-set limit. The resulting Hamiltonian is non-Hermitian and non-normal, which limits the direct applicability of standard quantum algorithms. For such non-normal operators, the complexity of several recent quantum algorithms depends explicitly on quantities related to eigenvector conditioning and eigenvalue sensitivity. Understanding these quantities is essential for assessing both algorithmic complexity and quantum resource requirements. In this work, we address these issues in two stages. We first study a solvable model, which provides a controlled setting for isolating how transcorrelation affects basis convergence and eigenvector conditioning. Within this setting, we investigate two distinct one-parameter Jastrow correlators. We derive the asymptotic energy-error scaling: N −1/2 for the bare projection and N −3/2 for both TC correlators at generic fixed parameters, with N denoting the basis size. Furthermore, we show that this faster convergence can yield a polynomial improvement in the asymptotic query-complexity upper bound. We then extend the analysis to second-quantized electronic-structure Hamiltonians and use particle-number-sector diagnostics to distinguish target-sector from auxiliary-sector conditioning. Our work provides a framework for understanding the central accuracy–cost trade-off in TC Hamiltonians. 
+
+I. INTRODUCTION 
+
+High-accuracy quantum chemistry simulations remain challenging due to the computational cost of accurately describing electron correlation effects. While quantum computing offers a promising framework for simulating many-electron systems, the accuracy achievable in both classical and quantum calculations depends on how efficiently the electronic Hamiltonian and its states can be represented. In particular, both classical and quantum calculations typically operate on Hamilto-nians projected onto finite one-electron basis sets, introducing a systematic approximation. The corresponding many-electron space is built from antisymmetrized products of the selected orbitals, and therefore does not incorporate the interelectronic coordinate r12 explicitly. The slow con-vergence of the correlation energy reflects the difficulty of representing the correct short-range behavior of the electronic wave function at electron–electron coalescence points, known as Kato’s 2cusp conditions [1]. To address this convergence issue, explicitly correlated methods incorporate the interelectronic distance r12 directly into the wave-function ansatz. The idea goes back to the pioneering work of Hylleraas on the helium atom [2] and was later developed by Kutzelnigg and coworkers [3, 4]. For detailed reviews, see Refs. [5–8]. While these approaches have been highly successful, an alternative perspective is to incorporate the effects of electron correlation directly into the Hamil-tonian via a similarity transformation, rather than modifying the wave-function ansatz itself. This approach, known as the transcorrelated (TC) method, was initially proposed by Hirschfelder [9] and subsequently refined by Boys and Handy [10, 11]. In this framework, the Hamiltonian is similarity-transformed using a Jastrow factor [12], which is chosen to encode the cusp structure. This transformation introduces two main challenges. First, this similarity transformation gener-ates effective interactions up to the three-body level, which increases the cost of constructing and representing the Hamiltonian. In practice, this difficulty can be mitigated by the xTC approxi-mation [13]. Second, the resulting transcorrelated Hamiltonian is non-Hermitian and non-normal in the standard inner product. Unlike normal operators, non-normal operators can have non-orthogonal eigenvector bases, and the resulting eigenvector conditioning is closely connected to their spectral sensitivity [14, 15]. Basis-set acceleration must therefore be assessed together with the representation and conditioning costs introduced by the transformation. Despite these challenges, the TC method has seen renewed attention in recent years [16–27]. On the classical side, transcorrelated Hamiltonians have been treated successfully in transcorre-lated coupled-cluster approaches [23–25], in full configuration interaction quantum Monte Carlo (FCIQMC) [28–32], selected configuration interaction [33], and in density-matrix renormalization group (DMRG) methods [22, 34]. More recently, TC Hamiltonians have also been studied in quantum computing [35–42]. Earlier strategies for integrating the TC framework with quantum computing have primarily fol-lowed two distinct directions. The first approach is based on canonical transcorrelation [43], in which the associated Baker–Campbell–Hausdorff expansion is truncated, yielding an approximate Hermitian Hamiltonian compatible with standard quantum algorithms [35, 37]. The second fo-cuses on variational approaches tailored to near-term devices, which rely on algorithms such as variational quantum imaginary-time evolution (VarQITE) to cope with the non-Hermitian struc-3ture [36, 38–40]. As quantum computing progresses toward fault-tolerant regimes, new frameworks have emerged for eigenvalue transformation and estimation beyond the Hermitian setting. Early progress in this direction was made by Shao [44], who developed algorithms for diagonalizable matrices with real spectra and also considered more general settings under additional assumptions. More re-cently, Low and Su introduced the quantum eigenvalue processing (QEP) framework [45], which enables eigenvalue transformation (QEVT) and estimation (QEVE) beyond the Hermitian set-ting. QEVE has since been applied to transcorrelated Hamiltonians. Feniou et al. [41] proposed a first-quantized real-space framework in which transcorrelated Hamiltonians can be treated with QEVE, while Uvarov and Izmaylov [42] subsequently provided the first resource estimates for ap-plying QEVE to second-quantized TC Hamiltonians and compared these estimates with those for standard qubitization. Their study also emphasized that estimating the relevant condition number and understanding its behavior remain key challenges for assessing the practical success of QEVE. These challenges raise three questions that have not yet been systematically investigated in the quantum-algorithmic setting: (i) how do finite-basis projection and choice of correlator affect ac-curacy and eigenvector conditioning in TC Hamiltonians, (ii) how does the resulting conditioning evolve as the basis is enlarged, and (iii) under what conditions does this faster basis convergence translate into an improved query-complexity bound for a target total accuracy? In this work, we address these questions in two stages. We first analyze an exactly solvable model, the one-dimensional harmonic oscillator with a delta-function potential. This model provides a clean, analytically tractable setting in which all questions can be addressed: we compare two different one-parameter correlators, track basis-set convergence and eigenvector conditioning as the basis is enlarged, and analyze the resulting quantum query complexity. We then extend the analysis to our main object of interest, second-quantized electronic Hamiltonians, to understand how the mechanisms identified in the solvable model appear in electronic-structure calculations. By combining these analyses with diagnostics relevant to quantum algorithms, we provide a physically motivated perspective on the trade-off between the accuracy gains from transcorrelation and the associated algorithmic costs in electronic-structure calculations. The rest of this paper is organized as follows. Sec. II develops the TC operator in real space and finite-dimensional representations and introduces the conditioning measures used throughout. Sec. III applies this framework to the exactly solvable contact-interaction model. Sec. IV exam-4ines accuracy–cost trade-offs and algorithm-relevant diagnostics for second-quantized electronic Hamiltonians. Sec. V concludes and outlines future directions.   
+
+> II. THEORETICAL FRAMEWORK A. Transcorrelated Hamiltonian in Real Space
+
+Consider a Schr¨ odinger-type operator of the form ˆH = ˆT + ˆV , (1) where ˆT = −12
+
+X
+
+> i
+
+∇2 
+
+> i
+
+(2) is the kinetic-energy operator, and ˆV denotes the coordinate-dependent part of the Hamiltonian, including the external potential and interparticle interactions. The corresponding eigenvalue prob-lem is ˆHΨk = EkΨk. (3) Coulombic or contact singularities in ˆV can induce nonanalytic structure in the eigenfunctions of ˆH [1, 46]. Finite expansions in smooth basis functions do not represent this structure explicitly, which can limit the convergence of the resulting wave functions and Ritz eigenvalues [47]. For Coulombic electronic Hamiltonians, the eigenfunctions admit a factorized representation Ψk = F φk, (4) where F is an explicit universal factor containing the nonanalytic coalescence structure, while the residual function φk has higher regularity [48, 49]. Motivated by this factorization, we introduce a parametrized Jastrow factor eˆτθ , where ˆ τθ is a real-valued, coordinate-dependent multiplicative correlator, and define the residual function Φ Rk by Ψk = eˆτθ ΦRk . (5) The parametrized factor need not coincide with the universal factor F; it is chosen to encode selected nonanalytic features. 5Substitution of Eq. (5) into the original eigenvalue equation, followed by left multiplication by 
+
+e−ˆτθ , gives 
+
+e−ˆτθ ˆHe ˆτθ ΦRk = EkΦRk , (6) where the superscript R identifies Φ Rk as a right eigenfunction of the transformed operator. The transcorrelated Hamiltonian is thus defined at the operator level by ˆHTC (θ) = e−ˆτθ ˆHe ˆτθ , Sθ = eˆτθ . (7) Here θ parametrizes the chosen correlator and determines properties such as its functional form or range. These parameters characterize the transformation rather than the bare Hamiltonian ˆH,and for admissible θ the spectrum of ˆHTC (θ) coincides with that of ˆH.For electronic-structure applications, ˆ τθ is usually chosen as a symmetric pairwise Jastrow corre-lator, ˆτθ = X
+
+> i<j
+
+uθ(ri, rj ), uθ(ri, rj ) = uθ(rj , ri). (8) Throughout the following discussion, we write uij ≡ uθ(ri, rj ), where ri denotes the coordinate of electron i. In the one-dimensional model considered later, ˆ τθ becomes the multiplication operator generated by a scalar function of one coordinate. To obtain the explicit form of ˆHTC (θ), we employ the Baker–Campbell–Hausdorff (BCH) ex-pansion. Since ˆ τθ is multiplicative, it commutes with all multiplicative terms in ˆV , so that the nontrivial commutators arise from the kinetic operator ˆT . Because ˆT contains derivatives only up to second order, the BCH series truncates exactly after the second commutator (see Appendix A), yielding ˆHTC (θ) = ˆH +
+
+h ˆT , ˆτθ
+
+i
+
++ 12
+
+hh ˆT , ˆτθ
+
+i
+
+, ˆτθ
+
+i
+
+. (9) The resulting Hamiltonian contains a generally non-Hermitian first-order differential operator and a scalar correction generated by the similarity transformation. Substituting the explicit commutators gives ˆHTC (θ) = ˆH − X
+
+> i
+
+(∇iτθ)·∇ i − 12
+
+X
+
+> i
+
+∇2 
+
+> i
+
+τθ − 12
+
+X
+
+> i
+
+|∇ iτθ|2, (10) where τθ denotes the coordinate-space representation of ˆ τθ, and r collectively denotes all particle coordinates. 6It is convenient to distinguish the first-order differential operator, the scalar correction generated by the TC transformation, and the complete transformed scalar potential. We define 
+
+Fi, θ(r) ≡ ∇ iτθ(r), (11) 
+
+VTC ,eff ,θ(r) ≡ − 12
+
+X
+
+> i
+
+∇2 
+
+> i
+
+τθ(r) + |∇ iτθ(r)|2 . (12) The complete transformed scalar potential is then 
+
+Veff ,θ(r) ≡ V (r) + VTC ,eff ,θ(r), (13) Here V (r) is the coordinate-space representation of ˆV . Thus, VTC ,eff ,θ contains only the scalar terms generated by the similarity transformation, whereas Veff ,θ also contains the original potential. With these definitions, the transcorrelated Hamiltonian can be written as ˆHTC (θ) = ˆH − X
+
+> i
+
+Fi, θ(r) · ∇ i + VTC ,eff ,θ(r). (14) Formally, a sufficient condition for admissibility is that Sθ is boundedly invertible on the Hilbert space of interest. Under this assumption, the transformation in Eq. (7) can equivalently be written as ˆHTC (θ) = S−1 
+
+> θ
+
+ˆHS θ, (15) which defines a genuine similarity transformation; consequently, ˆHTC (θ) and ˆH share the same spectrum. We adopt this assumption throughout the operator-level discussion; more general un-bounded similarity transformations need not preserve the spectrum [50]. Beyond preserving the spectrum, the bounded invertibility of Sθ gives ˆHTC (θ) an additional struc-tural property. Assuming that ˆH is self-adjoint, define the positive metric operator as 
+
+ηθ = S†
+
+> θ
+
+Sθ. (16) Provided the relevant domains are compatible, the TC Hamiltonian is quasi-Hermitian with respect to ηθ [51–53], in the sense that ˆHTC (θ)†ηθ = ηθ ˆHTC (θ). (17) Under this domain-compatibility assumption, ˆHTC (θ) may equivalently be regarded as self-adjoint with respect to the modified inner product induced by ηθ.7B. Finite-Dimensional Transcorrelated Hamiltonians 
+
+In practice, neither classical nor quantum computations are performed directly in the infinite-dimensional Hilbert space. Instead, one works in a finite-dimensional subspace obtained by dis-cretization or basis truncation. We denote this subspace by B and let PB be the orthogonal pro-jector onto it. For a selected correlator parameter θ, the object used in computation is therefore not ˆHTC (θ) itself but its finite-basis representation 
+
+HB
+
+> TC
+
+(θ) = PB ˆHTC (θ)PB, (18) with associated right eigenpairs 
+
+HB
+
+> TC
+
+(θ)|ΦB 
+
+> k
+
+(θ)⟩ = EB 
+
+> k
+
+(θ)|ΦB 
+
+> k
+
+(θ)⟩. (19) We illustrate the resulting structure in the molecular case, where B is the many-electron space generated by a finite set of orthonormal spatial orbitals {ϕp(r)}Mp=1 . The correlator ˆ τθ takes the pairwise Jastrow form of Eq. (8). For this pairwise correlator, the additional terms in Eq. (10) can be grouped into the θ-dependent effective two- and three-body operators (see Appendix B): ˆKθ(ri, rj ) = 12
+
+
+
+∇2 
+
+> i
+
+uij + ∇2 
+
+> j
+
+uij + |∇ iuij |2 + |∇ j uij |2
+
+
+
++ ∇iuij · ∇ i + ∇j uij · ∇ j , (20a) ˆLθ(ri, rj , rk) = ∇iuij · ∇ iuik + ∇j uji · ∇ j ujk + ∇kuki · ∇ kukj , (20b) where uij ≡ uθ(ri, rj ) as defined in Eq. (8). Let a† 
+
+> pσ
+
+and apσ denote the fermionic creation and annihilation operators associated with orbital 
+
+ϕp and spin σ. Taking the matrix elements of the one-, two-, and three-body operators in this orbital basis gives the second-quantized representation [20] 
+
+HB
+
+> TC
+
+(θ) = X
+
+> pq
+
+X
+
+> σ
+
+hpq a†
+
+> pσ
+
+aqσ 
+
++ 12
+
+X
+
+> pqrs
+
+X
+
+> στ
+
+ Vpqrs − Kpqrs (θ) a†
+
+> pσ
+
+a† 
+
+> qτ
+
+asτ arσ 
+
+− 16
+
+X
+
+> pqrstu
+
+X
+
+> στ λ
+
+Lpqrstu (θ) a†
+
+> pσ
+
+a† 
+
+> qτ
+
+a†
+
+> rλ
+
+auλ atτ asσ ,
+
+(21) where hpq and Vpqrs denote the usual one- and two-electron integrals, while 
+
+Kpqrs (θ) = ⟨ϕpϕq| ˆKθ|ϕrϕs⟩ , (22) 
+
+Lpqrstu (θ) = ⟨ϕpϕqϕr| ˆLθ|ϕsϕtϕu⟩ , (23) 8are the effective two- and three-body integrals. The finite-basis representation HB
+
+> TC
+
+(θ) depends on two distinct inputs: (i) the finite space B, which specifies the representable subspace, and (ii) the correlator parameter θ, which determines the underlying non-unitary transformation. Both inputs affect the structure of the finite-dimensional representation. At finite B, the eigenvalues EB 
+
+> k
+
+(θ) need not coincide with those of ˆH. Under the usual spectral-convergence assumptions, they converge to the corresponding eigenvalues of ˆH
+
+along a basis sequence approaching the complete-basis-set limit. The transcorrelated Hamiltonian is designed to accelerate this convergence. The underlying mechanism is the regularity gain of Eq. (5), which can improve approximability in suitable finite-dimensional spaces [54], although the realized convergence rate still depends on B and θ.However, this acceleration comes at a structural cost. The projected TC operator HB
+
+> TC
+
+(θ) is gen-erally non-Hermitian and non-normal. In contrast, the bare projection PB ˆHP B remains Hermitian and therefore normal. It has orthonormal eigenvectors and real eigenvalues, and its Ritz values satisfy Rayleigh–Ritz upper bounds. These properties need not hold in the projected TC setting, where the eigenbasis is generically non-orthogonal.  
+
+> C. Conditioning and Eigenvalue Sensitivity
+
+A finite-dimensional operator A admits an orthonormal eigenbasis if and only if it is normal ( A†A =
+
+AA †). The projected operator HB
+
+> TC
+
+(θ) is generally non-normal, not merely non-Hermitian, and therefore admits no orthonormal eigenbasis. The departure from normality has direct numerical consequences and can amplify eigenvalue sensitivity to small perturbations, including numerical errors [14, 15]. This feature is relevant to recent quantum algorithms that estimate eigenvalues of non-normal operators: a measure of non-normality enters their query-complexity bounds. Such bounds have been established in [44, 45, 55, 56] under suitable assumptions on the input operator. The quantity appearing in several of these bounds is the condition number of an eigenvector matrix. For a diagonalizable matrix A ∈ CN ×N , we write 
+
+A = V ΛV −1, (24) where Λ is diagonal and V is a matrix whose columns are right eigenvectors of A. Throughout 9this work the condition number of an eigenvector matrix V is taken in the spectral norm, 
+
+κ(V ) ≡ κ2(V ) = ∥V ∥2 ∥V −1∥2. (25) The eigenvector matrix V is not unique: its columns may be rescaled independently, and within a degenerate eigenspace any linearly independent basis may be chosen. Both choices can change 
+
+κ(V ). A convention-independent quantity is obtained by minimizing over all such choices, yielding the optimal condition number 
+
+κ∗ = inf  
+
+> V
+
+κ(V ), (26) where the infimum is taken over all eigenvector matrices V that diagonalize A. Evaluating this infimum generally requires an optimization, even when all eigenvalues are distinct [57]. In prac-tice we therefore normalize each right eigenvector to unit 2-norm, as is standard. For a distinct spectrum this determines κ(V ) uniquely, and the resulting value exceeds κ∗ by at most a factor of 
+
+√N [58]. However, for a degenerate spectrum this convention is not sufficient, since it does not select a basis within a degenerate eigenspace. Different bases of that eigenspace can give different values of κ(V ), which can be made arbitrarily large. Such a value is still an upper bound on κ∗,but a large one does not by itself establish poor intrinsic conditioning. The ambiguity originates in the degeneracy rather than in the non-normality of A; see Appendix C. To resolve this ambiguity, for each distinct eigenvalue λi (i = 1 , . . . , r ) we further choose an orthonormal basis Qi of the exact eigenspace ker( A − λiI) and collect these blocks in 
+
+Vos =  Q1 · · · Qr
+
+. (27) Although Vos itself is still not unique, this choice further reduces the freedom within each eigenspace: arbitrary invertible changes of basis are restricted to unitary ones, which preserve all singular values [59]. Consequently, κ(Vos ) is independent of the particular orthonormal basis chosen within each exact eigenspace. To relate the convention-defined κ(Vos ) to the intrinsic optimum κ∗, let Pi denote the spectral projector onto the mi-dimensional eigenspace ker( A−λiI); it is fixed by A alone. The corresponding projector norms satisfy the bounds [60, 61] max  
+
+> i
+
+∥Pi∥2 ≤ κ∗ ≤ κ(Vos ) ≤ r · max  
+
+> i
+
+∥Pi∥2. (28) Thus, max i ∥Pi∥2 and κ(Vos ) provide, respectively, an intrinsic lower bound and a convention-defined upper bound on κ∗.10 When λi is simple ( mi = 1), the norm of its spectral projector reduces to the eigenvalue condition number. Let x and y denote the associated right and left eigenvectors of A, satisfying 
+
+Ax = λix, A†y = ¯λiy. (29) The eigenvalue condition number is then defined by 
+
+κ(λi; A) = ∥x∥2 ∥y∥2
+
+|y†x| . (30) A closely related quantity in the physics literature is the Petermann factor [62], which quantifies left-right eigenvector non-orthogonality; for a simple eigenvalue, it is the square of κ(λi; A). In addition, if A commutes with a Hermitian symmetry operator G, the orthogonal eigenspaces of 
+
+G reduce A, giving A = L 
+
+> α
+
+Aα. If Aα = VαΛαV −1 
+
+> α
+
+, then V = L 
+
+> α
+
+Vα is an associated full-space eigenvector matrix and 
+
+κ(V ) = max α σmax (Vα)min α σmin (Vα) ≥ max  
+
+> α
+
+κ(Vα). (31) Finally, any computed κ(V ) is an upper bound on κ∗ and may be used in its place in the complexity bounds cited above [45]; the resulting resource estimate then depends on the value used.  
+
+> III. EXACTLY SOLVABLE MODEL
+
+Before turning to electronic Hamiltonians, we analyze the one-dimensional harmonic oscillator with a contact interaction [63–65]. Three properties make this model a controlled setting for the TC analysis: (i) it is exactly solvable and, for any finite contact strength, has a simple spectrum, so the target problem has no degenerate-eigenspace ambiguity; (ii) the Hamiltonian preserves parity, so the even- and odd-parity sectors are decoupled; and (iii) the contact interaction leaves the odd sector unchanged but generates a cusp in the even sector. Since the parity sectors are decoupled and the cusp is confined to the even sector, the exactly known odd harmonic-oscillator sector can be set aside before constructing the TC representation. The analysis can then focus on the interacting even sector, where the simple spectrum permits direct examination of how cusp removal affects finite-basis convergence and eigenvector conditioning. In dimensionless harmonic-oscillator units, the model is described by the Hamiltonian ˆH = −12
+
+d2
+
+dx 2 + 12x2 + g δ (x), (32) 11 where g denotes the strength of the delta potential. The exact wavefunction Ψ( x) satisfies the jump condition at the origin: 
+
+dΨ
+
+dx 0+
+
+− dΨ
+
+dx 0−
+
+= 2 g Ψ(0) . (33) Since the potential is even in x, eigenfunctions have definite parity. In the even-parity sector, this reduces to 
+
+dΨ
+
+d|x| |x|=0 +
+
+= g Ψ(0) . (34) Because the odd-parity eigenfunctions vanish at the origin, they are not affected by the delta potential and retain the simple-harmonic-oscillator energies 
+
+Eodd  
+
+> n
+
+= 2 n + 32, n = 0 , 1, 2, . . . . (35) The physical Hamiltonian therefore decomposes as ˆH = ˆHeven ⊕ ˆHSHO |Hodd , where ˆHSHO =
+
+−12 d2/dx 2 + 12 x2. The odd block is exactly known and decoupled from the even sector: it is Hermitian and diagonal in the odd SHO basis. We remove this block before introducing the TC transformation and restrict the subsequent finite-basis analysis to the even sector. The even-parity states are shifted by the delta potential, and their energies Eeven  
+
+> n
+
+are determined by the transcendental equation Γ
+
+34 − Eeven 
+
+> n
+> 2
+
+
+
+Γ
+
+14 − Eeven 
+
+> n
+> 2
+
+ = −g
+
+2 , n = 0 , 1, 2, . . . , (36) where Γ( ·) denotes the Gamma function. Variants of this model have been studied both without and with the TC transformation. Grining et al. [66] studied the corresponding many-fermion Hamiltonian with the same harmonic confinement and contact interaction, without TC, using a one-particle SHO basis. Jeszenszki et al. [19] instead applied TC to a homogeneous gas with no external potential ( V = 0), represented in a plane-wave basis. Both many-particle settings can contain degenerate eigenspaces, adding basis freedom within each degenerate eigenspace. By contrast, the simple spectrum of our model at finite g provides a controlled setting for analyzing both basis-set convergence and eigenvector conditioning. 12 A. Projected Transcorrelated Hamiltonian  
+
+> 1. Standard method
+
+To analyze basis truncation in a controlled way, we project the Hamiltonian in Eq. (32) onto a finite-dimensional subspace. For this model, the natural choice of basis is the eigenbasis of the one-dimensional simple harmonic oscillator (SHO): 
+
+ϕp(x) = 1
+
+p2pp!√π Hp(x)e−x2/2, p = 0 , 1, 2, . . . , (37) where Hp(x) is the pth Hermite polynomial. Since ϕp(0) = 0 for odd p, the contact interaction acts only in the even-parity block. We therefore retain the Neven -dimensional space B(+)  
+
+> Neven
+
+= span {ϕ2n :
+
+n = 0 , . . . , N even − 1} and, throughout this subsection, use m, n = 0 , . . . , N even − 1 to index this retained basis. The bare Hamiltonian then has matrix elements 
+
+H(even)  
+
+> mn
+
+= ⟨ϕ2m| ˆH|ϕ2n⟩ =
+
+
+
+2n + 12
+
+
+
+δmn + g ϕ 2m(0) ϕ2n(0) . (38)  
+
+> 2. Transcorrelated method
+
+On this even-parity space, the correlator ˆ τθ for the 1D harmonic oscillator with a contact inter-action is the multiplication operator generated by a real-valued even scalar function u(x), so the transformation preserves parity. The correlation function u(x) is chosen so that the delta-function term in Eq. (32) is canceled in the transformed Hamiltonian. This requirement does not specify 
+
+u(x) uniquely. Different admissible choices can produce different basis-set convergence behavior (Sec. II B) and eigenvector conditioning (Sec. II C) in the projected matrices HB
+
+> TC
+
+(θ). To assess these dependencies, we compare the exponential form of Ref. [67] and the erfc-based form of Ref. [21]: 
+
+u1(x) = g|x|e−μ|x|, (39) 
+
+u2(x) = g
+
+
+
+|x| erfc( μ|x|) − 1
+
+√πμ e−(μx )2
+
+
+
+. (40) We refer to the TC Hamiltonians generated by u1 and u2 as TC-exp and TC-erfc, respectively. The two correlation functions satisfy u′ 
+
+> j
+
+(0 +) = g, which gives the delta-function cancellation used below. At fixed g, each depends only on the positive range parameter μ. Their explicit first and second derivatives reduce the required SHO matrix elements to the formulas derived in Appendix D. 13 Substitution into Eq. (9) together with Eq. (32) yields ˆHTC = −12
+
+d2
+
+dx 2 + 12x2 + gδ (x) − 12u′′ (x) − u′(x) ddx − 12
+
+ u′(x)2. (41) We can further rewrite Eq. (41) in the same structural form introduced in Eq. (14). We define 
+
+F (x) ≡ u′(x),VTC ,eff (x) ≡ gδ (x) − 12u′′ (x) − 12F (x)2
+
+= −12u′′ 
+
+> reg
+
+(x) − 12F (x)2,Veff (x) ≡ 12x2 + VTC ,eff (x).
+
+(42) Here u′′ = u′′  
+
+> reg
+
++ 2 gδ in the distributional sense, so the contact term cancels the distributional part of −12 u′′ . Because we use ˆHSHO as the reference operator in this section, VTC ,eff denotes the regular scalar correction that remains after this exact cancellation, whereas Veff is the complete transformed scalar potential. Then Eq. (41) becomes ˆHTC = ˆHSHO − F (x) ddx + VTC ,eff (x). (43) Here ˆHSHO = ˆT + 12 x2.Projecting Eq. (43) onto the retained even SHO basis gives (HTC )mn =
+
+
+
+2n + 12
+
+
+
+δmn − ⟨ ϕ2m|F (x) ddx |ϕ2n⟩ + ⟨ϕ2m|VTC ,eff (x)|ϕ2n⟩ . (44) The matrix elements of the regular scalar correction are therefore 
+
+VTC ,eff ,mn ≡ ⟨ ϕ2m|VTC ,eff (x)|ϕ2n⟩ =
+
+Z ∞−∞ 
+
+ϕ2m(x)ϕ2n(x) VTC ,eff (x) dx. (45) For the first-order differential operator, it is convenient to use the standard derivative relation for harmonic-oscillator basis functions, 
+
+ddx ϕp(x) = 
+
+rp
+
+2 ϕp−1(x) −
+
+rp + 1 2 ϕp+1 (x). (46) This reduces the corresponding matrix elements to linear combinations of multiplicative matrix elements of F (x): 
+
+Dmn ≡ − ⟨ ϕ2m|F (x) ddx |ϕ2n⟩
+
+= − √n ⟨ϕ2m|F (x)|ϕ2n−1⟩
+
++
+
+r2n + 1 2 ⟨ϕ2m|F (x)|ϕ2n+1 ⟩ .
+
+(47) 14 Hence, the projected transcorrelated Hamiltonian takes the form (HTC )mn =
+
+
+
+2n + 12
+
+
+
+δmn + Dmn + VTC ,eff ,mn . (48) 
+
+3. Structure of the Correlation Functions 
+
+The two correlation functions u1 and u2 defined in Eqs. (39) and (40) both satisfy the delta-function cancellation condition. However, this does not determine the full structure of the transcorrelated Hamiltonian. To compare the two choices at the operator level, we focus on the position-dependent coefficient F (x) = u′(x) in Eq. (43). The first-order differential operator −F (x) d/dx is the source of non-Hermiticity in the transformed Hamiltonian, so F (x) captures the spatial range over which non-Hermiticity is introduced. 10.0 7.5 5.0 2.5 0.0 2.5 5.0 7.5 10.0         
+
+> x
+> 0.2
+> 0.0 0.2 0.4 0.6 0.8 1.0 1.2
+> F(x)
+> u1
+> = 0
+> = 0.5
+> = 1
+> = 3
+> = 100
+> 10.0 7.5 5.0 2.5 0.0 2.5 5.0 7.5 10.0
+> xu2
+> = 0
+> = 0.5
+> = 1
+> = 3
+> = 100
+
+Figure 1. Comparison of the position-dependent coefficient F (x) = u′(x) for the two correlation functions (left: u1, right: u2) at g = 1. The parameter μ controls the effective real-space range over which F (x)has non-negligible magnitude: smaller μ produces a broader non-Hermitian contribution, whereas larger 
+
+μ localizes the contribution near the origin. The plotted μ = 0 curve denotes the μ → 0+ limit of F (x). 
+
+Figure 1 compares these ranges directly. The following results examine how the resulting correlator-dependent operator structures are reflected in the finite-dimensional Hamiltonians. 
+
+B. Results for the 1D harmonic oscillator with a contact interaction 
+
+The real-space comparison above isolates the operator-level distinction between the two correlators. In a finite calculation, however, this distinction is not accessed directly from F (x) itself, but through 15 the projected matrix elements of the full transcorrelated Hamiltonian. Therefore, we now turn to the finite even-parity SHO representation and examine how the two correlator choices affect the resulting projected spectra and eigenvector conditioning. For the numerical studies in this section, we fix g = 1, corresponding to a repulsive contact interaction that produces a one-dimensional analogue of the electron–electron cusp generated by Coulomb repulsion. For every reported combination of basis size and Jastrow parameter μ, the projected Hamiltonian matrix has real entries, and all computed eigenvalues are real and distinct. In this setting, we define the ground-state energy as the lowest eigenvalue and the ground state as its associated right eigenvector. The same model can also be used to study excited states; the present analysis focuses on the ground state. Figure 2 analyzes the convergence behavior of the absolute energy error, ∆ E = |E(N )0 − E0|, for the lowest even-parity state at g = 1. Here, N ≡ Neven , and E(N )0 denotes the lowest eigenvalue obtained by projecting the Hamiltonian onto a truncated basis of Neven even-parity harmonic-oscillator functions, and E0 represents the exact ground-state energy given by the n = 0 solution of Eq. (36). The approximately linear large-Neven behavior on the log–log scale is consistent with a power-law decay of the error ∆ E ∼ N s
+
+> even
+
+, i.e., algebraic convergence with exponent s, which is negative for a decaying error (the insets report, e.g., s ≈ − 0.5 bare and s ≈ − 1.5 for TC). The fitted slopes s, extracted from the large-Neven regime ( Neven > 450), therefore provide numerical estimates of the convergence rates for the bare Hamiltonian and both projected TC Hamiltonians. The noticeable bend in the TC-erfc curve is consistent with the non-Hermitian character of the projected TC Hamiltonian, for which the variational monotonicity of Hermitian Ritz values is not guaranteed, so E(N )0 may cross E0 and approach it from below, and ∆ E need not decrease monotonically. The log-log fits in Fig. 2 estimate the convergence rate, but they do not by themselves separate the rate from the amplitude (prefactor) of the asymptotic tail. For example, the large-Neven TC-erfc curves nearly collapse as μ is varied, while the TC-exp curves retain a vertical separation dependent on μ. This indicates that the two correlator forms differ in the amplitude of the asymptotic error rather than in the leading power itself. To further expose this second piece of information, we plot the rescaled error 
+
+Aj (μ; N ) := N 3/2even |E(N )0 − E0|.
+
+When the asymptotic N −3/2even regime is reached, this quantity approaches the corresponding leading 16 10 1 10 2 10 3                          
+
+> Neven
+> 10 7
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> |E(N)0 E0|
+> fit windows: N>450
+> fit slopes (s) bare -0.50 =0.5 -1.50
+> =1 -1.50
+> =2 -1.50
+> =5 -1.49
+> TC-exp ( u1), g= 1
+> 10 110 210 3
+> Neven
+> fit windows: N>450
+> fit slopes (s) bare -0.50 =0.5 -1.50
+> =1 -1.50
+> =2 -1.50
+> =5 -1.50
+> TC-erfc ( u2), g= 1
+
+Convergence Analysis: | E(N)0 E0| Ns    
+
+> even
+> bare = 0.5 = 1 = 2 = 5
+
+Figure 2. Convergence analysis of the absolute error in the lowest even-parity energy, |E(N )0 − E0|, for the one-dimensional harmonic oscillator with a contact interaction at g = 1. The error is plotted as a function of the number of even-parity basis functions Neven on a log-log scale. The left and right panels show the TC-exp and TC-erfc results generated by the correlation functions u1 and u2, respectively. The bare projected Hamiltonian is shown as a black dash-dotted line, while the transcorrelated results for various 
+
+μ values are plotted as solid colored lines. The gray shaded regions denote the fit window ( Neven > 450) used to extract the power-law exponent s reported in the insets. 
+
+prefactor. The analysis in Fig. 3 connects the common N −3/2even behavior to cusp cancellation and relates the correlator dependence of the leading explicit-tail amplitude to the coefficient in the local expansion of the exact right transcorrelated eigenfunction. Indeed, both the generic convergence rate and the leading asymptotic prefactor can be derived analytically as follow: 
+
+Main result. Under the reduced-inverse stability assumption stated in Appendix E, for fixed 
+
+μ > 0 the projected TC ground-state energy satisfies 
+
+E(N )0 − E0 = −gΨ0(0) 2βj (μ)
+
+π N −3/2even + O(N −2even ),
+
+where Ψ 0 is the exact ground state and 
+
+βexp (μ) = g(2 E0 + g2)3 − gμ 2
+
+2 , βerfc = g(2 E0 + g2)3 .
+
+17 10 1 10 2 10 3
+
+Neven 
+
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Aj( ; N)
+> zoomed tail
+
+TC-exp ( u1), g = 1   
+
+> 0.05 0.10
+> 10 110 210 3
+
+Neven 
+
+> zoomed tail
+
+TC-erfc ( u2), g = 1 
+
+> 0.076 0.078 0.080
+
+Rescaled Energy Error: Aj( ; N) : = N3/2 even |E(N)0 E0|   
+
+> = 0.5 = 1 = 2 = 5
+
+Figure 3. Rescaled energy error Aj (μ; N ) = N 3/2even |E(N )0 − E0| for TC-exp and TC-erfc at g = 1. The TC-erfc curves tend to a common asymptotic plateau, consistent with a μ-independent leading error amplitude. The TC-exp plateaus depend strongly on μ.
+
+Hence the asymptotic absolute-error prefactor is Aj (μ) = |g|Ψ0(0) 2|βj (μ)|/π . The full derivation is given in Appendix E. The results above and the conditional asymptotic analysis characterize the favorable side of the transcorrelated projection: once the cusp has been incorporated into the operator, the energy-error convergence improves from N −1/2even to N −3/2even , and the remaining correlator dependence is pushed into the asymptotic prefactor. This improvement, however, is obtained through a non-unitary similarity transformation. The resulting Hamiltonian is therefore non-Hermitian, and energy con-vergence alone does not determine whether the projected problem is numerically tractable. The corresponding cost is measured by the non-orthogonality of the eigenvectors. We therefore turn to the global condition number κ2(V ) of the diagonalizing matrix. For the nondegenerate projected spectrum considered here, unit-2-norm normalization removes the eigenvector-scaling ambiguity, making κ2(V ) unique. Under this convention, Figure 4 shows that the projected transcorrelated matrices remain moderately conditioned over the full basis 18 10 1 10 2 10 3          
+
+> Neven
+> 1234
+> (V)
+> TC-exp ( u1), g= 1
+> 10 110 210 3
+> Neven
+> TC-erfc ( u2), g= 1
+> Eigenvector condition number
+> 2(V) = 1 = 0.5 = 1 = 2 = 5
+
+Figure 4. Global eigenvector condition number κ2(V ) for the projected transcorrelated Hamiltonian at 
+
+g = 1. 
+
+range studied here. The data suggest slower-than-linear growth of κ2(V ) with Neven over this range, although they do not establish its asymptotic scaling. Furthermore, the conditioning differs between the two correlator forms. For each correlator form, the decrease in κ2(V ) with increasing 
+
+μ mirrors the real-space localization of F (x) shown in Fig. 1: as F (x) becomes more localized, the projected matrices become better conditioned. At fixed μ, the TC-erfc matrices generally have larger condition numbers than the TC-exp matrices. Taken together, these results show that the most favorable convergence prefactor and the smallest eigenvector condition number do not necessarily occur for the same correlator form at the same value of μ. The solvable model already exhibits the central trade-off that will reappear in the molecular setting: faster basis convergence can come with a conditioning cost, and that cost depends sensitively on the correlator form and its range parameter. 
+
+C. Query Complexity for Solvable Model 
+
+Having identified this trade-off, we now ask when the faster basis convergence translates into an improved asymptotic query bound for estimating the exact ground-state energy E0 to accuracy 
+
+ε using QEVE. Let E(N )0,R denote the eigenvalue of the projected Hamiltonian H(N ) 
+
+> R
+
+, where R ∈ 
+
+19 {bare , TC }, and let bE0 denote the value estimated by the quantum algorithm. The total error satisfies 
+
+| bE0 − E0| ≤ | E(N )0,R − E0|
+
+| {z } 
+
+> δR(N)
+
++ | bE0 − E(N )0,R |
+
+| {z }
+
+> ≤εalg
+
+. (49) For a fixed θ ∈ (0 , 1), we choose N such that δR(N ) ≤ θε and set εalg = (1 − θ)ε, ensuring 
+
+| bE0 − E0| ≤ ε. Assume that the projected Hamiltonian matrices used in the estimation are diago-nalizable with real spectra. Under the same assumptions and the oracle-query model of Theorem 3 of Ref. [45], QEVE requires eO(αR,N κR,N /ε alg ) oracle queries at fixed success probability. Here κR,N 
+
+is an available upper bound on the optimal eigenvector condition number. For the correlators considered here, at fixed finite g and 0 < μ < ∞, the SHO contribution has norm O(N ), while the projected bare or TC correction has norm O(√N ). Hence, ∥HR,N ∥ = O(N )for both representations. Within the above oracle query model, we can take αR,N = O(N ). For either representation, suppose that δR(N ) = O(N −p) and κR,N = O(N a), with p > 0 and a ≥ 0. A sufficient basis size is then N = O(ε−1/p ), which gives 
+
+QR(ε) = eO
+
+
+
+C(θ)ε−(1+ 1+ ap )
+
+. (50) Under the basis-convergence assumptions above, the bare and TC representations have p = 1 /2and p = 3 /2, respectively. With κbare ,N = 1 and fixed θ, we absorb C(θ) into the implicit constants and obtain 
+
+Qbare (ε) = eO(ε−3), QTC (ε) = eO(ε−(5+2 a)/3). (51) For TC, bounded conditioning ( a = 0) and linear growth in N (a = 1) give eO(ε−5/3) and 
+
+eO(ε−7/3), respectively. When a < 2, TC with QEVE yields a polynomial improvement in the query-complexity upper bound over QPE applied to the bare Hamiltonian. Overall, the solvable model provides a clean and controlled setting for understanding how the accuracy–cost trade-off of the transcorrelated method arises, allowing us to address the three questions posed in Sec. I. 
+
+IV. APPLICATION TO ELECTRONIC HAMILTONIANS 
+
+We now turn to second-quantized electronic Hamiltonians to examine how the mechanisms iden-tified in the solvable model appear in electronic structure calculations and what implications they 20 have for quantum algorithms. We begin with the two-electron He atom, for which the three-body TC term is absent, and first examine basis-set convergence and basis reduction. We then study the accuracy–cost–conditioning trade-off with the basis fixed at cc-pVDZ before turning to larger basis sets. Finally, we move beyond two electrons to Be and LiH, where the full TC Hamiltonian contains three-body contributions and can be compared with the xTC approximation.  
+
+> A. Computational Details
+
+All molecular calculations were performed with PySCF [68]. The molecular pair correlators were defined by the analytic forms in Eqs. (39) and (40), with |x| replaced by the interelectronic distance 
+
+rij and g = 1 /2 to impose the electron–electron cusp [21, 67]. The corresponding molecular Hamiltonians are denoted TC-exp and TC-erfc, respectively. Following Ref. [20], the additional TC contributions were evaluated directly in the canonical RHF orbital basis by numerical real-space quadrature on PySCF atom-centered DFT grids at level 5 with default pruning. The xTC calculations for Be and LiH followed Ref. [13]. The fermionic Hamiltonians were mapped to qubits using the Jordan–Wigner transformation. For κ(Vos ), eigenvalues were initially grouped into numerical clusters using a relative tolerance of 10 −8, and orthonormal cluster bases were constructed by singular-value decomposition with a relative rank threshold of 10 −12 . For real-spectrum calculations, the Hamiltonian restricted to each cluster subspace was rediagonalized. The resulting eigenvectors were orthonormalized only within subclusters defined by a stricter relative degeneracy tolerance. The final numerical eigenvector matrix was checked through the residual of the eigenvalue equation, the off-diagonal part of the transformed Hamiltonian, and agreement with the original eigenvalues.  
+
+> B. Basis-set convergence and basis reduction
+
+We first isolate the accuracy gain provided by the transcorrelated transformation. For the helium atom, we compare bare- and TC-FCI ground-state energies across the cc-pVXZ basis set sequence. Figure 5 reports the all-electron TC ground-state energies of helium and their absolute errors rel-ative to the exact non-relativistic reference value of Ref. [69] for the cc-pV XZ ( X ∈ { D, T, Q, 5})basis sets. The TC Hamiltonian is non-Hermitian, so its finite-basis eigenvalues need not converge monotonically. For example, the μ = 0 .2 curve crosses below the CBS energy before approach-21 2.9050             
+
+> 2.9025
+> 2.9000
+> 2.8975
+> 2.8950
+> 2.8925
+> 2.8900
+> 2.8875
+> Energy (Ha)
+> TC-exp TC-erfc
+> DTQ5
+> cc-pVXZ basis
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> |E Eexact | (Ha)
+> DTQ5
+> cc-pVXZ basis
+
+He atom basis convergence      
+
+> bare FCI = 0.2 = 0.5 = 1 = 2.5 Exact non-relativistic
+
+Figure 5. Basis-set convergence of the helium atom ground-state energy using the TC method. The top panels show the total energies and the bottom panels show the absolute errors relative to the exact non-relativistic CBS energy as a function of the cardinal number X of the cc-pV XZ basis sets. Results are shown for TC-exp ( u1; left) and TC-erfc ( u2; right) across various values of μ. The bare FCI results (dashed black lines with diamonds) and the exact limit (dotted horizontal lines, obtained from [69]) are included for reference. 
+
+ing it from below. We therefore use the absolute error to assess convergence. At this level, the TC transformation has two complementary effects: it reduces the absolute error at fixed cardinal number X, and that error decreases more rapidly across the cc-pV XZ sequence. However, be-cause the underlying one-particle spaces are not nested (that is, the cc-pVXZ basis sets are not constructed by successively adding functions to a fixed smaller basis), this sequence provides an empirical basis-set comparison rather than the controlled truncation analysis available for the solv-able model. The remaining question is whether these gains persist when cost-relevant diagnostics of the second-quantized, non-normal TC Hamiltonian are taken into account. 22 C. Accuracy–cost diagnostics 
+
+The preceding results quantify the accuracy gain associated with basis reduction. Such a reduction is attractive for quantum algorithms: in standard second-quantized encodings, the number of spin-orbitals directly determines the number of logical qubits required to encode the quantum state of the system. Although this state-register size alone does not determine the total logical-qubit requirement (ancilla registers required for algorithm implementation can contribute substantially [70, 71]), reducing the orbital space can still yield a relevant resource advantage. This reduction can also lead to lower Hamiltonian-representation costs, although these remain algorithm- and implementation-dependent. However, the finite-basis TC Hamiltonian is non-normal. This non-normality may introduce compensating costs. We therefore assess this gain together with cost-relevant properties of the transformed Hamiltonian.  
+
+> 1. Fixed-basis cost-relevant diagnostics
+
+To analyze this trade-off, we scan the correlator parameter μ in the cc-pVDZ basis and track the absolute energy error relative to the CBS limit together with three cost-relevant diagnostics. This scan therefore characterizes the fixed-basis accuracy–cost trade-off relative to bare cc-pVDZ. The three diagnostics are as follows: (i) For a Pauli decomposition ˆH = P 
+
+> i
+
+ci ˆPi, the Pauli one-norm of the qubit Hamiltonian is λ(H) = P 
+
+> i
+
+|ci|, where the sum runs over the non-identity Pauli terms. (The constant identity coefficient c0 is excluded, so that λ measures only the non-constant part of ˆH). The one-norm sets the normalization scale in Pauli-based linear combination of unitaries block encoding of the Hamiltonian. For algorithms using such an encoding (for example, Hamiltonian simulation or quantum phase estimation), the leading query cost typically scales linearly with the normalization factor λ [72]. (ii) The overlap between the Hartree–Fock determinant and the right TC ground state provides an initial-state diagnostic. Throughout this work, the reference state is the canonical Hartree–Fock determinant of the bare Hamiltonian as produced by PySCF [68] with default settings; it is not re-optimized for ˆHTC . This choice provides a uniform baseline across 
+
+μ. A systematic study of re-optimized references lies beyond the present scope. (iii) Eigenvector conditioning quantifies the non-normal amplification relevant to non-Hermitian eigenvalue algo-rithms. Figure 6 reports the energy error, Hartree–Fock overlap, and one-norm diagnostics; the conditioning diagnostic is analyzed separately below. Figure 6 reports the energy error together with two of the three cost-relevant diagnostics introduced 23 0.5 12310 25     
+
+> Jastrow parameter
+> 10 2
+> 6 × 10 3
+> Energy error |  E| (Ha)
+> (a) Energy error to CBS
+> 0.5 12310 25
+> Jastrow parameter
+> 0.995 0.996 0.997 0.998
+> Overlap
+> (b) Right HF overlap
+> 0.5 12310 25
+> Jastrow parameter
+> 33.2 33.4 33.6 33.8 34.0 34.2
+> He atom / cc-pVDZ
+> tc-exp tc-erfc non-TC
+> (c) Qubit Pauli one-norm
+> Qubit Pauli one-norm
+
+Figure 6. He/cc-pVDZ diagnostics versus the correlator parameter μ. Blue and orange curves correspond to TC-exp and TC-erfc, respectively. (a) Absolute energy error with respect to the CBS limit. The dotted line indicates the non-TC cc-pVDZ reference. (b) Initial overlap of the right ground state of ˆHTC with the Hartree–Fock reference state. (c) Qubit Pauli 1-norm λ as a norm-based cost metric. The dotted line represents the corresponding non-TC 1-norm baseline. 
+
+above. These quantities display distinct dependences on the correlator parameter μ and its analytic form. Panel (a) shows that the absolute energy error decreases as μ is reduced for both correlator forms. TC-erfc shows a more nearly monotonic approach to the CBS limit as μ decreases. Panel (b) reports the overlap between the non-TC Hartree–Fock determinant and the right ground state of ˆHTC . The overlap remains high across the scan. For TC-erfc, it increases monotonically as μ
+
+is lowered from 3 .0 to 0 .9, reaches its maximum at μ = 0 .9, and then decreases as μ is lowered further to 0 .5. Panel (c) shows that the qubit one-norm λ( ˆH) matches the non-TC baseline at large μ for both correlator forms. Decreasing μ extends the spatial range of the correlator and generally increases the qubit one-norm. The detailed μ-dependence varies between the two forms: 
+
+λ( ˆH) increases monotonically as μ decreases for TC-erfc, whereas it is non-monotonic for TC-exp. Overall, the energy error and the two cost-relevant diagnostics respond differently to the correlator form and parameter. Their combined comparison is given below after the conditioning measure has been fixed. We next examine the non-normal conditioning of the TC qubit Hamiltonian. As discussed in Sec. II C, unlike the nondegenerate solvable model, unit-2-norm normalization alone does not fix 24 the eigenvector condition number when degenerate eigenspaces are present. The basis within each degenerate eigenspace must also be fixed. Here and below, VR denotes the right-eigenvector matrix of the TC qubit Hamiltonian returned by the SciPy non-Hermitian eigensolver, with each column normalized to unit 2-norm. We therefore orthonormalize each degenerate eigenspace, collect the resulting vectors in Vos as in Eq. (27), and compute κ(Vos ). 10 1
+
+> 10 2
+> Condition
+
+TC-exp 
+
+> 10 1
+> 10 2
+
+TC-erfc      
+
+> 0.5 12510 25
+
+Jastrow range parameter      
+
+> 1234
+> Condition
+> 0.5 12510 25
+
+Jastrow range parameter        
+
+> 1234
+> raw (VR)OS (Vos )max
+> i
+> Pi2PGS 2
+
+Figure 7. Condition numbers and spectral-projector norms versus the correlator parameter μ for TC-exp (left) and TC-erfc (right). Top (log scale): the condition number κ(VR) of the right-eigenvector matrix of the TC qubit Hamiltonian returned by the SciPy non-Hermitian eigensolver, with each column normalized to unit 2-norm. Bottom (linear scale): the condition number κ(Vos ) of the right-eigenvector matrix after orthonormalizing each degenerate subspace (blue, squares), the largest spectral projector norm max i ∥Pi∥2
+
+(dark red, diamonds), and the ground-state projector norm ∥PGS ∥2 (green, triangles). 
+
+Figure 7 compares four conditioning quantities as functions of μ for TC-exp and TC-erfc: the raw condition number κ(VR), the eigenspace-orthonormalized condition number κ(Vos ), the largest spectral-projector norm max i ∥Pi∥2, and the ground-state projector norm ∥PGS ∥2. The upper panels show that κ(VR) has no clear trend. After the basis within each degenerate eigenspace is orthonormalized, κ(Vos ) in the lower panels is consistently smaller than κ(VR) and shows a 25 clearer dependence on μ. By Eq. (28), max i ∥Pi∥2 and κ(Vos ) provide, respectively, an intrinsic lower bound and a computable, convention-defined upper bound on the optimal condition num-ber κ∗, which generally requires a separate optimization to evaluate. The two plotted quantities therefore bracket κ∗. The ground-state projector norm instead characterizes the target state. Be-cause the He ground-state eigenvalue is simple in the finite-basis Hamiltonian, ∥PGS ∥2 coincides with the simple-eigenvalue condition number κ(λ0; ˆHTC ) of Sec. II C. Together, these quantities distinguish solver-basis sensitivity, intrinsic whole-spectrum conditioning, and ground-state con-ditioning as the correlator is varied. For TC-erfc, decreasing μ produces a monotonic increase in both κ(Vos ) and max i ∥Pi∥2, whereas TC-exp shows no such monotonic trend. To assess whether this eigenbasis sensitivity is specific to the He calculations, we also re-analyzed the full-TC and xTC data of Ref. [42] using the same eigenspace-orthonormalized convention; details are reported in Appendix F. These observations indicate that raw eigenvector condition numbers could be inflated by the basis chosen within degenerate eigenspaces. This point is directly relevant to resource estimates because the query-complexity analyses of Refs. [44, 45, 56] use an optimal condition number, or a known upper bound on it, rather than the condition number of an arbitrary eigenvector basis returned by a numerical solver. Concretely, Ref. [45] defines the Jordan condition number of the input matrix as inf V ∥V ∥ ∥ V −1∥ over all similarity transformations that bring it to Jordan form. The query complexity of its Chebyshev-based eigenvalue algorithms is expressed through a known upper bound κV on this infimum. A more careful, basis-aware analysis is therefore required before translating the conditioning of the TC Hamiltonian into resource estimates. Figure 8 uses the basis-fixed conditioning measure to combine the cc-pVDZ energy error with the cost-relevant quantities entering the complexity bounds in a single accuracy–cost–conditioning comparison. Within the parameter range included in this cost scan, the TC points improve upon the bare cc-pVDZ energy error but do not reach the bare cc-pVTZ error. Across the scan, applying the TC transformation within the same cc-pVDZ space (5 spatial orbitals) increases the Pauli one-norm by at most 3 .0% relative to the bare cc-pVDZ Hamiltonian. By contrast, enlarging the bare orbital space to cc-pVTZ (14 spatial orbitals) gives a one-norm that is 12 .8 times the bare cc-pVDZ value. The fixed-basis accuracy gain is therefore accompanied by only a small change in Hamiltonian one-norm over this parameter range. 26 33.0 33.5 34.0 10 4
+
+10 3
+
+10 2
+
+> Energy Error:  |ETC (μ) − ECBS | (Ha)
+> TC-exp TC-erfc cc-pVDZ (no-TC) cc-pVTZ (no-TC)
+> 0.5 0.8 11.6 2.4 0.5 0.8 11.6 2.4
+
+420 425 430  
+
+> cc-pVTZ (no-TC)
+> λ= 425 .5
+
+1.5 2.0 2.5 3.0 3.5 
+
+> Condition:  (Vos )
+
+# Pareto Analysis: Accuracy vs. Qubit One-Norm Cost 
+
+## Qubit one-norm cost: λ(HTC (μ)) Figure 8. Pareto-front comparison of accuracy and cost-relevant diagnostics for He/cc-pVDZ. The vertical axis shows the absolute energy error |ETC (μ) − ECBS |, and the horizontal axis shows the Hamiltonian Pauli 1-norm λ( ˆHTC (μ)). The color scale encodes κ(Vos ), and selected μ values are annotated. Bare cc-pVDZ (red circle) and cc-pVTZ (red star) values are included for comparison. The broken horizontal axis accommodates the bare cc-pVTZ value, λ ≈ 425 .5. 
+
+2. Conditioning across orbital-basis sizes and symmetry sectors 
+
+Having established the fixed-basis accuracy–cost comparison, we next ask how the conditioning behaves as the one-particle basis is enlarged and what role the physical particle-number sector plays in the condition number of the full qubit matrix. After projection onto a finite one-particle space, the TC-modified one- and two-electron integrals define a particle-number-conserving qubit Hamiltonian on the full Fock space. Although the physical He problem is confined to the N = 2 sector, the full qubit matrix therefore also contains other particle-number sectors that can affect its condition number. Recalling Eq. (31), the condition number of the assembled eigenvector matrix is bounded below by the largest sectorwise condition number. An analysis at fixed particle number therefore provides a proxy for assessing how conditioning changes as the one-particle basis 27 is enlarged. 0.5 0.7 1.0 1.5 2.0 3.0 
+
+> μ
+> 246810 12
+> (Vos )
+
+TC-exp     
+
+> 0.5 0.7 1.0 1.5 2.0 3.0
+> μ
+
+TC-erfc            
+
+> dN= 2 = 45 (cc-pVDZ)
+> dN= 2 = 378 (cc-pVTZ)
+> dN= 2 = 1770 (cc-pVQZ)
+> dfull = 1024 (cc-pVDZ full qubit) non-real spectrum flag
+
+Figure 9. Eigenvector condition number κ(N =2) os for the He transcorrelated Hamiltonian as a function of the correlator parameter μ, restricted to the physical N = 2 particle-number sector at three basis-set sizes: cc-pVDZ (blue circles, dN =2 = 45), cc-pVTZ (red squares, dN =2 = 378), and cc-pVQZ (green triangles, 
+
+dN =2 = 1770). The cc-pVDZ full-qubit-space value κfull os (dfull = 1024, black diamonds) from Fig. 7 is included for comparison. Left: TC-exp; right: TC-erfc. The × marker denotes a non-real spectrum flag, discussed in the main text. 
+
+Figure 9 compares the basis-fixed eigenvector condition number in the physical N = 2 sector across cc-pVDZ, cc-pVTZ, and cc-pVQZ, together with the corresponding full-qubit-space value at cc-pVDZ. The full-qubit-space comparison is limited to cc-pVDZ because exact diagonalization is not feasible for the larger basis sets. At cc-pVDZ, κfull os is consistently larger than κ(N =2) os , showing that the assembled full qubit space is more poorly conditioned than the physical sector alone. For 
+
+μ > 1, the increase in κ(N =2) os from cc-pVDZ to cc-pVTZ remains modest: across the two correlator forms, the cc-pVTZ/cc-pVDZ ratio ranges from 1 .01 to 1 .69. At μ ≤ 1, the basis dependence is less uniform. The increase in κ(N =2) os becomes more noticeable from cc-pVTZ to cc-pVQZ, where every plotted μ value carries the non-real-spectrum flag. The ground-state eigenvalue remains real in all of these cases. Because these correlation-consistent orbital spaces are not nested, unlike the systematically enlarged SHO basis, the three basis sets do not form a controlled scaling sequence. We therefore regard the observed increase as a diagnostic trend rather than a scaling law; a systematic study using nested orbital spaces is left for future work. 28 To further examine the spectral structure associated with the non-real-spectrum flags observed above, we focus on the He/TC cc-pVQZ N = 2-sector Hamiltonian at μ = 3 .0. Panels (a) and (b) of Fig. 10 plot its full eigenvalue spectrum in the complex plane. Within this finite basis, the bound-state window contains only the real ground state (red star)[73]. The value −2 Ha is the first ionization threshold of the underlying Hermitian He Hamiltonian, corresponding to He + + e−; by the Hunziker–van Winter–Zhislin (HVZ) theorem, it is the lower edge of the essential spectrum [74]. Some finite-basis eigenstates above this threshold may be pseudocontinuum states associated with the ionization continuum. In the finite-basis TC spectra shown here, all non-real eigenpairs ( |Im E| > 10 −6 Ha, marked by ×) lie above the first ionization threshold, whereas the ground-state eigenvalue remains real. Panels (c) and (d) track how the conditioning of the retained right-eigenvector matrix and the number of non-real eigenpairs change as the energy cutoff is increased. Panel (c) reports the condition number κ(VE<E cut ) as right invariant subspaces are cumulatively included in order of increasing energy[75] Specifically, we write 
+
+VE<E cut =  QC : min  
+
+> λ∈C
+
+Re λ ≤ Ecut 
+
+ ∈ CD×m(Ecut ), (52) where D is the dimension of the fixed-N = 2 sector and m(Ecut ) ≤ D is the total dimension of the retained invariant subspaces. The matrix VE<E cut is therefore generally rectangular. We define its conditioning by the singular-value ratio κ(VE<E cut ) = σmax (VE<E cut )/σ min (VE<E cut ), which reduces to the standard ∥V ∥2 ∥V −1∥2 when the full square eigenvector matrix is retained. This ratio measures the linear independence of the retained right invariant subspaces. For a window containing only the normalized ground-state vector, it is identical one. Panel (d) counts the non-real eigenpairs retained at each Ecut and therefore identifies when the branches seen in panels (a) and (b) enter VE<E cut . Panels (c) and (d) together show that the main increases in the cumulative condition number occur over the same cutoff ranges in which additional non-real eigenpairs are included. For Ecut ≤ 12 Ha, κ(VE<E cut ) remains close to unity and no retained eigenpair exceeds the threshold |Im E| > 10 −6 Ha. The first substantial increase in conditioning occurs over Ecut = 13–14 Ha, where the first eigenpairs flagged as non-real also enter the retained space. Both quantities exhibit a second increase near Ecut = 25 Ha. Because varying Ecut changes only the retained set of eigenpairs, rather than the Hamiltonian itself, this correspondence does not establish a causal relation between the two phenomena. 29 0 5 10 15 20 25 30 
+
+Re E (Ha) 
+
+> 4
+> 2
+> 024
+> Im  E (10 −5 Ha)
+
+(a) TC-exp         
+
+> 3.0 2.5 2.0
+> low-energy zoom
+> 0510 15 20 25 30
+
+Re E (Ha) 
+
+(b) TC-erfc         
+
+> 3.0 2.5 2.0
+> low-energy zoom
+> 2610 14 20 25 30
+
+Ecut (Ha) 
+
+> 1.0 1.5 2.0 2.5 3.0
+> conditioning  full full
+
+(c) (VE < E cut )      
+
+> 2610 14 20 25 30
+
+Ecut (Ha) 
+
+> 020 40 60 80
+> non-real states
+
+(d) Non-real eigenstates included 
+
+He / TC, cc-pVQZ, fixed N = 2 sector, μ = 3 .0        
+
+> target ground state |Im E|>10 −6bound-state limit: Re E=−2
+> TC-exp TC-erfc
+
+Figure 10. Spectrum and energy-resolved conditioning of the He TC Hamiltonian in the cc-pVQZ basis set, fixed N = 2 sector and μ = 3 .0. (a)–(b) Complex-plane spectrum for TC-exp and TC-erfc; the ground state is marked by a red star, the vertical dashed line indicates the bound-state threshold Re E = −2 Ha, and × denotes eigenpairs with |Im E| > 10 −6 Ha. The insets show a low-energy zoom around the ground state. (c) Conditioning number κ(VE<E cut ) of the cumulatively retained right eigenvector matrix, with 
+
+VE<E cut defined via Eq. (52), as a function of the energy cutoff Ecut ; horizontal dotted lines mark the full-spectrum value. (d) Number of included eigenpairs with non-real eigenvalues up to Ecut .
+
+D. Beyond two electrons and the xTC approximation 
+
+We now extend the helium analysis in two directions. First, we consider systems with more than two electrons, for which the full TC Hamiltonian contains the three-body operator ˆLθ of Sec. II B. To test whether the same accuracy–cost–conditioning trade-off persists in this setting, we consider the beryllium atom, the simplest closed-shell atom with more than two electrons. We use the minimal STO-6G basis and compare the results with the bare STO-6G and cc-pVDZ references. Second, we replace the full TC Hamiltonian with the xTC approximation and test it for both Be/STO-6G and LiH/STO-6G. 30 12.15 12.25 12.35 12.45 12.55 10 2
+
+10 1
+
+> Energy Error (Ha)
+> 0.5 0.7 1.5 0.8 12.5
+
+109 110  
+
+> cc-pVDZ (no-TC)
+> λ= 109 .7
+> TC-exp TC-erfc STO-6G (no-TC) cc-pVDZ (no-TC)
+
+1.025 1.050 1.075 1.100 1.125 1.150 1.175 1.200 
+
+> Condition:  (Vos )
+
+# Be Atom / TC,sto-6g Pareto Analysis 
+
+# Qubit one-norm cost: λ(H)Figure 11. Pareto analysis for Be/STO-6G. Red markers denote the bare STO-6G and cc-pVDZ references, while the colored TC points represent the μ scan; selected values of μ are annotated. The color scale indicates κ(Vos ). 
+
+Figure 11 shows the analogous accuracy–cost Pareto analysis for Be, with the bare STO-6G and cc-pVDZ references serving as quantitative benchmarks. The bare STO-6G FCI point has an error of 1 .11 × 10 −1 Ha relative to the non-relativistic CBS reference [69], while the bare cc-pVDZ point has an error of 5 .00 × 10 −2 Ha at λ( ˆH) ≃ 109 .7. Several TC/STO-6G parameter choices already attain errors no larger than the cc-pVDZ value at a one-norm close to the STO-6G scale: for TC-exp, μ = 0 .5–0 .8 gives errors from 5 .6 × 10 −3 to 4 .2 × 10 −2 Ha with λ( ˆH) ≃ 12 .15–12 .23, and for TC-erfc, μ = 0 .6–1 .0 gives errors from 1 .1 × 10 −2 to 4 .7 × 10 −2 Ha with λ( ˆH) ≃ 12 .33–12 .51. Thus, the TC/STO-6G Hamiltonians can match the cc-pVDZ energy accuracy with a Pauli one-norm that is approximately one order of magnitude smaller. Across the parameter range studied, κ(Vos )remains in the range 1 .0–1 .2, and the points that attain cc-pVDZ accuracy lie in the narrower range 
+
+κ(Vos ) ≃ 1.06–1 .16. Together with the He results, this supports the favorable fixed-basis accuracy– one-norm–conditioning trade-off can also occur beyond two-electron systems. The correlator form 31 continues to influence the location of each μ scan on the Pareto front. We next compare the full TC Hamiltonian with the xTC approximation [13]. We perform this comparison for Be/STO-6G and its molecular counterpart, LiH/STO-6G, at the near-equilibrium bond length R = 3 .0 bohr. Together, these cases extend the comparison from a closed-shell atom to a minimal two-center molecular system. In the full TC Hamiltonian, the three-body operator ˆLθ
+
+is retained explicitly, whereas xTC replaces it with its normal-ordered effective one- and two-body contributions. For each system, we compare four quantities: the ground-state energy difference 
+
+|ExTC − ETC |, the number of non-identity Pauli terms, the Pauli one-norm, and κ(Vos ). Jastrow parameter μ      
+
+> 10 9
+> 10 8
+> 10 7
+> 10 6
+> 10 5
+> 10 4
+> |ExTC  − ETC | (Ha)
+
+(a) Energy difference  
+
+> Jastrow parameter μ
+> 400 600 800
+> Pauli term count
+
+(b) Pauli term count       
+
+> 0.5 1.0 1.5 2.0 2.5 3.0
+> Jastrow parameter μ
+> 12.2 12.3 12.4 12.5
+> λ( ˆH)
+
+(c) Qubit one-norm       
+
+> 0.5 1.0 1.5 2.0 2.5 3.0
+> Jastrow parameter μ
+> 1.00 1.05 1.10 1.15 1.20
+> (Vos )
+
+(d) Condition    
+
+> TC-exp TC-erfc xTC-exp xTC-erfc
+
+Figure 12. Comparison of full TC and xTC for the Be atom in the STO-6G basis. (a) Ground-state energy difference |ExTC − ETC |. (b) Number of non-identity Pauli terms in the qubit Hamiltonian. (c) Qubit Hamiltonian Pauli-LCU one-norm λ( ˆH). (d) Condition number κ(Vos ). Filled markers with solid lines denote full TC, whereas open markers with dashed lines denote xTC; circles correspond to TC-exp and triangles to TC-erfc. 
+
+The Be and LiH results in Figs. 12 and 13 show close agreement between the xTC and full-TC ground-state energies, while the changes in conditioning are system-dependent. Quantitatively, 32 Jastrow parameter μ     
+
+> 10 9
+> 10 8
+> 10 7
+> 10 6
+> 10 5
+> |ExTC  − ETC | (Ha)
+
+(a) Energy difference  
+
+> Jastrow parameter μ
+> 2000 3000 4000 5000 6000
+> Pauli term count
+
+(b) Pauli term count         
+
+> 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0
+> Jastrow parameter μ
+> 12.5 12.6 12.7 12.8
+> λ( ˆH)
+
+(c) Pauli one-norm         
+
+> 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0
+> Jastrow parameter μ
+> 1234
+> (Vos )
+
+(d) Condition     
+
+> TC-exp TC-erfc xTC-exp xTC-erfc non-real flag
+
+Figure 13. Comparison of full TC and xTC for the LiH molecule in the STO-6G basis at R = 3 .0 bohr. (a) Ground-state energy difference |ExTC − ETC |. (b) Number of non-identity Pauli terms in the qubit Hamiltonian. (c) Pauli one-norm of the qubit Hamiltonian λ( ˆH). (d) Condition number κ(Vos ). Filled markers with solid lines denote full TC, whereas open markers with dashed lines denote xTC; circles correspond to TC-exp and triangles to TC-erfc. 
+
+over the plotted parameter ranges, the maximum ground-state energy deviation, max μ |ExTC −
+
+ETC |, is 1 .01 × 10 −4 Ha for Be and 1 .2 × 10 −5 Ha for LiH. These maxima occur for TC-exp at 
+
+μ = 0 .5 for Be and μ = 1 .0 for LiH. The Pauli one-norm is also slightly lower for xTC throughout the plotted μ ranges. For Be, the one-norm spans λ( ˆH) = 12 .15–12 .53 for full TC and 12 .13–12 .47 for xTC. Eliminating the residual explicit three-body operator in xTC reduces the number of non-identity Pauli terms from 959 to 295. For LiH, the corresponding one-norm ranges are 12 .43–12 .82 for full TC and 12 .43–12 .78 for xTC. The Pauli term count drops from 6018–6330 to 1462. For Be, the condition-number range is κ(Vos ) = 1 .00–1 .22 for both full TC and xTC. For LiH, the corresponding range changes from 1 .01–3 .94 for full TC to 1 .01–4 .66 for xTC, with an increase in its upper endpoint. 33 However, given the He analysis in Fig. 9, this conditioning comparison should be interpreted with care. The xTC Hamiltonian is obtained by normal ordering with respect to a fixed-particle-number Hartree–Fock determinant and retaining the resulting effective one- and two-body terms. Because the condition numbers reported here are computed over the full block structure, they can receive contributions from sectors outside the target physical particle-number sector. The differences induced by xTC could therefore arise partly from these auxiliary sectors. Without a target-sector calculation, they cannot be attributed specifically to changes in the conditioning of the target low-energy problem. Future work should therefore assess target-sector conditioning for xTC and for other reduced Hamiltonians, such as those obtained by active-space selection.  
+
+> V. CONCLUSION AND OUTLOOK
+
+In this paper, we examined the trade-off between accuracy and cost in transcorrelated Hamilto-nians and its implications for quantum algorithms. We first used a solvable model to isolate the mechanisms behind this trade-off in a controlled setting. We then studied second-quantized elec-tronic Hamiltonians to analyze how accuracy, the Pauli one-norm, and eigenvector conditioning behave in finite orbital spaces. The two settings exhibit a partial correspondence. Comparing them therefore helps distinguish intrinsic features from setting-specific effects and addresses the challenge emphasized in Ref. [42]: understanding the behavior of the condition number relevant to non-Hermitian quantum algorithms. Furthermore, in the solvable model, we show that TC improves wavefunction regularity, which can yield a polynomial improvement in the QEVE query bound. For electronic calculations, we identify three setting-specific phenomena: (i) degeneracies require a consistent convention for the conditioning measure, such as κ(Vos ); (ii) particle-number sectors can differ remarkably in conditioning; and (iii) the non-nested orbital spaces limit the di-rect asymptotic scaling interpretation. Despite these phenomena, numerical experiments on small systems (He, Be, and LiH) show that TC and xTC can improve finite-basis accuracy with a mild increase in the Pauli one-norm and κ(Vos ), illustrating a trade-off similar to that of the solvable model. These findings motivate several complementary directions for improving the TC representation. Extending to more flexible forms [26, 76–78], the systematically refinable representations [41, 79]. Restricting the encoded problem to physically relevant subspaces, through spin-sector restric-tion [80–83] or active-space selection [84–86], may further reduce representation costs and clarify 34 the conditioning relevant to the target problem. Finally, understanding how the relevant conditioning scales with basis size and physical system size is only an intermediate step toward assessing its algorithmic impact. Quantifying the impact of these findings on end-to-end quantum resource estimates remains an open problem. In partic-ular, the distinction observed here between full-space and target-sector conditioning suggests that symmetry-aware analyses may yield tighter QEVE resource bounds than estimates based solely on global conditioning, but the quantitative impact remains to be established. 
+
+> ACKNOWLEDGMENTS
+
+We acknowledge funding from the German Federal Ministry of Research, Technology and Space (BMFTR) under the research program Quantensysteme and funding measure Quantum Futur 3 for project No. 13N17229 as well as the Helmholtz Association via the Initiative and Networking Fund for projects No. VH-NG-21-08 under the Helmholtz Investigator program as well Projects KA-QUS-02 (qFLOW) and KA-QUS-03 (QT-Batt) under the Helmholtz Quantum Use case call. PKF acknowledges funding from the BMFTR (HYBRID and QPIC-1). 
+
+> AI DISCLOSURE
+
+Claude Opus 4.6 to 5.5, GPT-5.5, GPT-5.6 Sol, and GPT-6 Astra were used for technical discus-sion, literature searches, proof checking, writing support, and developing and checking analysis, verification, and plotting scripts. The authors conceived the research questions and theoretical direction, directed and verified all AI-assisted output, and take full responsibility for the content of this manuscript. 
+
+> Appendix A: Derivation of the Baker–Campbell–Hausdorff Expansion of the TC Hamilto-nian
+
+In this appendix, we provide the detailed derivation of the transcorrelated Hamiltonian using the Baker–Campbell–Hausdorff (BCH) expansion. Throughout this appendix and Appendix B the correlator parameter θ is suppressed, so that ˆ τ ≡ ˆτθ and uij ≡ uθ(ri, rj ). Starting from the 35 definition ˆHTC = e−ˆτ ˆHe ˆτ , the expansion is given by: ˆHTC = ˆH + [ ˆH, ˆτ ] + 12! [[ ˆH, ˆτ ], ˆτ ] + . . . (A1) Since the potential operator ˆV and the correlator ˆ τ are both multiplicative operators in the position representation, they commute ([ ˆV , ˆτ ] = 0). Thus, the commutators reduce to terms involving only the kinetic energy operator ˆT = −12
+
+P 
+
+> i
+
+∇2 
+
+> i
+
+:[ ˆH, ˆτ ] = [ ˆT , ˆτ ]. (A2) Applying the first commutator to an arbitrary test function Ψ: [ ˆT , ˆτ ]Ψ = ˆT (ˆ τ Ψ) − ˆτ ( ˆT Ψ) = −12
+
+X
+
+> i
+
+∇2 
+
+> i
+
+(τ Ψ) − τ (∇2 
+
+> i
+
+Ψ)  . (A3) Using the Laplacian product rule ∇2(f g ) = ( ∇2f )g + 2( ∇f ) · (∇g) + f (∇2g), we expand the first term: 
+
+∇2 
+
+> i
+
+(τ Ψ) = ( ∇2 
+
+> i
+
+τ )Ψ + 2( ∇iτ ) · (∇iΨ) + τ (∇2 
+
+> i
+
+Ψ) . (A4) Substituting this back, the τ (∇2 
+
+> i
+
+Ψ) terms cancel: [ ˆT , ˆτ ]Ψ = −12
+
+X
+
+> i
+
+(∇2 
+
+> i
+
+τ )Ψ + 2( ∇iτ ) · (∇iΨ) 
+
+= −12
+
+X
+
+> i
+
+(∇2 
+
+> i
+
+τ ) − X
+
+> i
+
+(∇iτ ) · ∇ i
+
+!
+
+Ψ. (A5) Since Ψ is arbitrary, we obtain the operator identity: [ ˆT , ˆτ ] = −12
+
+X
+
+> i
+
+(∇2 
+
+> i
+
+τ ) − X
+
+> i
+
+(∇iτ ) · ∇ i. (A6) The second commutator is defined as [[ ˆT , ˆτ ], ˆτ ]. Using Eq. (A6), and noting that the scalar term 
+
+−12
+
+P 
+
+> i
+
+∇2 
+
+> i
+
+τ commutes with ˆ τ , we only need to evaluate: [[ ˆT , ˆτ ], ˆτ ] = 
+
+"
+
+− X
+
+> i
+
+(∇iτ ) · ∇ i, ˆτ
+
+#
+
+. (A7) Applying this to a test function Ψ: 
+
+"
+
+− X
+
+> i
+
+(∇iτ ) · ∇ i, ˆτ
+
+#
+
+Ψ = − X
+
+> i
+
+(∇iτ ) · ∇ i(τ Ψ) 
+
+− ˆτ − X
+
+> i
+
+(∇iτ ) · ∇ iΨ
+
+!
+
+. (A8) 36 Expanding the gradient ∇i(τ Ψ) = ( ∇iτ )Ψ + τ (∇iΨ): = − X
+
+> i
+
+(∇iτ ) · [( ∇iτ )Ψ + τ (∇iΨ)] + X
+
+> i
+
+τ (∇iτ ) · (∇iΨ) = − X
+
+> i
+
+|∇ iτ |2Ψ − X
+
+> i
+
+τ (∇iτ ) · (∇iΨ) + X
+
+> i
+
+τ (∇iτ ) · (∇iΨ) = − X
+
+> i
+
+|∇ iτ |2Ψ. (A9) Thus, the second commutator is a purely multiplicative operator: [[ ˆT , ˆτ ], ˆτ ] = − X
+
+> i
+
+|∇ iτ |2. (A10) Since this result depends only on position coordinates, it commutes with ˆ τ , ensuring that all higher-order commutators vanish. Substituting Eqs. (A6) and (A10) into the truncated series ˆH + [ ˆT , ˆτ ] + 12 [[ ˆT , ˆτ ], ˆτ ] gives the closed form quoted as Eq. (10) of the main text, ˆHTC = ˆH − X
+
+> i
+
+(∇iτ ) · ∇ i − 12
+
+X
+
+> i
+
+∇2 
+
+> i
+
+τ + |∇ iτ |2 , (A11) where the second term is the non-Hermitian drift operator built from the field Fi, θ of Eq. (11) and the third is the TC-generated scalar correction VTC ,eff ,θ of Eq. (12). 
+
+Appendix B: Derivation of Two- and Three-Body Operators 
+
+Here, we derive the explicit form of the TC Hamiltonian assuming a symmetric pairwise Jastrow correlator: ˆτ = X
+
+> i<j
+
+u(ri, rj ). (B1) The gradient of τ with respect to electron i is given by: 
+
+∇iτ = X 
+
+> j̸=i
+
+∇iuij , (B2) where we use the shorthand uij ≡ u(ri, rj ). Substituting this into the general BCH expansion derived in Appendix A, we analyze the terms individually. 37 The non-self-adjoint drift term becomes: 
+
+− X
+
+> i
+
+(∇iτ ) · ∇ i = − X
+
+> i
+
+X 
+
+> j̸=i
+
+(∇iuij ) · ∇ i. (B3) The Laplacian term acts linearly: 
+
+−12
+
+X
+
+> i
+
+∇2 
+
+> i
+
+τ = −12
+
+X
+
+> i
+
+X 
+
+> j̸=i
+
+∇2 
+
+> i
+
+uij . (B4) The squared gradient term requires expanding the square of the sum: 
+
+−12
+
+X
+
+> i
+
+|∇ iτ |2 = −12
+
+X
+
+> i
+
+X 
+
+> j̸=i
+
+∇iuij 
+
+> 2
+
+= −12
+
+X
+
+> i
+
+X 
+
+> j̸=i
+
+|∇ iuij |2
+
+− 12
+
+X
+
+> i
+
+X 
+
+> j̸=i
+
+X 
+
+> k̸=i,j
+
+∇iuij · ∇ iuik . (B5) Here, the first term represents diagonal interactions ( j = k, two-body), while the second term represents cross interactions ( j̸ = k, three-body). Combining all terms and regrouping summations over unique pairs ( i < j ) and triplets ( i < j < k ) yields the operators ˆK and ˆL presented in the main text. In the three-body term the ordered pairs ( j, k ) and ( k, j ) contribute equally at fixed i,so each unordered triplet is counted twice; this cancels the prefactor −12 and ˆLθ enters with unit coefficient, whereas the factors 12 are retained in ˆKθ. Explicitly, ˆHTC − ˆH = − X
+
+> i<j
+
+ˆKθ(ri, rj ) − X
+
+> i<j<k
+
+ˆLθ(ri, rj , rk). (B6) 
+
+Appendix C: A concrete non-normal example 
+
+Consider a real, non-normal matrix 
+
+M =
+
+
+
+1 0 1 0 1 0 0 0 2 
+
+ . (C1) It is non-normal ( M M †̸ = M †M ) but diagonalizable. Its eigenvalues are {1, 1, 2}. The eigenspace associated with the degenerate eigenvalue λ = 1 is 
+
+E1 = {(x, y, 0) T : x, y ∈ R} = span {e1, e 2}. (C2) 38 A right eigenvector associated with λ = 2 is (1 , 0, 1) T , which we normalize as 
+
+v3 = 1
+
+√2(1 , 0, 1) T . (C3) To illustrate the remaining basis freedom inside the degenerate eigenspace, define 
+
+v1 = e1, v2(θ) = cos θ e 1 + sin θ e 2, (C4) with θ ∈ (0 , π ), so that v1 and v2(θ) are linearly independent. Both vectors have unit Euclidean norm. The corresponding eigenvector matrix is 
+
+V (θ) = v1 v2(θ) v3
+
+ =
+
+
+
+1 cos θ 1/√20 sin θ 00 0 1/√2
+
+ . (C5) It satisfies 
+
+M V (θ) = V (θ) diag(1 , 1, 2) . (C6) Thus, for every θ ∈ (0 , π ), V (θ) is a valid diagonalizing eigenvector matrix with unit-norm columns. The unit-norm convention does not, however, fix the value of the condition number, since κ2(V (θ)) still varies strongly with θ.For this example, the optimal condition number κ∗ introduced in Sec. II C can also be computed explicitly. Let eV be any diagonalizing eigenvector matrix, with its columns ordered so that the first two columns correspond to λ = 1 and the third column corresponds to λ = 2. Then 
+
+M = eV diag(1 , 1, 2) eV −1. (C7) We now shift and rescale M so that its two eigenvalues are moved to +1 and −1. This operation does not touch the eigenvectors, so the same eV diagonalizes the result: 3I − 2M = eV diag(1 , 1, −1) eV −1. (C8) An orthogonal eigenbasis would now give ∥3I −2M ∥2 = 1; any excess over unity therefore measures the non-orthogonality of the columns of eV , which is what turns this norm into a lower bound on 
+
+κ2( eV ). Using ∥diag(1 , 1, −1) ∥2 = 1, we obtain 
+
+∥3I − 2M ∥2 ≤ ∥ eV ∥2 ∥ eV −1∥2 = κ2( eV ). (C9) 39 This inequality implies that ∥3I − 2M ∥2 serves as a universal lower bound for κ2( eV ), for every admissible eigenvector matrix eV .A direct calculation gives (3 I − 2M )T (3 I − 2M ) = 
+
+
+
+1 0 −20 1 0
+
+−2 0 5
+
+ . (C10) The eigenvalues of this matrix are (1 + √2) 2, 1, (√2 − 1) 2. (C11) Hence 
+
+∥3I − 2M ∥2 = 1 + √2. (C12) Thus every diagonalizing eigenvector matrix satisfies 
+
+κ2( eV ) ≥ 1 + √2, (C13) and therefore 
+
+κ∗ ≥ 1 + √2. (C14) In this particular example, this lower bound is attained by the gauge-fixing prescription of Eq. (27): orthonormalizing inside each eigenspace, with Q1 = [ e1 e2 ] and Q2 = v3, gives Vos = V (π/ 2), that is, 
+
+V (π/ 2) = 
+
+
+
+1 0 1 /√20 1 00 0 1 /√2
+
+ . (C15) The squared singular values of V (π/ 2) are the eigenvalues of 
+
+V (π/ 2) T V (π/ 2) = 
+
+
+
+1 0 1 /√20 1 01/√2 0 1
+
+ . (C16) These eigenvalues are 1 + 1
+
+√2, 1, 1 − 1
+
+√2. (C17) 40 Therefore, 
+
+κ2(V (π/ 2)) = 
+
+s
+
+1 + 1 /√21 − 1/√2 = 1 + √2. (C18) Combining the lower bound with this attainable value yields 
+
+κ∗ = 1 + √2. (C19) The orthonormalized construction of Eq. (27), which is only suboptimal in general, is thus optimal for this matrix: κ2(Vos ) = κ∗.Finally, this value is consistent with the spectral-projector bounds discussed in Sec. II C. The matrix M has r = 2 distinct eigenvalues, λ1 = 1 and λ2 = 2; the corresponding spectral projectors are 
+
+P2 = M − I
+
+2 − 1 = M − I =
+
+
+
+0 0 1 0 0 0 0 0 1 
+
+ , P1 = I − P2 =
+
+
+
+1 0 −10 1 00 0 0
+
+ . (C20) These are spectral projectors, not orthogonal projectors. In particular, P1 projects onto E1 =span {e1, e 2} along the eigenspace span {(1 , 0, 1) T } associated with λ = 2, which is not orthogonal to E1. Directly, 
+
+P T 
+
+> 1
+
+P1 =
+
+
+
+1 0 −10 1 0
+
+−1 0 1
+
+ , P T 
+
+> 2
+
+P2 =
+
+
+
+0 0 0 0 0 0 0 0 2 
+
+ . (C21) The largest eigenvalue of both P T 
+
+> 1
+
+P1 and P T 
+
+> 2
+
+P2 is 2. Hence 
+
+∥P1∥2 = ∥P2∥2 = √2. (C22) Therefore, max  
+
+> i
+
+∥Pi∥2 = √2. (C23) The condition numbers found above therefore satisfy 
+
+√2 = max  
+
+> i
+
+∥Pi∥2 < κ 2(Vos ) = κ∗ = 1 + √2 < 2√2 = r max  
+
+> i
+
+∥Pi∥2, (C24) in agreement with the bounds in Sec. II C. 41 Appendix D: Analytical SHO + delta potential matrix elements 
+
+This appendix derives the matrix-element formulas used in Sec. III A. The derivation starts from full-line matrix elements. The contact distribution is canceled before any parity argument is used. Only after this cancellation do the remaining regular full-line integrals reduce to positive-half-axis scalar moments. Throughout this appendix the correlator range parameter satisfies μ > 0. 
+
+1. Full-line identities and contact cancellation 
+
+The normalized SHO basis functions are 
+
+ϕn(x) = 1
+
+p2nn!√π Hn(x)e−x2/2, n = 0 , 1, 2, . . . , (D1) with parity 
+
+ϕn(−x) = ( −1) nϕn(x) (D2) and derivative identity 
+
+ϕ′
+
+> n
+
+(x) = 
+
+rn
+
+2 ϕn−1(x) −
+
+rn + 1 2 ϕn+1 (x). (D3) Their values at the origin are 
+
+ϕ2m(0) = ( −1) m
+
+p(2 m)! 2mm!π1/4 , ϕ2m+1 (0) = 0 . (D4) Let u(x) = v(|x|) be an even Jastrow exponent satisfying v′(0 +) = g. Then 
+
+u′′ (x) = u′′ 
+
+> reg
+
+(x) + 2 gδ (x) in D′(R). (D5) Consequently, the physical contact term gδ (x) of the Hamiltonian and the distributional part of 
+
+−12 u′′ cancel identically: for arbitrary SHO functions, 
+
+Z ∞−∞ 
+
+ϕm(x)
+
+
+
+gδ (x) − 12 2gδ (x)
+
+
+
+ϕn(x) dx 
+
+= gϕ m(0) ϕn(0) − gϕ m(0) ϕn(0) = 0 .
+
+(D6) Thus the even-sector matrix contains no separate contact term once the regular operator has been formed. With F (x) = u′(x) and 
+
+VTC ,eff (x) = −12u′′ 
+
+> reg
+
+(x) − 12F (x)2, (D7) 42 the even-sector TC matrix is (HTC )mn =
+
+
+
+2n + 12
+
+
+
+δmn + Dmn + VTC ,eff ,mn , m, n = 0 , 1, . . . , N even − 1, (D8) where 
+
+Dmn = −
+
+Z ∞−∞ 
+
+ϕ2m(x)F (x)ϕ′
+
+> 2n
+
+(x) dx, (D9) 
+
+VTC ,eff ,mn =
+
+Z ∞−∞ 
+
+ϕ2m(x)VTC ,eff (x)ϕ2n(x) dx. (D10) Define the full-line field integral 
+
+Fpq =
+
+Z ∞−∞ 
+
+ϕp(x)F (x)ϕq(x) dx. (D11) Using Eq. (D3), Eq. (D9) becomes 
+
+Dmn = −√n F2m, 2n−1 +
+
+r2n + 1 2 F2m, 2n+1 , (D12) where the first term is omitted for n = 0. 
+
+2. TC-exp matrix elements 
+
+For u1(x) = g|x|e−μ|x|,
+
+F1(x) = g sgn( x)(1 − μ|x|)e−μ|x|, (D13) 
+
+u′′ 
+
+> 1,reg
+
+(x) = ge −μ|x|(−2μ + μ2|x|). (D14) Hence 
+
+V (1) TC ,eff (x) = gμe −μ|x| − 12gμ 2|x|e−μ|x| − 12g2e−2μ|x|
+
++ g2μ|x|e−2μ|x| − 12g2μ2|x|2e−2μ|x|.
+
+(D15) Introduce full-line exponential moments 
+
+A(a) 
+
+> pq
+
+(b) = 
+
+Z ∞−∞ 
+
+ϕp(x)ϕq(x)|x|ae−b|x| dx, (D16) 
+
+B(a) 
+
+> pq
+
+(b) = 
+
+Z ∞−∞ 
+
+ϕp(x)ϕq(x) sgn( x)|x|ae−b|x| dx. (D17) Then the TC-exp scalar correction is 
+
+V (1) TC ,eff ,mn = gμA (0) 2m, 2n(μ) − 12gμ 2A(1) 2m, 2n(μ) − 12g2A(0) 2m, 2n(2 μ)+ g2μA (1) 2m, 2n(2 μ) − 12g2μ2A(2) 2m, 2n(2 μ),
+
+(D18) 43 and the field integral is 
+
+F(1)  
+
+> pq
+
+= gB (0)  
+
+> pq
+
+(μ) − gμB (1)  
+
+> pq
+
+(μ). (D19) The first-order contribution follows from Eq. (D12), namely 
+
+D(1)  
+
+> mn
+
+= −√n F(1) 2m, 2n−1 +
+
+r2n + 1 2 F(1) 2m, 2n+1 . (D20) 
+
+3. TC-erfc matrix elements 
+
+For 
+
+u2(x) = g
+
+
+
+|x| erfc( μ|x|) − 1
+
+√πμ e−μ2x2
+
+
+
+, (D21) one obtains 
+
+F2(x) = g sgn( x) erfc( μ|x|), (D22) 
+
+u′′ 
+
+> 2,reg
+
+(x) = −2gμ 
+
+√π e−μ2x2
+
+, (D23) 
+
+V (2) TC ,eff (x) = gμ 
+
+√π e−μ2x2
+
+− g2
+
+2 erfc 2(μ|x|). (D24) Introduce the full-line moments 
+
+Gpq (α) = 
+
+Z ∞−∞ 
+
+ϕp(x)ϕq(x)e−αx 2
+
+dx, (D25) 
+
+Cpq (μ) = 
+
+Z ∞−∞ 
+
+ϕp(x)ϕq(x) erfc 2(μ|x|) dx, (D26) 
+
+Rpq (μ) = 
+
+Z ∞−∞ 
+
+ϕp(x)ϕq(x) sgn( x) erfc( μ|x|) dx. (D27) Then 
+
+V (2) TC ,eff ,mn = gμ 
+
+√π G2m, 2n(μ2) − g2
+
+2 C2m, 2n(μ), (D28) 
+
+F(2)  
+
+> pq
+
+= gR pq (μ), (D29) 
+
+D(2)  
+
+> mn
+
+= −g√n R 2m, 2n−1(μ) + g
+
+r2n + 1 2 R2m, 2n+1 (μ). (D30) 
+
+4. Reduction to scalar Hermite moments 
+
+Write 
+
+Hp(x)Hq(x) = 
+
+> p+q
+
+X
+
+> r=0
+
+c(p,q ) 
+
+> r
+
+xr. (D31) 44 The coefficients may be obtained from 
+
+Hn(x) = 
+
+> n
+
+X
+
+> r=0
+
+hn,r xr, hn,r =
+
+
+
+(−1) (n−r)/2 n!2 r
+
+(( n − r)/2)! r!, n − r ≥ 0 and n − r even ,
+
+0, otherwise ,
+
+(D32) and the convolution 
+
+c(p,q ) 
+
+> r
+
+=
+
+> r
+
+X
+
+> s=0
+
+hp,s hq,r −s. (D33) The SHO normalization factor is 
+
+Npq = 1
+
+√2p+qp!q!π . (D34) For the exponential moments, define 
+
+Mk(b) = 
+
+Z ∞
+
+> 0
+
+xke−x2−bx dx, b > 0. (D35) Using parity only after the full-line expressions have been defined gives 
+
+A(a) 
+
+> pq
+
+(b) = Npq 
+
+1 + ( −1) p+q p+q
+
+X
+
+> r=0
+
+c(p,q ) 
+
+> r
+
+Mr+a(b), (D36) 
+
+B(a) 
+
+> pq
+
+(b) = Npq 
+
+1 − (−1) p+q p+q
+
+X
+
+> r=0
+
+c(p,q ) 
+
+> r
+
+Mr+a(b). (D37) The scalar moments have the closed form 
+
+Mk(b) = eb2/4
+
+2
+
+> k
+
+X
+
+> j=0
+
+kj
+
+  
+
+− b
+
+2
+
+k−j
+
+Γ
+
+j + 1 2 , b2
+
+4
+
+
+
+, (D38) and the recurrence 
+
+M0(b) = 
+
+√π
+
+2 eb2/4 erfc 
+
+ b
+
+2
+
+
+
+, (D39) 
+
+M1(b) = 12 − b
+
+2M0(b), (D40) 
+
+Mk+1 (b) = k
+
+2 Mk−1(b) − b
+
+2Mk(b), k ≥ 1. (D41) The recurrence follows by integrating the derivative of xke−x2−bx over [0 , ∞). For the Gaussian part of TC-erfc, 
+
+Gk(α) = 
+
+Z ∞
+
+> 0
+
+xke−(1+ α)x2
+
+dx = 12(1 + α)−(k+1) /2Γ
+
+k + 1 2
+
+
+
+, (D42) 45 and 
+
+Gpq (α) = Npq 
+
+1 + ( −1) p+q p+q
+
+X
+
+> r=0
+
+c(p,q ) 
+
+> r
+
+Gr(α). (D43) For the erfc moments, define 
+
+Ek(μ) = 
+
+Z ∞
+
+> 0
+
+xke−x2
+
+erfc( μx ) dx, (D44) 
+
+E(2)  
+
+> k
+
+(μ) = 
+
+Z ∞
+
+> 0
+
+xke−x2
+
+erfc 2(μx ) dx. (D45) Then 
+
+Rpq (μ) = Npq 
+
+1 − (−1) p+q p+q
+
+X
+
+> r=0
+
+c(p,q ) 
+
+> r
+
+Er(μ), (D46) 
+
+Cpq (μ) = Npq 
+
+1 + ( −1) p+q p+q
+
+X
+
+> r=0
+
+c(p,q ) 
+
+> r
+
+E(2)  
+
+> r
+
+(μ). (D47) The single-erfc moments are initialized by 
+
+E0(μ) = 
+
+√π
+
+2 − 1
+
+√π arctan μ = 1
+
+√π arctan 
+
+ 1
+
+μ
+
+
+
+, (D48) 
+
+E1(μ) = 12 1 − μ
+
+p1 + μ2
+
+!
+
+, (D49) and obey 
+
+Ek(μ) = k − 12 Ek−2(μ) − μ
+
+√π Gk−1(μ2), k ≥ 2. (D50) For the squared-erfc moments, define 
+
+eEk(μ) = 
+
+Z ∞
+
+> 0
+
+xke−(1+ μ2)x2
+
+erfc( μx ) dx, (D51) and 
+
+eGk(μ) = 12(1 + 2 μ2)−(k+1) /2Γ
+
+k + 1 2
+
+
+
+. (D52) The modified erfc moments have initial values 
+
+eE0(μ) = 1
+
+√πp1 + μ2 arctan 
+
+p1 + μ2
+
+μ
+
+!
+
+, (D53) 
+
+eE1(μ) = 12(1 + μ2) 1 − μ
+
+p1 + 2 μ2
+
+!
+
+, (D54) and recurrence 
+
+eEk(μ) = k − 12(1 + μ2) eEk−2(μ) − μ
+
+√π(1 + μ2) eGk−1(μ), k ≥ 2. (D55) 46 Finally, 
+
+E(2) 0 (μ) = 2
+
+√π
+
+h
+
+arctan p1 + 2 μ2 − arctan μ
+
+i
+
+, (D56) 
+
+E(2) 1 (μ) = 12 − 2μπp1 + μ2 arctan 
+
+p1 + μ2
+
+μ
+
+!
+
+, (D57) 
+
+E(2)  
+
+> k
+
+(μ) = k − 12 E(2) 
+
+> k−2
+
+(μ) − 2μ
+
+√π eEk−1(μ), k ≥ 2. (D58) At large p + q the convolution (D33) mixes large terms of alternating sign, so in floating-point arithmetic the sums (D36), (D37), (D43), (D46), and (D47) lose accuracy; they are best evaluated in exact or extended-precision arithmetic. Equations (D8), (D18), (D20), (D28), and (D30) give the complete matrix-element computation. 
+
+> Appendix E: Details of the solvable-model analysis
+
+This appendix reports the details of the asymptotic convergence analysis underlying Sec. III, together with the assumptions on which it relies. The relevant prior analyses are those of Grining 
+
+et al. [66] for the bare problem and Jeszenszki et al. [19] for the transcorrelated framework. In the two-particle settings considered in both works, the external potential is either absent or separable, allowing the Hamiltonian to be decomposed into center-of-mass and relative-coordinate parts. The interacting relative Hamiltonian can therefore be viewed as a variant of the solvable model in Sec. III. For Grining et al. , it has the same SHO-plus-contact form, up to coordinate, coupling, and energy-zero conventions, whereas Jeszenszki et al. studied a distinct translation-invariant contact problem with periodic boundary conditions. Despite these differences in the regular potential and global boundary conditions, the relative-coordinate subproblems considered in both works exhibit a local singularity at particle coalescence that is similar in form to the singularity of our model at x = 0. This type of local nonanalyticity underlies the slow convergence of their bare basis expansions. Grining et al. expanded the relative state in a truncated basis of N SHO functions and derived a leading bare error of order N −1/2 for both the Rayleigh quotient of the truncated exact state and the variational eigenvalue of the projected Hamiltonian. Jeszenszki et al. instead retained M single-particle plane waves, whose largest momentum satisfies kmax ∝ M , and obtained energy-error rates of M −1 for the bare problem and M −3 after TC. Neither analysis covers the case studied here: the TC Hamiltonian projected onto the even SHO ba-sis, for which we derive the energy-error rate and its leading prefactor. To this end, we follow Hill’s 47 Rayleigh–Ritz analysis [47], with the two-sided quotient appropriate to the non-normal setting [87], and adopt the weak formulation and asymmetric estimates of Bachmayr [79] and Yserentant [54], adapted to the present model. The analysis rests on a single assumption specifying a simple Ritz branch converging to E0 and a uniform bound on its reduced resolvent (Assumption E.1). 
+
+1. Setting, weak formulation, and basic estimates 
+
+We first recall the setting. Let ˆH = ˆHSHO + gδ (x) with g ∈ R \ { 0}. We restrict our analysis to the even sector. The ground-state eigenvalue E0 is simple, and its eigenfunction Ψ 0 is even and satisfies the contact condition Ψ ′
+
+> 0
+
+(0 +) = gΨ0(0). We choose Ψ 0 real and fix its sign by Ψ 0(0) > 0. The exact ground state of ˆH is Ψ 0(x) = CD ν (√2|x|), where Dν is the parabolic-cylinder function of order ν = E0 − 12 and C is chosen so that ∥Ψ0∥2 = 1. Here E0 is the lowest solution of Eq. (36). For the properties of parabolic-cylinder functions, see DLMF [88, §§ 12.2, 12.8, and 12.9]. For 
+
+x > 0, these give Ψ′
+
+> 0
+
+(x) = xΨ0(x) − √2CD ν+1 (√2x),Dν (√2x) ∼ (√2x)ν e−x2/2 (x → +∞).
+
+The asymptotic formula also applies at the fixed order ν + 1. Repeated differentiation of Ψ ′′  
+
+> 0
+
+=(x2−2E0)Ψ 0 expresses every higher derivative as a linear combination of Ψ 0 and Ψ ′ 
+
+> 0
+
+with polynomial coefficients. For fixed μ > 0, let u denote either of the two correlators used in this work; both of them are real, even, bounded, and Lipschitz, with u′(0 +) = g. In what follows, we shift u → u − u(0) so that 
+
+u(0) = 0; only the erfc form requires this shift. We set F = u′ and denote by u′′  
+
+> reg
+
+the ordinary second derivative away from the origin; we then have u′′ = u′′  
+
+> reg
+
++ 2 gδ in the distributional sense. Both F and u′′  
+
+> reg
+
+are bounded on the two half-lines. The TC Hamiltonian can then be written as ˆHTC = e−u ˆHe u = ˆHSHO + ˆW , (E1) with VTC ,eff = −12 u′′  
+
+> reg
+
+− 12 F 2 and ˆW = −F ∂ x + VTC ,eff . The transformed ground states are ΦR,L  
+
+> 0
+
+= e∓uΨ0 with ⟨ΦL 
+
+> 0
+
+, ΦR 
+
+> 0
+
+⟩ = ∥Ψ0∥2 = 1. The right state satisfies (Φ R 
+
+> 0
+
+)′(0 +) = 0, whereas the left state satisfies (Φ L 
+
+> 0
+
+)′(0 +) = 2 gΦL 
+
+> 0
+
+(0) = 2 gΨ0(0). Following the notation of Bachmayr [79, Sec. 2] and Yserentant [54, Sec. 2], we use a(·, ·) for the forms in the weak formulation. All forms below are defined for even functions f, v ∈ H1(R)48 with xf, xv ∈ L2(R); the inner product is that of L2(R), antilinear in the first argument. This formulation involves only first derivatives and allows both transformed states to be treated in the same space, without imposing their contact conditions on the test functions. For the SHO Hamiltonian, integration by parts gives us the form 
+
+aSHO (f, v ) = 12 ⟨f ′, v ′⟩ + 12 ⟨xf, xv ⟩ = ⟨f, ˆHSHO v⟩, (E2) where the last equality holds when ˆHSHO v ∈ L2.The half-line equation and the contact condition give the weak equation of ˆH,
+
+aSHO (f, Ψ0) + gf (0)Ψ 0(0) = E0⟨f, Ψ0⟩, (E3) for every test function f .For the weak formulation of ˆHTC , we define the associated form 
+
+aTC (f, v ) := aSHO (e−uf, e uv) + gf (0) v(0) = aSHO (f, v ) + ⟨f, ˆW v ⟩.
+
+(E4) The second equality follows by integration by parts, with the jump in F cancelling the contact term. As in Bachmayr’s TC formulation [79, Props. 2.1 and 2.3], the physical weak equation gives the following right and left weak identities for the exact transformed states: 
+
+aTC (f, ΦR 
+
+> 0
+
+) = E0⟨f, ΦR 
+
+> 0
+
+⟩,aTC (Φ L 
+
+> 0
+
+, v ) = E0⟨ΦL 
+
+> 0
+
+, v ⟩,
+
+(E5) for all f, v in this space. Finally, we need to estimate the correction ⟨f, ˆW v ⟩ in Eq. (E4). We write ∥ · ∥ for the L2(R) norm and ∥ · ∥ ∞ for the L∞(R) norm. The L∞ bounds on the coefficients in ˆW v = −F v ′ + VTC ,eff v reduce the L2 estimate of ˆW v to control of ∥v′∥ and ∥v∥. We therefore use the energy norm associated with aSHO , defined by 
+
+∥v∥2en = aSHO (v, v ) + ∥v∥2. (E6) This gives ∥v′∥ ≤ √2∥v∥en and ∥v∥ ≤ ∥ v∥en . Combining these bounds with the triangle inequality gives the first estimate below. Cauchy–Schwarz then gives the second, which requires only f ∈ L2:
+
+∥ ˆW v ∥ ≤ ∥ F ∥∞∥v′∥ + ∥VTC ,eff ∥∞∥v∥ ≤ CW ∥v∥en ,
+
+|⟨ f, ˆW v ⟩| ≤ ∥ f ∥ ∥ ˆW v ∥ ≤ CW ∥f ∥ ∥ v∥en ,
+
+(E7) where CW = √2∥F ∥∞ + ∥VTC ,eff ∥∞.49 2. Exact error formula via Schur-complement reduction 
+
+The numerical calculations in Sec. III replace the full operator ˆHTC by its finite-basis projection, as described in Sec. II B. Our aim is to estimate the energy error E(N )0 − E0 in terms of the approximation errors of the exact left and right states in this basis. Following Hill’s analysis [47, Sec. III], we use the projected exact right state as a reference direction within the retained space. For the present non-Hermitian problem, we define the complementary subspace using the projected exact left state. Schur elimination of the numerical eigenvector’s component in this subspace gives an energy identity. The weak identities (E5) of the preceding subsection then express the energy error through the tail components of both exact states. Let wn = ϕ2n be the complete orthonormal even SHO basis of Appendix D, with energies εn =2n + 12 . We retain the first N = Neven functions and let PN be the L2-orthogonal projection onto their span, with QN = I − PN . For f, v in the form space, write fn = ⟨wn, f ⟩ and vn = ⟨wn, v ⟩.Orthonormality, ˆHSHO wn = εnwn, and Eq. (E6) give 
+
+∥v∥2 = X
+
+> n
+
+|vn|2, aSHO (f, v ) = X
+
+> n
+
+εnfnvn, ∥v∥2en = X
+
+> n
+
+(εn + 1) |vn|2, (E8) where the sums run over all n ≥ 0. The corresponding formulas for PN f, P N v restrict the sums to n < N ; those for QN f, Q N v restrict them to n ≥ N . We consider the ground-state eigenvalue problem for the finite SHO matrix H(N )TC :
+
+H(N )TC Φ(N )0 = E(N )0 Φ(N )0 .
+
+The right eigenvector Φ (N )0 need not be proportional to the projected exact state PN ΦR 
+
+> 0
+
+. To relate them, we introduce an oblique projection Π N onto the direction PN ΦR 
+
+> 0
+
+within the retained space. Its complement Π ⊥ 
+
+> N
+
+selects vectors that pair to zero with PN ΦL 
+
+> 0
+
+. When the projected states have nonzero overlap, define ΠN = PN ΦR 
+
+> 0
+
+PN ΦL
+
+> 0
+
+σN
+
+, Π⊥ 
+
+> N
+
+= PN − ΠN ,
+
+where σN := ⟨PN ΦL 
+
+> 0
+
+, P N ΦR 
+
+> 0
+
+⟩ = ⟨PN ΦL 
+
+> 0
+
+, ΦR 
+
+> 0
+
+⟩. At fixed N , suppose that the generalized inverse 
+
+AN =  Π⊥ 
+
+> N
+
+H(N )TC Π⊥ 
+
+> N
+
+− E(N )0 Π⊥
+
+> N
+
+−1 on Ran Π ⊥
+
+> N
+
+exists. This implies Π N Φ(N )0̸ = 0; otherwise, the eigenvalue equation would contradict this in-vertibility. Since Π N Φ(N )0 is a nonzero multiple of PN ΦR 
+
+> 0
+
+, we may rescale the eigenvector so that 50 ΠN Φ(N )0 = PN ΦR 
+
+> 0
+
+. The oblique splitting then gives Φ(N )0 = PN ΦR 
+
+> 0
+
++ sN , sN = Π ⊥ 
+
+> N
+
+Φ(N )0 ,
+
+⟨PN ΦL 
+
+> 0
+
+, s N ⟩ = 0 , ⟨PN ΦL 
+
+> 0
+
+, Φ(N )0 ⟩ = σN .
+
+Substituting this decomposition into the eigenvalue equation and applying Π ⊥ 
+
+> N
+
+, we use Π ⊥ 
+
+> N
+
+PN ΦR 
+
+> 0
+
+=0 and Π ⊥ 
+
+> N
+
+sN = sN to obtain 
+
+ Π⊥ 
+
+> N
+
+H(N )TC Π⊥ 
+
+> N
+
+− E(N )0 Π⊥
+
+> N
+
+sN = −Π⊥ 
+
+> N
+
+H(N )TC PN ΦR 
+
+> 0
+
+.
+
+The operator on the left is the one inverted by AN , so sN = −AN Π⊥ 
+
+> N
+
+H(N )TC PN ΦR 
+
+> 0
+
+. Pairing the eigenvalue equation with PN ΦL 
+
+> 0
+
+and substituting this expression yields the following energy identity for the projected eigenvalue: 
+
+E(N )0 = ⟨PN ΦL 
+
+> 0
+
+, H (N )TC PN ΦR 
+
+> 0
+
+⟩
+
+σN
+
++ ⟨PN ΦL 
+
+> 0
+
+, H (N )TC sN ⟩
+
+σN
+
+= ⟨PN ΦL 
+
+> 0
+
+, H (N )TC PN ΦR 
+
+> 0
+
+⟩
+
+σN
+
+− ⟨PN ΦL 
+
+> 0
+
+, H (N )TC AN Π⊥ 
+
+> N
+
+H(N )TC PN ΦR 
+
+> 0
+
+⟩
+
+σN
+
+.
+
+(E9) The first term is the two-sided Rayleigh quotient of the projected exact states [87]. The second is the Schur correction from their coupling to the rest of the retained space, and the second line displays AN between the two coupling factors. To obtain E(N )0 − E0 from Eq. (E9), we first write E0 with the same denominator σN . Use the right weak identity (E5) with f = PN ΦL 
+
+> 0
+
+. We then have 
+
+E0 = aTC (PN ΦL 
+
+> 0
+
+, ΦR 
+
+> 0
+
+)
+
+σN
+
+.
+
+Subtracting this from Eq. (E9) gives (E(N )0 − E0)σN = ⟨PN ΦL 
+
+> 0
+
+, H (N )TC PN ΦR 
+
+> 0
+
+⟩ − aTC (PN ΦL 
+
+> 0
+
+, ΦR 
+
+> 0
+
+) + ⟨PN ΦL 
+
+> 0
+
+, H (N )TC sN ⟩. (E10) The finite SHO matrix acts on the retained space as 
+
+H(N )TC = PN ˆHTC PN = PN ( ˆHSHO + ˆW )PN .
+
+The projections can be removed inside the pairing because P † 
+
+> N
+
+= PN and P 2 
+
+> N
+
+= PN . Both projected states are finite SHO expansions, so the SHO form identity applies with f = PN ΦL 
+
+> 0
+
+and v = PN ΦR 
+
+> 0
+
+.51 Thus, 
+
+⟨PN ΦL 
+
+> 0
+
+, H (N )TC PN ΦR 
+
+> 0
+
+⟩ = ⟨PN ΦL 
+
+> 0
+
+, P N ( ˆHSHO + ˆW )PN ΦR 
+
+> 0
+
+⟩
+
+= ⟨PN ΦL 
+
+> 0
+
+, ˆHSHO PN ΦR 
+
+> 0
+
+⟩ + ⟨PN ΦL 
+
+> 0
+
+, ˆW P N ΦR 
+
+> 0
+
+⟩
+
+= aSHO (PN ΦL 
+
+> 0
+
+, P N ΦR 
+
+> 0
+
+) + ⟨PN ΦL 
+
+> 0
+
+, ˆW P N ΦR 
+
+> 0
+
+⟩ by Eq. (E2) = aTC (PN ΦL 
+
+> 0
+
+, P N ΦR 
+
+> 0
+
+) by Eq. (E4). Using Φ R 
+
+> 0
+
+= PN ΦR 
+
+> 0
+
++ QN ΦR 
+
+> 0
+
+, the first two terms become 
+
+aTC (PN ΦL 
+
+> 0
+
+, P N ΦR 
+
+> 0
+
+) − aTC (PN ΦL 
+
+> 0
+
+, ΦR 
+
+> 0
+
+) = −aTC (PN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+).
+
+The right argument now contains the tail component. It remains to rewrite the projected left component in terms of the left tail. We therefore write PN ΦL 
+
+> 0
+
+= Φ L 
+
+> 0
+
+− QN ΦL 
+
+> 0
+
+and apply the left weak identity to the exact left state: 
+
+− aTC (PN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+)= aTC (QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+) − aTC (Φ L 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+) (PN ΦL 
+
+> 0
+
+= Φ L 
+
+> 0
+
+− QN ΦL 
+
+> 0
+
+)= aTC (QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+) − E0⟨ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+⟩ (left weak identity (E5)) = aTC (QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+) − E0⟨QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+⟩ (⟨PN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+⟩ = 0) .
+
+By Eq. (E4) (now with f = QN ΦL 
+
+> 0
+
+and v = QN ΦR 
+
+> 0
+
+), the last expression is T (0)  
+
+> N
+
++ T (W ) 
+
+> N
+
+, with 
+
+T (0)  
+
+> N
+
+:= aSHO (QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+) − E0⟨QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+⟩,T (W ) 
+
+> N
+
+:= ⟨QN ΦL 
+
+> 0
+
+, ˆW Q N ΦR 
+
+> 0
+
+⟩.
+
+Having rewritten the first two terms in Eq. (E10), we now turn to the remaining Schur term 
+
+⟨PN ΦL 
+
+> 0
+
+, H (N )TC sN ⟩ = −⟨ PN ΦL 
+
+> 0
+
+, H (N )TC AN Π⊥ 
+
+> N
+
+H(N )TC PN ΦR 
+
+> 0
+
+⟩.
+
+We use a similar strategy as above. We first rewrite the contribution involving the projected right state, H(N )TC PN ΦR 
+
+> 0
+
+, in terms of the right tail QN ΦR 
+
+> 0
+
+, and then rewrite the projected left state PN ΦL
+
+> 0
+
+in terms of the left tail QN ΦL 
+
+> 0
+
+.Let f ∈ Ran PN . Since the SHO operator preserves the retained space, ˆHSHO f ∈ Ran PN . Hence, for any v in the form space, Hermitian symmetry of aSHO and Eq. (E2) give 
+
+aSHO (f, Q N v) = aSHO (QN v, f ) = ⟨QN v, ˆHSHO f ⟩ = 0 .
+
+52 Using this with v = Φ R 
+
+> 0
+
+, together with ⟨f, Q N ΦR 
+
+> 0
+
+⟩ = 0, we obtain 
+
+⟨f, H (N )TC PN ΦR 
+
+> 0
+
+⟩ = aTC (f, P N ΦR 
+
+> 0
+
+) (finite-basis form identity) = aTC (f, ΦR 
+
+> 0
+
+) − aTC (f, Q N ΦR 
+
+> 0
+
+)  ΦR 
+
+> 0
+
+= PN ΦR 
+
+> 0
+
++ QN ΦR
+
+> 0
+
+
+
+= E0⟨f, P N ΦR 
+
+> 0
+
+⟩ − ⟨ f, ˆW Q N ΦR 
+
+> 0
+
+⟩ (right weak identity (E5); aSHO (f, Q N ΦR 
+
+> 0
+
+) = 0) .
+
+Since this holds for every f ∈ Ran PN , and both sides belong to the retained space, 
+
+H(N )TC PN ΦR 
+
+> 0
+
+= E0PN ΦR 
+
+> 0
+
+− PN ˆW Q N ΦR 
+
+> 0
+
+.
+
+Substituting this into sN = −AN Π⊥ 
+
+> N
+
+H(N )TC PN ΦR 
+
+> 0
+
+and using Π ⊥ 
+
+> N
+
+PN ΦR 
+
+> 0
+
+= 0 gives 
+
+sN = AN Π⊥ 
+
+> N
+
+PN ˆW Q N ΦR 
+
+> 0
+
+, (E11) so sN is generated by the right tail QN ΦR 
+
+> 0
+
+.We now turn to the projected left state. First, ⟨ΦL 
+
+> 0
+
+, s N ⟩ = ⟨PN ΦL 
+
+> 0
+
+, s N ⟩ + ⟨QN ΦL 
+
+> 0
+
+, s N ⟩ = 0, where the first term vanishes by construction of sN and the second by PN –QN orthogonality. Second, 
+
+aSHO (QN ΦL 
+
+> 0
+
+, s N ) = ⟨QN ΦL 
+
+> 0
+
+, ˆHSHO sN ⟩ = 0, since sN ∈ Ran PN and the SHO operator preserves the retained space. The Schur term therefore reduces in weak form to 
+
+⟨PN ΦL 
+
+> 0
+
+, H (N )TC sN ⟩ = aTC (PN ΦL 
+
+> 0
+
+, s N ) (finite-basis form identity) = aTC (Φ L 
+
+> 0
+
+, s N ) − aTC (QN ΦL 
+
+> 0
+
+, s N )  PN ΦL 
+
+> 0
+
+= Φ L 
+
+> 0
+
+− QN ΦL
+
+> 0
+
+
+
+= −aTC (QN ΦL 
+
+> 0
+
+, s N ) (left weak identity (E5); ⟨ΦL 
+
+> 0
+
+, s N ⟩ = 0) = −⟨ QN ΦL 
+
+> 0
+
+, ˆW s N ⟩  aSHO (QN ΦL 
+
+> 0
+
+, s N ) = 0 .
+
+Combining with Eq. (E11), the Schur contribution is −RN ,
+
+RN := ⟨QN ΦL 
+
+> 0
+
+, ˆW s N ⟩ = ⟨QN ΦL 
+
+> 0
+
+, ˆW A N Π⊥ 
+
+> N
+
+PN ˆW Q N ΦR 
+
+> 0
+
+⟩. (E12) Combining these expressions with Eq. (E10) gives the exact energy-error identity in terms of the left and right tails: (E(N )0 − E0)σN = T (0)  
+
+> N
+
++ T (W ) 
+
+> N
+
+− RN ,T (0)  
+
+> N
+
+= aSHO (QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+) − E0⟨QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+⟩,T (W ) 
+
+> N
+
+= ⟨QN ΦL 
+
+> 0
+
+, ˆW Q N ΦR 
+
+> 0
+
+⟩,RN = ⟨QN ΦL 
+
+> 0
+
+, ˆW A N Π⊥ 
+
+> N
+
+PN ˆW Q N ΦR 
+
+> 0
+
+⟩.
+
+(E13) 53 Before proceeding to the estimates, we emphasize the distinction between fixed-N existence and uniform-in-N stability. The derivation above requires only that AN exist at each fixed N , whereas the estimates below require a uniform bound on its action as N grows. Since RN contains ˆW s N
+
+and ˆW contains a first derivative, Eq. (E7) requires control of sN in the energy norm. We therefore make the following assumption. 
+
+Assumption E.1 (Ritz sequence and uniform reduced-inverse stability) There exists N0 such that, for all N ≥ N0, the Ritz value E(N )0 selected in Sec. III is real and simple, and the sequence satisfies 
+
+E(N )0 −→ E0 (N → ∞ ).
+
+For all N ≥ N0, the reduced inverse AN defined above exists, and there is a constant CA > 0, independent of N , such that 
+
+∥AN Π⊥ 
+
+> N
+
+PN z∥en ≤ CA∥z∥, z ∈ L2even (R). (E14) 
+
+Remark E.1 Assumption E.1 plays a role analogous to the reduced-inverse control established by Hill in his Hermitian Rayleigh–Ritz analysis [47, Sec. III B and App. B]. There, the bound follows from the variational and positivity structure; for the non-Hermitian TC projection, we retain the corresponding stability requirement as an explicit assumption. Having established the exact error identity (E13) and stated the additional assumption needed for the Schur term, we now treat the three contributions separately. For T (0)  
+
+> N
+
+, we first expand both tails in the SHO basis {wn} and set 
+
+cLn := ⟨wn, ΦL 
+
+> 0
+
+⟩, cRn := ⟨wn, ΦR 
+
+> 0
+
+⟩.
+
+With this notation, 
+
+T (0)  
+
+> N
+
+= aSHO (QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+) − E0⟨QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+⟩ (definition of T (0)  
+
+> N
+
+)= X
+
+> n≥N
+
+(εn − E0)cLn cRn (Eq. (E8)) . (E15) For T (W ) 
+
+> N
+
+, using Eq. (E7), we obtain 
+
+|T (W ) 
+
+> N
+
+| = ⟨QN ΦL 
+
+> 0
+
+, ˆW Q N ΦR 
+
+> 0
+
+⟩ (definition of T (W ) 
+
+> N
+
+)
+
+≤ CW ∥QN ΦL 
+
+> 0
+
+∥ ∥ QN ΦR 
+
+> 0
+
+∥en (Eq. (E7)) = CW
+
+X
+
+> n≥N
+
+|cLn |2
+
+!1/2 X
+
+> n≥N
+
+(εn + 1) |cRn |2
+
+!1/2
+
+(Eq. (E8)) .
+
+(E16) 54 For the Schur term RN , similarly we have: 
+
+|RN | = ⟨QN ΦL 
+
+> 0
+
+, ˆW A N Π⊥ 
+
+> N
+
+PN ˆW Q N ΦR 
+
+> 0
+
+⟩ (Eq. (E12)) 
+
+≤ CW ∥QN ΦL 
+
+> 0
+
+∥ ∥ AN Π⊥ 
+
+> N
+
+PN ˆW Q N ΦR 
+
+> 0
+
+∥en (Eq. (E7)) 
+
+≤ CACW ∥QN ΦL 
+
+> 0
+
+∥ ∥ ˆW Q N ΦR 
+
+> 0
+
+∥ (Eq. (E14)) 
+
+≤ CAC2 
+
+> W
+
+∥QN ΦL 
+
+> 0
+
+∥ ∥ QN ΦR 
+
+> 0
+
+∥en (Eq. (E7)) = CAC2
+
+> W
+
+X
+
+> n≥N
+
+|cLn |2
+
+!1/2 X
+
+> n≥N
+
+(εn + 1) |cRn |2
+
+!1/2
+
+(Eq. (E8)) .
+
+(E17) Finally, the normalization ⟨ΦL 
+
+> 0
+
+, ΦR 
+
+> 0
+
+⟩ = 1 and PN –QN orthogonality give 
+
+σN = ⟨PN ΦL 
+
+> 0
+
+, P N ΦR 
+
+> 0
+
+⟩ = 1 − ⟨ QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+⟩ = 1 − X
+
+> n≥N
+
+cLn cRn . (E18) The tail sum in Eq. (E18) vanishes as N → ∞ by completeness, so σN → 1 and hence σN̸ = 0 for sufficiently large N .At this point, the three terms in Eq. (E13), together with σN , have been reduced to quantities determined by the SHO coefficient tails of the exact left and right states. The next subsection derives the large-n asymptotics of these coefficients from the local behavior of the exact states at the origin. Section E 4 then compares the resulting asymptotic orders. 
+
+3. Local cusp structure and coefficient tails 
+
+To determine the large-n behavior of the coefficients cLn and cRn , we analyze the local structure of the exact left and right states near the contact point x = 0. Since all functions considered here are even, we first expand them on x > 0 and then extend the expansions evenly across the origin. Thus odd powers in the one-sided expansion appear as |x|2k+1 , whereas even powers remain x2k.The exact physical ground state of Sec. E 1 has Ψ0(x)Ψ0(0) = 1 + g|x| − E0x2 − gE 0
+
+3 |x|3 + O(x4).
+
+For the two correlators, taken in the shifted form u(0) = 0 of Sec. E 1, 
+
+u1(x) = g|x| − gμx 2 + gμ 2
+
+2 |x|3 + O(x4),u2(x) = g|x| − gμ 
+
+√π x2 + O(x4).
+
+55 Note that the second expansion (erfc correlator) contains no odd powers beyond the linear term: 
+
+u2 − g|x| is an even power series in x near the origin. Substituting these expansions into the exact right state Φ R 
+
+> 0
+
+= e−uΨ0 gives ΦR
+
+> 0,exp
+
+(x)Ψ0(0) = 1 + 
+
+
+
+gμ − E0 − g2
+
+2
+
+
+
+x2 + βexp (μ)|x|3 + O(x4),
+
+ΦR
+
+> 0,erfc
+
+(x)Ψ0(0) = 1 + 
+
+ gμ 
+
+√π − E0 − g2
+
+2
+
+
+
+x2 + βerfc |x|3 + O(x4),
+
+where the subscript identifies the correlator and 
+
+βexp (μ) = g(2 E0 + g2)3 − gμ 2
+
+2 , βerfc = g(2 E0 + g2)3 . (E19) For both correlators, applying e−u to Ψ 0 cancels the linear cusp. Since the quadratic term is smooth across x = 0, the first potentially nonanalytic term is Ψ 0(0) β|x|3, with β given by Eq. (E19). Hence (Φ R 
+
+> 0
+
+)′(0 +) = 0 , (Φ R 
+
+> 0
+
+)′′′ (0 +) = 6 βΨ0(0) .
+
+For the left state, applying eu to Ψ 0 instead reinforces the linear cusp: ΦL 
+
+> 0
+
+(x)Ψ0(0) = 1 + 2 g|x| + O(x2).
+
+Thus the TC transformation produces asymmetric contact regularity between the exact left and right states. Nevertheless, both satisfy the corresponding weak identities in Eq. (E5) with the same eigenvalue E0; this asymmetry will reappear in their coefficient decay below. We next translate the local behavior into the large-n asymptotics of the SHO coefficients. We first keep the state G general, so that the bare and TC cases can be analyzed under the same framework. Since our analysis is restricted to the even sector (Sec. E 1), both the states and the basis functions considered here are even. Hence each coefficient can be written as twice its integral over the positive half-line. For an even G, we therefore write 
+
+Cn(G) = 2 
+
+Z ∞
+
+> 0
+
+wn(x)G(x) dx, (E20) so that cL,R n = Cn(Φ L,R  
+
+> 0
+
+). This half-line representation allows us to relate the coefficients to the local behavior of G at the contact point. To make this connection explicit, it is convenient to introduce the shifted half-line operator and use the differential equation satisfied by the SHO basis functions: 
+
+L+ := ˆHSHO − E0 = −12 ∂2 
+
+> x
+
++ 12 x2 − E0, x > 0, (E21) 56 with λn := εn − E0. Since L+wn = λnwn, we can rewrite the coefficient equation as: 
+
+λnCn(G) = 2 
+
+Z ∞
+
+> 0
+
+λnwn(x)G(x) dx = 2 
+
+Z ∞
+
+> 0
+
+(L+wn)( x)G(x) dx. (E22) Integration by parts then gives 
+
+λnCn(G) = Cn(L+G) + [ wnG′ − w′
+
+> n
+
+G]∞ 
+
+> 0
+
+. (E23) For the states considered here, the boundary contribution at infinity vanishes. Since wn is even, 
+
+w′
+
+> n
+
+(0) = 0, and hence 
+
+λnCn(G) = Cn(L+G) − wn(0) G′(0 +). (E24) Now, for the bare ground state Ψ 0, Eq. (E24) closes immediately, and we obtain an exact coefficient formula for Ψ 0:
+
+Cn(Ψ 0) = Cn(L+Ψ0) − wn(0)Ψ ′
+
+> 0
+
+(0 +)
+
+λn
+
+= −gΨ0(0) wn(0) 
+
+λn
+
+using L+Ψ0=0 on x> 0,
+
+> Ψ′
+> 0(0 +)= gΨ0(0)
+
+= −(−1) ngΨ0(0) 
+
+π1/4
+
+p(2 n)! 2nn!  2n + 12 − E0
+
+. (E25) For the TC states (Φ R 
+
+> 0
+
+, ΦL 
+
+> 0
+
+), by contrast, L+G does not vanish in general, so Eq. (E24) does not close immediately. For the two states considered here, their half-line smoothness and decay allow Eq. (E24) to be applied successively to the finite orders needed below. After m applications, 
+
+Cn(G) = −wn(0) 
+
+> m−1
+
+X
+
+> j=0
+
+(Lj
+
+> +
+
+G)′(0 +)
+
+λj+1 
+
+> n
+
++ Rn,m (G), Rn,m (G) := Cn(Lm 
+
+> +
+
+G)
+
+λmn
+
+. (E26) This finite iterated identity is the even-sector counterpart of the repeated-integration-by-parts expansion underlying Hill’s Theorem 1 [47]. For the right TC state, the first boundary contribution in Eq. (E26) vanishes because (Φ R 
+
+> 0
+
+)′(0 +) = 0 .
+
+The next contribution is determined by (L+ΦR 
+
+> 0
+
+)′(0 +) = −12 (Φ R 
+
+> 0
+
+)′′′ (0 +) − E0(Φ R 
+
+> 0
+
+)′(0 +)= −3βΨ0(0) , (E27) 57 where we used (Φ R 
+
+> 0
+
+)′′′ (0 +) = 6 βΨ0(0). Thus the j = 1 boundary term for the right state is proportional to β and vanishes when β = 0. For the left TC state, by contrast we have: (Φ L 
+
+> 0
+
+)′(0 +) = 2 gΨ0(0) ,
+
+so the j = 0 boundary term in Eq. (E26) is already nonzero. Thus, after retaining the first potentially nonzero boundary contribution, the three cases (including the bare state Ψ 0) have the forms 
+
+Cn(Ψ 0) = −gΨ0(0) wn(0) 
+
+λn
+
+,Cn(Φ L 
+
+> 0
+
+) = −2gΨ0(0) wn(0) 
+
+λn
+
++ RLn ,Cn(Φ R 
+
+> 0
+
+) = 3βΨ0(0) wn(0) 
+
+λ2
+
+> n
+
++ RRn ,
+
+(E28) Here the bare expression is exact, while the TC remainders are 
+
+RLn := Cn(L+ΦL 
+
+> 0
+
+)
+
+λn
+
+, RRn := Cn(L2+ΦR 
+
+> 0
+
+)
+
+λ2
+
+> n
+
+. (E29) Applying Eq. (E24) once more to each remainder gives 
+
+RLn = −wn(0)( L+ΦL 
+
+> 0
+
+)′(0 +)
+
+λ2
+
+> n
+
++ Cn(L2+ΦL 
+
+> 0
+
+)
+
+λ2
+
+> n
+
+, (E30) 
+
+RRn = −wn(0)( L2+ΦR 
+
+> 0
+
+)′(0 +)
+
+λ3
+
+> n
+
++ Cn(L3+ΦR 
+
+> 0
+
+)
+
+λ3
+
+> n
+
+. (E31) To estimate the remainder , we first use the elementary bound. For each fixed h ∈ L2(0 , ∞), Cauchy–Schwarz gives 
+
+|Cn(h)| ≤ √2 ∥h∥L2(0 ,∞) = O(1) , (E32) uniformly in n.Moreover, 
+
+wn(0) = (−1) n
+
+π1/4
+
+p(2 n)! 2nn! = (−1) n
+
+√π n−1/41+ O(n−1), λn = 2 n+ 12 −E0 = 2 n1+ O(n−1). (E33) It follows from Eqs. (E30)–(E31) that 
+
+RLn = O(n−2), RRn = O(n−3).
+
+58 Substituting these estimates into Eq. (E28) gives 
+
+Cn(Ψ 0) = −gΨ0(0) 2√π (−1) nn−5/4 + O(n−9/4),Cn(Φ L 
+
+> 0
+
+) = −gΨ0(0) 
+
+√π (−1) nn−5/4 + O(n−2),Cn(Φ R 
+
+> 0
+
+) = 3βΨ0(0) 4√π (−1) nn−9/4 + O(n−3).
+
+(E34) Note that for β̸ = 0 the last expression has the displayed n−9/4 leading term. If β = 0, this contribution vanishes and the next nonzero boundary term must be further examined. These coefficient asymptotics imply the following tail estimates lemma: 
+
+Lemma E.1 (Tail estimates) The coefficient asymptotics in Eq. (E34) imply 
+
+∥QN ΦL 
+
+> 0
+
+∥ = O(N −3/4), ∥QN ΦR 
+
+> 0
+
+∥ = O(N −7/4),
+
+∥QN ΦR 
+
+> 0
+
+∥en = O(N −5/4), σN = 1 + O(N −5/2).
+
+(E35) 
+
+Proof. By the coefficient identities in Eq. (E8), 
+
+∥QN G∥2 = X
+
+> n≥N
+
+|Cn(G)|2, ∥QN G∥2en = X
+
+> n≥N
+
+(εn + 1) |Cn(G)|2. (E36) Using X
+
+> n≥N
+
+n−p = O(N 1−p), p > 1,
+
+together with 
+
+|Cn(Φ L 
+
+> 0
+
+)| = O(n−5/4), |Cn(Φ R 
+
+> 0
+
+)| = O(n−9/4),
+
+we obtain 
+
+∥QN ΦL 
+
+> 0
+
+∥2 = O X
+
+> n≥N
+
+n−5/2
+
+!
+
+= O(N −3/2), (E37) 
+
+∥QN ΦR 
+
+> 0
+
+∥2 = O X
+
+> n≥N
+
+n−9/2
+
+!
+
+= O(N −7/2). (E38) Since εn + 1 = O(n), 
+
+∥QN ΦR 
+
+> 0
+
+∥2en = O X
+
+> n≥N
+
+n n −9/2
+
+!
+
+= O X
+
+> n≥N
+
+n−7/2
+
+!
+
+= O(N −5/2). (E39) Taking square roots yields the first three estimates in Eq. (E35). 59 Finally, using 1 − σN = ⟨QN ΦL 
+
+> 0
+
+, Q N ΦR 
+
+> 0
+
+⟩,
+
+Cauchy–Schwarz gives 
+
+|1 − σN | ≤ ∥ QN ΦL 
+
+> 0
+
+∥ ∥ QN ΦR 
+
+> 0
+
+∥ = O(N −3/4)O(N −7/4) = O(N −5/2), (E40) and therefore 
+
+σN = 1 + O(N −5/2).
+
+4. Energy convergence and correlator dependence 
+
+Theorem E.1 (Rate and prefactor) Under Assumption E.1, either correlator at fixed μ > 0satisfies 
+
+E(N )0 − E0 = −gΨ0(0) 2βπ N −3/2 + O(N −2). (E41) 
+
+Proof. T (0)  
+
+> N
+
+= P 
+
+> n≥N
+
+λncLn cRn . Inserting the coefficient asymptotics (E34) and using P 
+
+> n≥N
+
+n−5/2 = 
+
+> 23
+
+N −3/2 + O(N −5/2) gives the first line below; evaluating the asymmetric bounds (E16) and (E17) with Lemma E.1 gives the other two: 
+
+T (0)  
+
+> N
+
+= −gΨ0(0) 2βπ N −3/2 + O(N −9/4),
+
+|T (W ) 
+
+> N
+
+| ≤ CW ∥QN ΦL 
+
+> 0
+
+∥ ∥ QN ΦR 
+
+> 0
+
+∥en = O(N −3/4) O(N −5/4) = O(N −2),
+
+|RN | ≤ CAC2 
+
+> W
+
+∥QN ΦL 
+
+> 0
+
+∥ ∥ QN ΦR 
+
+> 0
+
+∥en = O(N −3/4) O(N −5/4) = O(N −2).
+
+Finally, σ−1 
+
+> N
+
+= 1 + O(N −5/2) by Lemma E.1, so Eq. (E13) gives the stated result. 
+
+Remark E.2 (Bare convergence) For the bare self-adjoint Hamiltonian ˆH = ˆHSHO + gδ (x), Eq. (E34) gives |Cn(Ψ 0)| = O(n−5/4), so that 
+
+∥QN Ψ0∥2en = X
+
+> n≥N
+
+(εn + 1) |Cn(Ψ 0)|2 = O(N −1/2).
+
+The standard Rayleigh–Ritz estimate with the trial function PN Ψ0 then gives E(N )0,bare − E0 =
+
+O(N −1/2), in agreement with Grining et al. [66]. 60 The correlator dependence enters through the cubic coefficients in Eq. (E19). The rescaled errors in Sec. III have limits Aj (μ) := lim N →∞ Aj (μ; N ) = |g|Ψ0(0) 2|βj |/π , where j ∈ { exp , erfc }. Their ratio is 
+
+Aexp (μ)
+
+Aerfc (μ) = 1 − 3μ2
+
+2(2 E0 + g2) . (E42) This gives the correlator dependence of Fig. 3 under the same assumption. 
+
+a. Possible cancellation of the leading term. For TC-exp, the correlator parameter can be chosen to cancel the leading N −3/2 energy-error term. This occurs at the unique positive parameter 
+
+μ2 
+
+> ∗
+
+= 23 (2 E0 + g2) (E43) for which βexp = 0. Positivity follows from 2E0 + g2 = ∥Ψ′ 
+
+> 0
+
+− g sgn( x)Ψ 0∥2 + ∥xΨ0∥2 > 0.
+
+TC-erfc has no corresponding cancellation because βerfc is nonzero and independent of μ.At μ∗, the |x|3 term vanishes and the next potentially nonanalytic term is Ψ 0(0) β5|x|5, where 
+
+β5 = g
+
+270 
+
+ 124 E20 + 160 E0g2 + 49 g4 − 9 . (E44) With β = 0, the first two boundary data in Eq. (E26) vanish, and carrying the same calculation one order further gives (L2+ΦR 
+
+> 0
+
+)′(0 +) = 30 β5Ψ0(0) .
+
+Hence 
+
+cRn = −30 β5Ψ0(0) wn(0) 
+
+λ3
+
+> n
+
++ an
+
+λ3
+
+> n
+
+, an := Cn(L3+ΦR 
+
+> 0
+
+). (E45) Since L3+ΦR 
+
+> 0
+
+∈ L2(0 , ∞), Parseval implies ( an) ∈ ℓ2. Together with the asymptotics in Eq. (E33), Eq. (E45) yields 
+
+∥QN ΦR 
+
+> 0
+
+∥2en = O X
+
+> n≥N
+
+n−11 /2
+
+!
+
++ O N −5 X
+
+> n≥N
+
+|an|2
+
+!
+
+= O(N −9/2),
+
+and therefore 
+
+∥QN ΦR 
+
+> 0
+
+∥en = O(N −9/4). (E46) Consequently, Eqs. (E16) and (E17) improve to 
+
+T (W ) 
+
+> N
+
+, R N = O(N −3) = o(N −5/2).
+
+61 The same square-summability bounds the an contribution to the diagonal tail, 
+
+X
+
+> n≥N
+
+|cLn an|
+
+λ2
+
+> n
+
+≤ C′ X
+
+> n≥N
+
+|an|2
+
+!1/2 X
+
+> n≥N
+
+n−13 /2
+
+!1/2
+
+= o(N −11 /4),
+
+so that this contribution is subleading as well. The explicit boundary term in Eq. (E45) therefore gives, by the same calculation as in Theorem E.1, 
+
+E(N )0 − E0 = 3gΨ0(0) 2β5
+
+π N −5/2 + o(N −5/2), μ = μ∗. (E47) For β5̸ = 0, this gives N −5/2 convergence. If β5 = 0, this term also cancels and the error is 
+
+o(N −5/2). The cancellation is specific to the target state and uses its exact E0; μ∗ is held fixed as N changes. At the level of local coefficients, this is a multiplicative analogue of Hill’s additive comparison functions [47, Eqs. (4.21)–(4.24)]. Figure 14 illustrates the generic and tuned behavior. 100 200 400 800 1500              
+
+> Number of even SHO functions N
+> 10 −9
+> 10 −8
+> 10 −7
+> 10 −6
+> 10 −5
+> 10 −4
+> jE (N)0 ¡ E0j
+> N¡3=2
+> N¡5=2
+> TC-exp, ¹= 1 TC-erfc, ¹= 1 TC-exp, ¹=¹¤
+
+Figure 14. Basis convergence at g = 1 for TC-exp with μ = 1 and fixed μ∗ ≃ 1.362715, and TC-erfc with 
+
+μ = 1. Here N counts retained even SHO functions; dashed lines indicate N −3/2 and N −5/2 slopes. 
+
+Appendix F: Re-analysis of published TC and xTC Hamiltonians 
+
+We test the sensitivity of solver-returned condition numbers to eigenbasis choice on an independent set of operators. We re-analyze the published full-TC and xTC qubit Hamiltonians of Uvarov and 62 Izmaylov [42]. The data comprise Li, Be, B, C, and N, with ten variational-Monte-Carlo correlator realizations for each atom and each of the full-TC and xTC constructions. Their Hamiltonians use the same Jordan–Wigner qubit representation as the molecular calculations in Sec. IV and are analyzed on the full qubit space. We use the untruncated operators and compare them with the corresponding reported exact-operator condition numbers. We evaluate these operators using the conditioning conventions of Sec. II C. Because their optimized correlators differ from the fixed forms used here, this comparison concerns the eigenbasis convention rather than physical conditioning magnitudes. Except for most full-TC Li realizations and one full-TC N realization, κ(Vos ) remains close to unity; all xTC values are at most 1 .21. The most extreme full-TC Li realization has the maximum published raw value over the full data set, κS = 33 .8, and retains a large convention-defined upper bound after eigenspace orthonormalization, with 
+
+κ(Vos ) = 19 .45 (Fig. 15 and Table I). Li Be B C N
+
+> atom
+> 1510 15 20 25 30 35
+> condition number
+
+(a) full TC qubit Hamiltonian     
+
+> Li Be BCN
+> atom
+
+(b) xTC qubit Hamiltonian      
+
+> raw (VR)(Uvarov et al.)
+> raw (VR)(re-computed)
+> (Vos )
+> ‖PGS ‖2
+> Hermitian limit, = 1
+
+Figure 15. Re-analysis of the Li–N transcorrelated qubit Hamiltonians of Ref. [42] (full TC, left; xTC, right). Large markers and error bars show the mean and full [min , max] range over ten realizations; faint symbols show individual values. Gray and blue circles denote the published and re-computed raw condition numbers, while orange triangles and red stars denote κ(Vos ) and ∥PGS ∥2; the basis-fixed quantities lie closer to the Hermitian limit except for most full-TC Li realizations and one full-TC N realization. 
+
+63 Table I. Per-atom means and full [min , max] ranges over ten realizations for the published operators of Ref. [42]. Definitions and eigenspace conventions follow Sec. II C; κS and κ(VR) denote the pub-lished and re-computed raw values, respectively. The final three columns are basis-fixed quantities, with max i ∥Pi∥2 ≤ κ∗ ≤ κ(Vos ). Atom κS [42] κ(VR) κ(Vos ) max i ∥Pi∥2 ∥PGS ∥2
+
+full TC Li 11 .2 [5 .3, 33 .8] 9.9 [3 .8, 25 .8] 3.96 [1 .16 , 19 .45] 1.172 [1 .011 , 1.605] 1.0006 [1 .0006 , 1.0006] Be 6.8 [4 .0, 12 .0] 12 .7 [6 .7, 25 .1] 1.09 [1 .09 , 1.09] 1.003 [1 .003 , 1.004] 1.0018 [1 .0016 , 1.0020] B 12 .7 [5 .0, 19 .5] 13 .5 [8 .0, 21 .8] 1.09 [1 .08 , 1.09] 1.003 [1 .003 , 1.003] 1.0014 [1 .0011 , 1.0014] C 9.6 [5 .2, 21 .5] 8.2 [5 .1, 16 .7] 1.08 [1 .07 , 1.08] 1.003 [1 .003 , 1.003] 1.0007 [1 .0006 , 1.0007] N 8.0 [4 .5, 15 .8] 9.2 [7 .2, 12 .1] 1.32 [1 .09 , 3.37] 1.004 [1 .003 , 1.004] 1.0000 [1 .0000 , 1.0000] xTC Li 4.9 [2 .8, 8.0] 7.9 [4 .8, 13 .4] 1.20 [1 .20 , 1.21] 1.017 [1 .016 , 1.018] 1.0006 [1 .0006 , 1.0006] Be 8.5 [5 .3, 19 .1] 12 .6 [7 .1, 18 .9] 1.09 [1 .09 , 1.09] 1.003 [1 .003 , 1.004] 1.0018 [1 .0016 , 1.0020] B 3.5 [2 .1, 5.8] 4.6 [2 .4, 8.0] 1.09 [1 .08 , 1.09] 1.003 [1 .003 , 1.003] 1.0014 [1 .0011 , 1.0014] C 2.6 [1 .9, 3.8] 4.1 [1 .3, 8.8] 1.08 [1 .07 , 1.08] 1.003 [1 .003 , 1.003] 1.0007 [1 .0006 , 1.0007] N 5.1 [3 .0, 8.2] 6.7 [4 .2, 9.1] 1.09 [1 .09 , 1.09] 1.004 [1 .003 , 1.004] 1.0000 [1 .0000 , 1.0000] [1] T. Kato, Communications on Pure and Applied Mathematics 10 , 151 (1957). [2] E. A. Hylleraas, Zeitschrift f¨ ur Physik 54 , 347 (1929). [3] W. Kutzelnigg, Theoretica Chimica Acta 68 , 445 (1985). [4] W. Klopper and W. Kutzelnigg, Chemical Physics Letters 134 , 17 (1987). [5] W. Klopper, F. R. Manby, S. Ten-No, and E. F. Valeev, International Reviews in Physical Chemistry 
+
+25 , 427 (2006). [6] L. Kong, F. A. Bischoff, and E. F. Valeev, Chemical Reviews 112 , 75 (2012). [7] C. H¨ attig, W. Klopper, A. K¨ ohn, and D. P. Tew, Chemical Reviews 112 , 4 (2012). [8] A. Gr¨ uneis, S. Hirata, Y.-y. Ohnishi, and S. Ten-no, The Journal of Chemical Physics 146 , 080901 (2017). 
+
+64 [9] J. O. Hirschfelder, The Journal of Chemical Physics 39 , 3145 (1963). [10] S. F. Boys and N. C. Handy, Proceedings of the Royal Society of London. A. Mathematical and Physical Sciences 309 , 209 (1969). [11] S. F. Boys and N. C. Handy, Proceedings of the Royal Society of London. A. Mathematical and Physical Sciences 310 , 63 (1969). [12] R. Jastrow, Phys. Rev. 98 , 1479 (1955). [13] E. M. C. Christlmaier, T. Schraivogel, P. L´ opez R´ ıos, A. Alavi, and D. Kats, The Journal of Chemical Physics 159 , 014113 (2023). [14] N. J. Higham, Accuracy and Stability of Numerical Algorithms , 2nd ed. (Society for Industrial and Applied Mathematics, 2002). [15] L. N. Trefethen and M. Embree, Spectra and Pseudospectra: The Behavior of Nonnormal Matrices and Operators (Princeton University Press, Princeton, 2005). [16] S. Ten-no, Chemical Physics Letters 330 , 169 (2000). [17] O. Hino, Y. Tanimura, and S. Ten-no, The Journal of Chemical Physics 115 , 7865 (2001). [18] O. Hino, Y. Tanimura, and S. Ten-no, Chemical Physics Letters 353 , 317 (2002). [19] P. Jeszenszki, H. Luo, A. Alavi, and J. Brand, Physical Review A 98 , 053627 (2018). [20] A. J. Cohen, H. Luo, K. Guther, W. Dobrautz, D. P. Tew, and A. Alavi, The Journal of Chemical Physics 151 , 061101 (2019). [21] E. Giner, The Journal of Chemical Physics 154 , 084119 (2021). [22] A. Baiardi and M. Reiher, The Journal of Chemical Physics 153 , 164115 (2020). [23] K. Liao, T. Schraivogel, H. Luo, D. Kats, and A. Alavi, Phys. Rev. Res. 3, 033072 (2021). [24] T. Schraivogel, A. J. Cohen, A. Alavi, and D. Kats, The Journal of Chemical Physics 155 , 191101 (2021). [25] T. Schraivogel, E. M. C. Christlmaier, P. L´ opez R´ ıos, A. Alavi, and D. Kats, The Journal of Chemical Physics 158 , 214106 (2023). [26] J. P. Haupt, S. M. Hosseini, P. L´ opez R´ ıos, W. Dobrautz, A. Cohen, and A. Alavi, The Journal of Chemical Physics 158 , 224105 (2023). [27] K. Liao, Y. Cheng, W. Dobrautz, T. Zhu, and A. Alavi, Interpolative separable density-fitting for transcorrelated hamiltonians (2026), arXiv:2607.17314 [physics.chem-ph]. [28] H. Luo and A. Alavi, Journal of Chemical Theory and Computation 14 , 1403 (2018). [29] W. Dobrautz, H. Luo, and A. Alavi, Physical Review B 99 , 10.1103/physrevb.99.075119 (2019). 
+
+65 [30] K. Guther, R. J. Anderson, N. S. Blunt, N. A. Bogdanov, D. Cleland, N. Dattani, W. Dobrautz, K. Ghanem, P. Jeszenszki, N. Liebermann, G. L. Manni, A. Y. Lozovoi, H. Luo, D. Ma, F. Merz, C. Overy, M. Rampp, P. K. Samanta, L. R. Schwarz, J. J. Shepherd, S. D. Smart, E. Vitale, O. Weser, G. H. Booth, and A. Alavi, The Journal of Chemical Physics 153 , 034107 (2020). [31] K. Guther, A. J. Cohen, H. Luo, and A. Alavi, The Journal of Chemical Physics 155 , 011102 (2021). [32] W. Dobrautz, A. J. Cohen, A. Alavi, and E. Giner, The Journal of Chemical Physics 156 , 234108 (2022). [33] A. Ammar, A. Scemama, P.-F. Loos, and E. Giner, The Journal of Chemical Physics 161 ,10.1063/5.0217650 (2024). [34] K. Liao, H. Zhai, E. M. C. Christlmaier, T. Schraivogel, P. L. R´ ıos, D. Kats, and A. Alavi, Journal of Chemical Theory and Computation 19 , 1734 (2023). [35] M. Motta, T. P. Gujarati, J. E. Rice, A. Kumar, C. Masteran, J. A. Latone, E. Lee, E. F. Valeev, and T. Y. Takeshita, Physical Chemistry Chemical Physics 22 , 24270 (2020). [36] S. McArdle and D. P. Tew, Improving the accuracy of quantum computational chemistry using the transcorrelated method (2020), arXiv:2006.11181 [quant-ph]. [37] A. Kumar, A. Asthana, C. Masteran, E. F. Valeev, Y. Zhang, L. Cincio, S. Tretiak, and P. A. Dub, Journal of Chemical Theory and Computation 18 , 5312 (2022). [38] I. O. Sokolov, W. Dobrautz, H. Luo, A. Alavi, and I. Tavernelli, Phys. Rev. Res. 5, 023174 (2023). [39] W. Dobrautz, I. O. Sokolov, K. Liao, P. L. R´ ıos, M. Rahm, A. Alavi, and I. Tavernelli, Journal of Chemical Theory and Computation 20 , 4146 (2024). [40] E. Magnusson, A. Fitzpatrick, S. Knecht, M. Rahm, and W. Dobrautz, Faraday Discussions 254 ,402 (2024). [41] C. Feniou, C. Cherfan, J. Zylberman, B. Claudon, J.-P. Piquemal, and E. Giner, Real-Space Chem-istry on Quantum Computers: A Fault-Tolerant Algorithm with Adaptive Grids and Transcorrelated Extension (2025), arXiv:2507.20583 [quant-ph]. [42] A. Uvarov and A. F. Izmaylov, Journal of Chemical Theory and Computation 22 , 6431 (2026). [43] T. Yanai and T. Shiozaki, The Journal of Chemical Physics 136 , 084107 (2012). [44] C. Shao, ACM Transactions on Quantum Computing 3, 1 (2022). [45] G. H. Low and Y. Su, SIAM Journal on Computing 55 , 135 (2026). [46] S. Albeverio, F. Gesztesy, R. Høegh-Krohn, and H. Holden, Solvable Models in Quantum Mechanics 
+
+(Springer Berlin Heidelberg, Berlin, Heidelberg, 1988). 
+
+66 [47] R. N. Hill, The Journal of Chemical Physics 83 , 1173 (1985). [48] S. Fournais, M. Hoffmann-Ostenhof, T. Hoffmann-Ostenhof, and T. Østergaard Sørensen, Commu-nications in Mathematical Physics 255 , 183 (2005). [49] H. Yserentant, Regularity and Approximability of Electronic Wave Functions , Lecture Notes in Math-ematics, Vol. 2000 (Springer Berlin Heidelberg, Berlin, Heidelberg, 2010). [50] P.-O. L¨ owdin, in Advances in Quantum Chemistry , Advances in Quantum Chemistry, Vol. 19, edited by P.-O. L¨ owdin (Academic Press, 1988) pp. 87–138. [51] J. Dieudonn´ e, in Proceedings of the International Symposium on Linear Spaces (Jerusalem, 1960) ,edited by Organizing Committee of the International Symposium on Linear Spaces (Jerusalem Aca-demic Press; Pergamon Press, Jerusalem; Oxford, 1961) pp. 115–122. [52] J.-P. Antoine and C. Trapani, Journal of Mathematical Physics 55 , 013503 (2014). [53] F. G. Scholtz, H. B. Geyer, and F. J. W. Hahne, Annals of Physics 213 , 74 (1992). [54] H. Yserentant, ESAIM: Mathematical Modelling and Numerical Analysis 45 , 803 (2011). [55] X.-M. Zhang, Y. Zhang, W. He, and X. Yuan, Phys. Rev. Lett. 135 , 140601 (2025). [56] Y. Zhang, Y. Wu, and X. Yuan, Heisenberg-limited quantum eigenvalue estimation for non-normal matrices (2025), arXiv:2510.19651 [quant-ph]. [57] R. D. Braatz and M. Morari, SIAM Journal on Control and Optimization 32 , 1763 (1994), https://doi.org/10.1137/S0363012992238680. [58] A. van der Sluis, Numerische Mathematik 14 , 14 (1969). [59] G. H. Golub and C. F. Van Loan, Matrix Computations , 4th ed. (Johns Hopkins University Press, Baltimore, 2013). [60] J. Demmel, SIAM Journal on Numerical Analysis 20 , 599 (1983), https://doi.org/10.1137/0720040. [61] Z. Bai, J. Demmel, and A. McKenney, ACM Trans. Math. Softw. 19 , 202 (1993). [62] K. Petermann, IEEE Journal of Quantum Electronics 15 , 566 (1979). [63] M. Avakian, G. Pogosyan, A. Sissakian, and V. Ter-Antonyan, Physics Letters A 124 , 233 (1987). [64] S. H. Patil, European Journal of Physics 27 , 899 (2006). [65] J. Viana-Gomes and N. M. R. Peres, European Journal of Physics 32 , 1377 (2011). [66] T. Grining, M. Tomza, M. Lesiuk, M. Przybytek, M. Musial, P. Massignan, M. Lewenstein, and R. Moszynski, New Journal of Physics 17 , 115001 (2015). [67] A. Baiardi, M. Lesiuk, and M. Reiher, Journal of Chemical Theory and Computation 18 , 4203 (2022). [68] Q. Sun, X. Zhang, S. Banerjee, P. Bao, M. Barbry, N. S. Blunt, N. A. Bogdanov, G. H. Booth, J. Chen, 
+
+67 Z.-H. Cui, J. J. Eriksen, Y. Gao, S. Guo, J. Hermann, M. R. Hermes, K. Koh, P. Koval, S. Lehtola, Z. Li, J. Liu, N. Mardirossian, J. D. McClain, M. Motta, B. Mussard, H. Q. Pham, A. Pulkin, W. Purwanto, P. J. Robinson, E. Ronca, E. R. Sayfutyarova, M. Scheurer, H. F. Schurkus, J. E. T. Smith, C. Sun, S.-N. Sun, S. Upadhyay, L. K. Wagner, X. Wang, A. White, J. D. Whitfield, M. J. Williamson, S. Wouters, J. Yang, J. M. Yu, T. Zhu, T. C. Berkelbach, S. Sharma, A. Y. Sokolov, and G. K.-L. Chan, The Journal of Chemical Physics 153 , 024109 (2020). [69] E. R. Davidson, S. A. Hagstrom, S. J. Chakravorty, V. M. Umar, and C. F. Fischer, Phys. Rev. A 
+
+44 , 7071 (1991). [70] J. Lee, D. W. Berry, C. Gidney, W. J. Huggins, J. R. McClean, N. Wiebe, and R. Babbush, PRX Quantum 2, 030305 (2021). [71] G. H. Low, W. J. Huggins, D. W. Berry, T. Khattar, A. F. White, N. C. Rubin, and R. Babbush, A Denser Planar Surface Code (2026), arXiv:2605.30455 [quant-ph]. [72] E. Koridon, S. Yalouz, B. Senjean, F. Buda, T. E. O’Brien, and L. Visscher, Phys. Rev. Res. 3,033127 (2021). [73] The cc-pVQZ basis used here does not include diffuse augmentation and cannot represent the higher (Rydberg) bound states of the He atom; the bound-state window Re E < −2 Ha of the projected 
+
+N = 2-sector Hamiltonian therefore contains only the ground state. [74] H. L. Cycon, R. G. Froese, W. Kirsch, and B. Simon, Schr¨ odinger Operators: With Application to Quantum Mechanics and Global Geometry , Texts and Monographs in Physics (Springer-Verlag, Berlin, Heidelberg, 1987). [75] In the numerical implementation, the cutoff is applied to eigenvalue clusters rather than to individual eigenvectors. A cluster C is retained when min λ∈C Re λ ≤ Ecut , and the entire right invariant subspace associated with that cluster is included. Within each retained cluster, we first construct an SVD-orthonormal basis QC for the right eigenspace and then form VE<E cut by concatenating these QC
+
+blocks. Thus the notation E < E cut is a shorthand for this cluster-preserving selection rule. [76] J. P. Haupt, E. M. C. Christlmaier, P. L´ opez R´ ıos, N. A. Bogdanov, D. Kats, and A. Alavi, The Journal of Chemical Physics 163 , 10.1063/5.0282673 (2025). [77] K. Simula, M.-A. Filip, and A. Alavi, Phys. Rev. A 112 , 032805 (2025). [78] J. P. Haupt, M.-A. Filip, E. M. C. Christlmaier, Y. Cheng, J. Hauskrecht, and A. Alavi, The Journal of Chemical Physics 164 , 10.1063/5.0315703 (2026). [79] M. Bachmayr, ESAIM: Mathematical Modelling and Numerical Analysis 46 , 1337 (2012). 
+
+68 [80] W. Dobrautz, S. D. Smart, and A. Alavi, The Journal of Chemical Physics 151 , 094104 (2019). [81] W. Dobrautz, O. Weser, N. A. Bogdanov, A. Alavi, and G. Li Manni, Journal of Chemical Theory and Computation 17 , 5684 (2021). [82] W. Dobrautz, V. M. Katukuri, N. A. Bogdanov, D. Kats, G. Li Manni, and A. Alavi, Physical Review B 105 , 10.1103/physrevb.105.195123 (2022). [83] A. Gandon, A. Baiardi, M. Rossmannek, W. Dobrautz, and I. Tavernelli, PRX Quantum 6, 030306 (2025). [84] B. O. Roos, P. R. Taylor, and P. E. Sigbahn, Chemical Physics 48 , 157–173 (1980). [85] G. Li Manni, K. Guther, D. Ma, and W. Dobrautz, Foundation of multi-configurational quantum chemistry (2020). [86] G. Li Manni, I. Fdez. Galv´ an, A. Alavi, F. Aleotti, F. Aquilante, J. Autschbach, D. Avagliano, A. Baiardi, J. J. Bao, S. Battaglia, L. Birnoschi, A. Blanco-Gonz´ alez, S. I. Bokarev, R. Broer, R. Cacciari, P. B. Calio, R. K. Carlson, R. Carvalho Couto, L. Cerd´ an, L. F. Chibotaru, N. F. Chilton, J. R. Church, I. Conti, S. Coriani, J. Cu´ ellar-Zuquin, R. E. Daoud, N. Dattani, P. Decleva, C. de Graaf, M. G. Delcey, L. De Vico, W. Dobrautz, S. S. Dong, R. Feng, N. Ferr´ e, M. Fila-tov(Gulak), L. Gagliardi, M. Garavelli, L. Gonz´ alez, Y. Guan, M. Guo, M. R. Hennefarth, M. R. Hermes, C. E. Hoyer, M. Huix-Rotllant, V. K. Jaiswal, A. Kaiser, D. S. Kaliakin, M. Khamesian, D. S. King, V. Kochetov, M. Kro´ snicki, A. A. Kumaar, E. D. Larsson, S. Lehtola, M.-B. Lepetit, H. Lischka, P. L´ opez R´ ıos, M. Lundberg, D. Ma, S. Mai, P. Marquetand, I. C. D. Merritt, F. Mon-torsi, M. M¨ orchen, A. Nenov, V. H. A. Nguyen, Y. Nishimoto, M. S. Oakley, M. Olivucci, M. Oppel, D. Padula, R. Pandharkar, Q. M. Phung, F. Plasser, G. Raggi, E. Rebolini, M. Reiher, I. Rivalta, D. Roca-Sanju´ an, T. Romig, A. A. Safari, A. S´ anchez-Mansilla, A. M. Sand, I. Schapiro, T. R. Scott, J. Segarra-Mart´ ı, F. Segatta, D.-C. Sergentu, P. Sharma, R. Shepard, Y. Shu, J. K. Staab, T. P. Straatsma, L. K. Sørensen, B. N. C. Tenorio, D. G. Truhlar, L. Ungur, M. Vacher, V. Veryazov, T. A. Voß, O. Weser, D. Wu, X. Yang, D. Yarkony, C. Zhou, J. P. Zobel, and R. Lindh, Journal of Chemical Theory and Computation 19 , 6933–6991 (2023). [87] A. M. Ostrowski, Archive for Rational Mechanics and Analysis 3, 325 (1959). [88] DLMF, NIST Digital Library of Mathematical Functions , https://dlmf.nist.gov/ , Release 1.2.8 of 2026-09-15, f. W. J. Olver, A. B. Olde Daalhuis, D. W. Lozier, B. I. Schneider, R. F. Boisvert, C. W. Clark, B. R. Miller, B. V. Saunders, H. S. Cohl, and M. A. McClain, eds. 
+
+69

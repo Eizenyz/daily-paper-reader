@@ -1,0 +1,5864 @@
+Title: Shadow Quantum Singular Value Transformation with Shallow Quantum Circuits
+
+URL Source: https://arxiv.org/pdf/2609.40167v1
+
+Published Time: Thu, 01 Oct 2026 02:13:30 GMT
+
+Number of Pages: 66
+
+Markdown Content:
+# Shadow Quantum Singular Value Transformation with Shallow Quantum Circuits 
+
+## Nai-Hui Chia ∗ Hyunseong Kim † Chia-Ying Lin ‡
+
+## October 1, 2026 
+
+Abstract 
+
+We introduce shadow quantum singular value transformation (Shadow QSVT): given an initial state |ψ⟩, a Hermitian matrix H, a polynomial f , and a set of observables 
+
+{O1, . . . , O m}, the goal is to estimate ⟨ψ| f (H)†Oj f (H) |ψ⟩ for all j ∈ { 1, . . . , m }.Shadow QSVT provides a systematic route to reduce the quantum resources required by standard QSVT, which constructs a unitary block-encoding of f (H). It uses structure in the input state and observables, together with the fact that many applications require only observable estimates rather than synthesizing the full unitary. We present three algorithms that exploit structure in the initial state and observables to reduce quantum circuit depth. First, we develop a state-aware QSVT algorithm that prepares the target state with low circuit depth when the Krylov subspace associated with H and |ψ⟩ is low-dimensional or admits an accurate low-dimensional approximation. Second, we introduce an observable-aware Shadow QSVT algorithm that combines a new observable-aware Krylov subspace with history states to further reduce circuit depth and gate complexity. Finally, we develop Classical Shadow QSVT , which constructs a classical representation from H, f , and |ψ⟩ without prior knowledge of the observables or explicit preparation of the target state proportional to f (H) |ψ⟩. This representation enables estimation of the target quantities for observables specified after the quantum computation. Together, these three algorithms provide tools for reducing the circuit depth of QSVT-based computations across a range of settings. 
+
+# Contents 
+
+1 Introduction 4
+
+1.1 Main result . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 41.2 Technical Overview . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 71.2.1 State-aware QSVT . . . . . . . . . . . . . . . . . . . . . . . . . . . . 71.2.2 Observable-aware Shadow QSVT . . . . . . . . . . . . . . . . . . . . 8
+
+> ∗
+
+Ken Kennedy Institute and Smalley-Curl Institute, Rice University, USA. Email: nc67@rice.edu. 
+
+> †
+
+Ken Kennedy Institute and Smelly-Curl Institute, Rice University, USA. Email: hk81@rice.edu 
+
+> ‡
+
+Department of Physics and Astronomy, Rice University, USA. Email: cl207@rice.edu. 
+
+1arXiv:2609.40167v1 [quant-ph] 30 Sep 2026 1.2.3 Classical Shadow QSVT . . . . . . . . . . . . . . . . . . . . . . . . . 91.3 Discussion . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10 1.4 Disclosure of AI usage . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11 
+
+2 Preliminary 11 
+
+2.1 Krylov subspace and Lanczos basis . . . . . . . . . . . . . . . . . . . . . . . 11 2.2 Block-encoding . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12 2.3 Quantum Singular Value Transformation . . . . . . . . . . . . . . . . . . . . 13 2.4 Hadamard test . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 
+
+3 State-aware QSVT with shallow quantum circuit 17 
+
+3.1 State-Aware QSVT Algorithm . . . . . . . . . . . . . . . . . . . . . . . . . . 19 3.1.1 Gram matrix estimation complexity . . . . . . . . . . . . . . . . . . . 20 3.1.2 Coefficient vector calculation . . . . . . . . . . . . . . . . . . . . . . . 20 3.1.3 Sample complexity of Hadamard test . . . . . . . . . . . . . . . . . . 23 3.1.4 Proof of Theorem 3.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . 24 
+
+4 Classical-Shadow S-QSVT 25 
+
+4.1 Classical-shadow access model . . . . . . . . . . . . . . . . . . . . . . . . . . 25 4.2 Algorithm procedure . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 4.3 Main observable-estimation guarantee . . . . . . . . . . . . . . . . . . . . . . 29 4.4 Observable Krylov matrix estimation . . . . . . . . . . . . . . . . . . . . . . 30 4.5 Local Pauli specialization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31 
+
+5 Observable-Aware S-QSVT 32 
+
+5.1 The observable-aware Krylov subspace . . . . . . . . . . . . . . . . . . . . . 32 5.2 Observable-aware Krylov reduction . . . . . . . . . . . . . . . . . . . . . . . 33 5.3 History-space representation . . . . . . . . . . . . . . . . . . . . . . . . . . . 34 5.4 Algorithm procedure . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 36 5.5 Correctness analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 38 5.6 End-to-end error analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 41 
+
+Appendix A: Technical Details of State-Aware QSVT 49 
+
+A.1 Algorithm 7 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 49 A.1.1 Correctness of Algorithm 7 . . . . . . . . . . . . . . . . . . . . . . . . 49 A.2 Proof of QR factor-Lanczos equivalent . . . . . . . . . . . . . . . . . . . . . 51 A.3 Minor Claims for Theorem 3.1 . . . . . . . . . . . . . . . . . . . . . . . . . . 52 
+
+Appendix B: Technical Details for Classical-Shadow S-QSVT 53 
+
+B.1 Median-of-means subroutine . . . . . . . . . . . . . . . . . . . . . . . . . . . 53 B.2 Technical lemmas for the cross-moment estimator . . . . . . . . . . . . . . . 54 B.2.1 Controlled Krylov branches . . . . . . . . . . . . . . . . . . . . . . . 54 B.2.2 Weighted classical snapshots . . . . . . . . . . . . . . . . . . . . . . . 54 B.2.3 Variance bound . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 55 B.3 Proof of observable Krylov matrix estimation and its resources . . . . . . . . 55 B.4 Proof of end-to-end observable estimation . . . . . . . . . . . . . . . . . . . 57 2B.5 Local Pauli classical shadows . . . . . . . . . . . . . . . . . . . . . . . . . . . 58 
+
+Appendix C: Technical Details for Observable-Aware S-QSVT 59 Appendix D: Hadamard test with block-encoded operator 61 Appendix E: Cholesky factorization 63 
+
+E.1 Error propagation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 63 31 Introduction 
+
+Quantum algorithms have the potential to outperform their classical counterparts across a broad range of computational tasks. Representative examples include quantum linear systems algorithms and Hamiltonian simulation, while quantum singular value transformation (QSVT) provides a unifying framework for these and many other quantum algorithms [HHL09,CKS17,Amb12,GSLW19,SSO19,LT20,CAS +22,Dal24,MPS +24,LS24,Fey18,BACS07]. Given a block-encoding of a Hermitian matrix H and a suitable polynomial f , QSVT constructs a unitary that block-encodes f (H). By choosing polynomials that approximate the desired spectral transformations, this framework supports tasks such as Hamiltonian simulation, which implements e−iHt , and quantum linear systems solving, which prepares a state proportional to H−1 |ψ⟩ for a given input state |ψ⟩.Although QSVT underlies many provable quantum advantages, translating these provable advantages into end-to-end advantages in practical applications remains challenging under realistic resource constraints. In particular, early fault-tolerant quantum computers (EFTQCs) [KGCJ24] are expected to operate with limited logical qubits, quantum memory, and coherent circuit depth, making many QSVT-based algorithms difficult to implement. Notably, limited coherent circuit depth is a major obstacle to implementing QSVT on EFTQCs. Standard QSVT implementations [GSLW19] require a sequence of block-encoding queries whose length scales linearly with the polynomial degree, deg( f ). Moreover, impossibility results for parallel fast-forwarding in Hamiltonian simulation [CCH +23] point to fundamental barriers to reducing circuit depth under cryptographic assumptions. These limitations highlight the difficulty of translating theoretical quantum speedups into practical quantum advantages and motivate the central question of this work: 
+
+Can we use the QSVT framework to enable end-to-end quantum applications within the resource constraints of EFTQCs? 
+
+To address this question, we begin with a simple observation: many existing algorithmic tools are designed to implement operators such as e−iHt or f (H) for arbitrary input states. Their resource requirements are therefore governed primarily by worst-case parameters as-sociated with H and f . In many applications, however, implementing the full operator is more than is needed: the goal is simply to estimate quantities such as ⟨ψ| f (H)†Of (H) |ψ⟩
+
+for a particular initial state |ψ⟩ and observable O. Using structure in the input state and target observables may therefore yield additional resource savings. Indeed, recent work on state-aware quantum linear systems algorithms [Li26, DLS26] and shadow Hamiltonian simu-lation [SKK +25,CSS +26] has demonstrated the potential of such instance-specific information to improve upon existing quantum algorithms. These observations motivate the central idea of this work: 
+
+Think more about the input state structure, and compute only what is needed from the output. 
+
+## 1.1 Main result 
+
+Guided by the central idea above, we formalize the shadow quantum singular value transfor-mation (Shadow QSVT) framework, with the goal of developing state- and observable-aware algorithms with small quantum circuit depth. 4Definition 1.1 (Shadow QSVT) . Given n qubit quantum system, Hamiltonian H ∈ C2n×2n
+
+,an initial quantum state |ψ⟩ ∈ C2n
+
+, a polynomial f (x) = Pdk=0 akxk ∈ C[x], and a set of observables O = {O1, O 2, . . . , O m}, shadow QSVT asks to estimate 
+
+⟨Oj ⟩ := ⟨ψ| f (H)†Oj f (H) |ψ⟩
+
+for all j ∈ [m].In this work, we show three algorithms. The first algorithm is a state-aware QSVT algorithm based on Krylov subspace. Krylov subspace is defined as 
+
+Kr(H, |ψ⟩) := span {| ψ⟩, H |ψ⟩, . . . H r−1|ψ⟩} .
+
+We call a Krylov subspace H-invariant if Hr |v⟩ ∈ Kr(H, |v⟩).
+
+Theorem 1.2 (State-aware QSVT (informal), Theorem 3.1) . Given a Hermitian matrix H
+
+acting on n qubits, an initial state |ψ⟩, and a polynomial f , suppose that Kr(H, |ψ⟩) is H-invariant and there exists an ( r−1)-degree polynomial p satisfying p(H) |ψ⟩ = f (H) |ψ⟩ and max x∈[−1,1] |p(x)|∥f (H)|ψ⟩∥ 2
+
+is bounded. Then Algorithm 1 prepares a state within ϵ of f (H)|ψ⟩∥f (H)|ψ⟩∥ 2 in the Euclidean norm, using quantum circuits of depth O(rD H ), where DH is the circuit depth for block encoding of H. The number of copies of |ψ⟩ required, and the classical and quantum computational complexities, are bounded by poly( r, deg( f ), 1/ϵ, n ).
+
+Remark 1.3. The algorithm underlying Theorem 1.2 addresses an implementation challenge raised by Adhikari [Adh25]. Adhikari showed how polynomial approximation with respect to the spectral measure induced by (H, |ψ⟩) can exploit input-state structure, but left open how to efficiently obtain the spectral information needed to implement this approach. Our algorithm provides a constructive realization of this state-aware approach when Kr(H, |ψ⟩)
+
+is H-invariant, preparing the normalized target state with quantum circuit depth O(rD H )
+
+without prior knowledge of the spectral measure. 
+
+Although Algorithm 1 reduces quantum circuit depth, it still synthesizes the target state and did not implement the second part of our central idea. In addition, there are two questions remain: 1. Can we further reduce the quantum circuit depth? 2. Although the H-invariance of Kr(H, |ψ⟩) guarantees the existence of a low-degree polynomial p satisfying p(H) |ψ⟩ = f (H) |ψ⟩, the ratio max x∈[−1,1] |p(x)|∥f (H)|ψ⟩∥ 2 can still be large. Can we avoid the resulting QSVT normalization overhead? Our second algorithm, observable-aware shadow QSVT, addresses all these concerns by further using the structure of initial state and observables. Briefly, we uses the following two facts: 1) only directions visible to the given observables in Kr(H, |v⟩) are needed, and 2) observable values can be obtained without synthesizing the target state. 5Theorem 1.4 (Observable-Aware Shadow QSVT (informal)) . Let |ψ⟩, H, f (·), O be a shadow QSVT instance. Suppose that Kr(H, |ψ⟩) is H-invariant and that the dimension of the subspace visible by O in Kr(H, |ψ⟩) is s ≤ r. Then, there exists an algorithm (Algorithm 6) that can approximate all observables estimates in {O} with quantum depth 
+
+O(sD H ). Under standard conditioning and shadow-norm assumptions, the number of copies of |ψ⟩ and the quantum computational complexity are bounded by poly( s, deg( f ), 1/ϵ, log( |O|)) ,while the classical computational complexity is bound by |O| poly ( s, deg( f ), 1/ϵ, log |O|)) . See Theorem 5.10. 
+
+Since s ≤ r, Algorithm 6 in Theorem 1.4 can further reduce the quantum circuit depth when s ≪ r, compared with the bound in Theorem 1.2. Moreover, it eliminates the assumption that the ratio (max x∈[−1,1] |p(x)|/∥f (H) |ψ⟩ ∥ 2) is bounded by a constant, as required in Theorem 1.2. 
+
+Remark 1.5. The algorithm underlying Theorem 1.4 operates on the quotient of the Krylov subspace Kr(H, |v⟩) by its observable-invisible subspace and uses a history-state construction to implement the resulting dynamics. This combination of observable-aware quotient spaces and history-state constructions may also be useful in other algorithms. 
+
+Our final algorithm addresses the setting in which the observables are unknown in advance and their number is large. The algorithm underlying Theorem 1.4 requires prior knowledge of the observables, and its complexity scales linearly with their number, making it less suitable for this setting. 
+
+Theorem 1.6 (Classical Shadow QSVT (informal)) . Let |ψ⟩, H, f (·), O be a shadow QSVT instance, and O is not given in advance. suppose that Kr(H, |ψ⟩) is H-invariant. Then there exists an algorithm that can prepare a set of reusable classical data independently of the observ-ables to be queried in depth O(rD H ) such that one can aprroximate the observable estimates with classical postprocessing. Under standard conditioning, bounded-polynomial, and shadow-norm assumptions, the number of copies of |ψ⟩ and the quantum computational complexity are bounded by poly( r, deg( f ), 1/ϵ, log |O|), while the classical computational complexity is bounded by |O|, poly ( r, deg( f ), 1/ϵ, log |O|) . See Theorem 4.2 
+
+Remark 1.7 (Common properties of the three algorithms) . Our algorithms share the following properties: 
+
+• Reusability across target functions. For a fixed Hamiltonian, initial state, and, where required, observables, the collected quantum data can be reused across different target functions. Provided that the new function satisfies the corresponding algorithm’s assumptions and the stored data meet its accuracy requirements, only the classical postprocessing and, when applicable, the output-state preparation need to be updated. 
+
+• Adaptive selection of the Krylov dimension. Prior knowledge of r is unnecessary, provided that a suitable criterion for detecting sufficient Krylov closure is available. One can start with a small guess and double it until this criterion is met. Since successive trials are separated by measurements and classical processing, their coherent circuit depths do not add. For a depth bound linear in the guessed dimension, doubling incurs 
+
+6at most a factor-of-two overhead in the maximum circuit depth relative to using the smallest sufficient dimension directly. The additional trials contribute to the total sampling and computational costs. 
+
+• Approximate Krylov invariance. Exact H-invariance of Kr(H, |ψ⟩) can be relaxed, provided that the resulting truncation error is controlled. Writing Πr for the orthogonal projector onto this subspace, approximate invariance can be quantified by the leakage 
+
+∥(I − Πr)HΠr∥. The resulting error must be propagated through the target function 
+
+f and included in the overall error budget, together with any amplification caused by normalizing the output state. Thus, the required degree of approximate invariance depends on f and the desired accuracy. 
+
+## 1.2 Technical Overview 
+
+1.2.1 State-aware QSVT 
+
+The algorithm underlying Theorem 1.2 starts from the observation that, if Kr(H, |ψ⟩) is 
+
+H-invariant, the action of any polynomial f (H) on |ψ⟩ can be reproduced by a polynomial of degree at most r − 1, regardless of the degree of f . Indeed, for every k ≥ r, there exist coefficients {λ(k) 
+
+> j
+
+}r−1 
+
+> j=0
+
+such that Hk |ψ⟩ = Pr−1 
+
+> j=0
+
+λ(k) 
+
+> j
+
+Hj |ψ⟩. Consequently, there exists a polynomial p of degree at most r − 1 satisfying This observation suggests a route to preparing the target state using a lower-degree polynomial. The remaining questions are how to efficiently construct a suitable polynomial and implement it using shallow quantum circuits. Our algorithm proceeds in three steps. 1. Use Hadamard tests to estimate the moments of H with respect to |ψ⟩ and construct the moment matrix, Mij := ⟨ψ| HiHj |ψ⟩.2. Use M to compute a low-degree polynomial p that approximates the action of f (H) on 
+
+|ψ⟩.3. Use QSVT to construct a unitary block-encoding of p(H), and use it to prepare a state approximating the normalized target state f (H) |ψ⟩ /∥f (H) |ψ⟩ ∥ 2.Although this algorithm prepares the target state using circuits whose depth scales with r
+
+rather than deg( f ), offering a reduction when r ≪ deg( f ), three limitations remain. First, it is unclear whether the depth dependence can be reduced further, below linear in r. Second, the ratio max x∈[−1,1] |p(x)|∥f (H) |ψ⟩ ∥ 2
+
+may be large, making QSVT-based state preparation infeasible. Third, the state-preparation approach requires coherently preparing the normalized state proportional to p(H) |ψ⟩ for every measurement shot, even when the final task is only to estimate observables. 71.2.2 Observable-aware Shadow QSVT 
+
+To address these three limitations, we exploit the fact that the prescribed observables may be insensitive to part of the state-Krylov space. Let O := {O1, . . . , O M } denote the family of observables whose expectation values we wish to estimate. Define the observable-invisible subspace 
+
+KO := |ϕ⟩ ∈ Kr : OiHℓ |ϕ⟩ = 0 for all i ∈ [M ] and ℓ ≥ 0 . (1) The observable-relevant dynamics are described by the quotient 
+
+QO := Kr/K O , s := dim QO ≤ r. (2) Here r counts all state-Krylov directions, whereas s counts only those directions that can ever affect the prescribed observables. Proposition 5.1 shows that the first s quotient Krylov vectors form a basis, and Corollary 5.2 implies that every polynomial transformation admits an observable-equivalent representative of degree at most s − 1. Thus the relevant dimension and polynomial degree are reduced from r and r − 1 to s and at most s − 1, respectively. However, the quotient space is abstract, so we realize it using the finite observable history map 
+
+F O 
+
+> s
+
+(|ϕ⟩) = 
+
+> M
+
+X
+
+> i=1
+> s−1
+
+X
+
+> ℓ=0
+
+|i⟩ | ℓ⟩ ⊗ OiHℓ |ϕ⟩ . (3) Its kernel is exactly KO , so the history space gives a concrete s-dimensional representaiton of the observable-relevant dynamics. Our algorithm then proceeds in three steps. 1. Estimate the Gram matrices of the observable histories, 
+
+ GO
+
+> s
+
+ 
+
+> a,b
+
+:= F O 
+
+> s
+
+(Ha |ψ⟩), F O 
+
+> s
+
+(Hb |ψ⟩) , (4) 
+
+ bGO
+
+> s
+
+
+
+> a,b
+
+:= F O 
+
+> s
+
+(Ha |ψ⟩), F O 
+
+> s
+
+(Hb+1 |ψ⟩) , (5) for 0 ≤ a, b ≤ s − 1. Writing ΩO := PMi=1 O2 
+
+> i
+
+, these entries reduce to Krylov cross moments of the form ⟨ψ| HpΩO Hq |ψ⟩ , 0 ≤ p, q ≤ 2s − 1.
+
+2. Reconstruct the induced Hamiltonian action on the history space as 
+
+JO 
+
+> s
+
+=  GO
+
+> s
+
+−1 bGO 
+
+> s
+
+. (6) For a polynomial P approximating the target function f , evaluate its action entirely classically through 
+
+λO = P (JO 
+
+> s
+
+)e0, (7) where e0 = (1 , 0, . . . , 0) ⊤ denotes the first standard basis vector. 3. Estimate the reduced observable matrices Bs,i entrywise as 
+
+(Bs,i )a,b = ⟨ψ| HaOiHb |ψ⟩ , a, b = 0 , . . . , s − 1, (8) and output 
+
+yi = ( λO )†Bs,i λO , i ∈ [M ]. (9) 8All quantum measurements in this procedure involve Krylov powers of order O(s). Hence the deepest shadow-measurement circuit contains only O(s) sequential block-encoding layers, with maximum depth 
+
+O(Dψ + sD H + Dsh ) , (10) where Dψ is the state-preparation depth and Dsh is the depth of one shadow-measurement layer. Most importantly, the observable-aware method never coherently prepares the polynomially transformed state. The polynomial action is reconstructed and evaluated in the reduced history space on a classical computer. Thus Observable-Aware S-QSVT simultaneously replaces the state-Krylov dimension r
+
+by the observable-relevant dimension s ≤ r, reduces the observable-equivalent polynomial degree to at most s − 1, and removes the need to repeatedly prepare P (H) |ψ⟩.
+
+1.2.3 Classical Shadow QSVT Reusable Krylov shadows and post-hoc observable queries. The observable-aware reduction requires the observable family O in order to determine the reduced space and its complexity is linear in the number of observables. We therefore also provide a complementary classical-shadow approach in which the quantum data can be collected before the observables are specified and the complexity can be logarithmic in the number of observables. Our algorithm proceeds in three steps. 1. For each upper-triangular Krylov pair (a, b ), Algorithm 3 prepares controlled Krylov branches and collects a reusable classical-shadow dataset Da,b . This quantum data-acquisition stage depends only on H, |ψ⟩, and the Krylov indices (a, b ), and is indepen-dent of the identities of the observables. 2. Once an observable family O = {O1, . . . , O M } is specified, Algorithm 4 reuses the stored snapshots to estimate the entries of the observable Krylov matrices, 
+
+(Br,i )a,b = μi,a,b := ⟨ψ| HaOiHb |ψ⟩ , a, b = 0 , . . . , r − 1. (11) Applying this post-processing to the O(r2) Krylov pairs reconstructs all Br,i without any additional quantum computation. 3. The coefficients describing the action of f (H) on the state-Krylov space depend only on 
+
+H, |ψ⟩, and f , and can therefore be computed independently of the observable queries. Combining these coefficients, denoted by λ, with the post-hoc reconstructed matrices gives 
+
+yi = λ†Br,i λ, i ∈ [M ], (12) using only classical post-processing. For a family of M observables with shadow-norm bound ν2
+
+> O
+
+, entrywise accuracy ϵS , and failure probability δB , the total number of stored shadow samples required to reconstruct all observable Krylov matrices is 
+
+O
+
+r2ν2
+
+> O
+
+ϵ2
+
+> S
+
+log M r 2
+
+δB
+
+
+
+. (13) 9The deepest quantum circuit contains only O(r) sequential block-encoding layers. Thus Classi-cal Shadow QSVT trades the observable-dependent reduction from r to s for a reusable quan-tum dataset that supports new observable queries entirely through classical post-processing. 
+
+## 1.3 Discussion 
+
+The shadow QSVT framework offers a promising route to reducing quantum resource re-quirements when the input state is specified and only observable estimates are needed. Our three algorithms demonstrate this potential by exploiting instance-specific structure to reduce quantum circuit depth. They also offer shared and complementary features that may facili-tate practical applications (see Section 1.1). Nevertheless, several questions worth further exploration concerning the capabilities and limitations of these algorithms and, more broadly, the shadow QSVT framework. 
+
+Quantum advantage A common quantum subroutine in all three algorithms is the estimation of moment matrices via Hadamard tests. This step is a potential source of quantum advantage, even when H is sparse. In particular, Janzing and Wocjan [JW07] showed that estimating ⟨j|Hk|j⟩ for an efficiently accessible sparse real symmetric matrix 
+
+H ∈ RN ×N with ∥H∥ ≤ 1 is PromiseBQP-complete when k = poly log( N ) and the required additive precision is inverse-polylogarithmic in N . Here, N = 2 n, so these moment orders are polynomial in the number of qubits n. Thus, sparsity alone does not guarantee efficient classical moment estimation. Establishing quantum advantage for our algorithms additionally requires that the hardness persist under their structural promises and that the required estimation precision remain efficiently achievable. Conversely, our framework could also admit efficient classical implementations in cer-tain regimes. If H and |ψ⟩ have efficiently accessible sparse representations with sparsity polynomial in n, and the Krylov dimension r is constant, the required Krylov vectors can be computed classically using sparse matrix–vector products. Provided that the relevant observables also admit efficient classical access, the moment matrices and subsequent reduced-matrix computations can then be evaluated classically. The final coherent state-preparation step of Algorithm 1 remains a separate quantum task. 
+
+Applications An important direction is to identify practical applications of our algorithms. One promising example is state-dependent parallel fast-forwarding of Hamiltonian simula-tion, where the goal is to prepare e−iHt |ψ⟩ with quantum circuit depth o(t) for a specified initial state |ψ⟩. Although general parallel fast-forwarding is impossible under standard cryptographic assumptions [CCH +23], fast-forwarding is possible for certain structured Hamil-tonians [GSŞ21]. Our framework suggests a complementary route based on structure in the input state and target observables: preparing the evolved state, or estimating its observable statistics, using shallow quantum circuits under suitable instance-dependent assumptions. Identifying physically relevant instances that satisfy these assumptions while keeping the total resource costs manageable is an important next step. 10 Reducing gate and sample complexity Our current gate- and sample-complexity bounds still depend polynomially on deg( f ). Thus, our algorithms primarily provide an approach of reducing the circuit depth of QSVT-based algorithms when the instances satisfy the required structural promises. Further reductions in total gate and sample complexity remain an important open direction. For example, efficient access to sufficiently accurate moment matrices could yield additional resource savings, but such an assumption would shift a major computational burden into the input model. There seems to be an inherent barrier to control the precision required for moment estimation and the subsequent propagation of statistical errors. Achieving stronger end-to-end improvements without relying on additional input assumptions may therefore require new algorithmic ideas. 
+
+## 1.4 Disclosure of AI usage 
+
+Open AI ChatGPT 5.6 Sol , 6 Astra, accessed through chatgpt.ai in September 2026, check the intermediate arguments, verify and improve the error analysis. In Algorithm 3, we used it to identify Cayley-Hamilton Theorem for analysis. Anthropic Claude 5.1 fable, accessed through Claude.ai in September 2026, was used to explore the relevant references to the Algorithm 1. The final proof and calculation were written and independently verified by the authors. 
+
+# 2 Preliminary 
+
+## 2.1 Krylov subspace and Lanczos basis 
+
+Definition 2.1 (Krylov subspace) . For n, r ∈ N satisfying r ≤ n, a matrix H ∈ Cn×n, and a vector |v⟩ ∈ Cn, the r-dimensional Krylov subspace of (H, |v⟩) is defined by 
+
+Kr(H, |v⟩) := span {| v⟩ , H |v⟩ , . . . , H r−1 |v⟩} . (14) when {Hj |ψ⟩} r−1 
+
+> j=0
+
+is a linear independent set. 
+
+Definition 2.2 (H-invariant Krylov subspace) . For n, r ∈ N satisfying r ≤ n, a matrix 
+
+H ∈ Cn×n, and a vector |v⟩ ∈ Cn, let Kr(H, |v⟩) be the r-dimensional Krylov subspace of 
+
+(H, |v⟩). We say Kr(H, |v⟩) is H-invariant if Hr |v⟩ ∈ Kr(H, |v⟩).For any n × n matrix, we can get a orthonormal basis from Lanczos algorithm. 
+
+Lemma 2.3 (Lanczos basis [Lan50]) . There exists an algorithm such that for any n, m ∈ N
+
+satisfying m ≤ n, for any Hermitian matrix H ∈ Cn×n, and for any vector |v⟩ ∈ Cn, the algorithm runs in poly( n) time and outputs a set of orthonormal vectors {| vj ⟩ ∈ Cn}m′−1
+
+> j=0
+
+where m′ ≤ m such that |v0⟩ = |v⟩ and for all j = 0 , . . . , m ′ − 2 it holds that 
+
+H |vj ⟩ = βj |vj−1⟩ + αj |vj ⟩ + βj+1 |vj+1 ⟩ , (15) 
+
+where αj , β j ∈ C and β0 = 0 .
+
+11 We call the set {| vj ⟩} m−1 
+
+> j=0
+
+in Lemma 2.3 H’s Lanczos basis. For a n × n matrix H, we can define a m × n matrix Vm from H’s Lanczos basis. The j-th column of Vm is |vj ⟩ for all 
+
+j = 0 , . . . , m − 1. That is, 
+
+Vm := 
+
+> m−1
+
+X
+
+> j=0
+
+|vj ⟩⟨ ej | = |v0⟩ | · · · | | vm−1⟩ , (16) where |ej ⟩ is the j-th standard basis vector and ⟨ej | is its transpose. Then, we define a m × m matrix Jm follows. 
+
+Jm := V †
+
+> m
+
+HV m =
+
+
+
+α0 β1
+
+β1 α1 β2
+
+β2 α2
+
+. . .. . . . . . βm−1
+
+βm−1 αm−1
+
+
+
+. (17) It holds that 
+
+HV m = VmJm. (18) The following lemma shows the relation between Krylov subspace and Lanczos basis. 
+
+Lemma 2.4. For any n, r ∈ N, for any H ∈ Cn×n, and for any |v⟩ ∈ Cn, the Krylov space 
+
+Kr(H, |v⟩) is H-invariant if and only if H’s Lanczos basis has size r in which |v0⟩ = |v⟩. In other words, βr = 0 in Eq 15. Proof. For any k ∈ N, we have Hk |v⟩ = ck 
+
+> 0
+
+|v0⟩ + ck 
+
+> 1
+
+|v1⟩ · · · + ck |vk⟩ for some ck 
+
+> 0
+
+, c k 
+
+> 1
+
+, . . . , c kk ∈ C
+
+from Eq 15 and by induction. Let Hr−1 |v⟩ = cr−10 |v0⟩ + cr−11 |v1⟩ · · · + cr−1 
+
+> r−1
+
+|vr−1⟩. We have 
+
+Hr |v⟩ = ( cr−10 α1 + cr−11 β1) |v0⟩ + ( cr−10 β1 + cr−11 α1 + cr−12 β2) |v1⟩ · · · + cr−1
+
+> r−1
+
+βr |vr⟩.If Kr(H, |v⟩) is H-invariant, then Hr |v⟩ ∈ span {| v⟩ , H |v⟩ , . . . , H r−1 |v⟩} . Because 
+
+|v0⟩ , . . . , |vr⟩ are orthogonal, βr must be 0. For the opposite direction, if βr = 0 , then Hr |v⟩ = ( cr−10 α1+cr−11 β1) |v0⟩+( cr−10 β1+cr−11 α1+
+
+cr−12 β2) |v1⟩ · · · +( cr−1
+
+> r−2
+
+βr−2 +cr−1
+
+> r−1
+
+αr−1) |vr−1⟩, which lies in span {| v⟩ , H |v⟩ , . . . , H r−1 |v⟩} .
+
+## 2.2 Block-encoding 
+
+Definition 2.5 (Block-encoding [GSLW19]) . For a given s-qubit operator H, we say a 
+
+(s + a)-qubit unitary UH is the (α, a, ϵ )-block-encoding of H where α, ϵ ∈ R+ if 
+
+∥H − α(⟨0|⊗a ⊗ 1)UH (|0⟩⊗a ⊗ 1)∥s ≤ ϵ. (19) where ∥ · ∥ s is a spectral norm of matrix and α = ∥H∥s.In other words, 
+
+UH =
+
+H/α ∗∗ ∗
+
+
+
+. (20) We abbreviate the term (α, a, ϵ )-block-encoding as (α, a, ϵ )-BE. 12 Through out this paper, we assume that ∥H∥s ≤ 1 and it is given by a unitary UH that is a (1 , l, ϵ )-BE of H.
+
+Definition 2.6 (State preparation [GSLW19]) . For a given ⃗y ∈ C m satysfying ∥⃗y∥ 1 ≤ β, we say a pair of b-qubit unitary (PL, P R) is a (β, b, ϵ )-state preparation of ⃗y where ϵ ∈ R and 
+
+b ≥ log mif PL |0⟩⊗b = P2b−1 
+
+> j=0
+
+cj |j⟩ and PR |0⟩⊗b = P2b−1 
+
+> j=0
+
+dj |j⟩ such that Pm−1 
+
+> j=0
+
+c∗ 
+
+> j
+
+dj − yj 
+
+> β
+
+≤
+
+ϵ and c∗ 
+
+> j
+
+dj − yj 
+
+> β
+
+= 0 for j ∈ m, . . . 2b − 1.The following two lemmas show the composition of block-encodings. 
+
+Lemma 2.7 (Linear combination of block-encoded matrices, Lemma 52 of [GSLW19]) . Let 
+
+A = Pmj=1 yj Aj be a s-qubit quantum operator. Let (PL, P R) be a (β, b, ϵ s)-state preparation of ⃗y = ( y1, . . . , y m) and Uj be a (α, a, ϵ A)-block encoding of Aj for all j = 1 , . . . , m . Define 
+
+W := Pmj=1 |j⟩⟨ j| ⊗ Uj + P2b−1
+
+> j=m+1
+
+|j⟩⟨ j| ⊗ 1a+s that is a (s + a + b)-qubit unitary. We can implement a (αβ, a + b, αϵ s + αβϵ A)-block-encoding of A by a single use of PL, PR, and W .
+
+Lemma 2.8 (Product of block-encoded matrices, Lemma 53 of [GSLW19]) . For two s-qubit operators A and B, let UA be a (α, a, ϵ A)-BE of A and UB be a (β, b, ϵ B )-BE of B. Define the 
+
+(s + a + b)-qubit operator UAB := ( 1b ⊗ UA)( 1a ⊗ UB ).It holds that UAB is a (αβ, a + b, αϵ B + βϵ A)-BE of AB .
+
+Therefore, the circuit depth of UAB is the same as the sum of the depth of UA and UB .Let DM denote the circuit depth of UM that is a block-encoding of M . It holds that 
+
+DAB ≤ DA + DB . (21) By Lemma 2.7 and Lemma 2.8, we can implement a block-encoding of polynomial of H
+
+from H’s block-encoding. 
+
+Lemma 2.9. Let Pr(H) = Pr−1 
+
+> j=0
+
+λj Hj be a degree r − 1 polynomial of the s-qubit operator H.Let UH be a (1 , l, δ )-BE of H and (PL, P R) be a (β, b, ϵ s)-state preparation of ⃗ λ = ( λ0, . . . , λ r−1)
+
+where b ≥ log r. If δ < ϵ B /(r − 1) , we can implement a (β, (r − 1) l + b, ϵ s + βϵ B )-BE of 
+
+Pr(H), denoted by UPr (H) by O(r2) execution of control-UH and a single use of PL and PR.Proof. Applying Lemma 2.8 j times, we have U jH is a (1 , jl, jδ )-BE of Hj . Then, define 
+
+W := Pr−1
+
+> j=0
+
+|j⟩⟨ j| ⊗ U jH + P2b−1 
+
+> j=r
+
+|j⟩⟨ j| ⊗ 1a+s. There are O(r2) execution of control-UH in 
+
+W . By Lemma 2.7, we can implement UPr (H) that is a (β, (r − 1) l + b, ϵ s + β(r − 1) δ)-BE of Pr−1 
+
+> j=0
+
+λj Hj with a single use of PL ,PR, and W . The number of execution of control-UH
+
+in W is O(r2). Because δ < ϵ B /(r − 1) , we have UPr (H) is a (β, (r − 1) l + b, ϵ s + βϵ B )-BE of 
+
+Pr(H).
+
+## 2.3 Quantum Singular Value Transformation 
+
+Lemma 2.10 (Quantum Singular Value Transformation (QSVT), Thm 56 of [GSLW19]) .
+
+Let UH be an (1 , l, ϵ )-BE of a Hermitian matrix H. Let Pr ∈ C[x] is a complex degree-(r − 1) 
+
+polynomial satisfying that |Pr(x)| ≤ 14 for all x ∈ [−1, 1] . Then, for all δ > 0, there exists 
+
+13 a quantum circuit ˜U , which is an (1 , l + 2 , 4( r − 1) √ϵ + δ)-encoding of Pr(H), and consists of (r − 1) applications of UH and U † 
+
+> H
+
+gates, a single application of controlled-UH and O(lr )
+
+other one- and two-qubit gates. Moreover we can compute a description of such a circuit with a classical computer in time O(poly(d , log(1/ δ)) .
+
+Lemma 2.11 (QSVT perturbation and sample complexity) . For a given (1 , (r − 1) l, ϵ B )-BE of H, and a polynomial Pr(x) = Pr−1 
+
+> j=0
+
+λj xj such that |Pr(x)| ≤ 14 ∀x ∈ [−1, 1] , let ˜λ is a coefficient vector estimation of Pr such that ∥˜λ − λ∥2 ≤ ϵλ. Then there is a QSVT algorithm 
+
+UPr that is a block encoding of Pr(H). The circuit UPr is a 
+
+(1 , (r − 1) l + 2 , ϵ QSV T ) − BE (22) 
+
+of Pr(H) where 
+
+ϵQSV T := 4( r − 1) √ϵB + δ + √rϵ λ. (23) 
+
+Proof. From Lemma 2.10, the QSVT with given ˜λ is 
+
+(1 , (r − 1) l + 2 , 4( r − 1) + √ϵB + δ) − BE (24) of Pr−1 
+
+> j=0
+
+˜λj xj polynomial. Since 
+
+∥˜λ − λ∥2 ≤ ϵλ (25) and |x| ≤ 1 so 
+
+∥ ˜Pr(x) − Pr(x)∥s =
+
+> r−1
+
+X
+
+> j=0
+
+δλ j xj
+
+> s
+
+≤
+
+> r−1
+
+X
+
+> j=0
+
+|δλ j |∥ xj ∥s
+
+≤
+
+> r−1
+
+X
+
+> j=0
+
+|δλ j | ≤ √r
+
+> r−1
+
+X
+
+> j=0
+
+|δλ j |2
+
+!1/2
+
+= √r ∥δλ∥2 ≤ √r ϵ λ.
+
+(26) Therefore, it is a 
+
+(1 , (r − 1) l + 2 , 4( r − 1) √ϵB + δ + √rϵ λ) − BE (27) of the polynomial Pr(x).The total successful probability pQSV T for the given r − 1 degree polynomial Pr is 
+
+max(0 , ∥Pr(H) |ψ⟩ ∥ 2 − ϵQSV T ) ≤ √pQSV T ≤ ∥ Pr(H) |ψ⟩ ∥ 2 + ϵQSV T (28) 
+
+pQSV T ≈ ∥ Pr(H) |ψ⟩ ∥ 22. (29) Therefore, the post-selection sample complexity is 
+
+O
+
+ 1
+
+pQSV T 
+
+
+
+= O
+
+ 1
+
+∥Pr(H) |ψ⟩ ∥ 22
+
+
+
+(30) Let DH and CH be circuit depth and gate complexity of (1 , (r − 1) l, ϵ B ) − BE . In QSVT implementation of the r − 1 degree polynomial, UΦ algorithm requires r − 1 queries on UH or 
+
+U † 
+
+> H
+
+and one controlled UH .14 Consequently, the circuit has depth 
+
+O(rD H + lr ) (31) and gate complexity 
+
+O(rC H + lr ). (32) If DH and CH are bigger than O(l), then we can simply write down them as O(rD H ) and 
+
+O(rC H ).
+
+## 2.4 Hadamard test 
+
+The Hadamard test is a quantum procedure for estimating the real or imaginary part of the expectation value ⟨ψ| U |ψ⟩ for a unitary operator U .
+
+Lemma 2.12 (Hadamard test) . For any n-qubit unitary operator U and any n-qubit quantum state |ψ⟩, consider the quantum circuit below and let p0 be the probability of getting the measurement outcome 0. 
+
+> n
+
+|0⟩ H H
+
+|ψ⟩ U
+
+It holds that 
+
+Re (⟨ψ|U |ψ⟩) = 2 p0 − 1. (33) Considering the success probability of the test, we can define a (ϵ, δ )-Hadamard test estimator. 
+
+Definition 2.13 ((ϵ, δ )-Hadamard test estimator) . For a unitary operator U and quantum state |ψ⟩, let 
+
+μ := Re (⟨ψ| U |ψ⟩). (34) We say 
+
+HT ϵ,δ (U, |ψ⟩) (35) that outputs a real number is an (ϵ, δ )-estimator of (U, |ψ⟩) if 
+
+Pr[ | HT ϵ,δ (U, |ψ⟩) − μ| ≤ ϵ] ≥ 1 − δ. (36) 
+
+Lemma 2.14. A HT ϵ,δ (U, |ψ⟩) can be achieved by independently executing 
+
+O
+
+ 1
+
+ϵ2 log 
+
+2
+
+δ
+
+ 
+
+(37) 
+
+number of Hadamard test for (U, |ψ⟩).
+
+15 Proof. For N sample of Hadamard test, the measured probability ˆpN = 1
+
+> N
+
+PNk=1 Xk, where 
+
+Xk = 0 or 1.Using Hoeffding’s inequality, X = PNi=1 Xi = N ˆp1, p1 = E[X], and for t > 0
+
+Pr(|N ˆp1 − N p 1| ≥ t) ≤ 2 exp 
+
+
+
+−2t2
+
+N
+
+
+
+(38) 
+
+Pr(|ˆp1 − p1| ≥ tN ) ≤ 2 exp 
+
+
+
+−2t2
+
+N
+
+
+
+(39) Let δ := 2 exp( −2t2/N ) and t = p(N/ 2) ln(2 /δ ),
+
+Pr |ˆp1 − p1| ≥ 
+
+s
+
+12N ln 
+
+2
+
+δ
+
+!
+
+≤ δ (40) 
+
+∴ ϵ ≤
+
+s
+
+12N ln 
+
+2
+
+δ
+
+
+
+→ N ≥ ln(2 /δ )2ϵ2 (41) For that N ,
+
+Pr(|ˆp1 − p1| ≤ ϵ) ≥ 1 − δ, Pr(|ˆp0 − p0| ≤ ϵ) ≥ 1 − δ. (42) 
+
+Lemma 2.15 (Multiple-Hadamard test estimator) . For l number of unitary operator {Ui}l−1
+
+> i=0
+
+and initial states {| ψi⟩} l−1
+
+> i=0
+
+, and a given HT ϵ,δ l , let ˆpi be the output of HT ϵ,δ l (Ui, |ψi⟩), and 
+
+pi := Re( ⟨ψi| Ui |ψi⟩). Define 
+
+|ˆp⟩ := 
+
+> l−1
+
+X
+
+> i=0
+
+ˆpi |i⟩ , |p⟩ := 
+
+> l−1
+
+X
+
+> i=0
+
+pi |i⟩ . (43) 
+
+It holds that 
+
+Pr[ ∥ | ˜p⟩ − | p⟩ ∥ ∞ ≤ ϵH ] ≥ 1 − lδ l. (44) 
+
+Proof. Let Ai := {∥ ˆpi−pi∥ ≤ ϵH }, by the test P (Ai) ≥ 1−δl and P ( ¯Ai) ≤ δl. ∩li=1 Ai = ∪li=1 ¯Ai
+
+and P (∩li=1 Ai) = 1 − P (∪li=1 ¯Ai). By the Union bound, 
+
+P (∪li ¯Ai=1 ) ≤
+
+> l
+
+X
+
+> i
+
+P ( ¯Ai=1 ) = lδ l (45) Therefore, P (∩li=1 Ai) ≥ 1 − lδ l.Therefore l-number of HT ϵ,δ estimators jointly form an (ϵ, lδ )-estimator. If we set, δl = δ/l 
+
+then we can get O
+
+
+
+l log( l/δ )
+
+> ϵ2
+
+
+
+total sample complexity. Since, we are using block encoding of H, we have to calculate the total error when we use the block encoding and Hadamard test together. An advantange of block-encoding is that no post-selection on the block-encoding ancillae in Hadamard test. You can see the proof in Thm D.1 in Append D. 16 Lemma 2.16 (Hadamard-test error with block-encoding) . Let UH be a (1 , l, ϵ B )-BE of a Hermitian operator H, and define 
+
+˜H := ( ⟨0a| ⊗ I)UH (|0a⟩ ⊗ I). (46) 
+
+Suppose that the Hadamard-test estimator HT ϵ,δ (UH , |ψ⟩) estimates Re ⟨ψ| eH|ψ⟩ within additive error ϵ with probability at least 1 − δ, then 
+
+Pr [ |HT ϵ,δ (UH , |ψ⟩) − Re ⟨ψ|H|ψ⟩| ≤ ϵ + ϵB ] ≥ 1 − δ. 
+
+Proof. Since UH is a (1 , a, ϵ B )-block-encoding of H,
+
+∥ eH − H∥ ≤ ϵB .
+
+Therefore, 
+
+Re ⟨ψ| eH|ψ⟩ − Re ⟨ψ|H|ψ⟩ ≤ ⟨ψ|( eH − H)|ψ⟩ ≤ ∥ eH − H∥ ≤ ϵB .
+
+By the definition of HT ϵ,δ , with probability at least 1 − δ,
+
+HT ϵ,δ (UH , |ψ⟩) − Re ⟨ψ| eH|ψ⟩ ≤ ϵ. 
+
+Hence, by the triangle inequality, 
+
+|HT ϵ,δ (UH , |ψ⟩) − Re ⟨ψ|H|ψ⟩| ≤ ϵ + ϵB ,
+
+with probability at least 1 − δ.
+
+# 3 State-aware QSVT with shallow quantum circuit 
+
+Theorem 3.1 (State-aware QSVT) . Let H, |ψ⟩ , f be the input of QSVT problem. Suppose its Krylov subspace of r dimension Kr(H, |ψ⟩) is H-invariant, f (H) |ψ⟩ ∈ Kr(H, |ψ⟩), and we have a (1 , l, 0) -block encoding of H, then Algorithm 1, can find a degree-r polynomial Pr
+
+and prepare Pr(H)|ψ⟩/∥Pr(H) |ψ⟩ ∥ 2 with error ϵ > 0 and 1 − δ successful probability such that 
+
+∥Pr(H) |ψ⟩ /∥Pr(H) |ψ⟩ ∥ 2 − f (H) |ψ⟩ /∥f (H) |ψ⟩ ∥ 2∥2 ≤ ϵ. (47) 
+
+The quantum circuit depth of our algorithm is 
+
+O(rD H ) (48) 
+
+It needs O
+
+
+
+r3 L2  
+
+> flog( r)2
+> μ2min
+> log 2(r/δ )
+> ϵ2
+
++ p
+
+
+
+samples of the initial state, and the total quantum gate complexity is O
+
+
+
+r4CHL2  
+
+> flog( r)2
+> μ2min
+> log 2(r/δ )
+> ϵ2
+
++ rC H p
+
+
+
+. It also uses O(r2) classical computational complexity. 
+
+DH and CH are circuit depth and number of gates for (1 , l, 0) -block encoding of H, such that larger than O(l) and κ, μ min are the condition number and the minimum eigenvalue of Gr.
+
+p is the inverse of the success probability of using QSVT to implement Pr(H)|ψ⟩/∥Pr(H) |ψ⟩ ∥ ,in which 
+
+p = ∥16 max 
+
+> x∈[−1,1]
+
+|Pr(x)|∥ 21/∥Pr(H) |ψ⟩ ∥ 22 (49) 17 Remark 3.2. The promises of the Algorithm 1 are our target state f (H) |ψ⟩ is in r-dimension Krylov subspace Kr(H, |ψ⟩) and the Krylov subspace should be H-invariant. With these two guaranties, even though f was not a d-degree polynomial d ≤ r − 1, there is a corresponding polynomial Pr of r − 1 degree that satisfies Pr(H) |ψ⟩ = f (H) |ψ⟩, since for all l ≥ r, there is a corresponding {λl,j }r−1 
+
+> l=0
+
+such that 
+
+Hl |ψ⟩ =
+
+> r−1
+
+X
+
+> j=0
+
+λl,j Hk |ψ⟩ (50) State-aware QSVT procedure is to solve state preparation problem, f (H) |ψ⟩, for d-degree polynomial f . If our target state f (H) |ψ⟩ exists in r < d -dimension Krylov subspace, then we can find a corresponding Pr such that 
+
+Pr(H) |ψ⟩ = f (H) |ψ⟩ (51) Let Vr is a orthonormal matrix whose i-th column is |vi⟩ from Lanczos algorithm, and define a full-rank matrix Ar whose j-th column is Hj |ψ⟩ vector. 
+
+Vr := |v0⟩ |v1⟩ · · · | vr−1⟩ , Ar := |ψ⟩ H |ψ⟩ · · · Hr−1 |ψ⟩ (52) Then there is a coefficient vector c and λ such that 
+
+f (H) |ψ⟩ = Vrc = Arλ. (53) Now there is an unique upper-triangular matrix Ur satisfying λ = U −1 
+
+> r
+
+c. Therefore, the whole algorithm consists of 3 parts. The first part is measuring information for the Krylov subspace. Define two gram matrices Gr, ˆGr as 
+
+Gr := A†
+
+> r
+
+Ar, ˆGr := A†
+
+> r
+
+HA r (54) Each element of the matrix is given by 
+
+(Gr)ij = ⟨ψ| Hi+j |ψ⟩ , ( ˆG)ij = ⟨ψ| Hi+j+1 |ψ⟩ (55) and we can measure these values using Hadamard test with block-encoding of H. Second part is to calculate coefficient vector λ. This part is on classical computer of r × r dimension. Let Ur is a Cholesky factor of Gr = U † 
+
+> r
+
+Ur then, we can calculate c with next formula 
+
+Jr = U −1 
+
+> r
+> †
+
+ˆGrU −1 
+
+> r
+
+, c = f (Jr) |e0⟩ . (56) and Ur, c yields 
+
+λ = U −1 
+
+> r
+
+c. (57) Therefore, if we can measure the two gram matrices Gr, and ˆGr then it is enough information to prepare the final state. Lastly, using LCU or QSVT method, we can prepare the target state on quantum computer. 
+
+Pr(H) |ψ⟩ =
+
+> r−1
+
+X
+
+> j=0
+
+λj Hj |ψ⟩ (58) 18 3.1 State-Aware QSVT Algorithm 
+
+The main algorithm is Algorithm 1. Algorithm 2 serves as a subroutine of Algorithm 1. 
+
+Algorithm 1: StateAwareQSVT 
+
+Input: (1 , l, ϵ B )-block encoding UH of H; state-preparation access to |ψ⟩; matrix function f (·) : C2n×2n
+
+→ C2n×2n
+
+Krylov powers r; precision ϵ; failure probability δ
+
+Output: f (H) |ψ⟩ /∥f (H) |ψ⟩ ∥  
+
+> 1
+
+Step 1: Calculate Gram matrix ; 
+
+> 2
+
+Set gr ← {} ; 
+
+> 3
+
+for i = 1 , . . . , 2r − 1 do  
+
+> 4
+
+gi ← HadamardTest( Hi, |ψ⟩) ; 
+
+> 5
+
+Append gi to gr ; 
+
+> 6
+
+Step 2: λ calculation ; 
+
+> 7
+
+Ur, J r ← Algorithm 2( gr);  
+
+> 8
+
+c ← f (Jr) |e0⟩ ; 
+
+> 9
+
+λ ← SolveLS( Ur, c) ; 
+
+> 10
+
+Step 3: Final state preparation ; 
+
+> 11
+
+Using λ and block-encoding UH implement Pr(H) |ψ⟩ with LCU/QSVT method. 
+
+return 1  
+
+> ∥Pr(H)|ψ⟩∥
+
+Pr(H) |ψ⟩;
+
+Algorithm 2: Ur, J r calculation 
+
+Input: {gk}2r−1 
+
+> k=0
+
+, where gk = ⟨ψ| Hk |ψ⟩
+
+Output: Ur, J r 
+
+> 1
+
+ur ← { ⃗u 0} where ⃗u 0 := 1 0 . . . 0T ; 
+
+> 2
+
+α ← { α0}, α0 ← 1 ; 
+
+> 3
+
+β ← {} , β −1 = β0 ← 0 ; 
+
+> 4
+
+for k ∈ [0 , r − 2] do 
+
+> 5
+
+⃗ u k+1 , α k, β k+1 ←← Algorithm 7( ur, g k+1 , g 2k+1 , g 2k+2 , α, β) ; 
+
+> 6
+
+Append ⃗u k+1 to ur; 
+
+> 7
+
+Append αk to α; 
+
+> 8
+
+Append βk+1 to β; 
+
+> 9
+
+Ur ← ur; 
+
+> 10
+
+Jr ← diag 0(α) + diag 1(β) + diag −1(β); 
+
+> 11
+
+return Ur, J r ;The Algorithm 7 is a subroutine to calculate the next column vector uk+1 , αk and βk+1 
+
+values in k-th step. It is given in Appendix A.1. Since the Gram matrix is estimated using Hadamard tests, its entries contain estimation error. Consequently, even if all subsequent calculations are error free, the initial errors propagate through the computation and eventually affect to the final state preparation. In the following subsections, we will analyze circuit depth, gate complexity, and error propagation at each step and combine them to prove Theorem 3.1. We assume that block-encoding error for H is zero for convenience. 19 3.1.1 Gram matrix estimation complexity 
+
+Since Gr and ˆGr are Hankel matrices and ( ˆGr)ij = ( Gr)ij +1 = ( Gr)i+1 j , there are only 2r
+
+independent terms. Let gk := ⟨ψ| Hk |ψ⟩, then {gk}2r−1 
+
+> k=0
+
+values are enough to construct the two matrices. 
+
+Lemma 3.3. Let UH be the (1 , l, 0) block encoding of H, we can estimate gram matrices 
+
+Gr, ˆGr with ˜Gr, ˜ˆGr with 2r number of HT ϵH ,δ H (UH , |ψ⟩) with 1 − 2rδ H success probability where ∥ ˜Gr − Gr∥s ≤ r · ϵH
+
+∥ ˜ˆGr − ˆGr∥s ≤ r · ϵH
+
+. (59) 
+
+Its total sample complexity is O
+
+
+
+r log(2 /δ )
+
+> ϵ2
+> H
+
+
+
+. Let the circuit depth and gate complexity of UH
+
+be DH , C H then circuit depth for Hadamard estimator is O(rD H ) and total gate complexity is 
+
+O(r2CH log 2(2 /δ )/ϵ 2 
+
+> H
+
+).Proof. (Gr)ij = ⟨ψ| Hi+j |ψ⟩ ∈ R so do ( ˆGr)ij ∈ R. We can estimate each element from one 
+
+HT ϵH ,δ (U kH , |ψ⟩). Since, there are 2r different elements in Gr, ˆGr, total 2r number of the estimators are needed. From the element-wise error, the total matrix error is proportional to the dimension r as 
+
+∥ ˜Gr − Gr∥s ≤ ∥ ˜Gr − Gr∥F =
+
+vuut
+
+> r
+
+X
+
+> i=1
+> r
+
+X
+
+> j=1
+
+|( ˜Gr − Gr)ij |2 ≤
+
+vuut
+
+> r
+
+X
+
+> i=1
+> r
+
+X
+
+> j=1
+
+ϵ2 
+
+> H
+
+=
+
+q
+
+r2 · ϵ2 
+
+> H
+
+= r · ϵH
+
+(60) Using Lemma 2.15, the joint success probability to estimate the two matrices is 1−2rδ and sample complexity is O(r log 2(1 /δ )/ϵ 2 
+
+> H
+
+. From the ⟨ψ| Hk |ψ⟩ measurement, each Hadamard estimator uses UHk block encoding where its depth and gate complexity is O(kD H ), O (kC H ).Since k ≤ 2r − 1 because ( ˆGr)r−1,r −1 = ⟨ψ| H2r−1 |ψ⟩. The maximum depth and gate complexity of the circuit for Hadamard estimator is (2 r − 1) DH , (2 r − 1) CH , therefore total gate complexity is O(r2CH log 2(2 /δ )/ϵ 2 
+
+> H
+
+).
+
+3.1.2 Coefficient vector calculation 
+
+This part is to calculate coefficient vector λ for the polynomial Pr(x) = Pr−1 
+
+> j=0
+
+λj xj . The problem is that Hk |ψ⟩ vectors are not orthonormal so it is hard to extact the coefficient directly. Therefore, we used Lanczos basis representation first and then convert it to the λ.To show that this conversion is possible, we need a claim to guarantee that QR factorization of Ar basis is same with Vr.
+
+Claim 3.4. For the given Kr(H, |ψ⟩), QR decomposition of Ar = QrUr and Vr from Lanczos algorithm, 
+
+Qr = VrD (61) 
+
+where 
+
+Djk =
+
+(
+
+eiθ j If j = k
+
+0 Otherwise . (62) 
+
+θj ∈ R, ∀j ∈ [r].
+
+20 It’s proof is in Appendix A.2. Therefore, we can freely use Ar = VrUr relationship ignoring the phase of the vectors. Another property we need is that Gr is positive-definite matrix. 
+
+Claim 3.5. Gr is positive-definitie. Proof. Since Gr is a gram matrix, it is a positive-semidefinite matrix, and Ar has full column rank r, consequently 
+
+λ†Grλ = 0 ⇔
+
+> r−1
+
+X
+
+> j=0
+
+λj Hj |ψ⟩
+
+!
+
+= 0 . (63) So it is positive-definite. One of the benefits is that we don’t have to use the Vr matrix to calculate the c vector, in addition all the calculation is on r × r dimension Krylov space and executed on classic computer. 
+
+Lemma 3.6 (Coefficient vector reconstruction) . Let Gr = A†
+
+> r
+
+Ar and bGr = A†
+
+> r
+
+HA r, where Ar
+
+has full column rank in Eq. (52) , then there is a unique Cholesky factor Ur for Gr = U † 
+
+> r
+
+Ur
+
+such that 
+
+Jr = U −†  
+
+> r
+
+ˆGrU −1 
+
+> r
+
+. (64) 
+
+Furthermore for λ and c in Eq. (53) ,
+
+c = f (Jr) |e0⟩ , λ = U −1 
+
+> r
+
+c. (65) 
+
+Proof. From Claim 3.4, we can write down QR decomposition of Ar without considering phase. 
+
+Ar = VrUr (66) 
+
+Vr is a orthonormal matrix of 2n × r dimension and Ur is an upper triangular matrix of r × r
+
+dimension. 
+
+Gr = A†
+
+> r
+
+Ar = U † 
+
+> r
+
+V † 
+
+> r
+
+VrUr = U † 
+
+> r
+
+Ur. (67) From definition of Jr,
+
+Jr = V † 
+
+> r
+
+HV r = ( U † 
+
+> r
+
+)−1U † 
+
+> r
+
+V † 
+
+> r
+
+HV rUrU −1 
+
+> r
+
+= ( U † 
+
+> r
+
+)−1A†
+
+> r
+
+HA rU −1 
+
+> r
+
+= ( U † 
+
+> r
+
+)−1 ˆGrU −1 
+
+> r
+
+(68) From Claim 3.5, Gr is positive-definite. Ur is a Cholesky factor of Gr and it is unique for positive-definite matrix. Now from Eq. (53), 
+
+cj = ⟨vj | Pr(H) |ψ⟩ =
+
+> r−1
+
+X
+
+> i=0
+
+λj ⟨vj | Hi |v0⟩ (69) For j ≤ r − 1,
+
+⟨vj | Hi |v0⟩ = ⟨ej | V † 
+
+> r
+
+(VrJirV † 
+
+> r
+
+)Vr) |e0⟩ = ( Jir)j0 (70) 21 Therefore, 
+
+cj =
+
+> r−1
+
+X
+
+> i=0
+
+λi(Jir)j0 = ( 
+
+> r−1
+
+X
+
+> i=0
+
+λiJir)j0 = ( Pr(Jr)) j0 = ( f (Jr)) j0 (71) and we get 
+
+c = f (Jr) |e0⟩ (72) and 
+
+Vrc = Arλ = VrUrλ (73) Finally, solving the next equation yields λ
+
+Urλ = c (74) Therefore, with Gr we can calculate Ur by Cholesky decomposition and ˆGr allows to get Jr matrix with inverse of Ur. However, in the algorithm we didn’t use the Cholesky decomposition and inverse calculation. Instead naive matrix calculation, using the relationship between each matrix element, we can directly calculate the Ur and Jr simultaneously. It is implemented in Algorithm 2 and 7. The details are written in Appendix A.1.1. 
+
+Lemma 3.7 (Error Propagation of Algorithm 1) . Let Gr, ˆGr estimation, ˜Gr, ˜ˆGr are ϵg error estimation such that ∥ ˜Gr − Gr∥s ≤ ϵg
+
+∥ ˜ˆGr − ˆGr∥s ≤ ϵg
+
+. (75) 
+
+∥( ˜Pr(H) − Pr(H)) |ψ⟩ ∥ 2 ≤ O
+
+
+
+Lf log( r) ϵg
+
+μmin 
+
+
+
+(76) 
+
+where Lf is a Lipschitz constant for f on x ∈ [λmin , λ max ], and μmin is a minmum eigenvalue of Gr.Proof. Let μmin , μ max be minimum and maximum eigenvalues of Gr and let δA = ˜A − A for matrix A and estimated matrix ˜A. If μmin > ϵ g then, ˜Gr is positive-definite. Using Claim E.2by [CPS96], for ˜Ur from ˜Gr = ˜U † 
+
+> r
+
+˜Ur,
+
+∥δU r∥s ≤
+
+s
+
+μmax + ϵg
+
+2( μmin − ϵg)2 ϵg =: ϵc. (77) From the final state estimator, 
+
+˜P (H) |ψ⟩ =
+
+> r−1
+
+X
+
+> j=0
+
+˜λj Hj |ψ⟩ =
+
+> r−1
+
+X
+
+> j=0
+
+λj Hj |ψ⟩ +
+
+> r−1
+
+X
+
+> j=0
+
+δλ j Hj |ψ⟩ (78) 
+
+∥δP (H) |ψ⟩ ∥ 2 =
+
+> r−1
+
+X
+
+> j=0
+
+δλ j Hj |ψ⟩
+
+> 2
+
+= ∥Arδλ∥2 = ∥VrUrδλ∥2 ≤ ∥ Urδλ∥2 (79) 22 Let ˜Ur = ( 1 + Γ) Ur (80) then 
+
+Urδλ = Ur(˜λ − λ) = ( 1 + Γ) −1 ˜Ur(˜λ − λ) (81) 
+
+= ( 1 + Γ) −1(˜ c − c − δU rλ) (82) 
+
+= ( 1 + Γ) −1(δc − ΓUrλ) (83) 
+
+= ( 1 + Γ) −1(δc − Γc) (84) Assume that ∥Γ∥s ≤ 1/2, then 
+
+∥Urδλ∥2 ≤ ∥δc∥2 + ∥Γ∥s
+
+1 − ∥ Γ∥s
+
+(85) From Claim A.1 and A.2, 
+
+∥δc∥2 ≤ Lf ∥δJ r∥s ≤ 4(4 cr + 1) ϵg
+
+μmin 
+
+(86) 
+
+∥Γ∥s ≤ 2cr
+
+ϵg
+
+μmin 
+
+(87) where cr := log 2(r) and Lf is a Lipschitz constant of f (x) in x ∈ [μmin , μ max ] then 
+
+∥Urδλ∥2 ≤ 2( Lf ∥δJ r∥s + ∥Γ∥s) = 4 ( Lf 2(4 cr + 1) + cr) ϵg
+
+μmin 
+
+(88) Finally we get 
+
+∥δP (H) |ψ⟩ ∥ 2 ≤ O
+
+
+
+Lf cr
+
+ϵg
+
+μmin 
+
+
+
+(89) 
+
+3.1.3 Sample complexity of Hadamard test Lemma 3.8. For a final state ˜Pr(H) |ψ⟩ that a result of Algorithm 1, with given input 
+
+H, |ψ⟩ , f , the required sample complexity for each Hadamard estimator HT ϵH ,δ H (UH , |ψ⟩) to satisfy 
+
+∥ ˜Pr(H) |ψ⟩ − Pr(H) |ψ⟩ ∥ 2 ≤ ϵ (90) 
+
+with 1 − δ success probability its sample complexity is 
+
+O
+
+
+
+r2 L2 
+
+> f
+
+log( r)2
+
+μ2min 
+
+log( r/δ )
+
+ϵ2
+
+
+
+. (91) 
+
+Proof. From Lemma 3.7, if 
+
+ϵg ≤ μmin 
+
+Lf log( r)ϵ, (92) then sufficiently 
+
+∥ ˜Pr(H) |ψ⟩ − Pr(H) |ψ⟩ ∥ 2 ≤ ϵ. (93) 23 ϵg = rϵ H from Lemma 3.3 with HT ϵH ,δ H (UH , |ψ⟩), using the joint Hadamard test Lemma 2.15, and Eq (37), we obtain 
+
+ϵH ≤ μmin 
+
+rL f log( r)ϵ, δH ≤ δ
+
+2r (94) Finally, we get the required sample complexity for each Hadamard test as 
+
+O
+
+
+
+r2 L2 
+
+> f
+
+log( r)2
+
+μ2min 
+
+log( r/δ )
+
+ϵ2
+
+
+
+. (95) 
+
+3.1.4 Proof of Theorem 3.1 
+
+Proof. The quantum parts of the algorithm consists of two part, Hadamard test and state preparation with QSVT so to calculate circuit depth and sample complexity we have to calculate them separately. (Circuit depth): Lemma 3.3 states that the deepest circuit from Hadamard estimator is 
+
+O(rD H + r) and QSVT of r − 1-degree polynomial also has O(rD H + lr ) circuit depth to implement it from Eq (31), therefore the total circuit depth is 
+
+O(rD H ). (96) (Sample Complexity): We have 2r number of HT ϵH ,δ H . From Lemma 3.8 ,the number of copies of |ψ⟩ to estimate ˜Gr and ˜ˆGr is 
+
+O
+
+
+
+r3 L2 
+
+> f
+
+log( r)2
+
+μ2min 
+
+log( r/δ )
+
+ϵ2
+
+
+
+. (97) From Eq (30) the sample complexity to prepare the Pr(H) |ψ⟩ with QSVT method is 
+
+O
+
+ ˆp2
+
+> r
+
+∥Pr(H) |ψ⟩ ∥ 22
+
+
+
+(98) where ˆpr := max x∈[−1.1] |Pr(x)|. In QSVT preparation, the algorithm uses ˜λ vector calculated on classic computer, therefore its sample complexity is independent to the gram matrices estimation. Finally, total sample complexity is 
+
+O
+
+
+
+r3 L2 
+
+> f
+
+log( r)2
+
+μ2min 
+
+log( r/δ )
+
+ϵ2 + p
+
+
+
+(99) with p := ˆp2 
+
+> r
+> ∥Pr(H)|ψ⟩∥ 22
+
+.24 4 Classical-Shadow S-QSVT 
+
+We now return to the original Shadow QSVT (S-QSVT) problem. The state-aware QSVT procedure ultimately implements the polynomial transformation Pr(H) coherently in order to prepare the transformed state. If the goal is only to estimate observables of the form 
+
+yi := ⟨ψ|Pr(H)†OiPr(H)|ψ⟩, i ∈ [M ], (100) this final-state-preparation step can be bypassed. Let c denote the coefficient vector of the transformed state in the orthonormalized Krylov basis and let λ denote the corresponding coefficient vector in the original Krylov basis, so that c = Urλ. Then 
+
+yi = c†V † 
+
+> r
+
+OiVrc = λ†U † 
+
+> r
+
+V † 
+
+> r
+
+OiVrUrλ. (101) Define the reduced observable 
+
+O(r) 
+
+> i
+
+:= V † 
+
+> r
+
+OiVr (102) and the observable Krylov matrix 
+
+Br,i := A†
+
+> r
+
+OiAr = U † 
+
+> r
+
+O(r) 
+
+> i
+
+Ur. (103) Therefore, 
+
+yi = λ†Br,i λ. (104) The entries of Br,i are the Krylov cross moments 
+
+(Br,i )a,b = ⟨ψ|HaOiHb|ψ⟩. (105) For convenience, define 
+
+μi,a,b := ⟨ψ|HaOiHb|ψ⟩. (106) Thus observable estimation reduces to estimating the coefficient vector λ and the observable Krylov matrices {Br,i }Mi=1 . The latter can be estimated directly from classical-shadow data without preparing Pr(H)|ψ⟩.
+
+## 4.1 Classical-shadow access model 
+
+Following the classical-shadow framework of Huang, Kueng, and Preskill [HKP20], let U
+
+denote a classical-shadow measurement ensemble acting on the control-system register C + S,with measurement channel 
+
+M (ρ) := EU ∼U
+
+X
+
+> b
+
+⟨b|U ρU †|b⟩U †|b⟩⟨ b|U. (107) For a measurement unitary U ∼ U and computational-basis outcome b, the corresponding classical snapshot is 
+
+bρ := M −1  U †|b⟩⟨ b|U  , (108) so that E[bρ] = ρ. We assume that M −1 can be evaluated efficiently for the chosen ensemble. To recover the real and imaginary parts of μi,a,b , define 
+
+Q(X) 
+
+> i
+
+:= XC ⊗ Oi, Q(Y ) 
+
+> i
+
+:= YC ⊗ Oi. (109) 25 The statistical cost is controlled by 
+
+ν2 
+
+> O
+
+:= max  
+
+> i∈[M]
+
+n
+
+∥Q(X) 
+
+> i
+
+∥2shadow , ∥Q(Y ) 
+
+> i
+
+∥2shadow 
+
+o
+
+. (110) A concrete local-Pauli realization is summarized in Sec. 4.5, and its detailed derivation is deferred to Appendix B. 
+
+## 4.2 Algorithm procedure 
+
+The observable-dependent classical processing can be separated from the quantum data-acquisition stage. For a fixed Krylov pair (a, b ), the quantum circuit below produces a reusable classical-shadow dataset that depends only on H, |ψ⟩, (a, b ), and the chosen shadow ensemble, but not on the observables that will later be queried. 
+
+Algorithm 3: KrylovShadowSampling 
+
+Input: (1 , l, ϵ B )-block encoding UH of H; state-preparation access to |ψ⟩; Krylov powers a, b ; shadow ensemble (U , M ); number of samples N
+
+Output: Krylov-shadow dataset Da,b = {(st, bρt)}Nt=1  
+
+> 1
+
+Step 1: Construct the controlled Krylov branches.  
+
+> 2
+
+Set m ← max {a, b } and La,b ← lm ; 
+
+> 3
+
+Using sequential block-encoding multiplication [GSLW19], construct block encodings 
+
+UHa and UHb on a common La,b -qubit ancilla register A, with the identity acting on unused ancilla qubits;  
+
+> 4
+
+Construct 
+
+Wa,b ← | 0⟩⟨ 0|C ⊗ UHa + |1⟩⟨ 1|C ⊗ UHb . 
+
+> 5
+
+Step 2: Collect reusable classical-shadow data.  
+
+> 6
+
+Set Da,b ← {} ; 
+
+> 7
+
+for t = 1 , . . . , N do  
+
+> 8
+
+Prepare |+⟩C |0La,b ⟩A|ψ⟩S ; 
+
+> 9
+
+Apply Wa,b and denote the resulting state by |Ψa,b ⟩CAS ; 
+
+> 10
+
+Sample Ut ∼ U and apply Ut to C + S; 
+
+> 11
+
+Measure A in the computational basis and obtain zt; 
+
+> 12
+
+Measure C + S in the computational basis and obtain bt; 
+
+> 13
+
+Set st ← 1[zt = 0 La,b ]; 
+
+> 14
+
+Construct 
+
+bρt ← M −1
+
+
+
+U † 
+
+> t
+
+|bt⟩⟨ bt|Ut
+
+
+
+. 
+
+> 15
+
+Append (st, bρt) to Da,b ; 
+
+> 16
+
+return Da,b ;The next routine is entirely classical. It may be applied immediately after the data are collected, or later to the same stored dataset after a new family of observables has been specified. 26 Algorithm 4: KrylovShadowPostProcessing 
+
+Input: Krylov-shadow dataset Da,b ; observables {Oi}Mi=1 ; shadow-norm upper bound 
+
+ν2
+
+> O
+
+; precision ϵS ; failure probability η
+
+Output: {eμi,a,b }Mi=1  
+
+> 1
+
+Set 
+
+K ←
+
+
+
+8 log 
+
+2Mη
+
+ 
+
+, S ←
+
+8ν2
+
+> O
+
+ϵ2
+
+> S
+
+
+
+, Nreq ← KS.  
+
+> 2
+
+if |Da,b | < N req then  
+
+> 3
+
+return insufficient shadow data;  
+
+> 4
+
+Select any Nreq samples {(st, bρt)}Nreq  
+
+> t=1
+
+from Da,b ; 
+
+> 5
+
+for i = 1 , . . . , M do  
+
+> 6
+
+for t = 1 , . . . , N req do  
+
+> 7
+
+Ri,t ← st Tr[( XC ⊗ Oi)bρt]; 
+
+> 8
+
+Ii,t ← st Tr[( YC ⊗ Oi)bρt]; 
+
+> 9
+
+eRi,a,b ← MedianOfMeans( {Ri,t }Nreq  
+
+> t=1
+
+; K, S ); 
+
+> 10
+
+eIi,a,b ← MedianOfMeans( {Ii,t }Nreq  
+
+> t=1
+
+; K, S ); 
+
+> 11
+
+eμi,a,b ← eRi,a,b + i eIi,a,b ; 
+
+> 12
+
+return {eμi,a,b }Mi=1 ;We use the standard median-of-means estimator [JVV86] in Algorithm 4; the corresponding subroutine is given in Appendix B. 27 Algorithm 5: ClassicalShadowSQSVT 
+
+Input: (1 , l, ϵ B )-block encoding UH of H; state-preparation access to |ψ⟩; matrix function f (·) : C2n×2n
+
+→ C2n×2n
+
+; Krylov dimension r; observables {Oi}Mi=1 ;shadow ensemble (U , M ); shadow-norm upper bound ν2
+
+> O
+
+; coefficient precision ϵλ; cross-moment precision ϵS ; failure probability δ
+
+Output: {eyi}Mi=1  
+
+> 1
+
+Step 1: Estimate the Krylov coefficients.  
+
+> 2
+
+eλ ← StateAwareQSVT (UH , |ψ⟩, f, r, ϵ λ, δ/ 2) [ Steps 1–2 ]; 
+
+> 3
+
+Step 2: Collect the Krylov-shadow datasets.  
+
+> 4
+
+Set 
+
+Npair ← r(r + 1) 2 , δpair ← δ
+
+2Npair 
+
+,KB ←
+
+
+
+8 log 
+
+ 2Mδpair 
+
+ 
+
+, SB ←
+
+8ν2
+
+> O
+
+ϵ2
+
+> S
+
+
+
+, N pair  
+
+> B
+
+← KB SB . 
+
+> 5
+
+for 0 ≤ a ≤ b ≤ r − 1 do  
+
+> 6
+
+Da,b ← KrylovShadowSampling (UH , |ψ⟩, a, b, (U , M ), N pair  
+
+> B
+
+); 
+
+> 7
+
+Step 3: Reconstruct the observable Krylov matrices.  
+
+> 8
+
+for i = 1 , . . . , M do  
+
+> 9
+
+eBr,i ← 0r×r; 
+
+> 10
+
+for 0 ≤ a ≤ b ≤ r − 1 do  
+
+> 11
+
+{eμi,a,b }Mi=1 ← KrylovShadowPostProcessing (Da,b , {Oi}Mi=1 , ν 2
+
+> O
+
+, ϵ S , δ pair ); 
+
+> 12
+
+for i = 1 , . . . , M do  
+
+> 13
+
+if a = b then  
+
+> 14
+
+( eBr,i )a,a ← Re eμi,a,a ; 
+
+> 15
+
+else  
+
+> 16
+
+( eBr,i )a,b ← eμi,a,b ; 
+
+> 17
+
+( eBr,i )b,a ← eμ∗
+
+> i,a,b
+
+; 
+
+> 18
+
+Step 4: Compute the observable estimates.  
+
+> 19
+
+for i = 1 , . . . , M do  
+
+> 20
+
+eyi ← eλ† eBr,i eλ; 
+
+> 21
+
+return {eyi}Mi=1 ;
+
+Remark 4.1 (Post-hoc observable queries) . The datasets {Da,b } generated in Step 2 are independent of the identities of the observables. They may therefore be stored and reused for a later observable family. A new family can be evaluated without additional quantum measurements whenever the stored number of samples is sufficient for its shadow-norm bound and target precision; otherwise additional samples must be collected. 
+
+28 4.3 Main observable-estimation guarantee 
+
+The guarantees below are stated for an exact (1 , l, 0) -block encoding of H.1 Let eλ denote the output of the coefficient estimation procedure and suppose that ∥eλ − λ∥2 ≤ ϵλ with failure probability at most δ/ 2, using Nλ(ϵλ, δ/ 2) quantum samples. We use ϵS to denote the target entrywise precision for the observable Krylov matrices, |( eBr,i )a,b − (Br,i )a,b | ≤ ϵS .
+
+Define θ := ∥U −1 
+
+> r
+
+∥2 and βO := max i∈[M ] ∥Br,i ∥2.For the resource analysis, let DH and GH denote the upper bounds on the circuit depth and gate count, respectively, of one application of UH or controlled-UH . Let Dψ and Gψ
+
+denote the corresponding costs of preparing |ψ⟩, and let Dsh and Gsh denote the depth and gate count of one classical-shadow measurement circuit on C + S. Finally, let Qλ, Dλ, and 
+
+Gλ denote the block-encoding query complexity, maximum circuit depth, and total gate complexity, respectively, of the coefficient-estimation step. 
+
+Theorem 4.2 (End-to-end observable estimation) . Assume that UH is an exact block encoding of H, and let ϵO > 0 be the target observable precision. If βO(2 θϵ λ + ϵ2
+
+> λ
+
+) < ϵ O and 
+
+ϵS = ϵO − βO(2 θϵ λ + ϵ2
+
+> λ
+
+)
+
+r(θ + ϵλ)2 , (111) 
+
+then Algorithm 5 outputs estimates satisfying 
+
+|eyi − yi| ≤ ϵO for all i ∈ [M ] (112) 
+
+with probability at least 1 − δ. The required number of shadow samples is 
+
+NB = O
+
+ r4(θ + ϵλ)4ν2
+
+> O
+
+[ϵO − βO(2 θϵ λ + ϵ2
+
+> λ
+
+)] 2 log 
+
+M r 2
+
+δ
+
+ 
+
+. (113) 
+
+Therefore, the total sample complexity is 
+
+Nobs = Nλ(ϵλ, δ/ 2) + NB . (114) 
+
+The corresponding block-encoding query complexity, maximum circuit depth, and total gate complexity are 
+
+Qobs = Qλ + QB , (115) 
+
+Dobs = max {Dλ, D B } , (116) 
+
+Gobs = Gλ + GB , (117) 
+
+where QB , DB , and GB are given in Proposition 4.6. Proof sketch. Let ∆Br,i := eBr,i −Br,i and ∆λ := eλ−λ. From Proposition 4.5, ∥∆Br,i ∥2 ≤ rϵ S .Using ∥λ∥2 ≤ θ and ∥∆λ∥2 ≤ ϵλ, we obtain 
+
+|eyi − yi| ≤ (θ + ϵλ)2rϵ S + βO(2 θϵ λ + ϵ2
+
+> λ
+
+). (118) 
+
+> 1The additional bias arising from an approximate block encoding is not included in the present analysis.
+
+29 The stated choice of ϵS then guarantees |eyi − yi| ≤ ϵO. The sample complexity follows by combining the coefficient-estimation cost with Proposition 4.5. Likewise, the query and gate complexities are additive across the two estimation stages, while the maximum circuit depth is the larger of the two stage-wise depths. The corresponding observable-estimation resources follow from Proposition 4.6. The complete proof is given in Appendix B. 
+
+Remark 4.3. Under ∥H∥2 ≤ 1 and normalized |ψ⟩, one may further use βO ≤ r max i∈[M ] ∥Oi∥2.
+
+Remark 4.4 (No final-state preparation) . Once eλ and { eBr,i }Mi=1 have been obtained, the remaining computation eyi = eλ † eBr,i eλ is entirely classical. Thus no additional quantum samples are required, and the transformed state Pr(H)|ψ⟩ never needs to be prepared. 
+
+## 4.4 Observable Krylov matrix estimation 
+
+The remaining ingredient is the simultaneous estimation of the observable Krylov matrices. 
+
+Proposition 4.5 (Observable Krylov matrix estimation) . Assume that UH is an exact 
+
+(1 , l, 0) -block encoding of H. For any fixed Krylov pair (a, b ), let Da,b be a dataset generated by Algorithm 3. If the dataset contains at least 
+
+Na,b = O
+
+ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+Mη
+
+ 
+
+(119) 
+
+samples, then Algorithm 4 outputs estimates {eμi,a,b }Mi=1 such that 
+
+|eμi,a,b − μi,a,b | ≤ ϵS for all i ∈ [M ] (120) 
+
+with probability at least 1 − η. The quantum data-acquisition stage is independent of the identities of the observables; the dependence on M , ν2
+
+> O
+
+, ϵS , and η enters only through the number of stored samples required for the classical post-processing guarantee. Consequently, applying the procedure to all 0 ≤ a ≤ b ≤ r − 1 and using Hermitian symmetry yields estimates { eBr,i }Mi=1 satisfying 
+
+|( eBr,i )a,b − (Br,i )a,b | ≤ ϵS (121) 
+
+simultaneously for all i ∈ [M ] and a, b ∈ { 0, . . . , r − 1} with probability at least 1 − δB . The total number of classical-shadow samples is 
+
+NB = O
+
+r2ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+M r 2
+
+δB
+
+ 
+
+. (122) The proof is deferred to Appendix B. 
+
+Proposition 4.6 (Quantum resources for observable Krylov matrix estimation) . Under the assumptions of Proposition 4.5, suppose that one application of UH or controlled-UH has circuit depth at most DH and gate count at most GH . For a fixed Krylov pair (a, b ), one sample generated by Algorithm 3 uses max {a, b } block-encoding queries and has circuit depth 
+
+Da,b = O(Dψ + max {a, b }DH + Dsh ) . (123) 30 Estimating all observable Krylov matrices to entrywise precision ϵS and failure probability at most δB requires 
+
+QB = O
+
+r3ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+M r 2
+
+δB
+
+ 
+
+(124) 
+
+queries to UH or controlled-UH . The maximum circuit depth among all shadow-measurement rounds is 
+
+DB = O(Dψ + rD H + Dsh ) . (125) 
+
+Algorithm 4 is entirely classical and therefore contributes no additional block-encoding queries or quantum circuit depth. The total quantum gate count over all rounds is 
+
+GB = O
+
+ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+M r 2
+
+δB
+
+  r3GH + r2(Gψ + Gsh )
+
+. (126) The proof is deferred to Appendix B. 
+
+## 4.5 Local Pauli specialization 
+
+For the local Pauli classical-shadow ensemble, the inverse measurement channel and the snapshot both factorize over qubits. The detailed construction and its classical post-processing are given in Appendix B.5. For the main result, it is enough to use the following specialization. 
+
+Corollary 4.7 (Local Pauli specialization) . Suppose that every Oi is a Pauli string of weight at most k. Under local Pauli classical shadows, ν2 
+
+> O
+
+≤ 3k+1 . Hence the observable Krylov matrices can be estimated using 
+
+NB = O
+
+r23k+1 
+
+ϵ2
+
+> S
+
+log 
+
+M r 2
+
+δB
+
+ 
+
+(127) 
+
+shadow samples. Under the choice of ϵS in Eq. (111) , the end-to-end shadow complexity is 
+
+NB = O
+
+ r4(θ + ϵλ)43k+1 
+
+[ϵO − βO(2 θϵ λ + ϵ2
+
+> λ
+
+)] 2 log 
+
+M r 2
+
+δ
+
+ 
+
+. (128) 
+
+Moreover, the total block-encoding query complexity is 
+
+QB = O
+
+r33k+1 
+
+ϵ2
+
+> S
+
+log 
+
+M r 2
+
+δB
+
+ 
+
+. (129) 
+
+Since local Pauli measurements have Dsh = O(1) and Gsh = O(n), the maximum circuit depth is 
+
+DB = O(Dψ + rD H ), (130) 
+
+and the total gate complexity is 
+
+GB = O
+
+3k+1 
+
+ϵ2
+
+> S
+
+log 
+
+M r 2
+
+δB
+
+  r3GH + r2(Gψ + n)
+
+. (131) Thus, for bounded-weight Pauli observables, the dependence on the number M of observ-ables is logarithmic rather than linear. 31 5 Observable-Aware S-QSVT 
+
+The Classical-Shadow S-QSVT method developed in the previous section retains the full state-Krylov dimension and reduces observable estimation to the evaluation of the observable Krylov matrices Br,i = A†
+
+> r
+
+OiAr. In this section, we will develop a complementary approach that exploits the fact that the prescribed observables may be insensitive to part of the state-Krylov space. The main idea is to identify state directions that remain invisible to all observables of interest under every future application of the Hamiltonian. After quotienting out these directions, the resulting observable-relevant dynamics may have dimension s < r . Rather than manupulating the quotient space directly, we construct a concrete representation of it through a history map. The image of this map will be called the history space .Throughout this section, we assume that the observable-relevant dimension s is known. 
+
+## 5.1 The observable-aware Krylov subspace 
+
+Let 
+
+Kr(H, |ψ⟩) := span |ψ⟩ , H |ψ⟩ , . . . , H r−1 |ψ⟩ (132) be the saturated state-Krylov space generated by the initial state |ψ⟩. We assume 
+
+dim Kr(H, |ψ⟩) = r, HKr(H, |ψ⟩) ⊆ Kr(H, |ψ⟩). (133) Let 
+
+O := {O1, . . . , O M } (134) be the collection of observables whose expectation values we wish to predict. We define the subspace of directions that are invisible to all observables, both immediately and after every future application of H, by 
+
+KO := |ϕ⟩ ∈ Kr(H, |ψ⟩) : OiHℓ |ϕ⟩ = 0 for all i ∈ [M ] and ℓ ≥ 0 . (135) Because the condition in Eq. (135) contains ℓ = 0 , KO ⊆ TMi=1 ker Oi. Moreover, KO is invariant under H. Indeed, if |ϕ⟩ ∈ KO , then OiHℓH |ϕ⟩ = OiHℓ+1 |ϕ⟩ = 0 for every i ∈ [M ]
+
+and ℓ ≥ 0. We may therefore define the observable-relevant quotient space 
+
+QO := Kr/K O . (136) Two vectors |ϕ1⟩ , |ϕ2⟩ ∈ Kr represent the same element of the quotient space whenever their difference belongs to the observable-invisible subspace: 
+
+|ϕ1⟩ ∼ | ϕ2⟩ ⇐⇒ |ϕ1⟩ − | ϕ2⟩ ∈ KO . (137) For |ϕ⟩ ∈ Kr, we denote its equivalence class by 
+
+[|ϕ⟩] := |ϕ⟩ + |η⟩ : |η⟩ ∈ KO . (138) Thus, two state-Krylov vectors are represented by the same element of QO precisely when they differ only by a direction that remains invisible to all observables in O under every future application of H. We assume that 
+
+dim QO = s. (139) 32 5.2 Observable-aware Krylov reduction 
+
+Since KO is H-invariant, H induces a well-defined linear operator on the quotient space, 
+
+H[|ϕ⟩] := [ H |ϕ⟩], (140) The quotient space is generated by the quotient Krylov sequence 
+
+[|ψ⟩], [H |ψ⟩], [H2 |ψ⟩], . . . . (141) 
+
+Proposition 5.1 (Observable-aware Krylov basis) . Suppose dim QO = s. Then 
+
+[|ψ⟩], [H |ψ⟩], . . . , [Hs−1 |ψ⟩] (142) 
+
+form a basis of QO . Consequently, for every k ≥ s, there exist coefficients ak, 0, . . . , a k,s −1
+
+such that 
+
+Hk |ψ⟩ − 
+
+> s−1
+
+X
+
+> j=0
+
+ak,j Hj |ψ⟩ ∈ KO . (143) 
+
+Proof. Suppose, toward a contradiction, that the vectors in Eq. (142) are linearly dependent. Let d < s be the smallest index such that [Hd |ψ⟩] ∈ span [|ψ⟩], . . . , [Hd−1 |ψ⟩] . Repeated application of the induced operator H shows that every higher quotient Krylov vector belongs to the same span. Hence dim QO ≤ d < s, contradicting the assumption dim QO = s.Therefore the first s quotient Krylov vectors are linearly independent and hence form a basis of QO . The second claim follows immediately by expressing [Hk |ψ⟩] in this basis for every 
+
+k ≥ s.
+
+Corollary 5.2 (Observable-equivalent polynomial reduction) . For every polynomial P , there exists a polynomial P O 
+
+> s
+
+of degree at most s − 1 such that 
+
+P (H) |ψ⟩ − P O 
+
+> s
+
+(H) |ψ⟩ ∈ KO . (144) 
+
+Consequently, for every Hermitian observable Oi ∈ O,
+
+⟨ψ| P (H)†OiP (H) |ψ⟩ = ⟨ψ| P O 
+
+> s
+
+(H)†OiP O 
+
+> s
+
+(H) |ψ⟩ . (145) 
+
+Proof. Expand P (H) |ψ⟩ as a linear combination of Krylov powers. By Proposition 5.1, every term Hk |ψ⟩ with k ≥ s is equivalent modulo KO to a linear combination of |ψ⟩ , . . . , H s−1 |ψ⟩.Collecting these reduced terms defines a polynomial P O 
+
+> s
+
+of degree at most s − 1 and gives Eq. (144). Since KO ⊆ ker Oi and Oi is Hermitian, the invisible component and all cross terms vanish in the quadratic form, which proves Eq. (145). 33 5.3 History-space representation 
+
+The quotient space provides the abstract observable-relevant description. For the algorithm, however, it is convenient to represent each quotient class by a concrete vector containing its observable histories. Define the length-s history map F O 
+
+> s
+
+: Kr(H, |ψ⟩) −→ CM ⊗ Cs ⊗ H by 
+
+F O 
+
+> s
+
+(|ϕ⟩) := 
+
+> M
+
+X
+
+> i=1
+> s−1
+
+X
+
+> ℓ=0
+
+|i⟩ | ℓ⟩ ⊗ OiHℓ |ϕ⟩ . (146) The vector F O 
+
+> s
+
+(|ϕ⟩) stores the first s observable histories of |ϕ⟩ simultaneously for all observ-ables in O. The following lemma shows that these first s histories contain all observable-relevant information. We define the history space as the image of the history map: 
+
+S O 
+
+> hist
+
+:= F O 
+
+> s
+
+(Kr). (147) For each Krylov vector, define the corresponding history vector 
+
+|bϕj ⟩ := F O 
+
+> s
+
+(Hj |ψ⟩), j ≥ 0. (148) Explicitly, 
+
+|bϕj ⟩ =
+
+> M
+
+X
+
+> i=1
+> s−1
+
+X
+
+> ℓ=0
+
+|i⟩ | ℓ⟩ ⊗ OiHℓ+j |ψ⟩ . (149) 
+
+Lemma 5.3 (Finite-history characterization of invisible directions) . Suppose dim QO = s. 
+
+Then ker F O 
+
+> s
+
+= KO . Equivalently, for every |ϕ⟩ ∈ Kr,
+
+F O 
+
+> s
+
+(|ϕ⟩) = 0 ⇐⇒ |ϕ⟩ ∈ KO . (150) The proof is deferred to Appendix C. 
+
+Proposition 5.4 (History-space realization of the quotient dynamics) . Suppose dim QO = s. 
+
+Then 
+
+QO ∼= S O
+
+> hist
+
+, (151) 
+
+and therefore dim S O 
+
+> hist
+
+= s. Moreover, {| bϕ0⟩ , |bϕ1⟩ , . . . , |bϕs−1⟩} form a basis of S O
+
+> hist
+
+.
+
+The proof is deferred to Appendix C. 
+
+Remark 5.5. The quotient space and the history space describe the same observable-relevant degrees of freedom, but they play different roles. The quotient space is an abstract construction that identifies which directions can be discarded, whereas the history space gives a concrete vector-space representation that can be reconstructed from observable moments. 
+
+Having established that the observable-relevant quotient space admits an s-dimensional realization through the history space, we now construct a finite-dimensional representation of the induced Hamiltonian dynamics. Specifically, we use the first s history vectors as a basis of S O 
+
+> hist
+
+and represent the shift 
+
+|bϕj ⟩ 7 −→ | bϕj+1 ⟩ (152) 34 by an s × s matrix. This effective history-space dynamics can be reconstructed from inner products among the history vectors and will later allow us to evaluate polynomial transformations of H without retaining the full r-dimensional state-Krylov representation. Collect the first s history vectors into 
+
+AO 
+
+> s
+
+:= 
+
+h
+
+|bϕ0⟩ |bϕ1⟩ · · · |bϕs−1⟩
+
+i
+
+. (153) By Proposition 5.4, AO 
+
+> s
+
+has full column rank. Define also the shifted history matrix 
+
+AO 
+
+> s, +
+
+:= 
+
+h
+
+|bϕ1⟩ |bϕ2⟩ · · · |bϕs⟩
+
+i
+
+. (154) Since every column of AO 
+
+> s, +
+
+lies in the s-dimensional history space S O
+
+> hist
+
+, and the columns of 
+
+AO 
+
+> s
+
+form a basis of this space, there exists a unique matrix 
+
+JO 
+
+> s
+
+∈ Cs×s (155) such that 
+
+AO 
+
+> s
+
+JO 
+
+> s
+
+= AO
+
+> s, +
+
+. (156) The matrix JO 
+
+> s
+
+represents the induced Hamiltonian dynamics in the generally nonorthogonal history basis {| bϕj ⟩} s−1
+
+> j=0
+
+. To reconstruct JO 
+
+> s
+
+from inner products of history vectors, define the history Gram matrix 
+
+GO 
+
+> s
+
+:=  AO
+
+> s
+
+† AO 
+
+> s
+
+, (157) and the shifted history Gram matrix 
+
+bGO 
+
+> s
+
+:=  AO
+
+> s
+
+† AO
+
+> s, +
+
+. (158) Multiplying Eq. (156) from the left by  AO
+
+> s
+
+† gives 
+
+GO 
+
+> s
+
+JO 
+
+> s
+
+= bGO 
+
+> s
+
+. (159) Since the columns of AO 
+
+> s
+
+are linearly independent, GO 
+
+> s
+
+is positive definite and therefore invertible. Hence 
+
+JO 
+
+> s
+
+=  GO
+
+> s
+
+−1 bGO 
+
+> s
+
+. (160) The entries of GO 
+
+> s
+
+can be written explicitly as 
+
+ GO
+
+> s
+
+ 
+
+> a,b
+
+= ⟨bϕa|bϕb⟩ =
+
+> M
+
+X
+
+> i=1
+> s−1
+
+X
+
+> ℓ=0
+
+⟨ψ| Ha+ℓO2 
+
+> i
+
+Hb+ℓ |ψ⟩ , (161) for a, b = 0 , . . . , s − 1. Similarly, 
+
+ bGO
+
+> s
+
+
+
+> a,b
+
+= ⟨bϕa|bϕb+1 ⟩ =
+
+> M
+
+X
+
+> i=1
+> s−1
+
+X
+
+> ℓ=0
+
+⟨ψ| Ha+ℓO2 
+
+> i
+
+Hb+ℓ+1 |ψ⟩ . (162) 35 We next use JO 
+
+> s
+
+to represent polynomial functions of the Hamiltonian within the observable-relevant dynamics. Define 
+
+As := |ψ⟩ H |ψ⟩ · · · Hs−1 |ψ⟩ . (163) For each observable Oi, define the reduced observable Krylov matrix 
+
+Bs,i := A†
+
+> s
+
+OiAs, (164) whose entries are 
+
+(Bs,i )a,b = ⟨ψ| HaOiHb |ψ⟩ , a, b = 0 , . . . , s − 1. (165) Let 
+
+P (x) = 
+
+> d
+
+X
+
+> k=0
+
+pkxk (166) be a polynomial approximation to the target matrix function. Define 
+
+λO := P (JO 
+
+> s
+
+)e0, (167) where 
+
+e0 := (1 , 0, . . . , 0) T. (168) 
+
+Remark 5.6. The matrix JO 
+
+> s
+
+is defined with respect to the generally nonorthogonal history basis and therefore need not be Hermitian in the standard Euclidean inner product on its coefficient space. Its role here is to represent the induced Hamiltonian action on the observable-relevant degrees of freedom. 
+
+## 5.4 Algorithm procedure 
+
+For convenience, define 
+
+ΩO := 
+
+> M
+
+X
+
+> i=1
+
+O2 
+
+> i
+
+. (169) Then Eqs. (161) and (162) can be written as 
+
+ GO
+
+> s
+
+ 
+
+> a,b
+
+=
+
+> s−1
+
+X
+
+> ℓ=0
+
+⟨ψ| Ha+ℓΩO Hb+ℓ |ψ⟩ , (170) 
+
+ bGO
+
+> s
+
+
+
+> a,b
+
+=
+
+> s−1
+
+X
+
+> ℓ=0
+
+⟨ψ| Ha+ℓΩO Hb+ℓ+1 |ψ⟩ . (171) Let ν2Ω denote a shadow-norm upper bound for the cross-moment estimators associated with 
+
+ΩO , analogously to ν2 
+
+> O
+
+for the observables {Oi}Mi=1 .36 Algorithm 6: ObservableAwareSQSVT 
+
+Input: exact (1 , l, 0) -block encoding UH of H; state-preparation access to |ψ⟩; polynomial 
+
+P ; known observable-relevant dimension s; observables {Oi}Mi=1 ; shadow ensemble 
+
+(U , M ); shadow-norm upper bounds ν2 
+
+> O
+
+and ν2Ω; history-matrix precisions ϵG, ϵ bG;observable-matrix precision ϵS ; failure probability δ
+
+Output: {eyi}Mi=1  
+
+> 1
+
+Set δhist ← δ/ 2 and δB ← δ/ 2; 
+
+> 2
+
+Step 1: Estimate the history Gram matrices.  
+
+> 3
+
+Set ηhist ← min {ϵG, ϵ bG}/s 2, C hist ← s(2 s + 1) , δ pair hist ← δhist /C hist . 
+
+> 4
+
+Set Khist ←
+
+l
+
+8 log 
+
+
+
+2/δ pair hist 
+
+m 
+
+, S hist ← 8ν2Ω/η 2hist 
+
+ , N pair hist ← Khist Shist . 
+
+> 5
+
+for 0 ≤ p ≤ q ≤ 2s − 1 do  
+
+> 6
+
+Dhist  
+
+> p,q
+
+← KrylovShadowSampling (UH , |ψ⟩ , p, q, (U , M ), N pair hist ); 
+
+> 7
+
+{ecp,q } ← KrylovShadowPostProcessing (Dhist  
+
+> p,q
+
+, {ΩO }, ν 2Ω, η hist , δ pair hist ); 
+
+> 8
+
+if p < q then  
+
+> 9
+
+ecq,p ← ec∗
+
+> p,q
+
+; 
+
+> 10
+
+for a, b = 0 , . . . , s − 1 do  
+
+> 11
+
+( eGO 
+
+> s
+
+)a,b ←
+
+> s−1
+
+X
+
+> ℓ=0
+
+eca+ℓ,b +ℓ; ( ebGO 
+
+> s
+
+)a,b ←
+
+> s−1
+
+X
+
+> ℓ=0
+
+eca+ℓ,b +ℓ+1 ; 
+
+> 12
+
+Step 2: Reconstruct the effective history-space dynamics.  
+
+> 13
+
+if eGO 
+
+> s
+
+is singular then  
+
+> 14
+
+return failure;  
+
+> 15
+
+eJO 
+
+> s
+
+← ( eGO 
+
+> s
+
+)−1 ebGO 
+
+> s
+
+; 
+
+> 16
+
+Step 3: Compute the observable-aware Krylov coefficients.  
+
+> 17
+
+eλO ← P ( eJO 
+
+> s
+
+)e0, where e0 = (1 , 0, . . . , 0) T ∈ Cs; 
+
+> 18
+
+Step 4: Estimate the reduced observable Krylov matrices.  
+
+> 19
+
+Set CB ← s(s + 1) /2, δpair  
+
+> B
+
+← δB /C B . 
+
+> 20
+
+Set KB ←
+
+l
+
+8 log 
+
+
+
+2M /δ pair 
+
+> B
+
+m 
+
+, S B ← 8ν2
+
+> O
+
+/ϵ 2
+
+> S
+
+ , N pair  
+
+> B
+
+← KB SB . 
+
+> 21
+
+for 0 ≤ a ≤ b ≤ s − 1 do  
+
+> 22
+
+DBa,b ← KrylovShadowSampling (UH , |ψ⟩ , a, b, (U , M ), N pair  
+
+> B
+
+); 
+
+> 23
+
+{eμi,a,b }Mi=1 ← KrylovShadowPostProcessing (DBa,b , {Oi}Mi=1 , ν 2
+
+> O
+
+, ϵ S , δ pair  
+
+> B
+
+); 
+
+> 24
+
+for i = 1 , . . . , M do  
+
+> 25
+
+if a = b then  
+
+> 26
+
+( eBs,i )a,a ← Re eμi,a,a ; 
+
+> 27
+
+else  
+
+> 28
+
+( eBs,i )a,b ← eμi,a,b ; ( eBs,i )b,a ← eμ∗
+
+> i,a,b
+
+; 
+
+> 29
+
+Step 5: Compute the observable estimates.  
+
+> 30
+
+for i = 1 , . . . , M do  
+
+> 31
+
+eyi ← (eλO )† eBs,i eλO ; 
+
+> 32
+
+return {eyi}Mi=1 ;
+
+37 5.5 Correctness analysis 
+
+Proposition 5.7 (Exact observable reconstruction) . For every polynomial P and every 
+
+i ∈ [M ],
+
+⟨ψ| P (H)†OiP (H) |ψ⟩ =  λO † Bs,i λO , (172) 
+
+where 
+
+λO = P (JO 
+
+> s
+
+)e0. (173) 
+
+Proof. We first make explicit how JO 
+
+> s
+
+represents the action of H in the history space. By Lemma 5.3, 
+
+ker F O 
+
+> s
+
+= KO , (174) and KO is invariant under H. Therefore, if two vectors |v1⟩ , |v2⟩ ∈ Kr have the same history representation, 
+
+F O 
+
+> s
+
+(|v1⟩) = F O 
+
+> s
+
+(|v2⟩), (175) then 
+
+|v1⟩ − | v2⟩ ∈ KO . (176) Since KO is H-invariant, 
+
+H(|v1⟩ − | v2⟩) ∈ KO , (177) and hence 
+
+F O 
+
+> s
+
+(H |v1⟩) = F O 
+
+> s
+
+(H |v2⟩). (178) Thus the rule 
+
+F O 
+
+> s
+
+(|v⟩) 7 −→ F O 
+
+> s
+
+(H |v⟩) (179) defines a well-defined linear dynamics on S O
+
+> hist
+
+. Recall that 
+
+|bϕj ⟩ = F O 
+
+> s
+
+(Hj |ψ⟩), (180) and 
+
+AO 
+
+> s
+
+=
+
+h
+
+|bϕ0⟩ |bϕ1⟩ · · · |bϕs−1⟩
+
+i
+
+. (181) By definition, JO 
+
+> s
+
+satisfies 
+
+AO 
+
+> s
+
+JO 
+
+> s
+
+= AO 
+
+> s, +
+
+=
+
+h
+
+|bϕ1⟩ |bϕ2⟩ · · · |bϕs⟩
+
+i
+
+. (182) Hence JO 
+
+> s
+
+is precisely the matrix representation of the induced action of H in the history basis. In particular, 
+
+F O 
+
+> s
+
+(|ψ⟩) = |bϕ0⟩ = AO 
+
+> s
+
+e0. (183) Applying the induced history-space dynamics once gives 
+
+F O 
+
+> s
+
+(H |ψ⟩) = |bϕ1⟩ = AO 
+
+> s
+
+JO 
+
+> s
+
+e0. (184) Applying it repeatedly therefore yields, by induction, 
+
+F O 
+
+> s
+
+(Hk |ψ⟩) = AO
+
+> s
+
+ JO
+
+> s
+
+k e0, k ≥ 0. (185) 38 Now let 
+
+P (x) = 
+
+> d
+
+X
+
+> k=0
+
+pkxk. (186) Using the linearity of F O 
+
+> s
+
+and Eq. (185), we obtain 
+
+F O 
+
+> s
+
+(P (H) |ψ⟩) = 
+
+> d
+
+X
+
+> k=0
+
+pkF O 
+
+> s
+
+(Hk |ψ⟩)=
+
+> d
+
+X
+
+> k=0
+
+pkAO
+
+> s
+
+ JO
+
+> s
+
+k e0
+
+= AO 
+
+> s
+
+P (JO 
+
+> s
+
+)e0. (187) By the definition 
+
+λO := P (JO 
+
+> s
+
+)e0, (188) this becomes 
+
+F O 
+
+> s
+
+(P (H) |ψ⟩) = AO 
+
+> s
+
+λO . (189) We next relate the right-hand side to a vector in the original state-Krylov space. Recall that 
+
+As = |ψ⟩ H |ψ⟩ · · · Hs−1 |ψ⟩ . (190) Writing 
+
+λO = λ0 λ1 · · · λs−1
+
+T , (191) we have 
+
+AsλO =
+
+> s−1
+
+X
+
+> j=0
+
+λj Hj |ψ⟩ . (192) Applying the history map and using its linearity, 
+
+F O
+
+> s
+
+ AsλO  =
+
+> s−1
+
+X
+
+> j=0
+
+λj F O 
+
+> s
+
+(Hj |ψ⟩)=
+
+> s−1
+
+X
+
+> j=0
+
+λj |bϕj ⟩
+
+= AO 
+
+> s
+
+λO . (193) Comparing Eqs. (189) and (193), we obtain 
+
+F O 
+
+> s
+
+(P (H) |ψ⟩) = F O
+
+> s
+
+ AsλO  . (194) By linearity, 
+
+F O
+
+> s
+
+ P (H) |ψ⟩ − AsλO  = 0 . (195) Therefore, 
+
+P (H) |ψ⟩ − AsλO ∈ ker F O 
+
+> s
+
+. (196) 39 Using ker F O 
+
+> s
+
+= KO , there exists |ηP ⟩ ∈ KO such that 
+
+P (H) |ψ⟩ = AsλO + |ηP ⟩ . (197) Since 
+
+KO ⊆ ker Oi (198) for every i ∈ [M ], we have 
+
+Oi |ηP ⟩ = 0 . (199) Because Oi is Hermitian, 
+
+⟨ηP | Oi = 0 (200) as well. Therefore, 
+
+⟨ψ| P (H)†OiP (H) |ψ⟩ =  λO † A†
+
+> s
+
+OiAsλO
+
+=  λO † Bs,i λO . (201) This proves the claim. 
+
+Lemma 5.8 (Spectral structure of the effective dynamics) . Suppose that H = H† and 
+
+∥H∥2 ≤ 1. Then JO 
+
+> s
+
+is similar to a Hermitian contraction. In particular, there exist an invertible matrix XO and a real diagonal matrix ΛO such that 
+
+JO 
+
+> s
+
+= XO ΛO X−1 
+
+> O
+
+, spec(Λ O ) ⊆ [−1, 1] . (202) 
+
+Define 
+
+κO := ∥XO ∥2∥X−1 
+
+> O
+
+∥2. (203) 
+
+Proof. The observable-invisible subspace KO is invariant under H. Since H is Hermitian, its orthogonal complement inside Kr(H, |ψ⟩) is also invariant under H. Hence the induced action of H on the quotient QO = Kr/K O is similar to the restriction of H to this orthogonal complement. The latter is Hermitian and has spectrum contained in [−1, 1] . Since JO 
+
+> s
+
+is a matrix representation of this induced action, the claim follows. 
+
+Lemma 5.9 (Degree-polynomial stability) . Let 
+
+P (x) = 
+
+> d
+
+X
+
+> k=0
+
+pkxk, BP := max  
+
+> x∈[−1,1]
+
+|P (x)|. (204) 
+
+There exist universal constants c, C > 0 such that, for any perturbation E satisfying 
+
+∥E∥2 ≤ cκO d2 , (205) 
+
+we have 
+
+P (JO 
+
+> s
+
++ E) − P (JO 
+
+> s
+
+) 2 ≤ Cκ 2 
+
+> O
+
+BP d4∥E∥2. (206) 40 Proof. Let ρd = 1 + 1 /d and let Γd be the Bernstein ellipse with parameter ρd. Its distance from [−1, 1] is Ω( d−2). By the Bernstein–Walsh inequality, 
+
+max 
+
+> z∈Γd
+
+|P (z)| ≤ ρddBP ≤ eB P . (207) By Lemma 5.8, 
+
+∥(zI − JO 
+
+> s
+
+)−1∥2 = O(κO d2) (208) uniformly for z ∈ Γd. If Eq. (205) holds with sufficiently small universal c, the resolvent identity and a Neumann-series argument give 
+
+∥(zI − JO 
+
+> s
+
+− E)−1∥2 = O(κO d2). (209) Using the Cauchy integral representation and the resolvent identity, 
+
+P (JO 
+
+> s
+
++ E) − P (JO 
+
+> s
+
+) = 12πi 
+
+I
+
+> Γd
+
+P (z)( zI − JO 
+
+> s
+
+− E)−1E(zI − JO 
+
+> s
+
+)−1 dz. (210) Since the length of Γd is O(1) , combining the above bounds proves Eq. (206). 
+
+## 5.6 End-to-end error analysis 
+
+Throughout this subsection, the polynomial P is fixed, and we analyze the estimation error relative to 
+
+yi := ⟨ψ| P (H)†OiP (H) |ψ⟩ . (211) Define 
+
+γO := λmin 
+
+ GO
+
+> s
+
+ > 0, (212) and assume 
+
+ϵG < γ O . (213) Define 
+
+ϵJ := ϵ bG + ϵG JO 
+
+> s2
+
+γO − ϵG
+
+. (214) For 
+
+P (x) = 
+
+> d
+
+X
+
+> k=0
+
+pkxk, (215) define 
+
+BP := max  
+
+> x∈[−1,1]
+
+|P (x)|. (216) Assume in addition that 
+
+ϵJ ≤ cκO d2 , (217) where c > 0 is the universal constant in Lemma 5.9. Set 
+
+ϵλ := Cκ 2 
+
+> O
+
+BP d4ϵJ , (218) 41 where C > 0 is the universal constant in Lemma 5.9. Finally, define 
+
+θO := λO 
+
+> 2
+
+, βO := max   
+
+> i∈[M]
+
+∥Bs,i ∥2 . (219) By Lemma 5.8, 
+
+θO = ∥P (JO 
+
+> s
+
+)e0∥2 ≤ κO BP . (220) 
+
+Theorem 5.10 (Observable-Aware S-QSVT) . Assume that UH is an exact (1 , l, 0) -block encoding of H and that Eqs. (213) and (217) hold. Then, with probability at least 1 − δ,Algorithm 6 does not return failure and, simultaneously for every i ∈ [M ],
+
+|eyi − yi| ≤ sϵ S (θO + ϵλ)2 + βO
+
+ 2θO ϵλ + ϵ2
+
+> λ
+
+ . (221) 
+
+Consequently, if the internal precisions are chosen such that 
+
+sϵ S (θO + ϵλ)2 + βO
+
+ 2θO ϵλ + ϵ2
+
+> λ
+
+ ≤ ϵO, (222) 
+
+then 
+
+|eyi − yi| ≤ ϵO for all i ∈ [M ]. (223) 
+
+The total number of classical-shadow samples is 
+
+Nobs = O
+
+ s6ν2Ω
+
+min {ϵG, ϵ bG}2 log 
+
+s2
+
+δ
+
+
+
++ s2ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+M s 2
+
+δ
+
+ 
+
+. (224) 
+
+Moreover, if one application of UH or controlled-UH has circuit depth at most DH , state preparation has depth Dψ, and one shadow-measurement layer has depth Dsh , then the maximum quantum circuit depth is 
+
+DOA = O(Dψ + sD H + Dsh ) . (225) 
+
+Proof. Accuracy of the history Gram matrices. For 0 ≤ p, q ≤ 2s − 1, define 
+
+cp,q := ⟨ψ| HpΩO Hq |ψ⟩ . (226) Since ΩO is Hermitian, 
+
+cq,p = c∗
+
+> p,q
+
+. (227) There are 
+
+Chist = (2 s)(2 s + 1) 2 = s(2 s + 1) (228) pairs with 0 ≤ p ≤ q ≤ 2s − 1. For each such pair, Algorithm 6 first generates an observable-independent Krylov-shadow dataset using Algorithm 3 and then estimates the singleton observable ΩO using Algorithm 4 with failure probability 
+
+δpair hist = δhist 
+
+Chist 
+
+. (229) By Proposition 4.5 and a union bound, with probability at least 1 − δhist ,
+
+|ecp,q − cp,q | ≤ ηhist (230) 42 simultaneously for every 0 ≤ p, q ≤ 2s − 1. Conditioned on this event, for every a, b ,
+
+( eGO 
+
+> s
+
+)a,b − (GO 
+
+> s
+
+)a,b ≤
+
+> s−1
+
+X
+
+> ℓ=0
+
+|eca+ℓ,b +ℓ − ca+ℓ,b +ℓ| ≤ sη hist ≤ ϵG
+
+s . (231) Hence 
+
+eGO 
+
+> s
+
+− GO 
+
+> s2
+
+≤ eGO 
+
+> s
+
+− GO 
+
+> sF
+
+≤ ϵG. (232) Similarly, 
+
+( ebG 
+
+> O
+> s
+
+)a,b − ( bGO 
+
+> s
+
+)a,b ≤
+
+> s−1
+
+X
+
+> ℓ=0
+
+|eca+ℓ,b +ℓ+1 − ca+ℓ,b +ℓ+1 | ≤ sη hist ≤ ϵ bG
+
+s , (233) and therefore 
+
+ebG 
+
+> O
+> s
+
+− bGO
+
+> s
+> 2
+
+≤ ϵ bG. (234) 
+
+Accuracy of the observable Krylov matrices. There are 
+
+CB = s(s + 1) 2 (235) distinct Krylov pairs 0 ≤ a ≤ b ≤ s−1. For each pair, Algorithm 6 generates a Krylov-shadow dataset using Algorithm 3 and then applies Algorithm 4 to estimate the cross moments for all M observables simultaneously with precision ϵS and failure probability 
+
+δpair  
+
+> B
+
+= δB
+
+CB
+
+. (236) Another union bound therefore implies that, with probability at least 1 − δB ,
+
+( eBs,i )a,b − (Bs,i )a,b ≤ ϵS . (237) simultaneously for all i ∈ [M ] and a, b . Since 
+
+δhist + δB = δ, (238) the history-matrix and observable-matrix guarantees hold simultaneously with probability at least 1 − δ.
+
+Error in the effective history-space dynamics. On the event above, Weyl’s inequality gives 
+
+λmin 
+
+ eGO
+
+> s
+
+
+
+≥ λmin 
+
+ GO
+
+> s
+
+ − eGO 
+
+> s
+
+− GO 
+
+> s2
+
+≥ γO − ϵG > 0. (239) Thus eGO 
+
+> s
+
+is invertible and  eGO
+
+> s
+
+−1
+
+> 2
+
+≤ 1
+
+γO − ϵG
+
+. (240) 43 In particular, Algorithm 6 does not return failure on this event. Using 
+
+GO 
+
+> s
+
+JO 
+
+> s
+
+= bGO 
+
+> s
+
+(241) and 
+
+eGO 
+
+> s
+
+eJO 
+
+> s
+
+= ebG 
+
+> O
+> s
+
+, (242) we obtain 
+
+eGO
+
+> s
+
+ eJO 
+
+> s
+
+− JO
+
+> s
+
+
+
+=
+
+ ebG 
+
+> O
+> s
+
+− bGO
+
+> s
+
+
+
+−
+
+ eGO 
+
+> s
+
+− GO
+
+> s
+
+
+
+JO 
+
+> s
+
+. (243) Therefore, 
+
+eJO 
+
+> s
+
+− JO 
+
+> s2
+
+≤
+
+ eGO
+
+> s
+
+−1
+
+> 2
+
+ϵ bG + ϵG JO 
+
+> s2
+
+ ≤ ϵ bG + ϵG JO 
+
+> s2
+
+γO − ϵG
+
+= ϵJ . (244) 
+
+Error in the observable-aware Krylov coefficients. Let 
+
+EJ := eJO 
+
+> s
+
+− JO 
+
+> s
+
+. (245) By Eq. (244), 
+
+∥EJ ∥2 ≤ ϵJ . (246) Under Eq. (217), Lemma 5.9 therefore gives 
+
+P ( eJO 
+
+> s
+
+) − P (JO 
+
+> s
+
+) 2
+
+≤ Cκ 2 
+
+> O
+
+BP d4ϵJ = ϵλ. (247) Since ∥e0∥2 = 1 ,
+
+eλO
+
+− λO
+
+> 2
+
+=
+
+h
+
+P ( eJO 
+
+> s
+
+) − P (JO 
+
+> s
+
+)
+
+i
+
+e0 2
+
+(248) 
+
+≤ ϵλ. (249) 
+
+Error in the observable estimates. Let 
+
+∆λ := eλO
+
+− λO . (250) By Proposition 5.7, 
+
+yi =  λO † Bs,i λO . (251) Hence 
+
+|eyi − yi| ≤ 
+
+eλO †  eBs,i − Bs,i 
+
+ eλO
+
++
+
+eλO †
+
+Bs,i eλO
+
+−  λO † Bs,i λO . (252) Since every entry of eBs,i − Bs,i has magnitude at most ϵS ,
+
+eBs,i − Bs,i 2
+
+≤ eBs,i − Bs,i F
+
+≤ sϵ S . (253) 44 Moreover, 
+
+eλO
+
+> 2
+
+≤ θO + ϵλ. (254) Thus the first term in Eq. (252) is at most 
+
+sϵ S (θO + ϵλ)2 . (255) For the second term, 
+
+eλO †
+
+Bs,i eλO
+
+−  λO † Bs,i λO
+
+= (∆ λ)† Bs,i λO +  λO † Bs,i ∆λ + (∆ λ)† Bs,i ∆λ. (256) Using 
+
+∥∆λ∥2 ≤ ϵλ, λO 
+
+> 2
+
+= θO , ∥Bs,i ∥2 ≤ βO , (257) we obtain eλO †
+
+Bs,i eλO
+
+−  λO † Bs,i λO ≤ βO
+
+ 2θO ϵλ + ϵ2
+
+> λ
+
+ . (258) Combining the two contributions proves Eq. (221). 
+
+Sample complexity. For the history matrices, the algorithm estimates 
+
+Chist = s(2 s + 1) = O(s2) (259) distinct Krylov cross moments. Each one is estimated to precision 
+
+ηhist = min {ϵG, ϵ bG}
+
+s2 . (260) By Proposition 4.5, the number of samples per pair is 
+
+O
+
+ s4ν2Ω
+
+min {ϵG, ϵ bG}2 log 
+
+s2
+
+δ
+
+ 
+
+. (261) Multiplying by O(s2) pairs gives 
+
+Nhist = O
+
+ s6ν2Ω
+
+min {ϵG, ϵ bG}2 log 
+
+s2
+
+δ
+
+ 
+
+. (262) For the observable Krylov matrices, there are CB = O(s2) distinct upper-triangular Krylov pairs. For each pair, all M observables are estimated simultaneously using 
+
+O
+
+ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+M s 2
+
+δ
+
+ 
+
+(263) samples. Thus 
+
+NB = O
+
+s2ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+M s 2
+
+δ
+
+ 
+
+. (264) 45 Adding the two contributions gives Eq. (224). 
+
+Circuit depth. The history-matrix estimation requires Krylov cross moments with 0 ≤
+
+p, q ≤ 2s − 1. For a fixed pair (p, q ), one shadow sample uses max {p, q } = O(s) sequential applications of UH or controlled-UH . Hence its circuit depth is 
+
+O(Dψ + sD H + Dsh ) .
+
+The estimation of Bs,i only requires 0 ≤ a, b ≤ s−1 and satisfies the same bound. All remaining steps are classical. Therefore the maximum quantum circuit depth is O(Dψ + sD H + Dsh ),proving Eq. (225). 
+
+Remark 5.11. Theorem 5.10 controls the estimation error for a fixed polynomial P . If P
+
+approximates a target function f , the error due to replacing f (H) by P (H) is an additional approximation error and can be treated separately. 
+
+# References 
+
+[Adh25] Kiran Adhikari. Krylov polynomials and quantum query complexity, 2025. URL: 
+
+https://arxiv.org/abs/2510.11786 , arXiv:2510.11786 .[Amb12] Andris Ambainis. Variable time amplitude amplification and quantum algorithms for linear algebra problems. In stacs29th , pages 636–647, 2012. arxiv1010.4458. 
+
+doi:10.4230/LIPIcs.STACS.2012.636 .[BACS07] Dominic W Berry, Graeme Ahokas, Richard Cleve, and Barry C Sanders. Efficient quantum algorithms for simulating sparse hamiltonians. Communications in Mathematical Physics , 270(2):359–371, 2007. [CAS +22] Pedro CS Costa, Dong An, Yuval R Sanders, Yuan Su, Ryan Babbush, and Dominic W Berry. Optimal scaling quantum linear-systems solver via discrete adiabatic theorem. PRX quantum , 3(4):040303, 2022. [CCH +23] Nai-Hui Chia, Kai-Min Chung, Yao-Ching Hsieh, Han-Hsuan Lin, Yao-Ting Lin, and Yu-Ching Shen. On the impossibility of general parallel fast-forwarding of hamiltonian simulation. In Proceedings of the conference on Proceedings of the 38th Computational Complexity Conference , pages 1–45, 2023. [CKS17] Andrew M. Childs, Robin Kothari, and Rolando D. Somma. Quantum algorithm for systems of linear equations with exponentially improved dependence on preci-sion. siamjc , 46(6):1920–1950, 2017. arxiv1511.02306. doi:10.1137/16M1087072 .[CPS96] XIAO-WEN CHANG, CHRISTOPHER C. PAIGE, and G. W. STEWART. New perturbation analyses for the cholesky factorization. IMA Journal of Numerical Analysis , 16(4):457–484, 1996. doi:10.1093/imanum/16.4.457 .46 [CSS +26] Abhijit Chakraborty, Bharath Sambasivam, Karunya Shirali, Hunter Nelson, Mafalda Ramôa, Sophia E. Economou, and Edwin Barnes. An efficient algorithm for approximate shadow hamiltonian simulation, 2026. URL: https://arxiv. org/abs/2607.11882 , arXiv:2607.11882 .[Dal24] Alexander M Dalzell. A shortcut to an optimal quantum linear system solver. 
+
+arXiv preprint arXiv:2406.12086 , 2024. [DLS26] Alexander M Dalzell, Jianqiang Li, and Yuan Su. Faster quantum linear system solver beyond the condition number. arXiv preprint arXiv:2607.07691 , 2026. [DOV94] Zlatko Drmač, Matjaž Omladič, and Krešimir Veselić. On the perturbation of the cholesky factorization. SIAM Journal on Matrix Analysis and Applications ,15(4):1319–1332, 1994. arXiv:ttps://doi.org/10.1137/S0895479893244717 ,
+
+doi:10.1137/S0895479893244717 .[Fey18] Richard P. Feynman. Simulating physics with computers. Feynman and computa-tion , 22:133–153, 2018. [GSLW19] András Gilyén, Yuan Su, Guang Hao Low, and Nathan Wiebe. Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics. In stoc51st , pages 193–204, 2019. arxiv1806.01838. doi:10.1145/ 3313276.3316366 .[GSŞ21] Shouzhen Gu, Rolando D Somma, and Burak Şahinoğlu. Fast-forwarding quantum evolution. Quantum , 5:577, 2021. [GVL13] G.H. Golub and C.F. Van Loan. Matrix Computations . Johns Hopkins Studies in the Mathematical Sciences. Johns Hopkins University Press, 2013. URL: 
+
+https://books.google.com/books?id=X5YfsuCWpxMC .[HHL09] Aram W. Harrow, Avinatan Hassidim, and Seth Lloyd. Quantum algorithm for linear systems of equations. Physical Review Letters , 103, 10 2009. doi: 10.1103/PhysRevLett.103.150502 .[HKP20] Hsin-Yuan Huang, Richard Kueng, and John Preskill. Predicting many properties of a quantum system from very few measurements. Nature Physics , 16(10):1050– 1057, 2020. [JVV86] Mark R Jerrum, Leslie G Valiant, and Vijay V Vazirani. Random generation of combinatorial structures from a uniform distribution. Theoretical computer science , 43:169–188, 1986. [JW07] Dominik Janzing and Pawel Wocjan. A simple promisebqp-complete matrix problem. Theory of computing , 3(1):61–79, 2007. [KGCJ24] Amara Katabarwa, Katerina Gratsea, Athena Caesura, and Peter D. John-son. Early fault-tolerant quantum computing. PRX Quantum , 5:020101, Jun 2024. URL: https://link.aps.org/doi/10.1103/PRXQuantum.5.020101 ,
+
+doi:10.1103/PRXQuantum.5.020101 .47 [Lan50] Cornelius Lanczos. An iteration method for the solution of the eigenvalue problem of linear differential and integral operators. Journal of Research of the National Bureau of Standards , 45(4):255–282, 1950. doi:10.6028/jres.045.026 .[Li26] Jianqiang Li. A new quantum linear system algorithm beyond the condition number and its application to solving multivariate polynomial systems. 2026. URL: https://arxiv.org/abs/2510.05588 , arXiv:2510.05588 .[LS24] Guang Hao Low and Yuan Su. Quantum linear system algorithm with optimal queries to initial state preparation. arXiv preprint arXiv:2410.18178 , 2024. [LT20] Lin Lin and Yu Tong. Optimal polynomial based quantum eigenstate filtering with application to solving quantum linear systems. Quantum , 4:361, 2020. [MPS +24] Mauro ES Morales, Lirandë Pira, Philipp Schleich, Kelvin Koor, Pedro Costa, Dong An, Alán Aspuru-Guzik, Lin Lin, Patrick Rebentrost, and Dominic W Berry. Quantum linear system solvers: A survey of algorithms and applications. arXiv preprint arXiv:2411.02522 , 2024. [SKK +25] Rolando D Somma, Robbie King, Robin Kothari, Thomas E O’Brien, and Ryan Babbush. Shadow hamiltonian simulation. Nature Communications , 16(1):2690, 2025. [SSO19] Yiğit Subaşi, Rolando D Somma, and Davide Orsucci. Quantum algorithms for systems of linear equations inspired by adiabatic quantum computing. Physical review letters , 122:60504, 2019. 48 Appendix A: Technical Details of State-Aware QSVT 
+
+## A.1 Algorithm 7 
+
+Algorithm 7: k + 1 column calculation of Ur
+
+Input: ur, g k+1 , g 2k+1 , g 2k+2 , α, β
+
+Output: ⃗u k+1 , α k, β k+1  
+
+> 1
+
+u0,k +1 ← gk+1 ; 
+
+> 2
+
+for i ∈ 1, . . . , k − 1 do  
+
+> 3
+
+ui,k +1 = βi+1 ui+1 ,k + αiui,k + βiui−1,k  
+
+> 4
+
+uk,k +1 ← 1 
+
+> uk,k
+
+(g2k+1 − Pk−1 
+
+> i=0
+
+ui,k ui,k +1 ) ; 
+
+> 5
+
+uk+1 ,k +1 ←
+
+q
+
+g2k+2 − Pki=0 u2 
+
+> i,k +1
+
+; 
+
+> 6
+
+αk ← uk,k +1  
+
+> uk,k
+
+− uk−1,k  
+
+> uk−1,k −1
+
+; 
+
+> 7
+
+βk+1 ← uk+1 ,k +1  
+
+> uk,k
+
+;
+
+> 8
+
+⃗u k+1 ← u0,k +1 , . . . , u k+1 ,k +1 
+
+T ; 
+
+> 9
+
+return ⃗ u k+1 , α k, β k+1 ;
+
+A.1.1 Correctness of Algorithm 7 
+
+Using Gaxpy’s Cholesky algorithm, we have O(r3) complexity for the given r × r Hermite matrix [GVL13, Algorithm 4.2.1]. However, using the relationship between Gr, U r, J r we can construct Ur, J r simultaneously and with more efficient way. Using a fact that Ar = VrUr we can derive the next equation. 
+
+Hk |ψ⟩ =
+
+> k
+
+X
+
+> i=0
+
+uik |vi⟩ (265) Since {| vi⟩} r−1 
+
+> i=0
+
+is an orthonormal basis, we get 
+
+gk =
+
+> min ( l,k −l)
+
+X
+
+> i=0
+
+uil uik −l (266) Therefore, even the same gk there could be a different representation of uij . For example, 
+
+g4 = u04 = u01 u03 + u11 u13 = u202 + u212 + u222 (267) 
+
+g3 = u03 = u01 u02 + u11 u12 (268) 
+
+u12 = g3 − u01 u02 
+
+u11 
+
+(269) For uij +1 and uj+1 j+1 ,
+
+ujj +1 = 1
+
+ujj 
+
+(g2j+1 −
+
+> j−1
+
+X
+
+> i=0
+
+uij uij +1 ) (270) 49 uj+1 j+1 =
+
+vuutg2j+2 −
+
+> j
+
+X
+
+> i=0
+
+u2 
+
+> ij +1
+
+(271) Finally from Eq (265), 
+
+Hk |ψ⟩ =
+
+> k
+
+X
+
+> i=0
+
+uik |vi⟩ (272) 
+
+Hk+1 |ψ⟩ =
+
+> k+1
+
+X
+
+> i=0
+
+uik +1 |vi⟩ (273) 
+
+=
+
+> k
+
+X
+
+> i=0
+
+uik H |vi⟩ (274) 
+
+=
+
+> k
+
+X
+
+> i=0
+
+uik (βi+1 |vi+1 ⟩ + αi |vi⟩ + βi |vi−1⟩) (275) 
+
+= u0kα0 |v0⟩ +
+
+> k−1
+
+X
+
+> i=1
+
+(βiui−1k + αiuik + βi+1 ui+1 k) |vi⟩ + ukk βk+1 |vk+1 ⟩ (276) (277) Therefore, we get the equation for βk+1 and uik +1 from Eq (273) and (276). 
+
+βk+1 = uk+1 k+1 
+
+ukk 
+
+(278) 
+
+αk = ukk +1 
+
+ukk 
+
+− uk−1k
+
+uk−1k−1
+
+(279) 
+
+uik +1 = βi+1 ui+1 k + αiuik + βiui−1k (280) 
+
+Gr =
+
+
+
+g0 g1 g2 g3 g4 · · · gr−1
+
+g1 g2 g3 g4 g5 · · · gr
+
+g2 g3 g4 g5 g6 · · · gr+1 
+
+g3 g4 g5 g6 g7 · · · gr+2 
+
+g4 g5 g6 g7 g8 · · · gr+3 
+
+... ... ... ... ... . . . ...
+
+gr−1 gr gr+1 gr+2 gr+3 · · · g2r−2
+
+
+
+(281) We can rewrite it as 50 Gr =
+
+
+
+u00 u01 u02 u03 u04 · · · u0r−1
+
+u01 u02 u03 u04 u05 · · · gr
+
+u02 u03 u04 u05 u06 · · · gr+1 
+
+u03 u04 u05 u06 u07 · · · gr+2 
+
+u04 u05 u06 u07 u08 · · · gr+3 
+
+... ... ... ... ... . . . ...
+
+u0r−1 gr gr+1 gr+2 gr+3 · · · g2r−2
+
+
+
+(282) For the given [g0, . . . g r−1, g r, . . . g 2r−1] data, we can calculate Ur, J r together with Algo-rithm 2. 
+
+Computational Complexity j + 1 th column calculation for Ur requires O(j) complexity and total r column exists so the total computational complexity is O(r2) to compute Ur, J r.
+
+## A.2 Proof of QR factor-Lanczos equivalent 
+
+Proof. 
+
+Qr =
+
+
+
+|q0⟩ |q1⟩ · · · |qr−1⟩
+
+
+
+∈ M2n×r(C) (283) 
+
+|o0⟩ = |v0⟩ = |ψ⟩.
+
+
+
+|ψ⟩ H|ψ⟩ · · · Hr−1|ψ⟩
+
+
+
+=
+
+
+
+|q0⟩ q1⟩ · · · |qr−1⟩
+
+
+
+·
+
+
+
+u00 u01 u02 · · · u0r−1
+
+0 u11 u12 · · · u1r−1
+
+0 0 u22 · · · u2r−1
+
+... ... ... . . . ...
+
+0 0 0 · · · ur−1r−1
+
+0 0 0 · · · 00 0 0 · · · 0
+
+... ... ... . . . ...
+
+0 0 0 · · · 0
+
+
+
+(284) 
+
+|ψ⟩ = u00 |q0⟩ = α0|v0⟩ (285) Therefore, since, ⟨ψ|ψ⟩ = ⟨o0|o0⟩ = ⟨v0|v0⟩ = 1 so u00 = eia , α 0 = eiβ , then K1(H, |ψ⟩) = 
+
+{λ|ψ⟩} λ∈C. Let’s say that for r ≤ k, Qk = DV k such that 
+
+span( {| oi⟩} ki=0 ) = span( {| vi⟩} ki=0 ) = Kk(H, |ψ⟩) (286) For r = k+1 , by the property of Krylov subspace, Kk(H, |ψ⟩) ⊂ Kk+1 (H, |ψ⟩) and dim( Kk) = 
+
+k, dim( Kk+1 ) = k + 1 . For |qk⟩, |vk⟩, they are in Kk+1 and perpendicular to Kk. Therefore, 
+
+|qk⟩, |vk⟩ ∈ Kk+1 \Kk. Since, dim( Kk+1 \Kk) = 1 , both |qk⟩, |vk⟩ in 1 dimension subspace so there is θk such that |qk⟩ = eiθ k |vk⟩. Therefore, it holds true for k + 1 and by the mathematical induction is enough to prove. The above proof holds true for all the process using |ψ⟩ as the initial basis vector and finding a new orthogonal basis to the previous Krylov space. 51 A.3 Minor Claims for Theorem 3.1 
+
+Lemma A.1 (Perturbation bound for the reduced matrix) . Let Gr, ˜Gr and their Cholesky factors Ur, ˜Ur satisfy the assumptions of Lemma E.3 with n = r. Let bGr and ebGr be Hermitian matrices satisfying 
+
+δ bGr := ebGr − bGr, ∥δ bGr∥s ≤ ϵg. (287) 
+
+Define 
+
+Jr := U −†  
+
+> r
+
+bGrU −1 
+
+> r
+
+, ˜Jr := ˜U −† 
+
+> r
+
+ebGr ˜U −1 
+
+> r
+
+. (288) 
+
+If ∥Jr∥s ≤ 1, then 
+
+∥δJ r∥s := ∥ ˜Jr − Jr∥s ≤ 4(4 cr + 1) ϵg
+
+μmin 
+
+, (289) 
+
+where μmin := λmin (Gr) and cr := 12 + ⌈log 2 r⌉.Proof. Let Γ and S = ( 1 + Γ) −1 be as in Lemma E.3, and write 
+
+γ := ∥Γ∥s ≤ 2cr
+
+ϵg
+
+μmin 
+
+< 12. (290) The same lemma gives 
+
+∥S∥s ≤ 11 − γ , ∥S − 1∥s ≤ γ
+
+1 − γ . (291) Define 
+
+Er := U −†  
+
+> r
+
+δ bGrU −1 
+
+> r
+
+. (292) Since ∥U −1 
+
+> r
+
+∥2 
+
+> s
+
+= 1 /μ min ,
+
+∥Er∥s ≤ ∥ U −1 
+
+> r
+
+∥2 
+
+> s
+
+∥δ bGr∥s ≤ ϵg
+
+μmin 
+
+. (293) Using ˜U −1 
+
+> r
+
+= U −1 
+
+> r
+
+S, we obtain ˜Jr = S†(Jr + Er)S, (294) and hence 
+
+δJ r = ( S† − 1)JrS + Jr(S − 1) + S†ErS. (295) Therefore, using ∥Jr∥s ≤ 1,
+
+∥δJ r∥s ≤ ∥ S − 1∥s(∥S∥s + 1) + ∥S∥2 
+
+> s
+
+∥Er∥s
+
+≤ γ(2 − γ) + ϵg/μ min 
+
+(1 − γ)2
+
+≤ 4
+
+
+
+2γ + ϵg
+
+μmin 
+
+
+
+≤ 4(4 cr + 1) ϵg
+
+μmin 
+
+.
+
+(296) 52 Claim A.2 (Error in the Lanczos coefficient vector) . Let Jr, ˜Jr ∈ Cr×r be Hermitian matrices sharing a common orthonormal eigenbasis. Let f : I → C be Lf -Lipschitz on a real interval 
+
+I containing the spectra of both matrices, so that 
+
+|f (x) − f (y)| ≤ Lf |x − y|, x, y ∈ I. (297) 
+
+Define 
+
+c := f (Jr) |e0⟩ , ˜c := f ( ˜Jr) |e0⟩ , (298) 
+
+where |e0⟩ is the first standard basis vector. Then, with δc := ˜ c − c and δJ r := ˜Jr − Jr,
+
+∥δc∥2 ≤ Lf ∥δJ r∥s. (299) 
+
+Proof. By simultaneous diagonalization, there exist a unitary matrix Or and real diagonal matrices D, δD such that 
+
+Jr = O†
+
+> r
+
+DO r, ˜Jr = O†
+
+> r
+
+(D + δD )Or. (300) Consequently, ∥δJ r∥s = ∥δD ∥s. Using ∥Or |e0⟩ ∥ 2 = 1 and the Lipschitz condition, we obtain 
+
+∥δc∥2 = O†
+
+> r
+
+ f (D + δD ) − f (D)Or |e0⟩ 2
+
+≤ max  
+
+> j
+
+|f (Djj + δD jj ) − f (Djj )|≤ Lf max  
+
+> j
+
+|δD jj |
+
+= Lf ∥δJ r∥s.
+
+(301) 
+
+# Appendix B: Technical Details for Classical-Shadow S-QSVT 
+
+This appendix collects the statistical subroutine, technical lemmas, and proofs used in Theorem 4.2 and Proposition 4.5. Throughout this appendix, UH is assumed to be an exact 
+
+(1 , l, 0) -block encoding of H.
+
+## B.1 Median-of-means subroutine 
+
+Algorithm 8: MedianOfMeans 
+
+Input: samples {Zt}KS t=1 ; number of groups K; group size S 
+
+> 1
+
+Partition the samples into K disjoint groups G1, . . . , GK , each containing S samples;  
+
+> 2
+
+for k = 1 , . . . , K do  
+
+> 3
+
+Zk ← 1
+
+S
+
+P 
+
+> t∈Gk
+
+Zt; 
+
+> 4
+
+return median( Z1, . . . , Z K );53 B.2 Technical lemmas for the cross-moment estimator 
+
+B.2.1 Controlled Krylov branches Lemma B.1 (Controlled Krylov-branch encoding) . For fixed a, b , let |Ψa,b ⟩CAS be the state prepared in Algorithm 3, let La,b := l max {a, b }, and define ΠA := |0La,b ⟩⟨ 0La,b |A. Then 
+
+(Π A ⊗ ICS )|Ψa,b ⟩ = |0La,b ⟩A|χa,b ⟩CS , (302) 
+
+where 
+
+|χa,b ⟩ := 1
+
+√2
+
+ |0⟩C Ha|ψ⟩S + |1⟩C Hb|ψ⟩S
+
+ . (303) 
+
+The probability of obtaining the ancilla outcome 0La,b is 
+
+pa,b = 12
+
+ ⟨ψ|H2a|ψ⟩ + ⟨ψ|H2b|ψ⟩ . (304) 
+
+Furthermore, one implementation of Wa,b uses max {a, b } queries to UH or controlled-UH .Proof. Let m := max {a, b }. The common ancilla register contains La,b = lm qubits and may be viewed as m l -qubit registers. By sequential block-encoding multiplication, the top-left blocks of UHa and UHb are Ha and Hb, respectively. Therefore, for 
+
+Wa,b = |0⟩⟨ 0|C ⊗ UHa + |1⟩⟨ 1|C ⊗ UHb , (305) projection onto the all-zero ancilla subspace gives 
+
+(Π A ⊗ ICS )Wa,b |+⟩C |0La,b ⟩A|ψ⟩S = |0La,b ⟩A
+
+√2
+
+ |0⟩C Ha|ψ⟩S + |1⟩C Hb|ψ⟩S
+
+ , (306) which proves Eq. (302). Its squared norm is 
+
+pa,b = ⟨χa,b |χa,b ⟩ = 12
+
+ ∥Ha|ψ⟩∥ 22 + ∥Hb|ψ⟩∥ 22
+
+ . (307) Since H is Hermitian, ∥Ha|ψ⟩∥ 22 = ⟨ψ|H2a|ψ⟩, and similarly for b, proving Eq. (304). Finally, the two branches can be implemented using m sequential block-encoding layers, with at most one application of UH or controlled-UH in each layer. 
+
+Remark B.2 (No postselection penalty) . Algorithm 3 does not postselect on 0La,b . Failed block-encoding rounds are retained with weight st = 0 , so no additional factor 1/p a,b appears in the sample complexity. 
+
+B.2.2 Weighted classical snapshots 
+
+Define the subnormalized good-branch state on C + S by 
+
+σa,b := A⟨0La,b |Ψa,b ⟩⟨ Ψa,b |0La,b ⟩A. (308) By Lemma B.1, σa,b = |χa,b ⟩⟨ χa,b | and Tr( σa,b ) = pa,b .54 Lemma B.3 (Unbiased weighted classical snapshot) . For one sample generated by Algo-rithm 3, 
+
+E[st bρt] = σa,b . (309) 
+
+Proof. Fix a shadow measurement unitary U . The joint probability of obtaining the good block-encoding ancilla outcome and computational-basis outcome b on C + S is 
+
+Pr(0 La,b , b |U ) = Tr U †|b⟩⟨ b|U σ a,b 
+
+ . (310) Therefore, 
+
+E[st bρt] = EU ∼U
+
+X
+
+> b
+
+Pr(0 La,b , b |U )M −1  U †|b⟩⟨ b|U 
+
+= M −1(M (σa,b )) = σa,b . (311) The channel is linear, so the same identity applies to the subnormalized positive operator 
+
+σa,b .
+
+B.2.3 Variance bound Lemma B.4 (Variance bound) . For every i ∈ [M ],
+
+Var( Ri,t ), Var( Ii,t ) ≤ ν2
+
+> O
+
+. (312) 
+
+Proof. Assume first that pa,b > 0 and define ρ(good)  
+
+> a,b
+
+:= σa,b /p a,b . Conditioned on st = 1 , the shadow outcome on C + S is distributed as a classical-shadow measurement of ρ(good)  
+
+> a,b
+
+. Since 
+
+s2 
+
+> t
+
+= st,
+
+E[R2
+
+> i,t
+
+] = pa,b Eρ(good) 
+
+> a,b
+
+Tr (( XC ⊗ Oi)bρ)2 ≤ pa,b ∥XC ⊗ Oi∥2shadow ≤ ν2
+
+> O
+
+, (313) where pa,b ≤ 1. Hence Var( Ri,t ) ≤ E[R2
+
+> i,t
+
+] ≤ ν2
+
+> O
+
+. The same argument applies to Ii,t . If pa,b = 0 ,both weighted estimators vanish identically. 
+
+## B.3 Proof of observable Krylov matrix estimation and its resources 
+
+Proof of Proposition 4.5. By Lemma B.3, 
+
+E[Ri,t ] = Tr[( XC ⊗ Oi)σa,b ], (314) 
+
+E[Ii,t ] = Tr[( YC ⊗ Oi)σa,b ]. (315) Using Eq. (303), 
+
+E[Ri,t ] = μi,a,b + μ∗
+
+> i,a,b
+
+2 = Re μi,a,b , (316) 
+
+E[Ii,t ] = −iμ i,a,b + iμ ∗
+
+> i,a,b
+
+2 = Im μi,a,b . (317) 55 By Lemma B.4, both estimators have variance at most ν2
+
+> O
+
+. For 
+
+S =
+
+8ν2
+
+> O
+
+ϵ2
+
+> S
+
+
+
+, (318) each group mean estimates the corresponding real quantity to accuracy ϵS /√2 with constant success probability. Taking the median over 
+
+K =
+
+
+
+8 log 
+
+2Mη
+
+ 
+
+(319) groups and applying a union bound over the 2M real quantities gives, with probability at least 1 − η,
+
+| eRi,a,b − Re μi,a,b | ≤ ϵS
+
+√2, (320) 
+
+|eIi,a,b − Im μi,a,b | ≤ ϵS
+
+√2 (321) simultaneously for every i ∈ [M ]. Therefore, 
+
+|eμi,a,b − μi,a,b | ≤ ϵS . (322) Since Na,b = KS ,
+
+Na,b = O
+
+ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+Mη
+
+ 
+
+. (323) Because (Br,i )b,a = ( Br,i )∗
+
+> a,b
+
+, it is sufficient to estimate Npair = r(r + 1) /2 pairs with 0 ≤ a ≤
+
+b ≤ r − 1. Assign failure probability η = δB /N pair to each pair. A union bound then yields Eq. (121) for all i, a, b with probability at least 1 − δB . Summing the sample complexity over all pairs gives 
+
+NB = O
+
+r2ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+M r 2
+
+δB
+
+ 
+
+, (324) which proves Eq. (122). 
+
+Proof of Proposition 4.6. Fix a Krylov pair (a, b ) and let m := max {a, b }. The unitary 
+
+Wa,b = |0⟩⟨ 0|C ⊗ UHa + |1⟩⟨ 1|C ⊗ UHb
+
+can be implemented in m sequential block-encoding layers. Indeed, in layer j ∈ { 1, . . . , m },an application of UH is required on the |0⟩C branch only when j ≤ a, and on the |1⟩C branch only when j ≤ b. If both branches are active, the same UH is applied independently of the control qubit; if only one branch is active, a controlled-UH is applied. Thus each layer uses at most one query to UH or controlled-UH , and therefore 
+
+Q(shot)  
+
+> a,b
+
+= m = max {a, b }. (325) Since the m block-encoding layers are sequential, the preparation of one classical-shadow sample has depth 
+
+Da,b = O(Dψ + mD H + Dsh ) , (326) 56 which proves Eq. (123). Its gate count is similarly 
+
+G(shot)  
+
+> a,b
+
+= O(Gψ + mG H + Gsh ) . (327) By Proposition 4.5, each pair requires 
+
+Na,b = O
+
+ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+M r 2
+
+δB
+
+ 
+
+(328) samples after assigning failure probability δB /N pair to each of the Npair = r(r + 1) /2 upper-triangular Krylov pairs. For 0 ≤ a ≤ b ≤ r − 1, we have max {a, b } = b. Hence the total number of block-encoding queries is 
+
+QB =
+
+> r−1
+
+X
+
+> b=0
+> b
+
+X
+
+> a=0
+
+Na,b b = O ν2
+
+> O
+
+ϵ2
+
+> S
+
+log 
+
+M r 2
+
+δB
+
+ r−1X
+
+> b=0
+
+(b + 1) b
+
+!
+
+. (329) Using r−1X
+
+> b=0
+
+(b + 1) b = r(r − 1)( r + 1) 3 = Θ( r3), (330) we obtain Eq. (124). Finally, summing Eq. (327) over all shadow rounds gives 
+
+GB = O(QB GH + NB (Gψ + Gsh )) . (331) Substituting 
+
+QB = O
+
+r3ν2
+
+> O
+
+ϵ2
+
+> S
+
+log M r 2
+
+δB
+
+
+
+and 
+
+NB = O
+
+r2ν2
+
+> O
+
+ϵ2
+
+> S
+
+log M r 2
+
+δB
+
+
+
+gives Eq. (126). 
+
+## B.4 Proof of end-to-end observable estimation 
+
+Proof of Theorem 4.2. Let 
+
+∆Br,i := eBr,i − Br,i , ∆λ := eλ − λ. (332) Proposition 4.5, applied with δB = δ/ 2, gives the entrywise bound |(∆ Br,i )a,b | ≤ ϵS simulta-neously for all i, a, b with probability at least 1 − δ/ 2. Hence 
+
+∥∆Br,i ∥2 ≤ ∥ ∆Br,i ∥F ≤ rϵ S . (333) Using eBr,i = Br,i + ∆ Br,i and eλ = λ + ∆ λ,
+
+eyi − yi = eλ †
+
+∆Br,i eλ + eλ †
+
+Br,i eλ − λ†Br,i λ. (334) 57 The first term satisfies eλ †
+
+∆Br,i eλ ≤ ∥ eλ∥22∥∆Br,i ∥2. (335) For the second term, 
+
+eλ †
+
+Br,i eλ − λ†Br,i λ ≤ ∥ Br,i ∥2
+
+ 2∥λ∥2∥∆λ∥2 + ∥∆λ∥22
+
+ . (336) Since ∥λ∥2 ≤ θ, ∥∆λ∥2 ≤ ϵλ, and therefore ∥eλ∥2 ≤ θ + ϵλ, we obtain 
+
+|eyi − yi| ≤ (θ + ϵλ)2rϵ S + βO(2 θϵ λ + ϵ2
+
+> λ
+
+). (337) With the choice in Eq. (111), the right-hand side is exactly ϵO, proving the accuracy guarantee. The coefficient-estimation event fails with probability at most δ/ 2, and the observable-Krylov-matrix event fails with probability at most δ/ 2. A union bound therefore gives overall success probability at least 1 − δ.Finally, substituting Eq. (111) and δB = δ/ 2 into Eq. (122) gives 
+
+NB = O
+
+ r4(θ + ϵλ)4ν2
+
+> O
+
+[ϵO − βO(2 θϵ λ + ϵ2
+
+> λ
+
+)] 2 log 
+
+M r 2
+
+δ
+
+ 
+
+, (338) and the total sample complexity is Nobs = Nλ(ϵλ, δ/ 2) + NB .For the remaining quantum resources, Proposition 4.6 gives the query complexity QB ,maximum circuit depth DB , and total gate complexity GB of the observable-Krylov-matrix estimation stage. Since the coefficient-estimation and observable-estimation stages are executed separately, their query and gate costs add, whereas the maximum circuit depth is the larger of the two stage-wise depths. Therefore, 
+
+Qobs = Qλ + QB , Dobs = max {Dλ, D B }, Gobs = Gλ + GB . (339) This completes the proof. 
+
+Remark B.5 (Bounding βO). If ∥H∥2 ≤ 1 and |ψ⟩ is normalized, then 
+
+βO ≤ r max   
+
+> i∈[M]
+
+∥Oi∥2. (340) 
+
+Indeed, Br,i = A†
+
+> r
+
+OiAr implies ∥Br,i ∥2 ≤ ∥ Ar∥22∥Oi∥2, while ∥Ar∥22 = ∥Gr∥2 ≤ Tr( Gr) ≤ r.
+
+## B.5 Local Pauli classical shadows 
+
+For the local Pauli ensemble, choose independently on each qubit j ∈ C + S a measurement basis Pj ∈ { X, Y, Z } uniformly at random. Let Uj satisfy Pj = U † 
+
+> j
+
+ZU j , and let bj ∈ { 0, 1} be the computational-basis outcome after applying Uj . Writing mj := ( −1) bj ,
+
+U † 
+
+> j
+
+|bj ⟩⟨ bj |Uj = I + mj Pj
+
+2 . (341) For the single-qubit local Pauli measurement channel, 
+
+M −11 (X) = 3 X − Tr( X)I, (342) 58 and therefore 
+
+bρj = 12I + 32mj Pj . (343) The full snapshot factorizes as 
+
+bρ = O
+
+> j∈C+S
+
+
+
+3U † 
+
+> j
+
+|bj ⟩⟨ bj |Uj − I
+
+
+
+. (344) If Oi = Nnj=1 Oi,j , then 
+
+Tr[ Q(X) 
+
+> i
+
+bρ] = Tr[ XC bρC ]
+
+> n
+
+Y
+
+> j=1
+
+Tr[ Oi,j bρj ], (345) 
+
+Tr[ Q(Y ) 
+
+> i
+
+bρ] = Tr[ YC bρC ]
+
+> n
+
+Y
+
+> j=1
+
+Tr[ Oi,j bρj ]. (346) Thus the full 2n+1 × 2n+1 snapshot matrix never needs to be constructed explicitly. If every Oi is a Pauli string of weight at most k, then the two shadow observables XC ⊗ Oi
+
+and YC ⊗ Oi have weight at most k + 1 . For local Pauli shadows this gives 
+
+∥XC ⊗ Oi∥2shadow ≤ 3k+1 , ∥YC ⊗ Oi∥2shadow ≤ 3k+1 , (347) and hence ν2 
+
+> O
+
+≤ 3k+1 , which is the specialization used in Corollary 4.7. 
+
+# Appendix C: Technical Details for Observable-Aware S-QSVT 
+
+This appendix collects the technical lemmas and proofs underlying the history-space construc-tion used in the Observable-Aware S-QSVT algorithm. In particular, we prove Lemma 5.3, which shows that the finite history map removes exactly the observable-invisible directions, and Proposition 5.4, which establishes that the resulting history space provides an s-dimensional realization of the observable-relevant quotient dynamics. 
+
+Lemma (Restatement of Lemma 5.3) . Suppose dim QO = s. Then ker F O 
+
+> s
+
+= KO . Equivalently, for every |ϕ⟩ ∈ Kr,
+
+F O 
+
+> s
+
+(|ϕ⟩) = 0 ⇐⇒ |ϕ⟩ ∈ KO . (348) 
+
+Proof of Lemma 5.3. We first show KO ⊆ ker F O 
+
+> s
+
+. If |ϕ⟩ ∈ KO , then OiHℓ |ϕ⟩ = 0 for every 
+
+i ∈ [M ] and every ℓ ≥ 0. In particular, this holds for ℓ = 0 , . . . , s − 1, and therefore 
+
+F O 
+
+> s
+
+(|ϕ⟩) = 0 . For the reverse inclusion, suppose F O 
+
+> s
+
+(|ϕ⟩) = 0 . By the definition of the history map, 
+
+OiHℓ |ϕ⟩ = 0 , i ∈ [M ], ℓ = 0 , . . . , s − 1. (349) The induced operator H acts on the s-dimensional quotient space QO . By the Cayley– Hamilton theorem, there exist coefficients c0, . . . , c s−1 such that 
+
+Hs =
+
+> s−1
+
+X
+
+> j=0
+
+cj Hj . (350) 59 Multiplying by Hm gives 
+
+Hs+m =
+
+> s−1
+
+X
+
+> j=0
+
+cj Hj+m, m ≥ 0. (351) Applying this operator identity to [|ϕ⟩] gives 
+
+Hs+m |ϕ⟩ − 
+
+> s−1
+
+X
+
+> j=0
+
+cj Hj+m |ϕ⟩ ∈ KO . (352) Since KO ⊆ ker Oi, we obtain 
+
+OiHs+m |ϕ⟩ =
+
+> s−1
+
+X
+
+> j=0
+
+cj OiHj+m |ϕ⟩ . (353) Equation (349) gives the base case. Equation (353) then implies inductively that 
+
+OiHℓ |ϕ⟩ = 0 (354) for every i ∈ [M ] and every ℓ ≥ 0. Hence |ϕ⟩ ∈ KO . Therefore, 
+
+ker F O 
+
+> s
+
+= KO . (355) 
+
+Proposition (Restatement of Proposition 5.4) . Suppose dim QO = s. Then 
+
+QO ∼= S O
+
+> hist
+
+, (356) 
+
+and therefore dim S O 
+
+> hist
+
+= s. Moreover, {| bϕ0⟩ , |bϕ1⟩ , . . . , |bϕs−1⟩} form a basis of S O
+
+> hist
+
+.Proof. By Lemma 5.3, 
+
+ker F O 
+
+> s
+
+= KO . (357) The first isomorphism theorem therefore gives 
+
+Kr/K O ∼= F O 
+
+> s
+
+(Kr) = S O
+
+> hist
+
+. (358) Hence 
+
+dim S O 
+
+> hist
+
+= s. (359) By Proposition 5.1, the quotient vectors 
+
+[|ψ⟩], [H |ψ⟩], . . . , [Hs−1 |ψ⟩] (360) form a basis of QO . Under the isomorphism induced by F O 
+
+> s
+
+, these vectors are mapped to 
+
+|bϕ0⟩ , |bϕ1⟩ , . . . , |bϕs−1⟩ , (361) which therefore form a basis of the history space. 60 Appendix D: Hadamard test with block-encoded operator 
+
+It is common to prepare A|ψ⟩ state with block encoding UA. Fortunately, with this block-encoding, we can still measure ⟨ψ|A|ψ⟩ without additional measurement. 
+
+Lemma D.1 (Hadamard test with block encoding) . Let A = Pm−1 
+
+> j=0
+
+yj Aj and UA be UA =(α, a, ϵ ) − BE A, and |ψ⟩⟩ := |0⟩ ⊗ | ψ⟩ such that 
+
+UA|ψ⟩⟩ = |0⟩Aα |ψ⟩ + |Φ⊥⟩ (362) 
+
+UA = ( M ⊗ 1 ⊗ 1n) SEL Uj (M † ⊗ 1 ⊗ 1n) (363) where, sy = Pm−1 
+
+> j=0
+
+|yj | = ∥⃗y∥ 1
+
+M |0⟩a = 1
+
+√sym−1X
+
+> j=0
+
+√yj |j⟩ (364) 
+
+∴ M † = |0⟩a 1
+
+√sym−1X
+
+> j=0
+
+√yj ⟨j|
+
+!
+
++
+
+> 2a−1
+
+X
+
+> p=1
+
+λp|p⟩⟨ Φp| (365) 
+
+M †|j⟩ =
+
+r yj
+
+sy
+
+|0⟩a + |Ψj ⟩, (366) and |Ψj ⟩ is an orthogonal vector to |0⟩a.
+
+> kl n
+
+|0⟩ H H ⟨0||0⟩a M
+
+SEL Uj
+
+M †
+
+|0⟩|ψ⟩
+
+1 2 3 4 50This circuit is a Hadamard test for block-encoding UA and the probability to measure |0⟩
+
+state, p0 is 
+
+p0 = 12∥1 + 1
+
+syα ⟨ψ|A|ψ⟩∥ (367) 61 Proof. 
+
+|0⟩| 0⟩a|0⟩| ψ⟩ (368) 
+
+H0 →| +⟩| 0⟩a|0⟩| ψ⟩ (369) 
+
+C − M → 1
+
+√2 |0⟩| 0⟩a + |1⟩ 1
+
+√sym−1X
+
+> j=0
+
+√yj |j⟩
+
+!
+
+|0⟩| ψ⟩ (370) 
+
+SEL Uj → 1
+
+√2 |0⟩| 0⟩a|0⟩| ψ⟩ + |1⟩ 1
+
+√sym−1X
+
+> j=0
+
+√yj |j⟩Uj |0⟩| ψ⟩
+
+!
+
+(371) 
+
+C − M † → 1
+
+√2 |0⟩| 0⟩a|0⟩| ψ⟩ + |1⟩ 1
+
+sym−1X
+
+> j=1
+
+yj
+
+
+
+|0⟩a +
+
+rsy
+
+yj
+
+|Ψj ⟩
+
+
+
+Uj |0⟩| ψ⟩
+
+!
+
+(372) 
+
+= 1
+
+√2 |0⟩| 0⟩a|0⟩| ψ⟩ + |1⟩ 1
+
+sy
+
+> m−1
+
+X
+
+> j=1
+
+yj |0⟩aUj |0⟩| ψ⟩ +
+
+> m−1
+
+X
+
+> j=1
+
+yj (
+
+rsy
+
+yj
+
+|Ψj ⟩)Uj |0⟩| ψ⟩
+
+!! 
+
+(373) 
+
+∵ |B⟩ := 
+
+> m−1
+
+X
+
+> j=1
+
+yj (
+
+rsy
+
+yj
+
+|Ψj ⟩)Uj |0⟩| ψ⟩ &|B⟩ ⊥ |0⟩am−1X
+
+> j=1
+
+yj Uj |0⟩| ψ⟩
+
+!
+
+(374) (375) 
+
+= 1
+
+√2 |0⟩| 0⟩a|0⟩| ψ⟩ + |1⟩ 1
+
+sy
+
+|0⟩a
+
+> m−1
+
+X
+
+> j=1
+
+yj Uj
+
+!
+
+|0⟩| ψ⟩ + |B⟩
+
+!! 
+
+(376) 
+
+= 1
+
+√2
+
+
+
+|0⟩| 0⟩a|0⟩| ψ⟩ + |1⟩ 1
+
+sy
+
+
+
+|0⟩a|0⟩Aα |ψ⟩ + |1⟩K∗|ψ⟩) + |B⟩
+
+ 
+
+(377) 
+
+∵ |C⟩ := |0⟩a|1⟩K∗|ψ⟩ + |B⟩ & |C⟩ ⊥ (|0⟩a|0⟩Aα |ψ⟩) = 0 (378) 
+
+= 1
+
+√2
+
+
+
+|0⟩| 0⟩a|0⟩| ψ⟩ + |1⟩ 1
+
+sy
+
+
+
+|0⟩a|0⟩Aα |ψ⟩ + |C⟩
+
+ 
+
+(379) 
+
+H0 →12
+
+
+
+|0⟩
+
+
+
+|0⟩a|0⟩| ψ⟩ + 1
+
+sy
+
+
+
+|0⟩a|0⟩Aα |ψ⟩ + |C⟩
+
+ 
+
+(380) 
+
++|1⟩
+
+
+
+|0⟩a|0⟩| ψ⟩ − 1
+
+sy
+
+
+
+|0⟩a|0⟩Aα |ψ⟩ + |C⟩
+
+ 
+
+(381) Therefore, the final state of the block-encoded Hadamard test is 
+
+12
+
+
+
+|0⟩
+
+
+
+|0⟩a|0⟩| ψ⟩ + 1
+
+sy
+
+
+
+|0⟩a|0⟩Aα |ψ⟩ + |C⟩
+
+ 
+
++|1⟩
+
+
+
+|0⟩a|0⟩| ψ⟩ − 1
+
+sy
+
+
+
+|0⟩a|0⟩Aα |ψ⟩ + |C⟩
+
+ 
+
+(382) 62 Now the probability to measure |0⟩ state from the first register is 
+
+p0 =14
+
+
+
+|0⟩a|0⟩| ψ⟩ + 1
+
+sy
+
+
+
+|0⟩a|0⟩Aα |ψ⟩ + |C⟩
+
+ 2
+
+(383) 
+
+=14
+
+
+
+2 + 1
+
+sy
+
+( 1
+
+α ⟨ψ|A|ψ⟩ + ( ⟨0|a⟨0|⟨ ψ|)|C⟩) + 1
+
+sy
+
+( 1
+
+α ⟨ψ|A|ψ⟩ + ( ⟨C|(|0⟩a|0⟩| ψ⟩)) 
+
+
+
+(384) (385) From the definition of |C⟩ , |B⟩ , |Ψj ⟩ and their orthogonal relationship, we can eliminate |C⟩
+
+vector terms. 
+
+⟨C|(|0⟩a|0⟩| ψ⟩) =( ⟨0|a⟨1|(K∗)†⟨ψ|)( |0⟩a|0⟩| ψ⟩) + ⟨B|(|0⟩a|0⟩| ψ⟩) (386) 
+
+=⟨B|(|0⟩a|0⟩| ψ⟩) (387) 
+
+=( 
+
+> m−1
+
+X
+
+> j=1
+
+yj (
+
+rsy
+
+yj
+
+⟨Ψj |)⟨0|U † 
+
+> j
+
+⟨ψ|)( |0⟩a|0⟩| ψ⟩) = 0 (388) Therefore, we get 
+
+∴ p0 = 12(1 + 1
+
+syα ⟨ψ|A|ψ⟩) (389) 
+
+# Appendix E: Cholesky factorization 
+
+Cholesky factorization is a special LU factorization for Hermitian matrix. Usually, this factorization is not unique, but if the given Hermitian matrix was also positive definite, there is a unique representation of the given matrix as U †U .
+
+Theorem E.1 (Cholesky factorization of positive definite matrix [DOV94]) . For a given Hermitian positive definite matrix, G of order n, there exists a unique upper triangular matrix 
+
+U of real and positive diagonal elements such that 
+
+G = U †U (390) 
+
+The U is called Cholesky factor of G, where 
+
+Gij =
+
+(Pik=1 |Uki |2 i = j, i ∈ [n]
+
+Pik=1 (Uki )∗Ukj i ∈ [n − 1] , j ∈ [i + 1 , n ] (391) 
+
+## E.1 Error propagation 
+
+Let ˜G be an estimation of G such that 
+
+∥ ˜G − G∥2 ≤ ϵ (392) 63 With δG = ˜G − G, its perturbation in Cholesky decomposition can be calculated with next process [DOV94]. Assume that the error matrix δG was also Hermit and the estimation ˜G
+
+also positive-definite. 
+
+G = U †U (393) 
+
+G + δG = ( U + δU )†(U + δU ) (394) 
+
+= U †(1 + A)U (395) 
+
+1 + A = ( 1 + Γ) †(1 + Γ) (396) 
+
+∵ U + δU = ( 1 + δU U −1)U (397) 
+
+Γ = δU U −1 (398) 
+
+δU = Γ U (399) 
+
+∥δU ∥s ≤ ∥ Γ∥s∥U ∥s (400) 
+
+Claim E.2 (Cholesky Error Propagation [CPS96]) . Let Gr ∈ Cr×r be Hermitian positive definite, and let ˜Gr ∈ Cr×r be Hermitian. Suppose that 
+
+∥ ˜Gr − Gr∥F ≤ ϵg < μ min (Gr). (401) 
+
+Let Ur and ˜Ur be the upper-triangular Cholesky factors of Gr and ˜Gr, respectively, with positive real diagonal entries. Then 
+
+∥ ˜Ur − Ur∥s ≤
+
+s
+
+μmax (Gr) + ϵg
+
+2( μmin (Gr) − ϵg)2 ϵg. (402) 
+
+Proof. Consider the path 
+
+Gr(t) := Gr + t δG r, t ∈ [0 , 1] . (403) Since ∥δG r∥s ≤ ∥ δG r∥F ≤ ϵg,
+
+λmin (Gr(t)) ≥ μmin − tϵ g ≥ μmin − ϵg > 0, (404) and 
+
+λmax (Gr(t)) ≤ μmax + tϵ g ≤ μmax + ϵg. (405) Thus, Gr(t) is positive definite for every t ∈ [0 , 1] .Let Ur(t) be its unique upper-triangular Cholesky factor with positive real diagonal entries: 
+
+Gr(t) = Ur(t)†Ur(t). (406) The factor Ur(t) depends smoothly on t, with Ur(0) = Ur and Ur(1) = ˜Ur. Differentiating with respect to t gives 
+
+δG r = ˙Ur(t)†Ur(t) + Ur(t)† ˙Ur(t). (407) Define 
+
+Er(t) := Ur(t)−† δG rUr(t)−1, Xr(t) := ˙Ur(t)Ur(t)−1. (408) 64 Multiplying the differentiated identity on the left by Ur(t)−† and on the right by Ur(t)−1
+
+yields 
+
+Er(t) = Xr(t)† + Xr(t). (409) Both ˙Ur(t) and Ur(t)−1 are upper triangular, so Xr(t) is upper triangular. Moreover, its diagonal entries are real because 
+
+(Xr(t)) ii = ( ˙Ur(t)) ii 
+
+(Ur(t)) ii 
+
+∈ R. (410) Consequently, 
+
+(Xr(t)) ij =
+
+
+
+(Er(t)) ij , i < j,  
+
+> 12
+
+(Er(t)) ii , i = j, 
+
+0, i > j. 
+
+(411) Since Er(t) is Hermitian, 
+
+∥Xr(t)∥2 
+
+> F
+
+= X
+
+> i<j
+
+|(Er(t)) ij |2 + 14
+
+X
+
+> i
+
+|(Er(t)) ii |2
+
+= 12∥Er(t)∥2 
+
+> F
+
+− 14
+
+X
+
+> i
+
+|(Er(t)) ii |2
+
+≤ 12∥Er(t)∥2 
+
+> F
+
+.
+
+Using ˙Ur(t) = Xr(t)Ur(t), we obtain 
+
+∥ ˙Ur(t)∥F ≤ ∥ Xr(t)∥F ∥Ur(t)∥s
+
+≤ 1
+
+√2∥Er(t)∥F ∥Ur(t)∥s
+
+≤ 1
+
+√2∥Ur(t)−1∥2 
+
+> s
+
+∥δG r∥F ∥Ur(t)∥s
+
+=
+
+pλmax (Gr(t)) 
+
+√2λmin (Gr(t)) ∥δG r∥F
+
+≤√μmax + ϵg
+
+√2( μmin − ϵg)ϵg.
+
+Finally, 
+
+δU r = Ur(1) − Ur(0) = 
+
+Z 10
+
+˙Ur(t) dt. (412) Therefore, 
+
+∥δU r∥s ≤ ∥ δU r∥F
+
+≤
+
+Z 10
+
+∥ ˙Ur(t)∥F dt 
+
+≤
+
+s
+
+μmax + ϵg
+
+2( μmin − ϵg)2 ϵg.
+
+65 The total error is enough for the above lemma. However, in some matrices using U ,relative error bounds can be useful to get more tight upper bounds. 
+
+Lemma E.3 (Relative perturbation of Cholesky factors) . Let G ∈ Cn×n be Hermitian positive definite, and let ˜G = G + δG be a Hermitian estimate satisfying ∥δG ∥s ≤ ϵg. Define 
+
+μmin := λmin (G), cn := 12 + ⌈log 2 n⌉, (413) 
+
+and suppose that 
+
+0 ≤ ϵg
+
+μmin 
+
+< min 
+
+ 14c2
+
+> n
+
+, 14cn
+
+
+
+. (414) 
+
+Then ˜G is positive definite. Let U and ˜U be the Cholesky factors of G and ˜G, respectively, with positive real diagonal entries. Define 
+
+A := U −† δGU −1, Γ := ( ˜U − U )U −1, S := ( 1 + Γ) −1. (415) 
+
+Then Γ is upper triangular with real diagonal entries Γii > −1, and 
+
+˜U = ( 1 + Γ) U, 1 + A = ( 1 + Γ) †(1 + Γ) . (416) 
+
+Moreover, if 2cnϵg/μ min < 1/2
+
+∥Γ∥s ≤ 2cn
+
+ϵg
+
+μmin 
+
+< 12, (417) 
+
+and 
+
+∥S∥s ≤ 11 − ∥ Γ∥s
+
+≤ 2,
+
+∥S − 1∥s ≤ ∥Γ∥s
+
+1 − ∥ Γ∥s
+
+≤ 4cn
+
+ϵg
+
+μmin 
+
+.
+
+(418) 
+
+Proof. Since ∥U −1∥2 
+
+> s
+
+= 1 /μ min ,
+
+∥A∥s ≤ ∥ U −1∥2 
+
+> s
+
+∥δG ∥s ≤ ϵg
+
+μmin 
+
+< 1. (419) Thus 1 + A and ˜G = U †(1 + A)U are positive definite. The definition of Γ gives the stated factorization identities. It also implies that Γ is upper triangular with real diagonal entries 
+
+Γii = ˜Uii /U ii − 1 > −1.By Theorem 2.1 and Corollary 2.3 of [DOV94], using the spectral-norm estimate in Eq. (11) therein, 
+
+∥Γ∥s ≤ 2cn∥A∥s
+
+1 + p1 − 4c2
+
+> n
+
+∥A∥s
+
+≤ 2cn
+
+ϵg
+
+μmin 
+
+< 12. (420) Finally, the Neumann series gives ∥S∥s ≤ (1 − ∥ Γ∥s)−1. Combining this with S − 1 = −SΓ
+
+yields Eq. (418). 66
