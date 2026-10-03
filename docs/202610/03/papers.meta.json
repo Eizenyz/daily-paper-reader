@@ -1,0 +1,24 @@
+{
+  "label": "2026-10-03",
+  "date": "2026-10-03",
+  "generated_at": "2026-10-03T22:36:11",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202610/03/2609.35668v2-optimal-query-complexity-for-ground-state-preparation",
+      "section": "quick",
+      "title_en": "Optimal Query Complexity for Ground-State Preparation",
+      "authors": "Boyang Chen, Minbo Gao, Xinzhao Wang, Shuo Zhou",
+      "date": "2026-09-28",
+      "pdf": "https://arxiv.org/pdf/2609.35668v2",
+      "score": "6.0",
+      "evidence": "块编码与基态制备的最优查询复杂度",
+      "tldr": "本文确定在已知谱隙内能量阈值时制备基态的最优量子查询复杂度。给定哈密顿量的α-block-encoding U_H和初态制备预言机U_I，作者用常精度量子谱滤波构造纯化器，并通过量子振幅放大依次组合：期望算法重复“制备+高精度滤波”至成功，最坏算法用递增精度滤波并限制总查询。期望U_H查询为O((α/Δ)(γ^{-1}+log(1/ε)))，最坏为O((α/(γΔ))log(1/ε))，且期望下界匹配。该工作刻画了基态制备查询复杂度的最优性，并给出U_I调用界的最优条件。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "We determine the optimal query complexity of ground-state preparation to trace-distance error $\\varepsilon$ when an energy threshold in the spectral gap is known. Let $U_H$ be an $α$-block-encoding of a Hamiltonian with unique ground state $|ψ_0\\rangle$, and suppose $|\\langleψ_0|U_I|0\\rangle|\\geγ$ for a state-preparation oracle $U_I$. The threshold lies at least $Δ/2$ above the ground-state energy and at least $Δ/2$ below every excited-state energy. We give two algorithms that prepare a state within trace distance $\\varepsilon$ of the ground state. One uses $O((α/Δ)(γ^{-1}+\\log(1/\\varepsilon)))$ calls to $U_H$ in expectation; the other uses $O((α/(γΔ))\\log(1/\\varepsilon))$ calls to $U_H$ in the worst case. We prove a lower bound matching the expected query count; the corresponding worst-case lower bound follows from Somma and de Wolf [SdW26]. The respective bounds on calls to $U_I$ are $O(1/γ)$ in expectation and $O(γ^{-1}\\log(1/\\varepsilon))$ in the worst case. On $(N+1)$-dimensional systems, these $U_I$ bounds are also optimal when the expected or worst-case count of $U_H$ calls, respectively, is $o((α/Δ)\\sqrt N)$. Both algorithms use a constant-accuracy spectral filter to construct a purifier, which we then sequentially compose during amplitude amplification to prepare a state with constant overlap with the ground state. The expected-query algorithm repeats the preparation followed by one high-accuracy spectral filter until success. The worst-case algorithm uses filters of increasing accuracy and limits the total number of queries.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

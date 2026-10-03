@@ -1,0 +1,25 @@
+{
+  "date": "20261003",
+  "date_label": "",
+  "generated_at": "2026-10-03 22:36:10 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.35668v2",
+      "route": "202610/03/2609.35668v2-optimal-query-complexity-for-ground-state-preparation",
+      "title": "Optimal Query Complexity for Ground-State Preparation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "块编码与基态制备的最优查询复杂度",
+      "first_seen_at": "2026-10-03 22:36:10 UTC",
+      "updated_at": "2026-10-03 22:36:10 UTC"
+    }
+  ]
+}

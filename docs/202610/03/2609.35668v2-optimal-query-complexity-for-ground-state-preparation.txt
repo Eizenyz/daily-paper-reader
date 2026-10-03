@@ -1,0 +1,3645 @@
+Title: Optimal Query Complexity for Ground-State Preparation
+
+URL Source: https://arxiv.org/pdf/2609.35668v2
+
+Published Time: Fri, 02 Oct 2026 02:15:25 GMT
+
+Number of Pages: 48
+
+Markdown Content:
+# Optimal Query Complexity for Ground-State Preparation 
+
+Boyang Chen ∗1, Minbo Gao †2,3 , Xinzhao Wang ‡4,5 , and Shuo Zhou §4,5 1Department of Computer Science and Technology, Tsinghua University, Beijing, China 
+
+> 2
+
+Institute of Software, Chinese Academy of Sciences, Beijing, China 
+
+> 3
+
+University of Chinese Academy of Sciences, Beijing, China 
+
+> 4
+
+Center on Frontiers of Computing Studies, Peking University, Beijing, China 
+
+> 5
+
+School of Computer Science, Peking University, Beijing, China 
+
+Abstract 
+
+We determine the optimal query complexity of ground-state preparation to trace-distance error ε when an energy threshold in the spectral gap is known. Let UH be an α-block-encoding of a Hamiltonian with unique ground state |ψ0⟩, and suppose |⟨ ψ0|UI |0⟩| ≥ γ for a state-preparation oracle UI . The threshold lies at least ∆ /2 above the ground-state energy and at least ∆ /2 below every excited-state energy. We give two algorithms that prepare a state within trace distance ε of the ground state. One uses O(( α/ ∆)( γ−1 + log(1 /ε ))) calls to UH
+
+in expectation; the other uses O(( α/ (γ∆)) log(1 /ε )) calls to UH in the worst case. We prove a lower bound matching the expected query count; the corresponding worst-case lower bound follows from Somma and de Wolf [SdW26]. The respective bounds on calls to UI are O(1 /γ )in expectation and O(γ−1 log(1 /ε )) in the worst case. On ( N + 1)-dimensional systems, these 
+
+UI bounds are also optimal when the expected or worst-case count of UH calls, respectively, is 
+
+o(( α/ ∆) √N ). Both algorithms use a constant-accuracy spectral filter to construct a purifier, which we then sequentially compose during amplitude amplification to prepare a state with constant overlap with the ground state. The expected-query algorithm repeats the preparation followed by one high-accuracy spectral filter until success. The worst-case algorithm uses filters of increasing accuracy and limits the total number of queries. 
+
+> ∗
+
+by-chen24@mails.tsinghua.edu.cn 
+
+> †
+
+gmb17@tsinghua.org.cn 
+
+> ‡
+
+xinzhaowang3@gmail.com 
+
+> §
+
+antientropy@pku.edu.cn 
+
+1arXiv:2609.35668v2 [quant-ph] 1 Oct 2026 Contents 
+
+1 Introduction 32 Problem setting and results 5
+
+2.1 Oracle and output model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 62.2 Main results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+
+3 Algorithm overview 8
+
+3.1 Spectral filtering and approximate reflection . . . . . . . . . . . . . . . . . . . . . . . 83.2 Amplitude amplification and error accumulation . . . . . . . . . . . . . . . . . . . . 93.3 Ground-state reflection by a transducer . . . . . . . . . . . . . . . . . . . . . . . . . 93.4 Final filtering . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10 
+
+4 Preliminaries 11 
+
+4.1 Shifting and rescaling the Hamiltonian . . . . . . . . . . . . . . . . . . . . . . . . . . 11 4.2 Spectral filtering by QSVT . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12 4.3 Transducers . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13 4.4 Purifier . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16 4.5 Trigonometric polynomial inequalities . . . . . . . . . . . . . . . . . . . . . . . . . . 19 4.6 Hybrid argument . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 
+
+5 Ground-state reflection 20 
+
+5.1 Constant-accuracy spectral test . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20 5.2 Reflection about the test states . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 5.3 Purifier on superpositions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 5.4 Ground-state reflection transducer . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 
+
+6 Ground-state overlap amplification 25 
+
+6.1 Randomized Grover iterations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25 6.2 Transducer implementation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 
+
+7 Final filtering 31 
+
+7.1 Constant-success preparation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31 7.2 Reducing the failure probability . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 33 
+
+8 Optimality of the query bounds 37 
+
+8.1 Hamiltonian queries . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 37 8.1.1 Dependence on the initial overlap . . . . . . . . . . . . . . . . . . . . . . . . . 37 8.1.2 Dependence on the target precision . . . . . . . . . . . . . . . . . . . . . . . . 38 8.2 State-preparation queries . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 40 
+
+A Proof of the overlap lower bound with controlled queries 43 
+
+21 Introduction 
+
+Ground-state preparation is a fundamental task in quantum algorithms for many-body physics and quantum chemistry, enabling the study of ground-state properties [PW09, MEAG +20]. Preparing such states is computationally hard in general: an efficient method for arbitrary local Hamilto-nians, followed by energy estimation, would solve the QMA-complete Local Hamiltonian prob-lem [KKR06]. Algorithms with provable efficiency guarantees therefore typically assume additional information about the initial state and the low-energy spectrum. We consider a Hamiltonian H with a unique ground state |ψ0⟩. The Hamiltonian is accessed through an α-block-encoding UH , a unitary whose all-zero ancilla block is H/α [GSLW19]. Asecond oracle UI prepares a state |ϕ⟩ satisfying |⟨ ψ0|ϕ⟩| ≥ γ. We assume a known threshold μ such that the ground-state energy lies at least ∆ /2 below μ and every excited-state energy lies at least ∆/2 above μ. The goal is to prepare |ψ0⟩ to trace-distance error at most ε. Let qH , q I count calls to UH , U † 
+
+> H
+
+and UI , U † 
+
+> I
+
+, respectively, and let QH , Q I be worst-case bounds that hold on every run. Lin and Tong [LT20a, Section 3 and Theorem 6] use quantum singular value transformation (QSVT) [GSLW19] to construct a spectral filter that suppresses the excited-state components of 
+
+|ϕ⟩. The filter succeeds with probability Ω( γ2). Amplitude amplification raises this probability to a constant in O(1 /γ ) iterations [BHMT02]. Each amplitude-amplification iteration uses a reflection about |ϕ⟩, implemented with UI and U † 
+
+> I
+
+, and a reflection about the ground state. Approximating the latter to error O(γε ) per use keeps the total amplification error within O(ε). The spectral filter can be used to approximate this ground-state reflection using O(( α/ ∆) log(1 /(γε ))) calls to UH
+
+and U † 
+
+> H
+
+. Thus, their algorithm succeeds with constant probability, and its worst-case query counts satisfy 
+
+QH = O
+
+ αγ∆ log 1
+
+γε 
+
+
+
+, QI = O
+
+ 1
+
+γ
+
+
+
+. (1) Repeating independent runs of this algorithm until success produces a state within trace distance 
+
+ε of |ψ0⟩⟨ ψ0|, with E[qH ] and E[qI ] obeying the corresponding bounds in (1). In this paper, we give an algorithm whose expected number of calls to UH satisfies 
+
+E[qH ] = O
+
+ αγ∆ + α
+
+∆ log 1
+
+ε
+
+
+
+. (2) It also has E[qI ] = O(1 /γ ). We prove a matching lower bound on E[qH ]. We also give an algorithm whose output state is within trace distance ε of |ψ0⟩⟨ ψ0| and whose query counts are bounded on every run as follows: 
+
+QH = O
+
+ αγ∆ log 1
+
+ε
+
+
+
+, QI = O
+
+ 1
+
+γ log 1
+
+ε
+
+
+
+. (3) The worst-case QH bound matches the lower bound of Somma and de Wolf [SdW26]. We also prove matching lower bounds on calls to UI when E[qH ] in the expected-query setting or QH in the worst-case setting is o(( α/ ∆) √N ) on ( N + 1)-dimensional systems: 
+
+E[qI ] = Ω(1 /γ ), QI = Ω 
+
+ 1
+
+γ log 1
+
+ε
+
+
+
+.
+
+A restriction on calls to UH is needed for these UI lower bounds: at constant error, O(( α/ ∆) √N )calls to UH suffice without UI ; see Section 8.2. To obtain the expected bound (2), we make two changes to the filtering approach behind (1). First, amplitude amplification is used only to produce a state ρc satisfying ⟨ψ0|ρc|ψ0⟩ = Ω(1); a 3single high-accuracy spectral filter then yields a state within trace distance ε of |ψ0⟩ on success. If the ground-state reflections in amplitude amplification are implemented by QSVT circuits, the two-stage algorithm’s worst-case query count satisfies 
+
+QH = O
+
+ αγ∆ log 1
+
+γ + α
+
+∆ log 1
+
+ε
+
+
+
+.
+
+Second, we combine the space-efficient purifier of Belovs and Jeffery [BJ26] with the transducer composition results of Belovs, Jeffery, and Yolcu [BJY24] to remove the remaining log(1 /γ ). This allows the O(1 /γ ) ground-state reflections to be composed without constructing a separate O(γ)-accurate circuit for each reflection. The resulting two-stage algorithm succeeds with constant probability per run, so repeating it until success gives Eq. (2). Our use of transducers is closely related to the ground-state energy estimation algorithm of Jeffery and Witteveen [JW26], which removes the same log(1 /γ ) overhead using queries to a uni-tary whose eigenphases encode the Hamiltonian spectrum. Their algorithm is organized around decision problems, composing transducers for decision versions of phase estimation and amplitude amplification to estimate the ground-state energy. In contrast, we use transducers within amplitude amplification to prepare a state with constant ground-state overlap, and then apply high-accuracy spectral filtering to reach error ε.For the fixed query bound (3), one could instead run the two-stage algorithm O(log(1 /ε )) times, with target error ε/ 2, and return an arbitrary state if every run fails. Repeating the entire procedure would multiply both terms of its query cost: 
+
+QH = O
+
+ αγ∆ + α
+
+∆ log 1
+
+ε
+
+
+
+log 1
+
+ε
+
+
+
+. (4) To avoid paying for the most accurate filter on every attempt, our algorithm applies filters of increasing accuracy and starts a new attempt when one rejects. Rejected attempts rarely reach the more expensive filters. A query cutoff then gives (3) without the extra log(1 /ε ) multiplying the filtering cost in (4). Table 1 compares these bounds with those of Lin and Tong [LT20a, Theorem 6] under the same oracle model. Table 1: Query bounds for ground-state preparation to trace-distance error ε.                     
+
+> Algorithm Query measure UH, U †
+> Hcalls UI, U †
+> Icalls Lin–Tong [LT20a, Theorem 6] Expected O
+> αγ∆ log 1
+> γε
+> 
+> O(1 /γ )This work Expected O
+> αγ∆ +α
+> ∆ log 1
+> ε
+> 
+> O(1 /γ )This work Worst case O
+> αγ∆ log 1
+> ε
+> 
+> O
+> 1
+> γlog 1
+> ε
+> 
+
+For an n-qubit system, when the block encoding UH uses aH ancilla qubits, our expected-query algorithm uses 
+
+O
+
+
+
+(aH + 1) α
+
+∆
+
+ 1
+
+γ + log 1
+
+ε
+
+
+
++ n + aH + log(2 /γ )
+
+γ
+
+
+
+one- and two-qubit gates in expectation, in addition to the oracle calls. For the worst-case algorithm, the terms proportional to 1 /γ gain a factor of log(1 /ε ), while the high-accuracy filtering term is unchanged. 4Concurrent work. Jeffery, Somma, Witteveen, and de Wolf [JSWdW26] independently study ground-state preparation in the Hamiltonian-evolution access model. They give two query-optimal algorithms in this setting, one of which is also based on transducers. 
+
+Related work. Spectral filtering is a standard approach to ground-state preparation and ground-state property estimation. Such filters can be constructed using inverse phase estimation [PW09] or linear combinations of Hamiltonian evolutions [GTC19, KDW21]. Polynomial filters can be implemented from a block encoding using QSVT [GSLW19, LT20b, LT20a], or from Hamiltonian evolution using QET-U and related quantum-signal-processing methods [DLT22, KGK24, KCM25, DL24]. Chakraborty et al. [CHL +25] use Richardson extrapolation to mitigate Trotter errors in ground-state property estimation, reducing circuit depth and runtime. Nearly frustration-free Hamiltonians admit improved gap dependence [TC23]. A complementary line reduces coherent quantum resources using classical randomness. Ran-domized and hybrid methods for ground-state preparation or ground-state property estimation include low-depth spectral estimators, randomized or hybrid LCU methods, stochastic QSP, and randomized QSVT [ZWJ22, Cha24, WMB24, MR25, WHS +25, SZGK26, WZH +25]. Ground states can also be prepared using adiabatic and eigenpath methods [FGG +01, BKS09, BKS10, AL18], imaginary-time evolution [MJE +19, MST +20, GST +26, SZPS26], and engineered dissipative dynamics [VWC09, Cub23, DCL24, LZL25, ZDH +26, DZPL26]. These approaches use different access models and assumptions from the spectral-filtering setting considered here. When the threshold is not supplied, ground-state energy estimation can first locate the ground energy to within a constant fraction of the gap [LT20a, LT22, DLT22]. Randomized phase estima-tion provides another approach [WBC22]. Mande and de Wolf established upper and lower bounds for guided eigenphase estimation [MdW26]. Jeffery and Witteveen [JW26] removed the log(1 /γ )overhead using transducers. For constant-error ground-state preparation with α = Θ(1), Lin and Tong [LT20a, Theorem 10] proved lower bounds of Ω(1 /γ ) calls to UH when ∆ is constant and Ω(1 /∆) calls when γ is constant. Arihara and Murao [AM26, Corollary 7] obtained a joint Ω(1 /(γ∆)) lower bound at constant error for α = Θ(1), in a related model with query access to a block-encoding unitary channel. Somma and de Wolf [SdW26, Section 1.2] further proved, in the small-overlap regime and subject to a dimension condition, the joint lower bound Ω
+
+ αγ∆ log 1
+
+ε
+
+
+
+for ground-state preparation to trace-distance error ε; their lower bound also extends to block-encoding access. Lin and Tong [LT20a, Theorem 10] also showed that, at constant spectral gap and error, the 1 /γ dependence of the number of calls to UI cannot be polynomially improved if the number of calls to UH is bounded by a polynomial in 1 /γ .
+
+# 2 Problem setting and results 
+
+We now give the formal assumptions, oracle model, and output condition. For a register X, |0⟩X
+
+denotes its all-zero computational-basis state. 52.1 Oracle and output model 
+
+Let S be an ( N + 1)-dimensional system register, N ≥ 1, and let H act on it with a unique ground state |ψ0⟩ and spectral decomposition 
+
+H =
+
+> N
+
+X
+
+> k=0
+
+Ek|ψk⟩⟨ ψk|, E0 < E 1 ≤ · · · ≤ EN .
+
+We assume known parameters μ ∈ R and ∆ > 0 satisfying 
+
+E0 ≤ μ − ∆2 , E1 ≥ μ + ∆2 . (5) Following [GSLW19, Definition 43 in the arXiv full version], a unitary U is an α-block-encoding of an operator A with a ancilla qubits if (⟨0a| ⊗ I)U (|0a⟩ ⊗ I) = Aα .
+
+The Hamiltonian oracle UH is an α-block-encoding of H with aH ancilla qubits. The state-preparation oracle satisfies 
+
+|ϕ⟩ := UI |0⟩, β := |⟨ ψ0|ϕ⟩| ≥ γ, 0 < γ ≤ 1.
+
+We call any Hamiltonian and pair of oracles satisfying these conditions a valid instance. A call to 
+
+UH , U † 
+
+> H
+
+, or a controlled version counts as one Hamiltonian query; a call to UI , U † 
+
+> I
+
+, or a controlled version counts as one state-preparation query. We write qH , q I for the numbers of these calls in a run, which may be random, and QH , Q I for worst-case bounds that hold on every run. A circuit run outputs a system state and may also return a classical flag b ∈ { 0, 1}, where b = 1 denotes success. We write ρ for the system state averaged over measurement outcomes and classical randomness, and ρsucc for the state conditioned on b = 1. Error is measured by dtr (ρ, σ ) := 12 ∥ρ − σ∥1.
+
+An algorithm with random query counts is required to output a state with probability one. In asymptotic bounds, α, γ, ∆ may vary with N .
+
+2.2 Main results 
+
+We first give an algorithm with the following expected query bounds and prove a matching lower bound on E[qH ]. 
+
+Theorem 2.1 (Expected query complexity) . Let 0 < γ ≤ 1/√2, 0 < ε ≤ 1/10 , and 0 < ∆ ≤ α/ 8.There is an algorithm that outputs ρ satisfying dtr (ρ, |ψ0⟩⟨ ψ0|) ≤ ε. Its expected query counts are 
+
+E[qH ] = O
+
+ αγ∆ + α
+
+∆ log 1
+
+ε
+
+
+
+, E[qI ] = O
+
+ 1
+
+γ
+
+
+
+.
+
+Conversely, any algorithm meeting this guarantee on all valid instances satisfies 
+
+E[qH ] = Ω 
+
+ αγ∆ + α
+
+∆ log 1
+
+ε
+
+
+
+on some instance, even with unrestricted access to UI . Moreover, if E[qH ] = o(( α/ ∆) √N ) uniformly over valid (N + 1) -dimensional instances, then for all sufficiently large N some valid instance satisfies 
+
+E[qI ] = Ω(1 /γ ).
+
+6The upper bounds are proved in Section 7.1. The lower bounds on E[qH ] and E[qI ] are proved in Sections 8.1 and 8.2, respectively. For query counts bounded on every run, we give an algorithm with the same output guarantee that matches the lower bound on QH of Somma and de Wolf [SdW26]. 
+
+Theorem 2.2 (Worst-case query complexity) . Let 0 < γ ≤ 1/√2, 0 < ε ≤ 1/10 , and 0 < ∆ ≤ α/ 8.There is an algorithm that, on every valid instance, outputs ρ satisfying dtr (ρ, |ψ0⟩⟨ ψ0|) ≤ ε. Its worst-case query counts satisfy 
+
+QH = O
+
+ αγ∆ log 1
+
+ε
+
+
+
+, QI = O
+
+ 1
+
+γ log 1
+
+ε
+
+
+
+.
+
+Conversely, any algorithm meeting this guarantee on all valid instances satisfies 
+
+QH = Ω 
+
+ αγ∆ log 1
+
+ε
+
+
+
+on some instance. This bound follows from the lower bound of Somma and de Wolf [SdW26, Section 1.2] and Lemma 8.2. Moreover, if QH = o(( α/ ∆) √N ) on valid (N + 1) -dimensional instances, then for all sufficiently large N some valid instance satisfies 
+
+QI = Ω 
+
+ 1
+
+γ log 1
+
+ε
+
+
+
+.
+
+The upper bounds are proved in Section 7.2. The lower bounds on QH and QI are proved in Sections 8.1 and 8.2, respectively. More generally, we allow the algorithm to report failure with probability at most ζ. Conditioned on success, its output state is within trace distance ε of |ψ0⟩⟨ ψ0|.
+
+Theorem 2.3 (Upper bound with a failure flag) . Let 0 < γ ≤ 1/√2, 0 < ε ≤ ζ ≤ 1/10 , and 
+
+0 < ∆ ≤ α/ 8. There is an algorithm that, on every valid instance, succeeds with probability at least 1 − ζ and, conditioned on success, satisfies dtr (ρsucc , |ψ0⟩⟨ ψ0|) ≤ ε. Its worst-case query counts satisfy 
+
+QH = O
+
+ αγ∆ log 1
+
+ζ + α
+
+∆ log 1
+
+ε
+
+
+
+, QI = O
+
+ 1
+
+γ log 1
+
+ζ
+
+
+
+.
+
+The upper bound is proved in Section 7.2. Taking the error target and ζ both to be ε/ 2 and returning an arbitrary state on failure gives the worst-case upper bounds in Theorem 2.2. A lower bound on QI must account for algorithms that do not call UI . For an ( N + 1)-dimensional system maximally entangled with a reference, the reduced system state is I/ (N + 1), so ⟨ψ0|(I/ (N + 1)) |ψ0⟩ = 1 /(N + 1). Spectral filtering can therefore prepare |ψ0⟩ without UI , at a cost in calls to UH that grows with N . The following theorem quantifies the tradeoff. 
+
+Theorem 2.4 (Query tradeoff) . Fix 0 < s 0 ≤ 1, 0 < ε < 1, 0 < γ ≤ 1/√2, α > 0, and 0 < ∆ < 2α.For every integer N ≥ 4/(s0(1 − ε)) , there is a family of (N + 1) -dimensional valid instances such that every algorithm that succeeds with probability at least s0 and satisfies dtr (ρsucc , |ψ0⟩⟨ ψ0|) ≤ ε
+
+on every member of the family obeys 
+
+γQ I + ∆QH
+
+2α√N ≥ s0(1 − ε)4√2 . (6) When QH = o(( α/ ∆) √N ), the Hamiltonian-query term in (6) vanishes as N grows. The tradeoff then implies the following lower bound on QI .7Corollary 2.5 (Lower bound on QI ). Fix 0 < s 0 ≤ 1 and 0 < ε ≤ 1/10 . For each N , let α, γ, ∆
+
+be in the ranges of Theorem 2.4. Suppose an algorithm succeeds with probability at least s0 and satisfies dtr (ρsucc , |ψ0⟩⟨ ψ0|) ≤ ε on every valid (N +1) -dimensional instance. If QH = o(( α/ ∆) √N ),then for all sufficiently large N some valid instance satisfies QI = Ω s0 (1 /γ ).
+
+Theorem 2.4 and Corollary 2.5 are proved in Section 8.2. 
+
+# 3 Algorithm overview 
+
+Our algorithms use amplitude amplification to obtain a state with constant overlap with |ψ0⟩,then apply spectral filtering to reach error ε. The key is to use transducer composition in the amplification stage, avoiding the log(1 /γ ) overhead from approximating each ground-state reflection separately by QSVT. We first describe spectral filtering and amplitude amplification in terms of reflections, then explain the transducer construction and the final filtering steps. After shifting the threshold to zero and rescaling as in Lemma 4.1, we write H and Ek for the normalized Hamiltonian and its eigenvalues throughout this section. They satisfy 
+
+∥H∥ ≤ 1, E0 ≤ − δ, Ek ≥ δ for k ≥ 1, δ−1 = O(α/ ∆) . (7) 
+
+3.1 Spectral filtering and approximate reflection 
+
+The promise (7) places the ground eigenvalue in [ −1, −δ] and all excited eigenvalues in [ δ, 1]. For 0 < η < 1/2, QSVT [GSLW19, LT20a] provides a spectral filter Uη,δ acting on the system and an ancilla register F. This unitary satisfies 
+
+Uη,δ |0⟩F|ψk⟩ = f (Ek)|0⟩F|ψk⟩ + |ωk, ⊥⟩, (⟨0|F ⊗ I)|ωk, ⊥⟩ = 0 . (8) The polynomial f satisfies 
+
+|f (E0) − 1| ≤ η, |f (Ek)| ≤ η, k ≥ 1. (9) Implementing Uη,δ uses O(( α/ ∆) log(1 /η )) calls to UH and U † 
+
+> H
+
+. On outcome |0⟩F, the spectral filter approximately preserves the ground-state component of the input and suppresses the excited-state components. The spectral filter also gives an approximate ground-state reflection: apply the filter, reflect the 
+
+F = 0 subspace, and apply the inverse filter. Define Rg := 2 |ψ0⟩⟨ ψ0| − I. Using Uη2,δ , set 
+
+eRg := U †
+
+> η2,δ
+
+ 2( |0⟩⟨ 0|F ⊗ I) − IUη2,δ .
+
+On inputs with F initialized to |0⟩F, the bounds in Eq. (9) with η replaced by η2, together with the unitarity of Uη2,δ , imply 
+
+∥  eRg − IF ⊗ Rg
+
+(|0⟩⟨ 0|F ⊗ I)∥ = O(η). (10) Using η2 instead of η changes only the constant in the logarithm, so eRg uses O(( α/ ∆) log(1 /η )) calls to UH and U † 
+
+> H
+
+.83.2 Amplitude amplification and error accumulation 
+
+To amplify the ground-state component of |ϕ⟩, we alternate Rg with the reflection about |ϕ⟩, as in amplitude amplification [BHMT02]. We first describe the resulting rotation, then bound the error incurred by replacing Rg with eRg. Choose the global phase of |ψ0⟩ so that ⟨ψ0|ϕ⟩ = β, and write 
+
+|ϕ⟩ = sin θ|ψ0⟩ + cos θ|ϕ⊥⟩, sin θ = β, ⟨ψ0|ϕ⊥⟩ = 0 ,
+
+where |ϕ⊥⟩ is normalized. Define 
+
+Rϕ := 2 |ϕ⟩⟨ ϕ| − I = UI (2 |0⟩⟨ 0| − I)U † 
+
+> I
+
+, G := RϕRg.
+
+Both Rϕ and Rg preserve span {| ψ0⟩, |ϕ⊥⟩} . Direct calculation on this subspace gives 
+
+Gj |ϕ⟩ = ( −1) j [sin((2 j + 1) θ)|ψ0⟩ + cos((2 j + 1) θ)|ϕ⊥⟩] . (11) Thus a suitable j = O(1 /β ) gives |⟨ ψ0|Gj |ϕ⟩| 2 = Ω(1). Since only β ≥ γ is known, an iteration count chosen for β = γ may overshoot: for larger β, the angle (2 j + 1) θ can pass π/ 2, where the ground-state overlap reaches its first maximum. Randomizing the iteration count over a range of size O(1 /γ ) avoids overshooting [BBHT98]. As a baseline, we can implement the ideal rotation in Eq. (11) to error O(ε) by replacing each occurrence of Rg in Gj = ( RϕRg)j with its QSVT approximation eRg, using a separate ancilla register Ft for the tth occurrence. Let |Φj ⟩ denote the output of this circuit on |ϕ⟩, including these registers. Each of the j replacements changes the output by O(η) by Eq. (10), and the remaining operations are unitary. A telescoping sum therefore gives 
+
+∥| Φj ⟩ − | 0⟩F1··· Fj Gj |ϕ⟩∥ = O(jη ). (12) Thus j = O(1 /γ ) iterations turn a per-reflection error O(η) into a total error O(η/γ ). Taking 
+
+η = O(γε ) keeps the accumulated error within O(ε). Together with the cost of eRg and O(1 /γ )amplification steps, this recovers the query scaling of Lin and Tong [LT20a, Theorem 6]: 
+
+QH = O
+
+ αγ∆ log 1
+
+γε 
+
+
+
+.
+
+Our algorithm instead uses two stages. In the first, amplitude amplification only needs to produce a state ρc satisfying ⟨ψ0|ρc|ψ0⟩ = Ω(1). The total error in (12) therefore need only be a sufficiently small constant, which allows η = Θ( γ) for j = O(1 /γ ). In the second stage, one appli-cation of Uη,δ to ρc with η = Θ( ε) yields the outcome |0⟩F with constant probability. Conditioned on this outcome, the system state is within trace distance O(ε) of |ψ0⟩⟨ ψ0|. The two stages use 
+
+O
+
+ αγ∆ log 1
+
+γ + α
+
+∆ log 1
+
+ε
+
+
+
+calls to UH and U † 
+
+> H
+
+in total. The factor log(1 /γ ) in the first term comes from approximating each of the O(1 /γ ) ground-state reflections by QSVT to error O(γ). 
+
+3.3 Ground-state reflection by a transducer 
+
+We remove the remaining log(1 /γ ) factor by using transducers to compose the reflections. Follow-ing [BJY24], we encode a unitary U on a public space H using a transducer S, a unitary acting on 
+
+H ⊕ L , where L is the private space. For each public input ξ ∈ H , a catalyst v ∈ L satisfies 
+
+S(ξ ⊕ v) = U ξ ⊕ v. 
+
+9We write ξ S
+
+⇝ U ξ for this relation. The unitary U is the transduction action of S, and W (S, ξ ) := 
+
+∥v∥2 is the transduction complexity [BJY24, Section 7.1]. The catalyst is not supplied with the public input, so one execution of S need not map ξ to U ξ . For normalized ξ with W (S, ξ ) ≤ W0,the circuit implementation theorem of [BJY24, Theorem 3.2] gives a circuit that approximates U ξ 
+
+to Euclidean error εc using 
+
+O
+
+
+
+1 + W0
+
+ε2c
+
+
+
+controlled executions of S.In the first stage, we construct transducers Sg and Sϕ for the reflections Rg and Rϕ, respectively. For every normalized system state |ψ⟩, Sg satisfies 
+
+|0⟩| ψ⟩ Sg
+
+⇝ |0⟩Rg|ψ⟩, W (Sg, |0⟩| ψ⟩) = O(1) .
+
+Here |0⟩ denotes the all-zero state of the ancillas in the public space of Sg. The transduction action on these inputs is exactly Rg on the system. Proposition 5.4 constructs Sg from the constant-accuracy filter U1/10 ,δ , the purifier of Belovs and Jeffery [BJ26], and the composition re-sults of [BJY24]. One execution of Sg makes O(1) controlled calls to U1/10 ,δ and U †
+
+> 1/10 ,δ
+
+. We obtain 
+
+Sϕ by converting the two-query circuit for Rϕ; its transduction complexity is constant (Lemma 4.4). We use sequential composition [BJY24, Proposition 9.10] to combine j copies each of Sg and Sϕ
+
+into a transducer whose transduction action maps |0⟩| ϕ⟩ to |0⟩Gj |ϕ⟩. Its transduction complexity is the sum of the component complexities plus O(j), hence O(j). Since the transduction actions of Sg and Sϕ are exactly Rg and Rϕ, respectively, their composition introduces no approximation error. We apply the circuit implementation theorem once to the complete transducer. On input 
+
+|0⟩| ϕ⟩, the resulting circuit approximates |0⟩Gj |ϕ⟩ to sufficiently small constant error using O(j)calls to U1/10 ,δ and U †
+
+> 1/10 ,δ
+
+. Each such call uses O(α/ ∆) calls to UH and U † 
+
+> H
+
+. Since each sampled iteration count satisfies j = O(1 /γ ), the circuit uses 
+
+O
+
+ αγ∆
+
+
+
+calls to UH and U † 
+
+> H
+
+.The first stage either leaves |ϕ⟩ unchanged or samples j as in Section 3.2 and runs the circuit for 
+
+Gj |ϕ⟩. With ideal reflections, the average squared overlap with |ψ0⟩ is at least 3 /16 (Lemma 6.1). The constant-error circuit implementation therefore yields an average system state ρc satisfying 
+
+p := ⟨ψ0|ρc|ψ0⟩ = Ω(1) .
+
+Preparing |ϕ⟩ and implementing the Rϕ reflections use O(1 /γ ) calls to UI and U † 
+
+> I
+
+in this stage. 
+
+3.4 Final filtering 
+
+Having prepared ρc with constant overlap with the ground state, we now use spectral filtering to reach error ε. We apply the spectral filter Uη,δ from Eq. (8) to ρc with η = Θ( ε), and declare success on the outcome |0⟩F. For this outcome, the ground-state contribution to the probability is at least (1 − η)2p, while the total excited-state contribution is at most η2(1 − p). Since p = Ω(1), success occurs with constant probability, and the normalized system state has trace distance O(η/ √p) = 
+
+O(ε) from |ψ0⟩⟨ ψ0| (Proposition 7.1). The final filter uses O(( α/ ∆) log(1 /ε )) calls to UH and U †
+
+> H
+
+10 and no calls to UI or U † 
+
+> I
+
+(Proposition 7.2). For one run with constant success probability, the worst-case query counts therefore satisfy 
+
+QI = O
+
+ 1
+
+γ
+
+
+
+, QH = O
+
+ αγ∆ + α
+
+∆ log 1
+
+ε
+
+
+
+.
+
+Repeating independent runs until success gives the expected-query upper bounds in Theorem 2.1. To reduce the failure probability to ζ, repeating the two-stage algorithm would also multiply the high-accuracy filtering cost by log(1 /ζ ). We avoid this multiplication by applying spectral filters of increasing accuracy to each newly prepared ρc, ending with a filter of error O(ε). An attempt restarts at the first rejection and succeeds only if all filters accept. We square the error target from one filter to the next, so their query costs grow geometrically. The earlier filters suppress the excited-state components before the costly filters are reached, while the later filters nearly preserve the ground-state component. A first rejection at a later filter therefore becomes rapidly less likely. This bounds, with high probability, the total number of calls to UH and U † 
+
+> H
+
+made by the spectral filters in rejected attempts. The filters in a successful attempt use O(( α/ ∆) log(1 /ε )) such calls, after which the algorithm stops. Limiting both the number of attempts and the total number of calls made by the filters gives failure probability at most ζ and worst-case query counts satisfying 
+
+QH = O
+
+ αγ∆ log 1
+
+ζ + α
+
+∆ log 1
+
+ε
+
+
+
+, QI = O
+
+ 1
+
+γ log 1
+
+ζ
+
+
+
+.
+
+These are the bounds in Theorem 2.3 and the full analysis is given in Proposition 7.4. 
+
+# 4 Preliminaries 
+
+4.1 Shifting and rescaling the Hamiltonian 
+
+We shift the known threshold to zero and rescale the spectrum to obtain the promise used in (7). 
+
+Lemma 4.1 (Shifting and rescaling) . Under the access model of Section 2, set 
+
+eH := H − μI 
+
+¯α , ¯α := α + |μ|.
+
+It has the same eigenvectors as H, with eigenvalues eEk = ( Ek − μ)/¯α. Set 
+
+δ := min 
+
+ ∆2¯ α , 12
+
+
+
+.
+
+Then 
+
+∥ eH∥ ≤ 1, eE0 ≤ − δ, eEk ≥ δ for k ≥ 1, δ−1 ≤ 4α
+
+∆ .
+
+Moreover, a 1-block-encoding of eH can be implemented with one controlled call to UH , and its adjoint with one controlled call to U † 
+
+> H
+
+.Proof. The threshold promise (5) and ∥H∥ ≤ α imply 
+
+−α ≤ E0 < μ < E 1 ≤ α. 
+
+Consequently, |μ| < α and ¯ α < 2α. Moreover, the triangle inequality gives 
+
+∥ eH∥ ≤ ∥H∥ + |μ|
+
+¯α ≤ 1.
+
+11 The standard linear-combination construction for block-encodings [GSLW19, Lemma 52 in the arXiv full version], applied to UH and the identity, gives a ¯ α-block-encoding of H − μI , or equiv-alently a 1-block-encoding of eH. The identity term requires no oracle call, so the claimed query costs follow. Since eH is an affine function of H, it has the same eigenvectors as H, with eigenvalues eEk =(Ek − μ)/¯α. The same promise therefore yields 
+
+eE0 ≤ − ∆2¯ α , eEk ≥ ∆2¯ α for k ≥ 1.
+
+Because δ ≤ ∆/(2¯ α), these inequalities give eE0 ≤ − δ and eEk ≥ δ for every k ≥ 1. The cap at 1 /2ensures 0 < δ < 1, as required by Lemma 4.2. Finally, the threshold promise (5) and ∥H∥ ≤ α give ∆ ≤ E1 − E0 ≤ 2α. 
+
+Since ¯ α < 2α, both 2¯ α/ ∆ and 2 are at most 4 α/ ∆. Hence 
+
+δ−1 = max 
+
+ 2¯ α
+
+∆ , 2
+
+
+
+≤ 4α
+
+∆ .
+
+This proves the lemma. Until Section 8, H and Ek denote the normalized operator eH and its eigenvalues eEk. Queries to its block-encoding are charged to the original oracle according to Lemma 4.1. The linear-combination construction adds at most one ancilla qubit; this constant increase is absorbed in the 
+
+aH + 1 factors in the gate bounds below. 
+
+4.2 Spectral filtering by QSVT 
+
+We use the following standard spectral-filtering consequence of quantum singular value transfor-mation. 
+
+Lemma 4.2 (QSVT spectral filter [LT20a, Lemma 5]) . Let H be Hermitian with ∥H∥ ≤ 1, and suppose that a 1-block-encoding of H with aH ancilla qubits is available. For 0 < η < 1/2 and 
+
+0 < δ < 1, there is a real polynomial f with |f (x)| ≤ 1 for x ∈ [−1, 1] such that 
+
+(
+
+|f (x) − 1| ≤ η, x ∈ [−1, −δ],
+
+|f (x)| ≤ η, x ∈ [δ, 1] .
+
+QSVT gives a unitary Uη,δ acting on the system and an ancilla register F of aH + O(1) qubits such that 
+
+(⟨0|F ⊗ I)Uη,δ (|0⟩F ⊗ I) = f (H).
+
+The circuit uses O(δ−1 log(1 /η )) queries to the block-encoding and O(( aH + 1) δ−1 log(1 /η )) one-and two-qubit gates. 
+
+12 4.3 Transducers 
+
+We recall the transducer formalism of [BJY24]. All direct sums below are orthogonal direct sums. 
+
+Definition 4.1 (Transducer) . Let H and L be Hilbert spaces. A transducer with public space H
+
+and private space L is a unitary 
+
+S : H ⊕ L −→ H ⊕ L .
+
+Given ξ, τ ∈ H and v ∈ L satisfying 
+
+S(ξ ⊕ v) = τ ⊕ v, (13) 
+
+we say that S transduces ξ into τ , write ξ S
+
+⇝ τ , and call v a catalyst . A unitary U : H → H is the 
+
+transduction action of S if ξ S
+
+⇝ U ξ for every ξ ∈ H . We write S⇝ H = U [BJ26, Definition 2.5]. 
+
+Definition 4.2 (Transduction complexity [BJY24, Section 7.1]) . For a transduction ξ S(O)
+
+⇝ τ with catalyst v, its transduction complexity is 
+
+W (S, O, ξ ) := ∥v∥2.
+
+We use the catalysts specified by the constructions below. 
+
+We abbreviate S(O) to S and omit fixed arguments of W when the context is clear. The following result explains how transduction complexity controls the cost of implementing the transduction action. The catalyst v for ξ S
+
+⇝ τ is not an input to this circuit. 
+
+Lemma 4.3 (Circuit implementation [BJY24, Theorem 3.2]) . Let S be a transducer, W0 ≥ 0, and 
+
+εc > 0. There is a circuit that, for every normalized ξ ∈ H with W (S, ξ ) ≤ W0, starts from ξ ⊕ 0
+
+and produces a state within Euclidean distance εc of τ ⊕ 0, where ξ S
+
+⇝ τ . The circuit uses 
+
+K = O(1 + W0/ε 2c )
+
+controlled executions of S and O(K) additional one- and two-qubit gates. 
+
+The composition results below use canonical transducers, whose input oracles act only on part of the private space. 
+
+Definition 4.3 (Canonical transducer) . Let O act on M. A transducer on H ⊕ L is canonical if a subspace of L has the form E ⊗ M for some Hilbert space E, and 
+
+S(O) = S◦ eO, eO|E⊗M = IE ⊗ O, eO|(E⊗M )⊥ = I, (14) 
+
+where the orthogonal complement is taken in H ⊕ L and S◦ is an oracle-independent unitary. We call S◦ the work unitary .
+
+For an oracle-independent unitary V , let T (V ) denote the number of one- and two-qubit gates used to implement V ; for a canonical transducer S, write T (S) := T (S◦). The following lemma converts a unitary circuit with oracle access into a canonical transducer whose transduction action is the unitary implemented by the circuit. The result is a circuit-model consequence of [BJY24, Theorem 3.5 and Figure 3.6]. 13 Lemma 4.4 (Circuit-to-transducer conversion) . Let A(O) : H → H be a unitary circuit with N
+
+queries to O and TA one- and two-qubit gates outside the oracle calls. There is a canonical trans-ducer SA(O) with public space H such that, for every ξ ∈ H ,
+
+ξ SA(O)
+
+⇝ A(O)ξ, W (SA, O, ξ ) ≤ N ∥ξ∥2. (15) 
+
+Moreover, T (SA) = O(TA + N ).
+
+For the construction in [BJY24], W (SA, O, ξ ) is the sum of the squared norms of the components sent to the oracle. There are N such components, each of norm at most ∥ξ∥. The circuit has TA +N
+
+gates in total. Canonical transducers admit sequential and functional composition [BJY24, Section 9]. Under sequential composition, the transduction actions are applied in order; the component transduction complexities and the squared norms of the intermediate public states add. Functional composition is used when the transduction action of one transducer is the input oracle of another. We record the two forms used below and include their proofs for completeness. 
+
+Proposition 4.5 (Sequential composition [BJY24, Definition 9.8 and Proposition 9.10]) . Let 
+
+S1, . . . , S m be canonical transducers with the same public space H and input oracle O. Suppose that 
+
+ξtSt(O)
+
+⇝ ξt+1 , t = 1 , . . . , m. 
+
+Writing Ut := St(O)⇝ H, their sequential composition Sm ∗ · · · ∗ S1 has transduction action Um · · · U1
+
+and transduces ξ1 into ξm+1 . Its parallel implementation satisfies 
+
+W (Sm ∗ · · · ∗ S1, O, ξ 1) = 
+
+> m
+
+X
+
+> t=2
+
+∥ξt∥2 +
+
+> m
+
+X
+
+> t=1
+
+W (St, O, ξ t). (16) 
+
+The same implementation has gate count 
+
+T (Sm ∗ · · · ∗ S1) = O log m + T
+
+> m
+
+M
+
+> t=1
+
+S◦
+
+> t
+
+!! 
+
+. (17) 
+
+Proof. Let O act on M. Write St(O) = S◦ 
+
+> t
+
+eOt, and let Lt be its private space. Take copies 
+
+H1, . . . , Hm of H, with Hm+1 = H1. The transducer Sm ∗ · · · ∗ S1 acts on 
+
+> m
+
+M
+
+> t=1
+
+(Ht ⊕ L t),
+
+where H1 is public and all other summands are private. Let P send the copy of x ∈ H in Ht to its copy in Ht+1 , and let P act as the identity on each Lt. The parallel construction is 
+
+Sm ∗ · · · ∗ S1 = P
+
+> m
+
+M
+
+> t=1
+
+S◦
+
+> t
+
+! mM
+
+> t=1
+
+eOt
+
+!
+
+. (18) For each t, the canonical form of St gives a subspace Et ⊗ M ⊆ L t on which eOt = IEt ⊗ O; it is the identity on the rest of Ht ⊕ L t. Set E := Lmt=1 Et. Since 
+
+> m
+
+M
+
+> t=1
+
+(Et ⊗ M ) ∼= E ⊗ M ,
+
+14 the operator Lmt=1 eOt acts as IE ⊗ O on this private subspace and as the identity on its orthogonal complement. Hence Sm ∗ · · · ∗ S1 has the canonical form (14), with one controlled call to O.For each t, use the catalyst vt ∈ L t of ξtSt(O)
+
+⇝ ξt+1 , so St(O)( ξt ⊕ vt) = ξt+1 ⊕ vt and ∥vt∥2 =
+
+W (St, O, ξ t). Put ξt in Ht for t ≥ 2 and define a catalyst for Sm ∗ · · · ∗ S1 by 
+
+v =
+
+> m
+
+M
+
+> t=2
+
+ξt ⊕
+
+> m
+
+M
+
+> t=1
+
+vt.
+
+The component of ξ1 ⊕ v in Ht ⊕ L t is ξt ⊕ vt. Hence (Sm ∗ · · · ∗ S1)( O)( ξ1 ⊕ v) = P
+
+> m
+
+M
+
+> t=1
+
+St(O)( ξt ⊕ vt)
+
+!
+
+= P
+
+> m
+
+M
+
+> t=1
+
+(ξt+1 ⊕ vt)
+
+!
+
+= ξm+1 ⊕
+
+> m
+
+M
+
+> t=2
+
+ξt
+
+!
+
+⊕
+
+> m
+
+M
+
+> t=1
+
+vt
+
+!
+
+= ξm+1 ⊕ v. 
+
+Since ∥v∥2 = Pmt=2 ∥ξt∥2 + Pmt=1 ∥vt∥2, this proves (16); the transduction action is Um · · · U1.Encode t in O(log m) qubits and use a bit to distinguish Ht from Lt. Then P increments 
+
+t modulo m when the component is in Ht. Ripple-carry arithmetic implements this controlled increment modulo m with O(log m) one- and two-qubit gates [CDKM04, Sections 4.1 and 4.3]. The work unitary in (18) is P (L 
+
+> t
+
+S◦ 
+
+> t
+
+), giving (17). For a canonical transducer S(O) on H ⊕ L , IE ⊗ S(O) is canonical with public space E ⊗ H and private space E ⊗ L [BJY24, Definition 9.6 and Corollary 9.7]. For z = P 
+
+> r
+
+er ⊗ xr, where {er} is an orthonormal basis of E, use the catalyst P 
+
+> r
+
+er ⊗ vr, where vr is the catalyst for S(O) on input 
+
+xr. Then 
+
+W (IE ⊗ S, O, z ) = X
+
+> r
+
+W (S, O, x r). (19) Functional composition replaces a transducer’s input oracle by the transduction action of an-other transducer. 
+
+Proposition 4.6 (Functional composition [BJY24, Proposition 9.11]) . Let SA(O′) and SB (O) be canonical transducers. Suppose that O′ is the only input oracle of SA and acts on M, and that SB
+
+has public space M with 
+
+SB (O)⇝ M = O′.
+
+Let HA and LA be the public and private spaces of SA, and suppose its oracle call acts as IE ⊗ O′
+
+on E ⊗ M ⊆ L A. Then the functional composition SA ◦ SB is a canonical transducer with input oracle O and 
+
+(SA ◦ SB )( O)⇝ HA = SA(O′)⇝ HA . (20) 
+
+If, for every z ∈ E ⊗ M ,
+
+W (IE ⊗ SB , O, z ) ≤ c∥z∥2,
+
+then, for every public input ξ,
+
+W (SA ◦ SB , O, ξ ) ≤ (1 + c)W (SA, O ′, ξ ). (21) 15 Proof. Write SA(O′) = S◦ 
+
+> A
+
+eO′ and SB (O) = S◦ 
+
+> B
+
+eOB in canonical form, and let LB be the private space of SB . The composition acts on HA ⊕ L A ⊕ (E ⊗ L B ), with public space HA. Let v be a catalyst for SA(O′) on input ξ, and let z be its component in E ⊗ M , so v − z ∈ L A ∩ (E ⊗ M )⊥.Choose a catalyst w for IE ⊗ SB (O) on input z. The transducer SA ◦ SB first applies IE ⊗ eOB
+
+on E ⊗ (M ⊕ L B ). Its work unitary then applies IE ⊗ S◦ 
+
+> B
+
+on the same space, followed by S◦ 
+
+> A
+
+on 
+
+HA ⊕ L A. Each operation acts as the identity on the remaining summands. Since (IE ⊗ SB (O))( z ⊕ w) = ( IE ⊗ O′)z ⊕ w, 
+
+we have (SA ◦ SB )( O)( ξ ⊕ v ⊕ w) = ( S◦ 
+
+> A
+
+⊕ IE⊗L B ) ξ ⊕ (v − z) ⊕ (IE ⊗ SB (O))( z ⊕ w)
+
+= ( S◦ 
+
+> A
+
+⊕ IE⊗L B ) ξ ⊕ (v − z) ⊕ (IE ⊗ O′)z ⊕ w
+
+= ( S◦ 
+
+> A
+
+⊕ IE⊗L B )  eO′(ξ ⊕ v) ⊕ w
+
+= SA(O′)( ξ ⊕ v) ⊕ w. 
+
+Thus SA ◦ SB has the transduction action in (20). Its catalyst is v ⊕ w; the two components lie in orthogonal spaces, so 
+
+W (SA ◦ SB , O, ξ ) = ∥v∥2 + ∥w∥2 ≤ (1 + c)∥v∥2,
+
+because ∥z∥ ≤ ∥ v∥. This proves (21). 
+
+4.4 Purifier 
+
+Purifiers were introduced by Belovs [Bel15] and later implemented as transducers [BJY24]. We use the space-efficient construction of Belovs and Jeffery [BJ26], which takes a reflection about an input state as its oracle and transduces that state to itself or its negative, according to whether measuring one qubit yields outcome 1 with probability below or above 1 /2. Let A denote that qubit, with Hilbert space A ∼= C2, and let Y be the Hilbert space of the remaining registers. Define 
+
+Pb := |b⟩⟨ b|A ⊗ IY , b ∈ { 0, 1},
+
+and, for a normalized φ ∈ A ⊗ Y ,
+
+p(φ) := ∥P1φ∥2, K(φ) := span {P0φ, P 1φ}.
+
+The purifier uses an input oracle O that reflects about φ on K(φ). In Section 5, another transducer supplies this reflection. To apply Proposition 4.6, we put the purifier in canonical form follow-ing [BJY24, Proposition 10.4]. The construction uses a counter register J and a three-state clock register T, with 
+
+J := ℓ2(Z), T := span {|− 1⟩T, |0⟩T, |1⟩T}, Hpur := span {|− 1⟩T ⊗ | 0⟩J} ⊗ A ⊗ Y .
+
+Let Lpur be the orthogonal complement of Hpur in T ⊗ J ⊗ A ⊗ Y . We omit the fixed clock and counter states from public inputs and outputs. When composing with a circuit on A ⊗ Y , that circuit leaves these two registers fixed. 
+
+Theorem 4.7 (Purifier in canonical form) . Let O be a unitary on A ⊗ Y . There is a canonical transducer Spur (O) on T ⊗ J ⊗ A ⊗ Y with input oracle O, public space Hpur , and private space 
+
+Lpur . For every normalized φ with p(φ)̸ = 1 /2, if 
+
+O|K(φ) = 2 φφ † − IK(φ),
+
+16 then 
+
+φ Spur (O)
+
+⇝
+
+(
+
++φ, p(φ) < 1/2,
+
+−φ, p(φ) > 1/2,
+
+and 
+
+W (Spur , O, φ ) = O
+
+ 1
+
+|p(φ) − 1/2|
+
+
+
+.
+
+Proof. We first write the two-query purifier of [BJ26, Eq. (3.8) and Figure 3.2], then put it in canonical form. Put 
+
+X := J ⊗ A ⊗ Y .
+
+The two-query purifier has public space span {| 0⟩J} ⊗ A ⊗ Y , and its private space is span {| j⟩J :
+
+j̸ = 0 } ⊗ A ⊗ Y . Define the counter shift by INC J|j⟩J = |j + 1 ⟩J. Since j ranges over Z, this shift is unitary. Set 
+
+bO := |0⟩⟨ 0|J ⊗ I + ( I − | 0⟩⟨ 0|J) ⊗ O, 
+
+INC b := INC J ⊗Pb + IJ ⊗ (I − Pb), b ∈ { 0, 1}.
+
+Here bO applies O when J̸ = 0, while INC b increments J when A = b. Set 
+
+B0 := INC 0, B1 := INC 1 INC †
+
+> 0
+
+, B2 := INC †
+
+> 1
+
+(2 |0⟩⟨ 0|J − I).
+
+On the public and private spaces defined above, the purifier is the transducer 
+
+bSpur (O) := B2 bOB 1 bOB 0. (22) It makes two calls to O through bO.For the input φ in the theorem, set ξ := |0⟩J ⊗ φ. The projectors P0, P 1 and the oracle O
+
+preserve K(φ), so every operator in (22) also preserves J ⊗ K (φ). On K(φ), O is the reflection about φ. Theorem 3.7 of [BJ26] therefore provides a catalyst 
+
+v ∈ span {| j⟩J : j̸ = 0 } ⊗ K (φ). (23) With 
+
+τ := 
+
+(
+
++ξ, p(φ) < 1/2,
+
+−ξ, p(φ) > 1/2,
+
+the cited theorem states that 
+
+bSpur (O)( ξ ⊕ v) = τ ⊕ v, ∥v∥2 = O
+
+ 1
+
+|p(φ) − 1/2|
+
+
+
+. (24) The transducer bSpur (O) is not in the canonical form of Definition 4.3, because the oracle occurs twice in (22). To put this two-query transducer in canonical form, use the three-state clock T
+
+defined above. The public space has clock value −1, so the oracle can be called at clock values 0 and 1. Following the circuit-to-transducer conversion of [BJY24, Theorem 10.3 and Proposition 10.4], define 
+
+E := span {| 0⟩T, |1⟩T} ⊗ span {| j⟩J : j̸ = 0 }. (25) On T ⊗ X , let eO := |− 1⟩⟨− 1|T ⊗ IX + ( |0⟩⟨ 0|T + |1⟩⟨ 1|T) ⊗ bO. 
+
+17 It acts as IE ⊗O on the private subspace E ⊗A⊗Y and as the identity on its orthogonal complement. Define the oracle-independent unitary 
+
+S◦ 
+
+> pur
+
+:=  |0⟩⟨− 1| 
+
+> T
+
+⊗ B0 +  |1⟩⟨ 0| 
+
+> T
+
+⊗ B1 +  |− 1⟩⟨ 1| 
+
+> T
+
+⊗ B2. (26) It is unitary because it applies a unitary for each clock value and then cyclically permutes the three values. Hence 
+
+Spur (O) := S◦ 
+
+> pur
+
+eO (27) has the canonical form (14). We verify that the clock construction preserves the transduction in (24). When bSpur (O) acts on x := ξ ⊕ v, its two calls to bO act on 
+
+x0 := B0x, x1 := B1 bOx 0,
+
+respectively. Define 
+
+ev := |− 1⟩T ⊗ v + |0⟩T ⊗ x0 + |1⟩T ⊗ x1. (28) Since v is supported on j̸ = 0 by (23), |− 1⟩T ⊗ v lies in the private space. The other two terms have clock values 0 and 1, so they also lie in the private space. Thus ev ∈ L pur . Using the work unitary defined in (26), we compute 
+
+Spur (O) (|− 1⟩T ⊗ ξ) ⊕ ev = S◦
+
+> pur
+
+ |− 1⟩T ⊗ x + |0⟩T ⊗ bOx 0 + |1⟩T ⊗ bOx 1
+
+
+
+= |0⟩T ⊗ B0x + |1⟩T ⊗ B1 bOx 0 + |− 1⟩T ⊗ B2 bOx 1
+
+= |0⟩T ⊗ x0 + |1⟩T ⊗ x1 + |− 1⟩T ⊗ bSpur (O)x
+
+= ( |− 1⟩T ⊗ τ ) ⊕ ev. 
+
+The third line uses the definitions of x0, x 1 and (22); the last uses (24). Hence ev is a catalyst, and its norm satisfies 
+
+W (Spur , O, φ ) = ∥ev∥2
+
+= ∥v∥2 + ∥x0∥2 + ∥x1∥2
+
+= 2 + 3 ∥v∥2 = O
+
+ 1
+
+|p(φ) − 1/2|
+
+
+
+.
+
+Here the third equality uses the unitarity of B0, B1, and bO, the orthogonality of ξ and v, and 
+
+∥ξ∥ = 1. The final bound follows from (24) and |p(φ) − 1/2| ≤ 1/2. 
+
+Finite counter register. The construction above uses an infinite counter. For a power of two 
+
+D ≥ 4, replace J = ℓ2(Z) by CD with basis {| j⟩J : 0 ≤ j < D }, and set INC D|r⟩J = |(r + 1) mod D⟩J.
+
+Since D is a power of two, INC D is a ripple-carry increment on log 2 D qubits and uses O(log D)gates. Reversing the circuit or adding a fixed number of controls to each gate preserves this scaling. Let S[D]pur be the canonical purifier obtained from (27) by this replacement. The following counter bound adapts the finite-counter argument of [BJ26, Proposition 4.3] to 
+
+Spur .18 Lemma 4.8 (Finite-counter purifier) . Each application of S◦ 
+
+> pur
+
+or (S◦
+
+> pur
+
+)† changes the value of J
+
+by at most one, and T (S[D]pur ) = O(log D).Proof. In (26), B0 and B2 shift J by at most one. The shifts in B1 are controlled by the orthogonal projectors P0 and P1, so B1 also shifts J by at most one. The same is true of their inverses. Write b = log 2 D. The work unitary (26) uses B0, B 1, B 2 controlled by the three clock values. By definition, B0 and B2 each require one controlled shift of the b-qubit counter, while B1 requires two; 
+
+B2 also tests whether the counter is zero. The controlled shifts use O(b) gates. The zero test uses a 
+
+b-controlled NOT, which takes O(b) one- and two-qubit gates with one work qubit returned to its initial state [BBC +95, Corollary 7.4]. Conditioning on the clock adds a constant number of controls to each gate, and updating the clock costs O(1) gates. Hence T (S[D]pur ) = O(b) = O(log D). 
+
+4.5 Trigonometric polynomial inequalities 
+
+The query lower bounds use the following growth inequality for real trigonometric polynomials. The usual form with s ≤ π/ 2 appears in [BE95, Theorem 5.1.2]; the larger range below follows from [TY18, Theorem 1.1]. 
+
+Lemma 4.9 (Trigonometric growth inequality) . Let 
+
+q(θ) = 
+
+> n
+
+X
+
+> k=−n
+
+akeikθ 
+
+be real-valued, and let | · | denote Lebesgue measure. If, for some 0 < s ≤ π,
+
+{θ ∈ [−π, π ) : |q(θ)| ≤ 1} ≥ 2π − s, 
+
+then 
+
+sup 
+
+> θ∈R
+
+|q(θ)| ≤ exp(4 ns ).
+
+Proof. Theorem 1.1 of [TY18] bounds the supremum by cosh(2 n log(sec( s/ 4) + tan( s/ 4))). Since 
+
+s ≤ π,log(sec( s/ 4) + tan( s/ 4)) = 
+
+Z s/ 40
+
+sec u du ≤ s
+
+2√2 .
+
+The supremum is therefore at most exp( ns/ √2) ≤ exp(4 ns ). 
+
+4.6 Hybrid argument 
+
+We use the following hybrid argument to compare circuits that differ only in their oracle gates. 
+
+Lemma 4.10 (BBBV hybrid argument; cf. [BBBV97, Theorem 3.3]) . Consider circuits indexed by 
+
+t = 0 , 1, . . . , N with the same initial state and inter-query unitaries, but oracle gates Oq,t at query position q. Let |Ψt⟩ be their final states and |Φ0 
+
+> q
+
+⟩ the state before query q in the reference circuit 
+
+t = 0 . Then NX
+
+> t=1
+
+∥| Ψt⟩ − | Ψ0⟩∥ 2
+
+!1/2
+
+≤ X
+
+> q
+> N
+
+X
+
+> t=1
+
+∥(Oq,t − Oq, 0)|Φ0 
+
+> q
+
+⟩∥ 2
+
+!1/2
+
+.
+
+In particular, if every query of type j satisfies P
+
+> t
+
+∥(Oq,t − Oq, 0)|Φ⟩∥ 2 ≤ c2 
+
+> j
+
+for every normalized |Φ⟩,then the left-hand side is at most P 
+
+> j
+
+cj Qj , where Qj is the number of queries of type j.
+
+19 Proof. For each t, replace the reference oracle gates by Oq,t from last to first. When replacing the gate at query position q, all preceding gates still belong to the reference circuit, so the input is 
+
+|Φ0 
+
+> q
+
+⟩; all subsequent gates are unitary. Thus 
+
+∥| Ψt⟩ − | Ψ0⟩∥ ≤ X
+
+> q
+
+∥(Oq,t − Oq, 0)|Φ0 
+
+> q
+
+⟩∥ .
+
+Taking the Euclidean norm over t and using the triangle inequality gives 
+
+> N
+
+X
+
+> t=1
+
+∥| Ψt⟩ − | Ψ0⟩∥ 2
+
+!1/2
+
+≤
+
+
+
+> N
+
+X
+
+> t=1
+
+"X
+
+> q
+
+∥(Oq,t − Oq, 0)|Φ0 
+
+> q
+
+⟩∥ 
+
+#2
+
+> 1/2
+
+≤ X
+
+> q
+> N
+
+X
+
+> t=1
+
+∥(Oq,t − Oq, 0)|Φ0 
+
+> q
+
+⟩∥ 2
+
+!1/2
+
+.
+
+Applying the bound cj to each query of type j gives the second claim. 
+
+# 5 Ground-state reflection 
+
+We construct a transducer for Rg = 2 |ψ0⟩⟨ ψ0| − I using the purifier of Theorem 4.7. Let A be its answer qubit, and write Pb = |b⟩⟨ b|A ⊗ I for b ∈ { 0, 1}, where I acts on the other registers. We choose a unitary V that maps each eigenstate |ψk⟩, together with zero-initialized ancillas, to a state 
+
+φk whose answer-1 probability is below 1 /2 for k = 0 and above 1 /2 for k ≥ 1. If one oracle reflects about each φk on K(φk), the purifier transduces φ0 into φ0 and φk into −φk for k ≥ 1. Applying 
+
+V † then returns the ancillas to zero and gives the action of Rg on the system. 
+
+5.1 Constant-accuracy spectral test 
+
+To construct V , take U := U1/10 ,δ and its corresponding polynomial f from Lemma 4.2. Let R
+
+be the ancilla register of U . The outcome R = 0 has probability at least 81 /100 on |ψ0⟩ and at most 1 /100 on each excited eigenstate. We obtain V by applying U and reversibly recording in A
+
+whether R is nonzero. 
+
+Lemma 5.1 (Constant-accuracy spectral test) . There is a unitary V acting on A, R, and the system such that, for every system state |ψ⟩,
+
+P0V (|0⟩AR ⊗ | ψ⟩) = |0⟩AR ⊗ f (H)|ψ⟩. (29) 
+
+For each eigenstate |ψk⟩, define 
+
+φk := V (|0⟩AR ⊗ | ψk⟩), pk := ∥P1φk∥2. (30) 
+
+Under the normalized spectral promise (7) , pk = 1 − | f (Ek)|2, and 
+
+p0 ≤ 19 100 , pk ≥ 99 100 k ≥ 1, (31) 
+
+so 
+
+min  
+
+> k
+
+|pk − 1/2| ≥ 31 100 .
+
+Each of V and V † uses O(1 /δ ) queries to the block-encoding of H and O(( aH + 1) /δ ) one- and two-qubit gates, where aH is the number of ancilla qubits in that block-encoding. 
+
+20 Proof. Define 
+
+N̸=0 |a⟩A|z⟩R := |a ⊕ 1{z̸ =0 }⟩A|z⟩R, V := ( N̸ =0 ⊗ I)( IA ⊗ U ).
+
+On inputs with A initialized to |0⟩, the answer is 0 exactly when R = 0. Hence 
+
+P0V (|0⟩AR ⊗ | ψ⟩) = |0⟩AR ⊗ (⟨0|R ⊗ I)U (|0⟩R ⊗ | ψ⟩)
+
+= |0⟩AR ⊗ f (H)|ψ⟩,
+
+where the second equality uses Lemma 4.2. Applying (29) to |ψk⟩ gives 
+
+P0φk = |0⟩AR ⊗ f (H)|ψk⟩ = f (Ek)|0⟩AR |ψk⟩.
+
+The state φk is normalized and P0 + P1 = I, so 
+
+pk = 1 − ∥ P0φk∥2 = 1 − | f (Ek)|2.
+
+Lemma 4.2 gives |f (E0)| ≥ 9/10 and |f (Ek)| ≤ 1/10 for k ≥ 1. Thus 
+
+p0 ≤ 1 − (9 /10) 2 = 19 /100 , pk ≥ 1 − (1 /10) 2 = 99 /100 (k ≥ 1) .
+
+The smaller margin from 1 /2 is 1 /2 − 19 /100 = 31 /100. Since η = 1 /10 is fixed, Lemma 4.2 shows that U uses O(1 /δ ) Hamiltonian queries and O(( aH +1) /δ ) one- and two-qubit gates. Let r be the number of qubits in R, so r = aH +O(1). To implement 
+
+N̸=0 , apply X to A, then an r-controlled NOT targeting A, conjugating each control in R by X. This controlled NOT can be implemented with O(r) one- and two-qubit gates, so N̸ =0 adds O(aH + 1) gates, absorbed in O(( aH + 1) /δ ) because δ < 1. Taking adjoints preserves both bounds, which proves the stated costs for V and V †.
+
+5.2 Reflection about the test states 
+
+To apply Theorem 4.7 to every φk, we need one oracle whose restriction to each K(φk) is the reflection about φk. Define Π := V (|0⟩⟨ 0|AR ⊗ I)V †, Oref := 2Π − I = V  2( |0⟩⟨ 0|AR ⊗ I) − IV †. (32) 
+
+Lemma 5.2 (Reflection oracle) . The spaces K(φk) are mutually orthogonal. Each K(φk) is invari-ant under P0, P1, Π, and Oref , and 
+
+Π|K(φk ) = φkφ†
+
+> k
+
+, Oref |K(φk ) = 2 φkφ† 
+
+> k
+
+− IK(φk ). (33) 
+
+Proof. To show that the spaces K(φk) are orthogonal, we compare their spanning vectors P0φk and 
+
+P1φk. The vectors φk are orthonormal because V maps the orthonormal inputs |0⟩AR |ψk⟩ to them. Using P 20 = P0 and the P0 action in (29), we compute, for every k and ℓ,
+
+φ†
+
+> k
+
+P0φℓ = ( P0φk)†(P0φℓ)=  |0⟩AR ⊗ f (H)|ψk⟩† |0⟩AR ⊗ f (H)|ψℓ⟩
+
+= f (Ek)∗f (Eℓ)⟨ψk|ψℓ⟩
+
+= |f (Ek)|2δkℓ = (1 − pk)δkℓ ,φ†
+
+> k
+
+P1φℓ = φ†
+
+> k
+
+φℓ − φ†
+
+> k
+
+P0φℓ = δkℓ − (1 − pk)δkℓ = pkδkℓ .
+
+(34) 21 For k̸ = ℓ,(Pbφk)†(Pb′ φℓ) = δbb ′ φ†
+
+> k
+
+Pbφℓ = 0 , b, b ′ ∈ { 0, 1}.
+
+Since P0φk and P1φk span K(φk), this proves K(φk) ⊥ K (φℓ). Using I = P
+
+> ℓ
+
+|ψℓ⟩⟨ ψℓ| in the definition of Π, Π = V |0⟩⟨ 0|AR ⊗ X
+
+> ℓ
+
+|ψℓ⟩⟨ ψℓ|
+
+!
+
+V †
+
+= X
+
+> ℓ
+
+V (|0⟩AR |ψℓ⟩)( ⟨0|AR ⟨ψℓ|)V †
+
+= X
+
+> ℓ
+
+φℓφ†
+
+> ℓ
+
+.
+
+For x ∈ K (φk), the relation K(φk) ⊥ K (φℓ) gives φ†
+
+> ℓ
+
+x = 0 when ℓ̸ = k, so Πx = X
+
+> ℓ
+
+φℓ(φ†
+
+> ℓ
+
+x) = φk(φ†
+
+> k
+
+x).
+
+Since φk = P0φk + P1φk belongs to K(φk), Π x ∈ K (φk) for every x ∈ K (φk), and Π |K(φk ) = φkφ†
+
+> k
+
+.Moreover, 
+
+P1(P0φk) = 0 , P1(P1φk) = P1φk,
+
+so P1 preserves K(φk). Since P0 = I − P1, the projector P0 also preserves K(φk). Finally, Oref =2Π − I preserves K(φk) and satisfies 
+
+Oref |K(φk ) = 2 φkφ† 
+
+> k
+
+− IK(φk ).
+
+5.3 Purifier on superpositions 
+
+The preceding lemma gives one reflection oracle Oref for all φk. We use it in the canonical transducer 
+
+Spur (Oref ) of Theorem 4.7, with Y the joint Hilbert space of RS . Its public states have T = −1and J = 0 by the definition of Hpur . We must also check that the transduction complexity remains constant on superpositions of the φk.
+
+Lemma 5.3 (Purifier on superpositions) . For every normalized vector P 
+
+> k
+
+akφk,
+
+X
+
+> k
+
+akφkSpur (Oref )
+
+⇝ a0φ0 − X
+
+> k≥1
+
+akφk. (35) 
+
+Moreover, 
+
+W Spur , O ref , X
+
+> k
+
+akφk
+
+!
+
+= O(1) . (36) 
+
+Proof. By Lemmas 5.2 and 5.1, 
+
+Oref |K(φk ) = 2 φkφ† 
+
+> k
+
+− IK(φk ), p0 < 12 < p k (k ≥ 1) .
+
+22 The reflection identity and probability bounds above allow us to apply Theorem 4.7 to each φk
+
+with the same oracle Oref . To combine the resulting transductions, we choose their catalysts for 
+
+Spur (Oref ) in orthogonal spaces. Fix k. In the proof of Theorem 4.7, the input ξ = |0⟩J ⊗ φk and the catalyst v of bSpur (Oref ) both lie in J ⊗ K (φk), by (23). Lemma 5.2 shows that P0, P1, and Oref preserve K(φk). Consequently 
+
+B0, B1, and bO preserve J ⊗ K (φk), so the vectors x0 = B0(ξ ⊕ v) and x1 = B1 bOx 0 lie there as well. The clock construction (28) therefore gives a catalyst for Spur (Oref ) on input φk of the form 
+
+vk = |− 1⟩T ⊗ v + |0⟩T ⊗ x0 + |1⟩T ⊗ x1 ∈ T ⊗ J ⊗ K (φk).
+
+Substituting p0 < 1/2 < p k into the action of Theorem 4.7, with the catalyst vk above, gives 
+
+Spur (Oref ) φk ⊕ vk
+
+ =
+
+(
+
+φk ⊕ vk, k = 0 ,
+
+−φk ⊕ vk, k ≥ 1,
+
+and ∥vk∥2 = O(1 /|pk − 1/2|). For k̸ = ℓ, Lemma 5.2 gives K(φk) ⊥ K (φℓ), hence vk ⊥ vℓ. The oracle Oref is fixed, so the transductions for all k use the same unitary Spur (Oref ). For input P 
+
+> k
+
+akφk, set v := P 
+
+> k
+
+akvk. By linearity, 
+
+Spur (Oref ) X
+
+> k
+
+akφk
+
+!
+
+⊕ v
+
+!
+
+= X
+
+> k
+
+akSpur (Oref )( φk ⊕ vk)=
+
+a0φ0 − X
+
+> k≥1
+
+akφk
+
+ ⊕ v. 
+
+Thus v is a catalyst for (35). Since φk ∈ K (φk) and these spaces are orthogonal, the normalization of P 
+
+> k
+
+akφk gives P 
+
+> k
+
+|ak|2 = 1. The squared catalyst norm therefore satisfies 
+
+W Spur , O ref , X
+
+> k
+
+akφk
+
+!
+
+= ∥v∥2 = X
+
+> k
+
+|ak|2∥vk∥2
+
+= O X
+
+> k
+
+|ak|2
+
+|pk − 1/2|
+
+!
+
+= O(1) ,
+
+using |pk − 1/2| ≥ 31 /100 in the last step. 
+
+5.4 Ground-state reflection transducer 
+
+We now compose the purifier with V and V † to obtain a canonical transducer for Rg. Write 
+
+OV := V ⊕ V † so that a label selects V or V † in each oracle query. 
+
+Proposition 5.4 (Ground-state reflection) . There is a canonical transducer Sg(OV ) such that, for every normalized system state |ψ⟩,
+
+|0⟩AR |ψ⟩ Sg (OV )
+
+⇝ |0⟩AR Rg|ψ⟩, W (Sg, O V , |0⟩AR |ψ⟩) = O(1) . (37) 23 Proof. We first express Rg using the purifier’s transduction action, then construct Sg by functional and sequential composition. Write an arbitrary system state as |ψ⟩ = P 
+
+> k
+
+ak|ψk⟩, where P 
+
+> k
+
+|ak|2 =1. By linearity of V and (30), 
+
+V (|0⟩AR ⊗ | ψ⟩) = X
+
+> k
+
+akV (|0⟩AR ⊗ | ψk⟩) = X
+
+> k
+
+akφk.
+
+By Lemma 5.3, Spur (Oref ) transduces P 
+
+> k
+
+akφk into a0φ0 − P 
+
+> k≥1
+
+akφk. Applying V † and using (30), 
+
+V †
+
+a0φ0 − X
+
+> k≥1
+
+akφk
+
+ = |0⟩AR 
+
+a0|ψ0⟩ − X
+
+> k≥1
+
+ak|ψk⟩
+
+ = |0⟩AR Rg|ψ⟩.
+
+Together, these three steps give 
+
+|0⟩AR |ψ⟩ V
+
+−→ X
+
+> k
+
+akφkSpur (Oref )
+
+⇝ a0φ0 − X
+
+> k≥1
+
+akφk V †
+
+−−→ | 0⟩AR Rg|ψ⟩. (38) We now construct the canonical transducer Sg for the transformation in (38) and bound its transduction complexity. Let M = A ⊗ Y be the space on which Oref and V act. By (32), Oref 
+
+uses one V and one V †, hence two queries to OV . Use Lemma 4.4 to obtain a canonical transducer 
+
+Sref for the circuit implementing Oref . Similarly, let SV and SV † be the transducers for the circuits that apply V and V † with one query to OV . For every x ∈ M , the conversion gives 
+
+W (Sref , O V , x ) ≤ 2∥x∥2,W (SV , O V , x ) ≤ ∥ x∥2,W (SV † , O V , x ) ≤ ∥ x∥2.
+
+Define 
+
+Sg := SV † ∗ (Spur ◦ Sref ) ∗ SV . (39) The transduction actions of Sref (OV ), SV , and SV † are Oref , V , and V †, respectively. Functional composition replaces the Oref call in Spur with Sref , while sequential composition combines the resulting action with V and V †. Propositions 4.6 and 4.5 show that Sg is canonical and has the action in (38). Thus it transduces |0⟩AR |ψ⟩ into |0⟩AR Rg|ψ⟩.It remains to bound the transduction complexity of Sg on |0⟩AR |ψ⟩. We first bound the middle factor Spur ◦ Sref . Lemma 5.3 gives 
+
+W Spur , O ref , X
+
+> k
+
+akφk
+
+!
+
+= O(1) .
+
+By (25), the purifier calls Oref on E ⊗ M , leaving E unchanged. The bound W (Sref , O V , x ) ≤ 2∥x∥2
+
+and (19) imply, for every z ∈ E ⊗ M ,
+
+W (IE ⊗ Sref , O V , z ) ≤ 2∥z∥2.
+
+Proposition 4.6 therefore yields 
+
+W Spur ◦ Sref , O V , X
+
+> k
+
+akφk
+
+!
+
+≤ 3W Spur , O ref , X
+
+> k
+
+akφk
+
+!
+
+= O(1) .
+
+24 The two intermediate public states in the sequential composition defining Sg in (39) are P 
+
+> k
+
+akφk
+
+and a0φ0 − P 
+
+> k≥1
+
+akφk. Both are normalized because the φk are orthonormal. By (16), their squared norms add 1 + 1 to the transduction complexity, while the three component transduction complexities are bounded by 1, O(1), and 1, respectively. Hence 
+
+W (Sg, O V , |0⟩AR |ψ⟩) ≤ (1 + 1) + (1 + O(1) + 1) = O(1) ,
+
+which proves (37). 
+
+# 6 Ground-state overlap amplification 
+
+We now use the ground-state reflection transducer from the preceding section for amplitude ampli-fication. 
+
+6.1 Randomized Grover iterations 
+
+Amplitude amplification uses Rg and the reflection about |ϕ⟩ [BHMT02]. Set 
+
+Rϕ := 2 |ϕ⟩⟨ ϕ| − I = UI (2 |0⟩⟨ 0| − I)U † 
+
+> I
+
+, G := RϕRg. (40) The number of iterations needed to amplify the ground-state component depends on the initial overlap β = |⟨ ψ0|ϕ⟩| , but the algorithm knows only β ≥ γ. We therefore choose the count at random from a range of size O(1 /γ ) [BBHT98, BHMT02]. To analyze the randomized procedure, we first calculate Gj |ϕ⟩. Choose the global phase of |ψ0⟩
+
+so that ⟨ψ0|ϕ⟩ = β. For β < 1, put 
+
+|ϕ⊥⟩ := |ϕ⟩ − β|ψ0⟩
+
+p1 − β2 , θ = arcsin β. 
+
+Then |ϕ⊥⟩ is normalized and orthogonal to |ψ0⟩, and 
+
+|ϕ⟩ = sin θ|ψ0⟩ + cos θ|ϕ⊥⟩.
+
+Both reflections in (40) preserve span {| ψ0⟩, |ϕ⊥⟩} . Multiplying their matrices in the ordered basis (|ψ0⟩, |ϕ⊥⟩) gives 
+
+Rg =
+
+1 00 −1
+
+
+
+, G = −
+
+ cos(2 θ) sin(2 θ)
+
+− sin(2 θ) cos(2 θ)
+
+
+
+.
+
+Applying the matrix for G j times to (sin θ, cos θ)T gives 
+
+Gj |ϕ⟩ = ( −1) j [sin((2 j + 1) θ)|ψ0⟩ + cos((2 j + 1) θ)|ϕ⊥⟩] . (41) Take M := ⌈2/γ ⌉. The ideal procedure outputs |ϕ⟩ with probability 1 /2; otherwise it samples 
+
+j uniformly from {0, . . . , M − 1} and outputs Gj |ϕ⟩. Its average output state is 
+
+ρideal := 12 |ϕ⟩⟨ ϕ| + 12M 
+
+> M−1
+
+X
+
+> j=0
+
+Gj |ϕ⟩⟨ ϕ|(G†)j . (42) The following lemma shows that ρideal has constant overlap with |ψ0⟩ for every β ≥ γ.25 Lemma 6.1 (Average over Grover iterations) . The state ρideal satisfies 
+
+⟨ψ0|ρideal |ψ0⟩ ≥ 316 .
+
+Proof. If β = 1, then ρideal = |ψ0⟩⟨ ψ0|. Suppose β < 1 and use the angle θ above. Define 
+
+pM (θ) := 1
+
+M 
+
+> M−1
+
+X
+
+> j=0
+
+sin 2((2 j + 1) θ).
+
+Using the rotation (41) in the mixture (42), the ground-state overlap of ρideal is 
+
+⟨ψ0|ρideal |ψ0⟩ = 12 sin 2 θ + 12 pM (θ).
+
+Using sin 2 x = (1 − cos(2 x)) /2, 
+
+pM (θ) = 12 − 12M 
+
+> M−1
+
+X
+
+> j=0
+
+cos((4 j + 2) θ)= 12 − sin(4 M θ )4M sin(2 θ) . (43) The second equality follows from  
+
+> M−1
+
+X
+
+> j=0
+
+cos((4 j + 2) θ) = ℜ
+
+e2iθ M −1X
+
+> j=0
+
+e4ijθ 
+
+ = ℜ
+
+
+
+e2iθ 1 − e4iM θ 
+
+1 − e4iθ 
+
+
+
+= sin(4 M θ )2 sin(2 θ) .
+
+For 0 < θ ≤ π/ 4, sin(2 θ) = 2 sin θ cos θ ≥ √2 γ, 
+
+because sin θ = β ≥ γ and cos θ ≥ 1/√2. Since M ≥ 2/γ , (43) implies 
+
+pM (θ) ≥ 12 − 14M sin(2 θ) ≥ 12 − 14M √2γ ≥ 12 − 18√2 > 38 .
+
+For 0 < θ ≤ π/ 4, this gives ⟨ψ0|ρideal |ψ0⟩ ≥ pM (θ)/2 > 3/16. For π/ 4 < θ < π/ 2, pM (θ) ≥ 0 and sin 2 θ > 1/2, so ⟨ψ0|ρideal |ψ0⟩ ≥ sin 2 θ/ 2 > 1/4. The two cases prove the lemma. 
+
+6.2 Transducer implementation 
+
+To prepare the states Gj |ϕ⟩ in (42), we compose transducers for Rg and Rϕ and then approximate the resulting transduction action by a circuit. Set OI := UI ⊕ U † 
+
+> I
+
+, and let Sϕ(OI ) be the canonical transducer obtained from the circuit for IAR ⊗ Rϕ by Lemma 4.4. Both Sϕ and Sg have the joint Hilbert space of ARS as their public space. 
+
+Proposition 6.2 (Transducer for a fixed iteration count) . For each integer j ≥ 0, let S0 be the identity transducer and, for j ≥ 1, define 
+
+Sj := ( Sϕ ∗ Sg)j . (44) 26 Here (Sϕ ∗ Sg)j denotes the sequential composition of j copies of Sϕ ∗ Sg. Then 
+
+|0⟩AR |ϕ⟩ Sj (OV ⊕OI )
+
+⇝ |0⟩AR Gj |ϕ⟩, (45) 
+
+and 
+
+W (Sj , O V ⊕ OI , |0⟩AR |ϕ⟩) = O(j). (46) 
+
+Proof. The circuit Rϕ = UI (2 |0⟩⟨ 0| − I)U † 
+
+> I
+
+acts on S and uses two queries to OI . Lemma 4.4 therefore gives Sϕ the transduction action IAR ⊗ Rϕ and transduction complexity at most 2 on every normalized public input. For j ≥ 1, we first verify the action of Sj . Its public input has AR in |0⟩AR . For 1 ≤ t ≤ j,Proposition 5.4 and the action of Sϕ give 
+
+|0⟩AR Gt−1|ϕ⟩ Sg
+
+⇝ |0⟩AR RgGt−1|ϕ⟩ Sϕ
+
+⇝ |0⟩AR Gt|ϕ⟩.
+
+Thus every public input to Sg in this transduction sequence has AR in |0⟩AR , and sequential com-position gives (45). We next bound the transduction complexity on |0⟩AR |ϕ⟩. For each 1 ≤ t ≤ j, Proposition 5.4 and Lemma 4.4 give 
+
+W (Sg, O V , |0⟩AR Gt−1|ϕ⟩) = O(1) ,W (Sϕ, O I , |0⟩AR RgGt−1|ϕ⟩) ≤ 2.
+
+All public states in the sequence are normalized. The first sum in (16) is therefore 2 j − 1; its second sum has j terms from Sϕ and j from Sg. Hence 
+
+W (Sj , O V ⊕ OI , |0⟩AR |ϕ⟩) ≤ (2 j − 1) + j 2 + O(1)  = O(j),
+
+as claimed in (46). We now turn the transduction in (45) into a finite circuit for each j < M .
+
+Proposition 6.3 (Circuit for a fixed iteration count) . For each 0 ≤ j < M , there is a circuit Cj .On input |0⟩AR |ϕ⟩, its reduced output on S, denoted ρj , satisfies 
+
+dtr 
+
+
+
+ρj , G j |ϕ⟩⟨ ϕ|(G†)j 
+
+≤ 132 . (47) 
+
+Cj uses O(j/δ ) queries to UH and U † 
+
+> H
+
+and O(j) queries to UI and U † 
+
+> I
+
+. If S has n qubits, the number of additional one- and two-qubit gates in Cj is 
+
+O
+
+ (aH + 1) jδ + j(n + aH + log M )
+
+
+
+. (48) 
+
+Proof. Circuit error. For j ≥ 1, the transduction complexity of Sj on |0⟩AR |ϕ⟩ is O(j) by (46). Lemma 4.3, applied with error 1 /32, gives a circuit with K = O(j) controlled executions of Sj .Its output is within Euclidean distance 1 /32 of |0⟩AR Gj |ϕ⟩. Since pure-state trace distance is at most Euclidean distance and tracing out ancillas cannot increase trace distance, the reduced system output satisfies (47). 
+
+Counter truncation. The purifier uses the infinite-dimensional space J = ℓ2(Z). To obtain a finite circuit, we show that replacing every occurrence of J by CD, with D = O(M ), preserves the circuit output. We first locate the counter spaces in Sj = ( Sϕ ∗ Sg)j . The circuit-to-transducer 27 constructions for Sϕ, SV , SV † , and Sref introduce no infinite-dimensional counter. Thus, in each 
+
+Sg in (39), only the domain of Spur ◦ Sref contains a J factor. Let M be the joint Hilbert space of 
+
+ARS , and write Lref for the private space of Sref . By Propositions 4.5 and 4.6, the j occurrences of 
+
+Spur ◦ Sref act on the orthogonal spaces 
+
+> j
+
+M
+
+> t=1
+
+[( T ⊗ J ⊗ M ) ⊕ (E ⊗ L ref )] t . (49) The subscript t labels the occurrence within the tth Sg. The space T ⊗ J ⊗ M is the domain of 
+
+Spur , while E ⊗ L ref is the additional private space introduced by functional composition. By (25), 
+
+E has the tensor factor span {| r⟩ : r̸ = 0 } ⊆ J .We now bound the change in the counter index r during one execution of Sj , for a fixed t:
+
+• The outer sequential composition has work unitary 
+
+S◦ 
+
+> j
+
+= P
+
+> j
+
+M
+
+> t=1
+
+(S◦ 
+
+> g
+
+⊕ S◦
+
+> ϕ
+
+)
+
+!
+
+. (50) On the space labelled t in (49), the direct sum applies the tth S◦ 
+
+> g
+
+once; its other terms act on orthogonal spaces. 
+
+• Within S◦ 
+
+> g
+
+, the three-factor sequential composition in (39) applies S◦ 
+
+> V
+
+, ( Spur ◦ Sref )◦, and S◦ 
+
+> V†
+
+on their respective orthogonal spaces. Consequently, ( Spur ◦Sref )◦ is applied once on the space labelled t.
+
+• In ( Spur ◦ Sref )◦, functional composition applies IE ⊗ S◦ 
+
+> ref
+
+and then applies S◦ 
+
+> pur
+
+once (Proposi-tion 4.6). The operator IE ⊗S◦ 
+
+> ref
+
+preserves r, since it acts as the identity on E. By Lemma 4.8, 
+
+S◦ 
+
+> pur
+
+changes r by at most one. At both levels of sequential composition, the public-space permutations fix private vectors. Any intermediate public state with a J factor lies in Hpur and has r = 0. These permutations therefore do not increase |r|. The controls on oracle calls depend on r only through the test r = 0 and do not change it. Hence one execution of Sj increases |r| by at most one in each counter space. The implementation circuit starts from the public input with zero private component, so no counter state with r̸ = 0 is present initially. The gates other than the controlled executions of Sj act on a separate control register and leave the purifier counter J unchanged [BJY24, Proof of Theorem 5.5]. Hence, during the first K executions, the state has support only on span {| r⟩ : |r| ≤ K} in each J
+
+factor. Take D = 2 ⌈log 2(2 K+1) ⌉ = O(M ), since K = O(j) and j < M . Since D > 2K, the residues of 
+
+−K, . . . , K are distinct, and only r = 0 maps to 0. The circuit depends on r only through shifts and |0⟩⟨ 0|, which agree under |r⟩ 7 → | r mod D⟩ on the states reached during these K executions. Replacing J by CD throughout the compositions therefore preserves the reduced system output and the bound in (47). 
+
+Query count. Each controlled execution of Sj queries OV ⊕ OI once. This direct-sum oracle uses at most one controlled call each to OV and OI . A call to OV = V ⊕ V † can be implemented using O(1 /δ ) calls to UH , U † 
+
+> H
+
+by Lemmas 5.1 and 4.1; a call to OI = UI ⊕ U † 
+
+> I
+
+uses at most one call each to UI , U † 
+
+> I
+
+. Over K = O(j) executions, Cj therefore uses O(j/δ ) calls to UH , U † 
+
+> H
+
+and O(j)calls to UI , U † 
+
+> I
+
+.
+
+Gate count. After truncation, the spaces in (49) are encoded by index registers and one log 2 D-qubit counter register. In this gate-count analysis, Sg and Sj denote the transducers obtained by 28 replacing Spur with S[D]pur in their constructions. The work-unitary gate costs obey the following bounds: Gate-cost relation Bound 
+
+T (Sϕ) O(n + 1) 
+
+T (Sref ) O(aH + 1) 
+
+T (SV ) + T (SV † ) O(1) 
+
+T (S[D]pur ) O(log D)
+
+T (S[D]pur ◦ Sref ) = O T (S[D]pur ) + T (Sref ) + log D O(aH + log D)
+
+T (Sg) = O T (SV ) + T (SV † ) + T (S[D]pur ◦ Sref ) + 1  O(aH + log D)
+
+T (Sj ) = O T (Sg) + T (Sϕ) + log( j + 1)  O(n + aH + log M )The circuits for Rϕ = UI (2 |0⟩⟨ 0|− I)U † 
+
+> I
+
+and Oref in (32) use zero-state reflections on n and aH +O(1) qubits, respectively. Their gate counts are O(n) and O(aH +1): a zero-state reflection uses a multi-controlled NOT conjugated by single-qubit gates. Lemma 4.4 then gives the first two rows of the table. The SV , S V † and S[D]pur rows follow from Lemmas 4.4 and 4.8, respectively. By Proposition 4.6, the work unitary of S[D]pur ◦ Sref applies IE ⊗ S◦ 
+
+> ref
+
+and ( S[D]pur )◦. By (25), the control on S◦ 
+
+> ref
+
+tests whether T ∈ { 0, 1} and J̸ = 0. The clock test has constant cost; computing and uncomputing the nonzero test on J adds O(log D) gates. Controlling the input-oracle call uses the same test and adds another O(log D) gates, which are not included in T (S[D]pur ◦ Sref ). The three-factor composition in (39) has a constant-size index, giving the Sg row. For Sj , the 2 j summands in (50) alternate S◦ 
+
+> g
+
+and S◦
+
+> ϕ
+
+. Numbering them 0 , . . . , 2j −1, even labels select S◦ 
+
+> g
+
+and odd labels select S◦
+
+> ϕ
+
+. Thus the least significant bit of the O(log( j + 1))-qubit index selects the work unitary, and the remaining bits encode t − 1. The controlled increment modulo 2 j
+
+in P uses O(log( j + 1)) gates. Thus the selection among the 2 j terms adds only O(log( j + 1)) gates, rather than a factor of j. With j < M and D = O(M ), this proves T (Sj ) = O(n + aH + log M ). The O(log D) gates controlling the oracle call obey the same bound. Each of the K = O(j) executions of Sj contains at most one call to OV = V ⊕V †. Implementing this call uses O(( aH + 1) /δ ) one- and two-qubit gates by Lemma 5.1. Lemma 4.3 adds O(K) gates outside these executions. Hence the total is 
+
+O
+
+
+
+K(n + aH + log M ) + K aH + 1 
+
+δ
+
+
+
+= O
+
+
+
+j(n + aH + log M ) + (aH + 1) jδ
+
+
+
+,
+
+as in (48). 29 We use the circuits Cj in the randomized procedure of Section 6.1, as described in Algorithm 1. 
+
+Algorithm 1 Ground-state overlap amplification 
+
+Input: γ, δ, UI , and a 1-block-encoding of H
+
+Output: A state on the system register S 
+
+> 1:
+
+Initialize S in |0⟩S and apply UI to prepare |ϕ⟩ 
+
+> 2:
+
+M ← ⌈ 2/γ ⌉ 
+
+> 3:
+
+Sample c uniformly from {0, 1} 
+
+> 4:
+
+if c = 1 then  
+
+> 5:
+
+Sample j uniformly from {0, . . . , M − 1} 
+
+> 6:
+
+Initialize AR in |0⟩AR  
+
+> 7:
+
+Apply Cj to ARS with its work registers initialized to zero ▷ Proposition 6.3  
+
+> 8:
+
+Discard all registers except S 
+
+> 9:
+
+end if  
+
+> 10:
+
+return S
+
+We now check that averaging the fixed-j circuits retains the overlap guarantee of Lemma 6.1. 
+
+Proposition 6.4 (Overlap amplification) . Let ρc be the system state returned by Algorithm 1, averaged over its random choices. Then 
+
+⟨ψ0|ρc|ψ0⟩ ≥ 11 64 > 18 .
+
+Its worst-case query counts satisfy QI = O(1 /γ ) and QH = O(1 /(γδ )) = O(α/ (γ∆)) . If S has n
+
+qubits, the number of additional one- and two-qubit gates in the algorithm is 
+
+O
+
+ aH + 1 
+
+γδ + n + aH + log(2 /γ )
+
+γ
+
+
+
+. (51) 
+
+Proof. We compare the actual output of the amplification algorithm with the ideal average state in (42). Averaging over the classical choices in the algorithm gives 
+
+ρc = 12 |ϕ⟩⟨ ϕ| + 12M 
+
+> M−1
+
+X
+
+> j=0
+
+ρj .
+
+By convexity, Proposition 6.3, and (42), dtr (ρc, ρ ideal ) ≤ 12M 
+
+> M−1
+
+X
+
+> j=0
+
+dtr 
+
+
+
+ρj , G j |ϕ⟩⟨ ϕ|(G†)j 
+
+≤ 164 .
+
+Applying the variational bound for trace distance to |ψ0⟩⟨ ψ0| and then using Lemma 6.1, we obtain 
+
+⟨ψ0|ρc|ψ0⟩ ≥ ⟨ ψ0|ρideal |ψ0⟩ − dtr (ρc, ρ ideal )
+
+≥ 316 − 164 = 11 64 .
+
+The preparation of |ϕ⟩ uses one call to UI . When c = 1, Proposition 6.3 bounds the calls made by Cj
+
+by O(j/δ ) to the Hamiltonian oracle and O(j) to the state-preparation oracle. Since j < M ≤ 3/γ ,these bounds give the stated QH and QI . Substituting j < M and log M = O(log(2 /γ )) into (48), and using δ−1 = O(α/ ∆), gives (51). 30 7 Final filtering 
+
+Proposition 6.4 gives a state ρc with ⟨ψ0|ρc|ψ0⟩ ≥ 1/8. We first use one spectral filter to obtain an ε-accurate state with constant success probability. We then reduce the failure probability to ζ
+
+while keeping a bound on the queries made in every run. 
+
+7.1 Constant-success preparation 
+
+Algorithm 2 applies one spectral filter with accuracy ε/ 8 to ρc and accepts its all-zero ancilla outcome. 
+
+Algorithm 2 One run of ground-state preparation 
+
+Input: ε, γ, δ, UI , and a 1-block-encoding of H
+
+Output: Either success with a system register, or failure  
+
+> 1:
+
+Run Algorithm 1 to prepare ρc in the system register  
+
+> 2:
+
+Construct Uε/ 8,δ ▷ Lemma 4.2  
+
+> 3:
+
+Initialize F in |0⟩F and apply Uε/ 8,δ jointly to F and the system register  
+
+> 4:
+
+Measure F 
+
+> 5:
+
+if the outcome is all zero then  
+
+> 6:
+
+return success and the system register  
+
+> 7:
+
+else  
+
+> 8:
+
+return failure  
+
+> 9:
+
+end if 
+
+We first bound the final filter’s success probability and the error of the accepted state. 
+
+Proposition 7.1 (Correctness of the final filter) . Let ρc be any density operator satisfying 
+
+⟨ψ0|ρc|ψ0⟩ ≥ 18 .
+
+For 0 < ε ≤ 1/10 , the filtering part of Algorithm 2 satisfies 
+
+Pr[success] ≥ 9128 > 116 , dtr (ρsucc , |ψ0⟩⟨ ψ0|) ≤ ε. (52) 
+
+Proof. By Lemma 4.2, (⟨0|F ⊗ I)Uε/ 8,δ (|0⟩F ⊗ I) = f (H) = X
+
+> k≥0
+
+f (Ek)|ψk⟩⟨ ψk|,
+
+where |f (E0)| ≥ 1 − ε/ 8 and |f (Ek)| ≤ ε/ 8 for k ≥ 1. The probability of the |0⟩F outcome is 
+
+s := Pr[success] = Tr  f (H)ρcf (H)† = Tr  ρcf (H)†f (H)
+
+= X
+
+> k≥0
+
+|f (Ek)|2⟨ψk|ρc|ψk⟩ ≥ (1 − ε/ 8) 2⟨ψ0|ρc|ψ0⟩≥ (1 − ε/ 8) 2
+
+8 ≥ 9128 > 116 .
+
+31 Conditioned on this outcome, the system state is ρsucc = f (H)ρcf (H)†/s . Hence 1 − ⟨ ψ0|ρsucc |ψ0⟩ = 1
+
+s
+
+X
+
+> k≥1
+
+|f (Ek)|2⟨ψk|ρc|ψk⟩≤ (ε/ 8) 2
+
+s ≤ ε2
+
+8(1 − ε/ 8) 2 .
+
+The Fuchs–van de Graaf inequality [FvdG99] now gives dtr (ρsucc , |ψ0⟩⟨ ψ0|) ≤ p1 − ⟨ ψ0|ρsucc |ψ0⟩ ≤ ε
+
+2√2(1 − ε/ 8) ≤√23 ε < ε. 
+
+We next bound the query and gate costs of the final filter in Algorithm 2. 
+
+Proposition 7.2 (Cost of the final filter) . The filtering part of Algorithm 2 makes no state-preparation query and uses 
+
+O
+
+ 1
+
+δ log 1
+
+ε
+
+
+
+= O
+
+ α
+
+∆ log 1
+
+ε
+
+
+
+(53) 
+
+Hamiltonian queries. If the block-encoding of the normalized Hamiltonian has aH ancilla qubits, it also uses O(( aH + 1) δ−1 log(1 /ε )) additional one- and two-qubit gates. Proof. Lemma 4.2 gives O(δ−1 log(1 /ε )) queries to the normalized block-encoding and the stated gate bound. Each query to the normalized block-encoding or its inverse uses one controlled query to UH or U † 
+
+> H
+
+, respectively, by Lemma 4.1, and δ−1 = O(α/ ∆). The filtering and amplification bounds together give the following guarantees for Algorithm 2. 
+
+Proposition 7.3 (Constant-success preparation) . Algorithm 2 succeeds with probability at least 
+
+1/16 and, conditioned on success, has trace-distance error at most ε. Its worst-case query counts satisfy 
+
+QI = O
+
+ 1
+
+γ
+
+
+
+, QH = O
+
+ 1
+
+γδ + 1
+
+δ log 1
+
+ε
+
+
+
+.
+
+Proof. By Proposition 6.4, the state ρc prepared in Step 1 of Algorithm 2 satisfies the hypothesis of Proposition 7.1. That proposition gives success probability at least 1 /16 and conditional trace-distance error at most ε.Combining Propositions 6.4 and 7.2 therefore gives 
+
+QI = O
+
+ 1
+
+γ
+
+
+
+, QH = O
+
+ 1
+
+γδ + 1
+
+δ log 1
+
+ε
+
+
+
+.
+
+Finally, Lemma 4.1 gives δ−1 = O(α/ ∆); substituting this relation expresses the bounds in the original parameters. Proposition 7.3 also gives the expected-query upper bounds in Theorem 2.1 by repetition. 
+
+Proof of the upper bounds in Theorem 2.1. Run Algorithm 2 independently until success. Each run succeeds with probability at least 1 /16, so the mean number of runs is at most 16. The per-run query bounds in Proposition 7.3 therefore give the expected query counts. The output state is the state of one run conditioned on success, so it has the same trace-distance guarantee. 32 7.2 Reducing the failure probability 
+
+To reduce the failure probability without repeating the highest-accuracy filter after every rejection, we apply filters of increasing accuracy and restart as soon as one rejects. Let 
+
+K := min {j ≥ 0 : 16 −2j
+
+≤ ε/ 4}, ηj := 16 −2j
+
+, 0 ≤ j ≤ K. 
+
+By Lemma 4.2 and the query accounting in Lemma 4.1, there is an absolute constant C such that 
+
+Uηj ,δ uses at most ( C/δ )2 j Hamiltonian queries. In Algorithm 3, the remaining filtering budget B is measured in units of C/δ queries, so applying 
+
+Uηj ,δ decreases B by 2 j .
+
+Algorithm 3 Ground-state preparation with reduced failure probability 
+
+Input: 0 < ε ≤ ζ ≤ 1/10, γ, δ, UI , and a 1-block-encoding of H
+
+Output: Either success with the system register S, or failure  
+
+> 1:
+
+R ← ⌈ log(2 /ζ )/ log(16 /15) ⌉ 
+
+> 2:
+
+B ← 2K+1 − 1 + 2 R + ⌈log 2(2 /ζ )⌉ ▷ Remaining filtering budget  
+
+> 3:
+
+for t = 1 , . . . , R do  
+
+> 4:
+
+Run Algorithm 1 independently to prepare ρc in S 
+
+> 5:
+
+for j = 0 , . . . , K do  
+
+> 6:
+
+if B < 2j then  
+
+> 7:
+
+return failure  
+
+> 8:
+
+end if  
+
+> 9:
+
+B ← B − 2j 
+
+> 10:
+
+Initialize a fresh F in |0⟩F and apply Uηj ,δ to FS  
+
+> 11:
+
+Measure F in the computational basis  
+
+> 12:
+
+if the outcome is not all zero then  
+
+> 13:
+
+Discard S and continue with the next t 
+
+> 14:
+
+end if  
+
+> 15:
+
+end for  
+
+> 16:
+
+return success and S 
+
+> 17:
+
+end for  
+
+> 18:
+
+return failure 
+
+We now prove the success and error guarantees and bound both the queries and the one- and two-qubit gates used by this algorithm. 
+
+Proposition 7.4 (Preparation with bounded queries) . Let 0 < ε ≤ ζ ≤ 1/10 . Algorithm 3 succeeds with probability at least 1 − ζ and, conditioned on success, satisfies dtr (ρsucc , |ψ0⟩⟨ ψ0|) ≤ ε.Its worst-case query counts satisfy 
+
+QI = O
+
+ 1
+
+γ log 1
+
+ζ
+
+
+
+, QH = O
+
+ 1
+
+γδ log 1
+
+ζ + 1
+
+δ log 1
+
+ε
+
+
+
+.
+
+If S has n qubits, the number of additional one- and two-qubit gates in the worst case is 
+
+O
+
+ aH + 1 
+
+δ
+
+ 1
+
+γ log 1
+
+ζ + log 1
+
+ε
+
+
+
++ n + aH + log(2 /γ )
+
+γ log 1
+
+ζ
+
+
+
+. (54) 
+
+Proof. Acceptance probability and output error. We first compute the probability of passing all filters and the resulting state. By Lemma 4.2, 
+
+fj (H) := ( ⟨0|F ⊗ I)Uηj ,δ (|0⟩F ⊗ I) = X
+
+> k≥0
+
+fj (Ek)|ψk⟩⟨ ψk|,
+
+33 where 
+
+|fj (E0) − 1| ≤ ηj , |fj (Ek)| ≤ ηj for k ≥ 1. (55) Set Fj (H) := fj (H) · · · f0(H). When all K +1 measurements of F give outcome 0, the unnormalized output on S is 
+
+fK (H) · · · f0(H)ρcf0(H)† · · · fK (H)† = FK (H)ρcFK (H)†.
+
+Write p := ⟨ψ0|ρc|ψ0⟩ ≥ 1/8. The probability that all measurements give 0 is 
+
+ppass = Tr 
+
+
+
+FK (H)ρcFK (H)†
+
+= X
+
+> k≥0
+
+⟨ψk|ρc|ψk⟩
+
+> K
+
+Y
+
+> j=0
+
+|fj (Ek)|2
+
+≥ p
+
+> K
+
+Y
+
+> j=0
+
+|fj (E0)|2 ≥ p
+
+> K
+
+Y
+
+> j=0
+
+(1 − ηj )2
+
+≥ p
+
+1 −
+
+> K
+
+X
+
+> j=0
+
+ηj
+
+
+
+> 2
+
+≥ 18
+
+ 14 15 
+
+2
+
+> 116 . (56) The third line uses (55); the last line uses PKj=0 ηj < P 
+
+> r≥1
+
+16 −r = 1 /15. The conditional state is 
+
+ρpass := FK (H)ρcFK (H)†
+
+ppass 
+
+.
+
+Using (55), we bound its excited-state probability as 1 − ⟨ ψ0|ρpass |ψ0⟩ = X
+
+> k≥1
+
+⟨ψk|ρpass |ψk⟩
+
+= 1
+
+ppass 
+
+X
+
+> k≥1
+
+⟨ψk|ρc|ψk⟩
+
+> K
+
+Y
+
+> j=0
+
+|fj (Ek)|2
+
+≤
+
+QKj=0 η2
+
+> j
+
+ppass 
+
+X
+
+> k≥1
+
+⟨ψk|ρc|ψk⟩
+
+= (1 − p) QKj=0 η2
+
+> j
+
+ppass 
+
+≤ 16 
+
+> K
+
+Y
+
+> j=0
+
+η2 
+
+> j
+
+.
+
+Here Tr ρc = 1, and the final bound uses ppass > 1/16 from (56). The Fuchs–van de Graaf inequality therefore gives dtr (ρpass , |ψ0⟩⟨ ψ0|) ≤ 4
+
+> K
+
+Y
+
+> j=0
+
+ηj ≤ 4ηK ≤ ε. 
+
+Oracle calls made by filters in rejected attempts. Let qj be the probability that the measurements for filters 0 , . . . , j − 1 all give 0 and the measurement for filter j does not. For j ≥ 1, the preceding zero outcomes have unnormalized system output Fj−1(H)ρcFj−1(H)†. Subtracting the probability 34 that filter j also gives 0 gives 
+
+qj = Tr 
+
+
+
+Fj−1(H)ρcFj−1(H)†
+
+− Tr 
+
+
+
+Fj (H)ρcFj (H)†
+
+= Tr 
+
+h
+
+(I − fj (H)†fj (H)) Fj−1(H)ρcFj−1(H)†i
+
+= X
+
+> k≥0
+
+⟨ψk|ρc|ψk⟩ Y
+
+> ℓ<j
+
+|fℓ(Ek)|2 1 − | fj (Ek)|2
+
+= p Y
+
+> ℓ<j
+
+|fℓ(E0)|2 1 − | fj (E0)|2 + X
+
+> k≥1
+
+⟨ψk|ρc|ψk⟩ Y
+
+> ℓ<j
+
+|fℓ(Ek)|2 1 − | fj (Ek)|2
+
+≤ 2pη j +
+
+Y
+
+> ℓ<j
+
+η2
+
+> ℓ
+
+ X
+
+> k≥1
+
+⟨ψk|ρc|ψk⟩
+
+= 2 pη j + (1 − p) Y
+
+> ℓ<j
+
+η2
+
+> ℓ
+
+≤ 2ηj + 16 −2(2 j −1) ≤ 3ηj = 3 · 16 −2j
+
+. (57) The first inequality uses |fℓ(Ek)| ≤ 1 from Lemma 4.2, (55), and 1 − | fj (E0)|2 ≤ 1 − (1 − ηj )2 ≤ 2ηj .The last inequality uses 2(2 j − 1) ≥ 2j for j ≥ 1. To bound the total number of calls to UH and U † 
+
+> H
+
+made by the filters in rejected attempts, let X be the amount subtracted from B during an attempt if it is rejected, and set X = 0 if it is accepted. Rejection at filter j gives 
+
+X =
+
+> j
+
+X
+
+> ℓ=0
+
+2ℓ = 2 j+1 − 1.
+
+The amount subtracted for the accepted attempt will be added separately. The small probabilities of late rejection keep E[2 X ] bounded: using q0 ≤ 1 and (57), 
+
+E[2 X ] = ppass + 2 q0 +
+
+> K
+
+X
+
+> j=1
+
+qj 22j+1 −1
+
+≤ 1 + 2 + X
+
+> j≥1
+
+3 · 16 −2j
+
+22j+1 −1
+
+= 3 + 32
+
+X
+
+> j≥1
+
+4−2j
+
+≤ 3 + 32
+
+X
+
+> r≥2
+
+4−r < 4. (58) 
+
+Failure probability and query counts. Consider R independent attempts without the budget check in Algorithm 3. By (56), the probability that none is accepted is at most (15 /16) R ≤ ζ/ 2. Writing Xt for the value of X in attempt t, independence gives 
+
+E
+
+h
+
+2PRt=1 Xt
+
+i
+
+=
+
+> R
+
+Y
+
+> t=1
+
+E[2 Xt ] < 4R.
+
+Markov’s inequality therefore gives Pr 
+
+" RX
+
+> t=1
+
+Xt > 2R + log 2
+
+2
+
+ζ
+
+#
+
+≤
+
+E
+
+h
+
+2PRt=1 Xt
+
+i
+
+22R+log 2(2 /ζ ) < 4R
+
+4R(2 /ζ ) = ζ
+
+2 . (59) 35 An accepted attempt subtracts 2 K+1 − 1 from B. If at least one of the R attempts is accepted and PRt=1 Xt ≤ 2R + log 2(2 /ζ ), the total amount subtracted through the first accepted attempt is at most 2K+1 − 1 + 
+
+> R
+
+X
+
+> t=1
+
+Xt ≤ 2K+1 − 1 + 2 R + log 2
+
+2
+
+ζ ,
+
+which does not exceed the initial value of B. All deductions are nonnegative, so the budget check cannot halt the algorithm before the first accepted attempt finishes. A union bound and (59) now give Pr[failure] ≤ (1 − ppass )R + Pr 
+
+" RX
+
+> t=1
+
+Xt > 2R + log 2
+
+2
+
+ζ
+
+#
+
+≤ ζ
+
+2 + ζ
+
+2 = ζ. 
+
+An attempt can return success only if the budget available at its start is sufficient to apply all 
+
+K + 1 filters. The budget depends only on preceding attempts, while ρc is prepared independently, so conditioning on sufficient budget leaves the input state ρc unchanged. Hence ρsucc = ρpass and its trace-distance error is at most ε.Finally, the algorithm prepares ρc at most R = O(log(1 /ζ )) times. By Proposition 6.4, these preparations use O(R/γ ) state-preparation queries and O(R/ (γδ )) Hamiltonian queries in total. The total number of Hamiltonian queries used by the filters is at most C/δ times the initial value of B. Since ηK−1 > ε/ 4, minimality of K gives 2 K < 2 log 16 (4 /ε ) = O(log(1 /ε )). Consequently, 
+
+QI = O(R/γ ) = O
+
+ 1
+
+γ log 1
+
+ζ
+
+
+
+,QH = O
+
+ Rγδ + 2K + R + log(1 /ζ )
+
+δ
+
+
+
+= O
+
+ 1
+
+γδ log 1
+
+ζ + 1
+
+δ log 1
+
+ε
+
+
+
+,
+
+where the last line uses γ ≤ 1. 
+
+Gate count. There are at most R preparations of ρc, each with the gate count in (51). By Lemma 4.2, applying Uηj ,δ uses O(( aH + 1)2 j /δ ) additional one- and two-qubit gates. The sum of 2j over all applied filters is at most the initial value of B. Hence the total gate count is 
+
+O
+
+
+
+R
+
+ aH + 1 
+
+γδ + n + aH + log(2 /γ )
+
+γ
+
+
+
++ aH + 1 
+
+δ
+
+
+
+2K + R + log 1
+
+ζ
+
+ 
+
+.
+
+Substituting R = O(log(1 /ζ )) and 2 K = O(log(1 /ε )), and using γ ≤ 1, gives (54). We now express the query bounds of Proposition 7.4 in the original Hamiltonian parameters to prove Theorem 2.3. 
+
+Proof of Theorem 2.3. Apply Proposition 7.4 and use δ−1 = O(α/ ∆) from Lemma 4.1. We next use Theorem 2.3 to bound the trace-distance error of the average output state, including the state returned on failure. 
+
+Proof of the upper bounds in Theorem 2.2. Apply Theorem 2.3 with error target ε/ 2 on success and failure probability ζ = ε/ 2. On failure, return an arbitrary system state and omit the flag. The resulting average output state ρ is a mixture of ρsucc and the state returned on failure. Convexity of trace distance gives dtr (ρ, |ψ0⟩⟨ ψ0|) ≤ ε
+
+2 + Pr[failure] ≤ ε. 
+
+Since γ ≤ 1, the query bounds in Theorem 2.3 reduce to the bounds stated in Theorem 2.2. 36 8 Optimality of the query bounds 
+
+The first two lemmas give lower bounds on QH for algorithms with constant success probability and are used to prove Theorem 2.1. Both bounds hold with unrestricted access to UI and U † 
+
+> I
+
+. We next obtain the worst-case lower bound on QH from Somma and de Wolf [SdW26], then prove the lower bounds on UI queries in both settings. We work first with exact 1-block-encodings of Hamiltonians eH satisfying 
+
+∥ eH∥ ≤ 1, eE0 ≤ − δ, eEk ≥ δ for k ≥ 1, |⟨ ψ0|UI |0⟩| ≥ γ. (60) To recover the parameters of Section 2, set 
+
+H := α eH, μ := 0 , ∆ := 2 αδ. (61) The same oracle UH is then an α-block-encoding of H, and (60) becomes the spectral promise (5). We therefore prove the technical bounds in terms of δ and use δ = ∆ /(2 α) when returning to the statements in Section 2. For the hybrid arguments, we write the algorithm in the standard form for quantum query algorithms [BBBV97]. Let B be the success-flag qubit, and W the remaining workspace. Classical random choices and intermediate measurement outcomes can be kept coherently in W. Branches with fewer queries use controls in W to disable the remaining calls. If x labels the input oracles, then after m oracle calls the state before the final measurement can be written as 
+
+|Ψxm⟩BSW = Am bUm,x Am−1 · · · A1 bU1,x A0|0⟩BSW , (62) where A0, . . . , A m are oracle-independent unitaries and 
+
+bUq,x = |0⟩⟨ 0|Q ⊗ I + |1⟩⟨ 1|Q ⊗ Uq,x , Uq,x ∈ { UH,x , U †
+
+> H,x
+
+, U I,x , U †
+
+> I,x
+
+}.
+
+Here Q is a one-qubit control in W; identity operators on registers not acted on by Uq,x are implicit. Setting Q to |1⟩ gives an uncontrolled call. Measuring B gives the flag b from Section 2; conditioned on b = 1, tracing out BW gives ρsucc on S.
+
+8.1 Hamiltonian queries 
+
+8.1.1 Dependence on the initial overlap 
+
+Arihara and Murao [AM26, Corollary 7] establish the joint overlap–gap lower bound for constant-error ground-state preparation with block-encoding access. We use the following version for the access and output model of Section 2. 
+
+Lemma 8.1 (Overlap lower bound) . Fix 0 < s 0 ≤ 1 and 0 < ε ≤ 9/20 . Let 0 < γ ≤ 1/√2 and 0 <δ < 1. Suppose an algorithm succeeds with probability at least s0 and satisfies dtr (ρsucc , |ψ0⟩⟨ ψ0|) ≤ ε
+
+on every instance satisfying (60) . If it uses at most T Hamiltonian queries, then 
+
+T = Ω s0
+
+ 1
+
+γδ 
+
+
+
+even with unrestricted access to UI and U † 
+
+> I
+
+.
+
+A proof covering controlled Hamiltonian queries is given in Appendix A. 37 8.1.2 Dependence on the target precision 
+
+We adapt the trigonometric-polynomial argument of Mande and de Wolf [MdW26, Claims 5.2–5.3] to block-encoding queries and success-conditioned ground-state preparation. 
+
+Lemma 8.2 (Precision lower bound) . Let 0 < s 0 ≤ 1, 0 < ε < 1/2, 0 < γ ≤ 1/√2, and 0 < δ ≤
+
+1/16 . Suppose an algorithm succeeds with probability at least s0 and satisfies dtr (ρsucc , |ψ0⟩⟨ ψ0|) ≤ ε
+
+on every instance satisfying (60) . If it uses at most T Hamiltonian queries, then 
+
+T ≥ 1448 δ log s20
+
+4ε
+
+even with unrestricted access to UI and U † 
+
+> I
+
+.Proof. We compare two Hamiltonians whose ground states differ near θ = 0 but agree when | sin θ|
+
+is large. For θ ∈ [−π, π ) and h > 0, define 
+
+Hθ, ± := sin θ ± 2h
+
+1 + 2 h ZS.
+
+Write c := 1 + 2 h. Both Hamiltonians have norm at most one, since | sin θ ± 2h| ≤ 1 + 2 h = c.These Hamiltonians have exact 1-block-encodings 
+
+Bθ, ± := ( U † 
+
+> h
+
+⊗ IAS ) [ |0⟩⟨ 0|C ⊗ Uθ + |1⟩⟨ 1|C ⊗ (IA ⊗ (±ZS))] ( Uh ⊗ IAS ),
+
+where C and A are single-qubit ancillas, Uh is a unitary on C, and 
+
+Uθ := sin θ Z A ⊗ ZS + cos θ X A ⊗ IS, Uh|0⟩C = 1
+
+√c |0⟩C +
+
+r 2hc |1⟩C.
+
+The two Pauli terms in Uθ anticommute, so Uθ is a Hermitian unitary. The bracketed operator is therefore a block-diagonal Hermitian unitary, so Bθ, ± is also a Hermitian unitary. Its block on the ancilla state |0⟩C|0⟩A is (⟨0|C⟨0|A ⊗ IS)Bθ, ±(|0⟩C|0⟩A ⊗ IS) = sin θ ± 2hc ZS = Hθ, ±. (63) Whenever | sin θ|̸ = 2 h, both Hamiltonians are nonzero scalar multiples of Z and have unique ground states. A positive coefficient makes |1⟩ the ground state, and a negative coefficient makes 
+
+|0⟩ the ground state. The two ground states differ when | sin θ| < 2h; when sin θ > 2h they are both |1⟩, and when sin θ < −2h they are both |0⟩.Use the same state-preparation oracle UI |0⟩ = |+⟩ for both families, where |+⟩ := ( |0⟩+|1⟩)/√2. Run the assumed preparation algorithm independently on Bθ, + and Bθ, −, and measure both output system qubits in the computational basis. Write b± for the success flags and z± for the measurement outcomes. Accept when both runs succeed and the outcomes are 1 , 0, respectively, and let 
+
+p(θ) := Pr[ b+ = b− = 1 , z + = 1 , z − = 0] .
+
+If each run makes at most T Hamiltonian queries, the combined circuit makes at most 2 T queries. Every matrix entry of Bθ, ± and its inverse has trigonometric degree at most one in θ, whereas all other operations, including UI and U † 
+
+> I
+
+, are independent of θ. Consequently, each final amplitude has degree at most 2 T , and taking squared moduli and summing over the accepting outcomes shows that p(θ) is a real trigonometric polynomial of degree at most 4 T . This is the polynomial-method 38 argument of [MdW26, Claim 5.3]. The oracle unitaries, and hence this polynomial, are defined for every θ, including values outside the spectral promise. For | sin θ| ≥ 3h, the magnitude of each coefficient of Z is at least h/c , so the two Hamiltonians have spectral gaps at least 2 h/c . Set 
+
+h := δ
+
+1 − 2δ , c = 11 − 2δ , hc = δ. 
+
+Their ground energies are then at most −δ and their excited energies are at least δ, so their gaps are at least 2 δ and they satisfy (60) with separator zero. Moreover, |+⟩ has overlap 1 /√2 ≥ γ with either ground state. If sin θ ≥ 3h, both ground states are |1⟩, so acceptance requires the minus run to produce an incorrect outcome. The conditional trace-distance guarantee implies 
+
+p(θ) ≤ Pr[ b− = 1 , z − = 0] = Pr[ b− = 1] Pr[ z− = 0 | b− = 1] ≤ ε. 
+
+If sin θ ≤ − 3h, both ground states are |0⟩; acceptance then requires the plus run to output 1, so 
+
+p(θ) ≤ Pr[ b+ = 1 , z + = 1] ≤ ε. Therefore 0 ≤ p(θ) ≤ ε whenever | sin θ| ≥ 3h. (64) At θ = 0, the two Hamiltonians are H0,± = ±2δZ , so they also satisfy the promise, with spectral gaps 4 δ and ground states |1⟩ and |0⟩, respectively. By independence, the probability that both runs succeed is at least s20. Conditioned on their success, both specified measurement outcomes occur with probability at least (1 − ε)2. Hence 
+
+p(0) ≥ s20(1 − ε)2, (65) which is at least s20/4 because ε < 1/2. Thus p(θ) is at most ε outside 
+
+E := {θ ∈ [−π, π ) : | sin θ| < 3h},
+
+but is at least s20/4 at zero. Since δ ≤ 1/16, we have h ≤ 1/14, h ≤ 8δ/ 7, and 
+
+|E| = 4 arcsin(3 h) ≤ 24 h < 28 δ, |E| ≤ 4 arcsin(3 /14) < π
+
+2 .
+
+Apply the growth inequality from Lemma 4.9 to q(θ) := p(θ)/ε , with degree at most 4 T and an exceptional set of length |E|. The lower bound at θ = 0 from (65), together with the bound outside 
+
+E in (64), yields 
+
+s20(1 − ε)2
+
+ε ≤ sup 
+
+> θ
+
+|q(θ)| ≤ exp  4(4 T )(28 δ).
+
+Taking logarithms and using (1 − ε)2 ≥ 1/4 gives 448 T δ ≥ log s20(1 − ε)2
+
+ε ≥ log s20
+
+4ε . (66) This proves the lemma. Combining this precision lower bound with Lemma 8.1 gives the lower bound on E[qH ] in Theorem 2.1. We first truncate an algorithm with a random query count to one with a fixed query bound. 39 Proof of the E[qH ] lower bound in Theorem 2.1. Set δ := ∆ /(2 α) ≤ 1/16, and suppose an algo-rithm outputs a state within trace distance ε of |ψ0⟩⟨ ψ0| with E[qH ] ≤ T on every valid instance. Stop it before its ( ⌊2T ⌋ + 1)st Hamiltonian query and report failure if it has not yet terminated. The truncated algorithm uses at most 2 T queries, and Markov’s inequality gives success probability 
+
+p ≥ 1/2. If ρ is the original output and ρsucc is the output conditioned on termination within the budget, then dtr (ρsucc , |ψ0⟩⟨ ψ0|) ≤ p1 − ⟨ ψ0|ρsucc |ψ0⟩ ≤ 
+
+s
+
+1 − ⟨ ψ0|ρ|ψ0⟩
+
+p ≤ √2ε =: η. (67) Since η < 9/20, Lemma 8.1 with s0 = 1 /2 gives T = Ω(1 /(γδ )). For sufficiently small ε, Lemma 8.2 also applies and gives T = Ω( δ−1 log(1 /ε )), because log(1 /η ) = 12 log(1 /ε )−O (1). For the remaining 
+
+ε ≤ 1/10, δ−1 log(1 /ε ) = O(( γδ )−1), so the overlap lower bound suffices. Taking the maximum of the two bounds and substituting δ = ∆ /(2 α) yields 
+
+T = Ω 
+
+ αγ∆ + α
+
+∆ log 1
+
+ε
+
+
+
+.
+
+For the QH lower bound in Theorem 2.2, we use the hard family of Somma and de Wolf for small γ and Lemma 8.2 for constant γ.
+
+Proof of the QH lower bound in Theorem 2.2. Somma and de Wolf reduce their unique-ground-state hard family to block encodings [SdW26, Section 1.2]. After negating the encoded Hamiltonian, its eigenvalue on the unique ground state is − sin θ and every other eigenvalue is zero, where the nonzero eigenphase θ is fixed across the family. Scaling the Hamiltonian by α and taking 
+
+θ = arcsin(∆ /α ), μ = − ∆2 ,
+
+gives ground energy −∆, excited energy zero, and the threshold promise (5). Because θ = Θ(∆ /α )for ∆ ≤ α/ 8, their lower bound gives, for sufficiently small γ,
+
+QH = Ω 
+
+ αγ∆ log 1
+
+ε
+
+
+
+in dimension O(γ−2 log 2(1 /ε )). For γ bounded below by an absolute constant, Lemma 8.2 with 
+
+s0 = 1 and δ = ∆ /(2 α) gives QH = Ω(( α/ ∆) log(1 /ε )), which is the same bound because 1 /γ =
+
+O(1). 
+
+8.2 State-preparation queries 
+
+We prove lower bounds on queries to UI when QH = o(√N /δ ), where the system dimension is N +1 and 2 δ is the normalized gap. Without calling UI , one can prepare a state within trace distance ε
+
+of the ground state on success, with constant success probability, using O(( √N + log(1 /ε )) /δ ) calls to UH . Prepare the maximally entangled state 
+
+|Φ⟩ = 1
+
+√N + 1 
+
+> N
+
+X
+
+> x=0
+
+|x⟩| x⟩, ∥(|ψ0⟩⟨ ψ0| ⊗ I)|Φ⟩∥ 2 = 1
+
+N + 1 ,
+
+40 where the second register is a reference. The reflection about the target subspace is Rg ⊗ I. Ten-soring the transducer of Proposition 5.4 with the identity on the reference gives this transduction action with constant transduction complexity. Amplitude amplification from |Φ⟩, implemented as in Section 6, raises the overlap with this subspace to a constant using O(√N /δ ) calls to UH . The re-flection about |Φ⟩ uses no input oracle. One spectral filter with accuracy Θ( ε) costs O(δ−1 log(1 /ε )) further calls to UH . On its accepting outcome, discarding the reference gives the claimed approxi-mation. We now prove the query tradeoff of Theorem 2.4. 
+
+Proof of Theorem 2.4. We construct N instances with ground state |t⟩ and compare each compu-tation with one using fixed oracles independent of t. Set δ = ∆ /(2 α) and c0 = s0(1 − ε). On the basis {|⊥⟩ , |1⟩, . . . , |N ⟩} , with |⊥⟩ := |0⟩, define 
+
+Pt := |t⟩⟨ t|, eHt := δI − 2δP t, UH,t := p1 − δ2 X ⊗ I + δZ ⊗ (I − 2Pt).
+
+eHt|t⟩ = −δ|t⟩, while eHt|x⟩ = δ|x⟩ for x̸ = t. Moreover, 
+
+U 2 
+
+> H,t
+
+= (1 − δ2)I + δ2(I − 2Pt)2 = I, (⟨0| ⊗ I)UH,t (|0⟩ ⊗ I) = δ(I − 2Pt) = eHt.
+
+The cross terms in U 2 
+
+> H,t
+
+vanish because XZ + ZX = 0. Thus |t⟩ is the unique ground state, the gap is 2 δ, and UH,t is an exact 1-block-encoding of eHt. Choose the guiding-state oracle to act as 
+
+UI,t |⊥⟩ = p1 − γ2|⊥⟩ + γ|t⟩, UI,t |t⟩ = −γ|⊥⟩ + p1 − γ2|t⟩,
+
+and as the identity on the orthogonal subspace. Rescaling to Ht = α eHt gives valid instances for the theorem. A successful preparation followed by a computational-basis measurement returns the label t with joint probability at least c0.Introduce the reference oracles 
+
+UI, 0 = I, UH, 0 = p1 − δ2 X ⊗ I + δZ ⊗ I. 
+
+For every normalized state |Φ⟩,
+
+> N
+
+X
+
+> t=1
+
+∥(UI,t − UI, 0)|Φ⟩∥ 2 ≤ N max  
+
+> t
+
+∥UI,t − I∥2 ≤ 2N γ 2,
+
+> N
+
+X
+
+> t=1
+
+∥(UH,t − UH, 0)|Φ⟩∥ 2 = 4 δ2
+
+> N
+
+X
+
+> t=1
+
+∥(I ⊗ Pt)|Φ⟩∥ 2 ≤ 4δ2.
+
+For inverse queries, U † 
+
+> H,t
+
+= UH,t and U † 
+
+> I,t
+
+− I = ( UI,t − I)†. For a controlled call, 
+
+bUq,t − bUq, 0 = |1⟩⟨ 1|Q ⊗ (Uq,t − Uq, 0).
+
+Thus the inequalities for UI,t and UH,t also hold for inverse and controlled queries. Write |Ψt⟩ and 
+
+|Ψ0⟩ for the final states on these instances and on the reference oracles. Apply Lemma 4.10 first to 
+
+UI,t with UH,t fixed for each t, then to UH,t with UI = I fixed. The triangle inequality gives 
+
+D := 
+
+> N
+
+X
+
+> t=1
+
+∥| Ψt⟩ − | Ψ0⟩∥ 2
+
+!1/2
+
+≤ 2γ√N Q I + 2 δQ H . (68) 41 Let p0 
+
+> t
+
+be the reference probability of success and outcome t. Since P 
+
+> t
+
+p0 
+
+> t
+
+≤ 1, at least N/ 2labels satisfy p0 
+
+> t
+
+≤ 2/N ≤ c0/2. For each such label, the actual joint probability is at least c0, so contractivity of trace distance gives ∥| Ψt⟩ − | Ψ0⟩∥ ≥ c0/2. Consequently, 2γ√N Q I + 2 δQ H ≥ D ≥ c0
+
+√N
+
+2√2 ,
+
+and hence 
+
+γQ I + δQ H
+
+√N ≥ c0
+
+4√2 .
+
+Substituting δ = ∆ /(2 α) proves the theorem. The tradeoff gives Corollary 2.5 when its QH term vanishes. 
+
+Proof of Corollary 2.5. The Hamiltonian-query term in Theorem 2.4 is o(1), while s0(1 − ε) ≥
+
+9s0/10. Subtracting that term gives QI = Ω s0 (1 /γ ). For the lower bound on E[qI ] in Theorem 2.1, we truncate both query counts and apply the same tradeoff. 
+
+Proof of the E[qI ] lower bound in Theorem 2.1. Let BH , B I be the suprema of the expected query counts over valid ( N +1)-dimensional instances. If BI is infinite, the claim is immediate. Stop before either count exceeds ⌊4BH ⌋ or ⌊4BI ⌋ and report failure. Markov’s inequality and the union bound give success probability at least 1 /2, and (67) gives conditional error at most √2ε. Theorem 2.4 applied to this truncated algorithm yields 4γB I + 2∆ BH
+
+α√N ≥ 1 − √2ε
+
+8√2 .
+
+Since BH = o(( α/ ∆) √N ), this proves BI = Ω(1 /γ ) for all sufficiently large N .For the worst-case query model, we also need a state-preparation-query lower bound with its dependence on ε.
+
+Lemma 8.3 (Unconditional state-preparation lower bound) . Fix 0 < ε ≤ 1/10 . For each N ,let 0 < γ ≤ 1/√2 and 0 < δ < 1, possibly depending on N . Suppose an algorithm outputs a state ρ satisfying dtr (ρ, |ψ0⟩⟨ ψ0|) ≤ ε on every (N + 1) -dimensional instance satisfying (60) . If 
+
+QH = o(√N /δ ) uniformly over these instances, then for all sufficiently large N some instance satisfies 
+
+QI = Ω 
+
+ 1
+
+γ log 1
+
+ε
+
+
+
+. (69) 
+
+Proof. To obtain a polynomial whose degree depends only on QI , keep eHt and UH,t from the proof of Theorem 2.4 fixed and vary the guiding state as 
+
+|ψt,θ ⟩ = cos θ|⊥⟩ + sin θ|t⟩, θ ∈ [−π, π ).
+
+Its preparation oracle is 
+
+UI,t (θ) = I + (cos θ − 1)( |⊥⟩⟨⊥| + Pt) + sin θ(|t⟩⟨⊥| − |⊥⟩⟨ t|).
+
+This is a valid instance whenever | sin θ| ≥ γ. Let pt(θ) be the probability of outcome t when the algorithm’s output is measured in the computational basis. Each UI query has trigonometric degree 42 one in θ, while UH is independent of θ, so pt is a real trigonometric polynomial of degree at most 2QI .At θ = 0, all the preparation oracles are the identity, so only UH,t depends on t. Comparing the computations using UH,t with the computation using UH, 0, Lemma 4.10 and Cauchy–Schwarz give 1
+
+N
+
+> N
+
+X
+
+> t=1
+
+pt(0) ≤ 1
+
+N + 1
+
+N
+
+> N
+
+X
+
+> t=1
+
+∥| Ψt(0) ⟩ − | Ψ0⟩∥ ≤ 1
+
+N + 2δQ H
+
+√N ≤ 12for all sufficiently large N . Fix a label t with pt(0) ≤ 1/2. For every | sin θ| ≥ γ, the output guarantee instead gives pt(θ) ≥ 1 − ε.Set q(θ) = (1 − pt(θ)) /ε . Then q(0) ≥ 1/(2 ε) and 0 ≤ q(θ) ≤ 1 outside a set of measure 
+
+s = 4 arcsin γ ≤ π. Lemma 4.9 therefore gives 12ε ≤ q(0) ≤ sup 
+
+> θ
+
+|q(θ)| ≤ exp(32 QI arcsin γ) .
+
+Taking logarithms and using arcsin γ = Θ( γ) proves the claim. Rescaling the Hamiltonians in Lemma 8.3 gives the QI lower bound in Theorem 2.2. 
+
+Proof of the QI lower bound in Theorem 2.2. Set δ = ∆ /(2 α) and apply Lemma 8.3. Rescaling its Hamiltonians as in (61) leaves both query counts unchanged and gives the claimed bound. 
+
+# Statement on AI use 
+
+The authors proposed applying the purifier of Belovs and Jeffery [BJ26] and the transducer compo-sition results of Belovs, Jeffery, and Yolcu [BJY24] to ground-state preparation with block-encoding access. Large language models were used to develop the detailed constructions and proofs. The authors reviewed and verified the arguments, substantially rewrote the manuscript, and take full responsibility for its claims, proofs, and citations. 
+
+# A Proof of the overlap lower bound with controlled queries 
+
+Proof of Lemma 8.1. Set N = ⌊γ−2⌋ ≥ 2 and Pt = |t⟩⟨ t| on the basis {|⊥⟩ , |1⟩, . . . , |N ⟩} , where 
+
+|⊥⟩ = |0⟩. For 1 ≤ t ≤ N , take 
+
+eHt = δ(I − 2Pt), UH,t = p1 − δ2 X ⊗ I + δZ ⊗ (I − 2Pt).
+
+Anticommutation of X and Z gives U 2 
+
+> H,t
+
+= I, and the |0⟩ block of UH,t is eHt. Thus |t⟩ is the unique ground state and (60) holds. Use the same UI for every t, with UI |⊥⟩ = N −1/2 PNr=1 |r⟩; its overlap with each ground state is at least γ.Take the reference oracle UH, 0 = √1 − δ2 X ⊗ I + δZ ⊗ I. For every normalized |Φ⟩,
+
+> N
+
+X
+
+> t=1
+
+∥(UH,t − UH, 0)|Φ⟩∥ 2 = 4 δ2
+
+> N
+
+X
+
+> t=1
+
+∥(Z ⊗ Pt)|Φ⟩∥ 2 ≤ 4δ2.
+
+43 The bound also holds for controlled calls; inverse calls are identical because the oracles are Hermi-tian. As UI is independent of t, Lemma 4.10 gives 
+
+> N
+
+X
+
+> t=1
+
+∥| Ψt⟩ − | Ψ0⟩∥ 2
+
+!1/2
+
+≤ 2δT. 
+
+Let pt and p0 
+
+> t
+
+be the probabilities of success and system outcome t with UH,t and UH, 0, respectively, and set c = s0(1 − ε). Then pt ≥ c and P 
+
+> t
+
+p0 
+
+> t
+
+≤ 1. Since |pt − p0 
+
+> t
+
+| ≤ ∥| Ψt⟩ − | Ψ0⟩∥ , Cauchy–Schwarz gives 
+
+N c − 1 ≤
+
+> N
+
+X
+
+> t=1
+
+|pt − p0 
+
+> t
+
+| ≤ 2δT √N . 
+
+If N ≥ 2/c , then N ≥ 1/(2 γ2) gives T = Ω s0 (1 /(γδ )). If N < 2/c , then γ = Ω s0 (1). Comparing t = 1 , 2 with M = |1⟩⟨ 1|B ⊗ (P1 − P2) and ∥UH, 1 −
+
+UH, 2∥ = 2 δ gives 2s0(1 − 2ε) ≤ ⟨Ψ1|M |Ψ1⟩ − ⟨ Ψ2|M |Ψ2⟩ ≤ 4δT. 
+
+This again yields T = Ω s0 (1 /(γδ )). 44 References 
+
+[AL18] Tameem Albash and Daniel A. Lidar. Adiabatic quantum computation. Reviews of Modern Physics , 90:015002, 2018. doi:10.1103/RevModPhys.90.015002 .[AM26] Manaki Arihara and Mio Murao. Sample-query interconversion of block encoding of unknown quantum states, 2026. arXiv:2608.22470 .[BBBV97] Charles H. Bennett, Ethan Bernstein, Gilles Brassard, and Umesh Vazirani. Strengths and weaknesses of quantum computing. SIAM Journal on Computing , 26(5):1510– 1523, 1997. doi:10.1137/S0097539796300933 .[BBC +95] Adriano Barenco, Charles H. Bennett, Richard Cleve, David P. DiVincenzo, Norman Margolus, Peter W. Shor, Tycho Sleator, John A. Smolin, and Harald Weinfurter. Elementary gates for quantum computation. Physical Review A , 52(5):3457–3467, 1995. doi:10.1103/PhysRevA.52.3457 .[BBHT98] Michel Boyer, Gilles Brassard, Peter Høyer, and Alain Tapp. Tight bounds on quan-tum searching. Fortschritte der Physik , 46(4–5):493–505, 1998. doi:10.1002/(SICI) 1521-3978(199806)46:4/5<493::AID-PROP493>3.0.CO;2-P .[BE95] Peter Borwein and Tam´ as Erd˝ elyi. Polynomials and Polynomial Inequalities , volume 161 of Graduate Texts in Mathematics . Springer, New York, 1995. doi:10.1007/ 978-1-4612-0793-1 .[Bel15] Aleksandrs Belovs. Variations on quantum adversary, 2015. arXiv:1504.06943 .[BHMT02] Gilles Brassard, Peter Høyer, Michele Mosca, and Alain Tapp. Quantum amplitude amplification and estimation. In Quantum Computation and Information , volume 305 of Contemporary Mathematics , pages 53–74. American Mathematical Society, Provi-dence, RI, 2002. doi:10.1090/conm/305/05215 .[BJ26] Aleksandrs Belovs and Stacey Jeffery. Space-efficient quantum error reduction without log factors. Quantum , 10:2039, 2026. doi:10.22331/q-2026-03-23-2039 .[BJY24] Aleksandrs Belovs, Stacey Jeffery, and Duyal Yolcu. Taming quantum time complex-ity. Quantum , 8:1444, 2024. doi:10.22331/q-2024-08-23-1444 .[BKS09] Sergio Boixo, Emanuel Knill, and Rolando D. Somma. Eigenpath traversal by phase randomization. Quantum Information and Computation , 9(9–10):833–855, 2009. doi: 10.26421/QIC9.9-10-7 .[BKS10] Sergio Boixo, Emanuel Knill, and Rolando D. Somma. Fast quantum algorithms for traversing paths of eigenstates, 2010. arXiv:1005.3034 .[CDKM04] Steven A. Cuccaro, Thomas G. Draper, Samuel A. Kutin, and David Petrie Moulton. A new quantum ripple-carry addition circuit, 2004. arXiv:quant-ph/0410184 .[Cha24] Shantanav Chakraborty. Implementing any linear combination of unitaries on intermediate-term quantum computers. Quantum , 8:1496, 2024. doi:10.22331/ q-2024-10-10-1496 .45 [CHL +25] Shantanav Chakraborty, Soumyabrata Hazra, Tongyang Li, Changpeng Shao, Xinzhao Wang, and Yuxin Zhang. Quantum singular value transformation with-out block encodings: Near-optimal complexity with minimal ancilla, 2025. arXiv: 2504.02385 .[Cub23] Toby S. Cubitt. Dissipative ground state preparation and the dissipative quantum eigensolver, 2023. arXiv:2303.11962 .[DCL24] Zhiyan Ding, Chi-Fang Chen, and Lin Lin. Single-ancilla ground state prepara-tion via lindbladians. Physical Review Research , 6:033147, 2024. doi:10.1103/ PhysRevResearch.6.033147 .[DL24] Yulong Dong and Lin Lin. Multi-level quantum signal processing with applications to ground state preparation using fast-forwarded hamiltonian evolution, 2024. arXiv: 2406.02086 .[DLT22] Yulong Dong, Lin Lin, and Yu Tong. Ground-state preparation and energy estimation on early fault-tolerant quantum computers via quantum eigenvalue transformation of unitary matrices. PRX Quantum , 3:040305, 2022. doi:10.1103/PRXQuantum.3. 040305 .[DZPL26] Zhiyan Ding, Yongtao Zhan, John Preskill, and Lin Lin. Simple and efficient end-to-end quantum thermal and ground state preparation. Nature Physics , 2026. Published online 12 August 2026. doi:10.1038/s41567-026-03389-y .[FGG +01] Edward Farhi, Jeffrey Goldstone, Sam Gutmann, Joshua Lapan, Andrew Lund-gren, and Daniel Preda. A quantum adiabatic evolution algorithm applied to random instances of an NP-complete problem. Science , 292(5516):472–475, 2001. 
+
+doi:10.1126/science.1057726 .[FvdG99] Christopher A. Fuchs and Jeroen van de Graaf. Cryptographic distinguishability measures for quantum-mechanical states. IEEE Transactions on Information Theory ,45(4):1216–1227, 1999. doi:10.1109/18.761271 .[GSLW19] Andr´ as Gily´ en, Yuan Su, Guang Hao Low, and Nathan Wiebe. Quantum singular value transformation and beyond: Exponential improvements for quantum matrix arithmetics. In Proceedings of the 51st Annual ACM SIGACT Symposium on The-ory of Computing , STOC 2019, pages 193–204. ACM, 2019. doi:10.1145/3313276. 3316366 .[GST +26] Marek Gluza, Jeongrak Son, Bi Hong Tiang, Ren´ e Zander, Raphael Seidel, Yudai Suzuki, Zo¨ e Holmes, and Nelly H. Y. Ng. Double-bracket quantum algorithms for quantum imaginary-time evolution. Physical Review Letters , 136:020601, 2026. doi: 10.1103/rw81-k8vk .[GTC19] Yimin Ge, Jordi Tura, and J. Ignacio Cirac. Faster ground state preparation and high-precision ground energy estimation with fewer qubits. Journal of Mathematical Physics , 60:022202, 2019. doi:10.1063/1.5027484 .[JSWdW26] Stacey Jeffery, Rolando D. Somma, Freek Witteveen, and Ronald de Wolf. Optimal ground-state preparation with a guiding state, 2026. arXiv:2609.38091 .46 [JW26] Stacey Jeffery and Freek Witteveen. Optimal quantum algorithm for ground-state energy estimation with a guiding state, 2026. arXiv:2608.24494 .[KCM25] Erenay Karacan, Yanbin Chen, and Christian B. Mendl. Enhancing scalability of quantum eigenvalue transformation of unitary matrices for ground state prepa-ration through adaptive finer filtering. Quantum , 9:1624, 2025. doi:10.22331/ q-2025-02-06-1624 .[KDW21] Trevor Keen, Eugene Dumitrescu, and Yan Wang. Quantum algorithms for ground-state preparation and green’s function calculation, 2021. arXiv:2112.05731 .[KGK24] Christopher F. Kane, Niladri Gomes, and Michael Kreshchuk. Nearly optimal state preparation for quantum simulations of lattice gauge theories. Physical Review A ,110:012455, 2024. doi:10.1103/PhysRevA.110.012455 .[KKR06] Julia Kempe, Alexei Kitaev, and Oded Regev. The complexity of the local hamilto-nian problem. SIAM Journal on Computing , 35(5):1070–1097, 2006. doi:10.1137/ S0097539704445226 .[LT20a] Lin Lin and Yu Tong. Near-optimal ground state preparation. Quantum , 4:372, 2020. 
+
+doi:10.22331/q-2020-12-14-372 .[LT20b] Lin Lin and Yu Tong. Optimal polynomial based quantum eigenstate filtering with application to solving quantum linear systems. Quantum , 4:361, 2020. doi:10.22331/ q-2020-11-11-361 .[LT22] Lin Lin and Yu Tong. Heisenberg-limited ground-state energy estimation for early fault-tolerant quantum computers. PRX Quantum , 3:010318, 2022. doi:10.1103/ PRXQuantum.3.010318 .[LZL25] Hao-En Li, Yongtao Zhan, and Lin Lin. Dissipative ground state preparation in ab initio electronic structure theory. npj Quantum Information , 11:183, 2025. doi: 10.1038/s41534-025-01124-8 .[MdW26] Nikhil S. Mande and Ronald de Wolf. Tight bounds for quantum phase estimation and related problems. Quantum , 10:2140, 2026. doi:10.22331/q-2026-06-15-2140 .[MEAG +20] Sam McArdle, Suguru Endo, Al´ an Aspuru-Guzik, Simon C. Benjamin, and Xiao Yuan. Quantum computational chemistry. Reviews of Modern Physics , 92:015003, 2020. doi:10.1103/RevModPhys.92.015003 .[MJE +19] Sam McArdle, Tyson Jones, Suguru Endo, Ying Li, Simon C. Benjamin, and Xiao Yuan. Variational ansatz-based quantum simulation of imaginary time evolution. npj Quantum Information , 5:75, 2019. doi:10.1038/s41534-019-0187-2 .[MR25] John M. Martyn and Patrick Rall. Halving the cost of quantum algorithms with randomization. npj Quantum Information , 11:47, 2025. doi:10.1038/ s41534-025-01003-2 .[MST +20] Mario Motta, Chong Sun, Adrian T. K. Tan, Matthew J. O’Rourke, Erika Ye, Austin J. Minnich, Fernando G. S. L. Brand˜ ao, and Garnet Kin-Lic Chan. De-termining eigenstates and thermal states on a quantum computer using quan-tum imaginary time evolution. Nature Physics , 16:205–210, 2020. doi:10.1038/ s41567-019-0704-4 .47 [PW09] David Poulin and Pawel Wocjan. Preparing ground states of quantum many-body systems on a quantum computer. Physical Review Letters , 102:130503, 2009. doi: 10.1103/PhysRevLett.102.130503 .[SdW26] Rolando D. Somma and Ronald de Wolf. Optimal lower bound for ground-state energy estimation with a guiding state, 2026. arXiv:2608.24493 .[SZGK26] Jinzhao Sun, Pei Zeng, Tom Gur, and M. S. Kim. High-precision and low-depth quantum algorithm design for eigenstate problems. Science Advances , 12(3):eaeb1622, 2026. doi:10.1126/sciadv.aeb1622 .[SZPS26] Tal Schwartzman, Torsten V. Zache, Hannes Pichler, and H. R. Sadeghpour. Imagi-nary time evolution and ground state preparation using unitary multi-copy protocols. 
+
+PRX Quantum , 7:033033, 2026. doi:10.1103/1tf6-bc55 .[TC23] Matthew Thibodeau and Bryan K. Clark. Nearly-frustration-free ground state prepa-ration. Quantum , 7:1084, 2023. doi:10.22331/q-2023-08-16-1084 .[TY18] S. Tikhonov and P. Yuditskii. Sharp Remez inequality, 2018. arXiv:1809.09726 .[VWC09] Frank Verstraete, Michael M. Wolf, and J. Ignacio Cirac. Quantum computation and quantum-state engineering driven by dissipation. Nature Physics , 5:633–636, 2009. 
+
+doi:10.1038/nphys1342 .[WBC22] Kianna Wan, Mario Berta, and Earl T. Campbell. Randomized quantum algorithm for statistical phase estimation. Physical Review Letters , 129:030503, 2022. doi: 10.1103/PhysRevLett.129.030503 .[WHS +25] Kaito Wada, Hiroyuki Harada, Yasunari Suzuki, Yuuki Tokunaga, Naoki Yamamoto, and Suguru Endo. Tradeoffs between quantum and classical resources in linear com-bination of unitaries, 2025. arXiv:2512.06260 .[WMB24] Samson Wang, Sam McArdle, and Mario Berta. Qubit-efficient randomized quan-tum algorithms for linear algebra. PRX Quantum , 5:020324, 2024. doi:10.1103/ PRXQuantum.5.020324 .[WZH +25] Xinzhao Wang, Yuxin Zhang, Soumyabrata Hazra, Tongyang Li, Changpeng Shao, and Shantanav Chakraborty. Randomized quantum singular value transformation, 2025. arXiv:2510.06851 .[ZDH +26] Yongtao Zhan, Zhiyan Ding, Jakob Huhn, Johnnie Gray, John Preskill, Garnet Kin-Lic Chan, and Lin Lin. Rapid quantum ground state preparation via dissipative dynamics. Physical Review X , 16:011004, 2026. doi:10.1103/wzb3-dbg9 .[ZWJ22] Ruizhe Zhang, Guoming Wang, and Peter Johnson. Computing ground state prop-erties with early fault-tolerant quantum computers. Quantum , 6:761, 2022. doi: 10.22331/q-2022-07-11-761 .48
