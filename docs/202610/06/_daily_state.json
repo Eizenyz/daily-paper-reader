@@ -1,10 +1,26 @@
 {
   "date": "20261006",
   "date_label": "",
-  "generated_at": "2026-10-06 01:11:51 UTC",
+  "generated_at": "2026-10-06 23:34:49 UTC",
   "recommend_exists": true,
-  "run_count": 1,
+  "run_count": 2,
   "papers": [
+    {
+      "paper_id": "2610.03686v2",
+      "route": "202610/06/2610.03686v2-efficient-block-encoding-of-structured-hamiltonians-by-separating-where-and-what",
+      "title": "Efficient Block Encoding of Structured Hamiltonians by Separating Where and What",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "结构化哈密顿量的块编码，最小化非 Clifford T 门开销",
+      "first_seen_at": "2026-10-06 23:34:49 UTC",
+      "updated_at": "2026-10-06 23:34:49 UTC"
+    },
     {
       "paper_id": "2610.03686v1",
       "route": "202610/06/2610.03686v1-efficient-block-encoding-of-structured-hamiltonians-by-separating-where-and-what",
@@ -35,23 +51,7 @@
       "score": 7.0,
       "evidence": "黎曼流形上薛定谔方程这一偏微分方程的量子模拟",
       "first_seen_at": "2026-10-06 01:11:51 UTC",
-      "updated_at": "2026-10-06 01:11:51 UTC"
-    },
-    {
-      "paper_id": "2609.40349v1",
-      "route": "202610/06/2609.40349v1-efficient-calculation-of-equilibrium-correlation-functions",
-      "title": "Efficient Calculation of Equilibrium Correlation Functions",
-      "section": "quick",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "quantum-algo"
-        }
-      ],
-      "score": 6.0,
-      "evidence": "通过编码时间改进门与采样复杂度的哈密顿量模拟",
-      "first_seen_at": "2026-10-06 01:11:51 UTC",
-      "updated_at": "2026-10-06 01:11:51 UTC"
+      "updated_at": "2026-10-06 23:34:49 UTC"
     },
     {
       "paper_id": "2610.02916v1",
@@ -66,6 +66,22 @@
       ],
       "score": 6.0,
       "evidence": "为BSE哈密顿量构造轨道基块编码以支持qubitization",
+      "first_seen_at": "2026-10-06 01:11:51 UTC",
+      "updated_at": "2026-10-06 23:34:49 UTC"
+    },
+    {
+      "paper_id": "2609.40349v1",
+      "route": "202610/06/2609.40349v1-efficient-calculation-of-equilibrium-correlation-functions",
+      "title": "Efficient Calculation of Equilibrium Correlation Functions",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过编码时间改进门与采样复杂度的哈密顿量模拟",
       "first_seen_at": "2026-10-06 01:11:51 UTC",
       "updated_at": "2026-10-06 01:11:51 UTC"
     }

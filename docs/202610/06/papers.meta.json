@@ -1,9 +1,24 @@
 {
   "label": "2026-10-06",
   "date": "2026-10-06",
-  "generated_at": "2026-10-06T01:11:55",
-  "count": 4,
+  "generated_at": "2026-10-06T23:34:50",
+  "count": 5,
   "papers": [
+    {
+      "paper_id": "202610/06/2610.03686v2-efficient-block-encoding-of-structured-hamiltonians-by-separating-where-and-what",
+      "section": "deep",
+      "title_en": "Efficient Block Encoding of Structured Hamiltonians by Separating Where and What",
+      "authors": "Alessandro Summer, François Jamet",
+      "date": "2026-10-02",
+      "pdf": "https://arxiv.org/pdf/2610.03686v2",
+      "score": "8.0",
+      "evidence": "结构化哈密顿量的块编码，最小化非 Clifford T 门开销",
+      "tldr": "结构化哈密顿量的容错块编码中，支撑几何决定 SELECT 的非 Clifford 成本，但同一支撑常含多个算符，且一次查询可混合多种支撑几何。本文提出 permute-act-unpermute 电路：用几何固定的 CSWAP 网络把选中支撑送至固定目标寄存器，共享局域电路作用后再还原排列，算符只需附加 XZ 掩码。对 Pauli 项，该方案编译为 8SN+o(N) 个 T 门与 O(log N) 个排列工作量子比特，最近邻 S=1、全对全 S=3/2。还引入 bridged CSWAP，使正反 CSWAP 对的 T 数减半；Heisenberg 环的 T 数降低近 3 倍，Anderson 杂质模型降低约 1.7 倍。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "In fault-tolerant block encodings of structured Hamiltonians, the support geometry can set how the non-Clifford cost of SELECT scales with the system size, however many operators act on each support. We construct permute-act-unpermute circuits: a CSWAP network fixed by this geometry brings a selected support to a fixed target register, a shared local circuit acts there, and the permutation is undone. The operators add only an $XZ$ mask on this register, at a cost independent of the system size, and one query can mix several support geometries. For two-site supports, we establish and attain the minimum CSWAP count within address-controlled networks of site transpositions. Compiled for Pauli terms, these circuits use $8\\mathrm{S}N+o(N)$ $T$ gates with $O(\\log N)$ permutation work qubits, where $N$ is the number of system qubits and $\\mathrm{S}$ is determined by the support geometry, with $\\mathrm{S}=1$ for nearest-neighbour interactions and $\\mathrm{S}=3/2$ for all-to-all pairs; in both cases the correction is $O(\\log N)$. We also introduce a bridged CSWAP, which remembers the logical value of its temporary AND across the target action and repairs it from the prepared labels, so that the inverse CSWAP undoes the exchange without recomputing the value. When the repair is Clifford, it halves the $T$ count of a matched forward-inverse CSWAP pair at the cost of one retained work qubit. For a Heisenberg ring, the complete block-encoding query reduces the $T$ count by a factor approaching $3$ as the system size grows, relative to flat and product-wise Pauli walks. For a five-orbital Anderson impurity model, which combines nearest-neighbour and all-to-all support geometries, the reduction is about $1.7$ at large bath sizes, relative to the cheapest of three comparators, each built from the methods of the references it follows.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
     {
       "paper_id": "202610/06/2610.03686v1-efficient-block-encoding-of-structured-hamiltonians-by-separating-where-and-what",
       "section": "deep",
@@ -15,7 +30,7 @@
       "evidence": "结构化哈密顿量的容错块编码",
       "tldr": "结构化哈密顿量的块编码中，SELECT 的非 Clifford（T 门）成本通常随项数增长。为此提出“分离在哪与做什么”的 permute-act-unpermute 电路：把选定支撑搬到固定目标寄存器，用共享局域电路作用后再撤销置换，使 T 计数改为随系统规模而非项数增长。Pauli 项编译后为 8SN+O(log N) 个 T 门，仅需 O(log N) 个置换工作量子比特；bridged CSWAP 还能在 Clifford 修复下把配对 T 数减半。Heisenberg 环 T 数最多降近 3 倍，五轨道 Anderson 杂质模型约降 1.7 倍。",
       "tags": "query:quantum-algo",
-      "abstract_en": "Fault-tolerant block encodings of structured Hamiltonians can reduce their non-Clifford cost in SELECT by selecting where an operator acts separately from what is applied. We construct permute-act-unpermute circuits whose CSWAP networks exploit the support geometry: a selected support is brought to a fixed target register, a shared local circuit acts there, and the permutation is undone. For supports of fixed size, the $T$ count of SELECT then grows with the system size rather than with the number of terms, without requiring translational symmetry or factorised coefficients. For two-site supports, we establish and attain the minimum CSWAP count within address-controlled networks of site transpositions. Compiled for Pauli terms, these circuits use $8SN+O(\\log N)$ $T$ gates with $O(\\log N)$ permutation work qubits, where $N$ is the number of system qubits and $S$ is determined by the support geometry, with $S=1$ for nearest-neighbour interactions and $S=3/2$ for all-to-all pairs. We also introduce a bridged CSWAP that retains and repairs a temporary AND across the target action. When the repair is Clifford, it halves the $T$ count of a matched forward-inverse CSWAP pair at the cost of one retained work qubit. For a Heisenberg ring, the complete block-encoding query reduces the $T$ count by a factor approaching 3 as the system size grows. For a five-orbital Anderson impurity model, which combines nearest-neighbour and all-to-all support geometries, the reduction is about 1.7 at large bath sizes. Both comparisons use the lowest-cost compiled baselines considered, at unchanged block-encoding normalisation and comparable peak ancilla counts.",
+      "abstract_en": "Fault-tolerant block encodings of structured Hamiltonians can reduce their non-Clifford cost in SELECT by selecting where an operator acts separately from what is applied. We construct permute-act-unpermute circuits whose CSWAP networks exploit the support geometry: a selected support is brought to a fixed target register, a shared local circuit acts there, and the permutation is undone. For supports of fixed size, the $T$ count of SELECT then grows with the system size rather than with the number of terms, without requiring translational symmetry or factorised coefficients. For two-site supports, we establish and attain the minimum CSWAP count within address-controlled networks of site transpositions. Compiled for Pauli terms, these circuits use $8SN+O(\\log N)$ $T$ gates with $O(\\log N)$ permutation work qubits, where $N$ is the number of system qubits and $S$ is determined by the support geometry, with $S=1$ for nearest-neighbour interactions and $S=3/2$ for all-to-all pairs. We also introduce a bridged CSWAP that retains and repairs a temporary AND across the target action. When the repair is Clifford, it halves the $T$ count of a matched forward-inverse CSWAP pair at the cost of one retained work qubit. For a Heisenberg ring, the complete block-encoding query reduces the $T$ count by a factor approaching 3 as the system size grows. For a five-orbital Anderson impurity model, which combines nearest-neighbour and all-to-all support geometries, the reduction is about 1.7 at large bath sizes. Both comparisons use the lowest-cost compiled baselines considered, at unchanged block-encoding normalisation and comparable peak ancilla counts.\n\n---",
       "source": "arxiv",
       "selection_source": "fresh_fetch"
     },
@@ -35,21 +50,6 @@
       "selection_source": "fresh_fetch"
     },
     {
-      "paper_id": "202610/06/2609.40349v1-efficient-calculation-of-equilibrium-correlation-functions",
-      "section": "quick",
-      "title_en": "Efficient Calculation of Equilibrium Correlation Functions",
-      "authors": "Yizhi Shen, Roel Van Beeumen, Wibe A. de Jong, Efekan Kökcü",
-      "date": "2026-09-30",
-      "pdf": "https://arxiv.org/pdf/2609.40349v1",
-      "score": "6.0",
-      "evidence": "通过编码时间改进门与采样复杂度的哈密顿量模拟",
-      "tldr": "平衡关联函数 G_AB(t-t') 描述物理系统多数可测动力学量，但传统量子算法需为每个时间点单独设计线路，导致至少 O(N_t) 次采样和 O(N_t^2) 个量子门。本文利用 O(log N_t) 个辅助量子比特把时间编码为量子变量，以单个量子线路并行计算所有时间点，并只需重复 O(log N_t) 次。在大系统极限下，总量子资源降为 O(N_t log N_t)，且作者证明该标度最优。该方案为高效模拟平衡关联函数提供了新路径，并在一维无自旋 Hubbard 模型的格林函数计算中得到验证。",
-      "tags": "query:quantum-algo",
-      "abstract_en": "A majority of measurable dynamic quantities of a physical system is described as an equilibrium correlation function of the form $G_{AB}(t-t') = \\left<A(t)B(t')\\right>$, where $t'$ represents the impact time and $t$ represents the response time. Conventional quantum algorithms to compute such quantities via Hamiltonian simulation such as the Hadamard test, variational methods, or linear-response-based algorithms share one feature in common: each time point $t-t'$ is calculated by a different quantum circuit, leading to at least $O(N_t)$ total shots, and at least $O(N_t^2)$ total quantum gates. Here, we provide a different approach: utilizing $O(\\log N_t)$ ancilla qubits to store time as a quantum variable, and effectively parallelize the computation of an equilibrium correlation function by requiring only a single quantum circuit for all time points. We show that this circuit needs to be run only $O(\\log N_t)$ times, which in total requires $O(N_t \\log N_t)$ quantum resources in the large system size limits. We prove that this scaling is optimal, and demonstrate our algorithm calculating the Green's function of a one-dimensional spinless Hubbard model.",
-      "source": "arxiv",
-      "selection_source": "fresh_fetch"
-    },
-    {
       "paper_id": "202610/06/2610.02916v1-quasiparticle-quantum-simulation-of-materials-with-the-bethe-salpeter-equation",
       "section": "quick",
       "title_en": "Quasiparticle quantum simulation of materials with the Bethe-Salpeter equation",
@@ -61,6 +61,21 @@
       "tldr": "对真实尺寸材料做第一性原理量子模拟，完整电子哈密顿量成本极高。本文提出基于Bethe-Salpeter方程的多激子准粒子量子模拟，构造第一量子化轨道基块编码并用量积分分解与晶体对称性降本。对N尺寸模型和固定准粒子数，算法需O~(N)个Toffoli门和O(log N)个逻辑量子位，或经时空权衡达到O~(√N)门与O~(√N)量子位。在三激子本征值估计中，Toffoli数较全哈密顿量模拟降低10^6–10^7倍，量子位优化版仅需数百逻辑量子位。",
       "tags": "query:quantum-algo",
       "abstract_en": "The first-principles quantum simulation of the full electronic Hamiltonian of a material model of realistic size appears daunting even in a future era of fully fault-tolerant quantum computers. In contrast, classical simulations of material excited states rely on heuristic quasiparticle frameworks, such as the GW approximation and Bethe-Salpeter equation, where only a few quasiparticles are explicitly considered. Here we give a detailed description of quasiparticle quantum simulation for multi-excitonic states within the BSE. We develop an explicit first-quantized, orbital-based block encoding of the multi-exciton BSE Hamiltonian for qubitization, and reduce its cost using integral factorization and crystal symmetries. For a materials model of size $N$, and a fixed number of quasiparticles, the resulting algorithms require $\\widetilde{O}(N)$ Toffoli gates and $O(\\log N)$ logical qubits, or, using space-time tradeoffs, $\\widetilde{O}(\\sqrt{N})$ Toffoli gates and $\\widetilde{O}(\\sqrt{N})$ logical qubits, achieving up to a sixth power reduction in Toffoli count, or up to exponential reduction in qubit count, versus standard full Hamiltonian simulation techniques that have been explored in materials simulation. Resource estimates for the classically challenging problem of triexcitonic eigenvalue estimation across a range of semiconductor models of a realistic physical size of $O(10^3)$ atoms, show that our Toffoli-optimized implementation reduces the Toffoli count by $10^6-10^7$ relative to full Hamiltonian simulation estimates, while a qubit-optimized implementation requires only a few hundred logical qubits. More broadly, these results show that classical heuristic frameworks will be essential in the design of future fault-tolerant quantum algorithms for materials.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/06/2609.40349v1-efficient-calculation-of-equilibrium-correlation-functions",
+      "section": "quick",
+      "title_en": "Efficient Calculation of Equilibrium Correlation Functions",
+      "authors": "Yizhi Shen, Roel Van Beeumen, Wibe A. de Jong, Efekan Kökcü",
+      "date": "2026-09-30",
+      "pdf": "https://arxiv.org/pdf/2609.40349v1",
+      "score": "6.0",
+      "evidence": "通过编码时间改进门与采样复杂度的哈密顿量模拟",
+      "tldr": "平衡关联函数 G_AB(t-t') 描述物理系统多数可测动力学量，但传统量子算法需为每个时间点单独设计线路，导致至少 O(N_t) 次采样和 O(N_t^2) 个量子门。本文利用 O(log N_t) 个辅助量子比特把时间编码为量子变量，以单个量子线路并行计算所有时间点，并只需重复 O(log N_t) 次。在大系统极限下，总量子资源降为 O(N_t log N_t)，且作者证明该标度最优。该方案为高效模拟平衡关联函数提供了新路径，并在一维无自旋 Hubbard 模型的格林函数计算中得到验证。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "A majority of measurable dynamic quantities of a physical system is described as an equilibrium correlation function of the form $G_{AB}(t-t') = \\left<A(t)B(t')\\right>$, where $t'$ represents the impact time and $t$ represents the response time. Conventional quantum algorithms to compute such quantities via Hamiltonian simulation such as the Hadamard test, variational methods, or linear-response-based algorithms share one feature in common: each time point $t-t'$ is calculated by a different quantum circuit, leading to at least $O(N_t)$ total shots, and at least $O(N_t^2)$ total quantum gates. Here, we provide a different approach: utilizing $O(\\log N_t)$ ancilla qubits to store time as a quantum variable, and effectively parallelize the computation of an equilibrium correlation function by requiring only a single quantum circuit for all time points. We show that this circuit needs to be run only $O(\\log N_t)$ times, which in total requires $O(N_t \\log N_t)$ quantum resources in the large system size limits. We prove that this scaling is optimal, and demonstrate our algorithm calculating the Green's function of a one-dimensional spinless Hubbard model.",
       "source": "arxiv",
       "selection_source": "fresh_fetch"
     }
