@@ -1,0 +1,1042 @@
+Title: Efficient Calculation of Equilibrium Correlation Functions
+
+URL Source: https://arxiv.org/pdf/2609.40349v1
+
+Published Time: Thu, 01 Oct 2026 02:23:23 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# Efficient Calculation of Equilibrium Correlation Functions 
+
+Yizhi Shen ,1, ∗ Roel Van Beeumen ,1 Wibe A. de Jong ,1 and Efekan K¨ okc¨ u 2, 1, †
+
+> 1
+
+Applied Mathematics and Computational Research Division, Lawrence Berkeley National Laboratory, Berkeley, CA 94720, USA 
+
+> 2
+
+University of Central Florida, Orlando, FL 32816, USA 
+
+(Dated: October 1, 2026) A majority of measurable dynamic quantities of a physical system is described as an equilibrium correlation function of the form GAB (t − t′) = ⟨A(t)B(t′)⟩, where t′ represents the impact time and 
+
+t represents the response time. Conventional quantum algorithms to compute such quantities via Hamiltonian simulation such as the Hadamard test, variational methods, or linear-response-based algorithms share one feature in common: each time point t − t′ is calculated by a different quantum circuit, leading to at least O(Nt) total shots, and at least O(N 2 
+
+> t
+
+) total quantum gates. Here, we provide a different approach: utilizing O(log Nt) ancilla qubits to store time as a quantum variable, and effectively parallelize the computation of an equilibrium correlation function by requiring only a single quantum circuit for all time points. We show that this circuit needs to be run only O(log Nt)times, which in total requires O(Nt log Nt) quantum resources in the large system size limits. We prove that this scaling is optimal, and demonstrate our algorithm calculating the Green’s function of a one-dimensional spinless Hubbard model. 
+
+I. INTRODUCTION 
+
+Almost everything measured about an interacting quantum system arrives as a correlation function. A scat-tering or spectroscopy experiment disturbs the system with one operator and monitors the response of another, leading to expectation values of the form: 
+
+GAB (t, t ′) = ⟨ψ| A(t)†B(t′) |ψ⟩ , (1) where A(t) = eiHt Ae −iHt is the operator A evolved in time under the system Hamiltonian H (the Heisenberg picture) and |ψ⟩ is the state being probed. Inelastic neu-tron scattering measures the spin-spin correlation func-tion, whose Fourier transform in space and time gives the dynamical structure factor [1, 2]. Optical conductivity is a current-current correlation function [3]. Angle-resolved photoemission measures the single-particle Green’s func-tion, the correlation function of a particle’s creation and annihilation operators, whose Fourier transform gives the energies and lifetimes of electronic excitations [4, 5]. The same objects organize the theory. Linear response and the fluctuation-dissipation relation express every suscep-tibility and transport coefficient through equilibrium cor-relation functions [3, 6–8], and the Green’s function is the quantity passed back and forth between the impurity solver and the lattice in dynamical mean-field theory and related embedding methods [9–12]. A method that com-putes correlation functions does more than reproduce a spectrum. It delivers the input that the rest of many-body physics consumes. Quantum computers offer a natural place to compute them. The step that makes the classical calculation hard, evolving a many-body state forward in real time, is the   
+
+> ∗yizhis@lbl.gov
+> †efekan.kokcu@ucf.edu
+
+step a quantum computer performs efficiently [13–16]. A quantum simulation of a correlation function has three parts: prepare the state |ψ⟩, evolve it, and then mea-sure. State preparation is a problem in its own right with specific algorithms [17–19], and throughout this work we take the state as given. The measurement is where the cost of correlation functions hides. Unlike an energy or magnetization, GAB (t, t ′) is not the expectation value of a single Hermitian observable at a single time. It is the overlap between two histories of the same state, one in which B acted at time t′ and one in which A acted at time 
+
+t, which can be extracted through interference. The stan-dard tool for this is the Hadamard test [20, 21]. An an-cilla qubit is prepared in a superposition, A and B are ap-plied to the system only on the branch where the ancilla reads |1⟩, and measuring the ancilla along X or Y returns the real or imaginary part of GAB . Most quantum algo-rithms for Green’s functions and spectra are built on this circuit or on close relatives of it: proposals and hardware demonstrations for dynamical mean-field theory [22–25], for neutron scattering and magnon spectra [26, 27], for molecular Green’s functions [28, 29], and for for general multi-time correlation functions [30]. Alternatives exist, and each trades the resources in a different way. Linear-response methods dispense with the ancilla by simulating the experiment itself, where a weak time dependent field coupled to B drives the system and the change in A is recorded [31–33]. Frequency-domain methods retrieve GAB (ω) directly, by solving the linear equations that define the resolvent ( ω−H)−1 on quantum computer [34], filtering the state in energy [35–37], or em-ploying quantum phase estimation [38, 39]. Variational and subspace methods trade circuit depth for classical optimization [40–43], while spectral-estimation methods reconstruct energy spectra from controlled time evolution via suitable signal processing [44–47]. All these methods share a bookkeeping fact that is often taken as given: one circuit addresses one point. For a stationary state, such arXiv:2609.40349v1 [quant-ph] 30 Sep 2026 2as an eigenstate or thermal state of a time independent Hamiltonian H, the correlation function depends only on the time difference, i.e. , GAB (t, t ′) = GAB (t − t′), and is called an equilibrium correlation function. Stationarity hence reduces a two-time grid to a one-time grid, after which the remaining Nt values are measured one at a time. The standard bookkeeping of one circuit per one time/frequency point then requires Nt distinct circuits to measure GAB (t − t′) for Nt points. Each circuit must be repeated O(log(1 /δ ′)/ϵ 2) times to reach a target precision 
+
+ϵ at confidence 1 − δ′, and the full procedure therefore costs O(Nt log( Nt/δ )/ϵ 2) circuit executions at confidence 1 − δ ≤ (1 − δ′)Nt , with the same bill for every additional operator pair. In this work, we remove such bookkeeping constraint for (equilibrium) correlation functions by promoting the insertion time to a quantum variable. A clock register of log 2 Nt qubits is prepared in a superposition over Nt
+
+time points. The system then evolves freely under its Hamiltonian, with no control on the evolution, while the operator A is applied at each time step on the branch se-lected by the clock. This produces a superposition of Nt
+
+histories, each in which A acts at a different instant and is tagged accordingly by the clock. For stationary states, pairwise interference among these histories is determined by the difference between their insertion times, allowing the clock register to record the correlation function at all 
+
+Nt lags simultaneously. A quantum Fourier transform (QFT) then converts this interference into a frequency distribution over the transitions excited by A, broadened by a known window. Each measured frequency provides an unbiased sample for all Nt lags, and Hoeffding’s in-equality [48] ensures that they can be estimated to preci-sion ϵ with O(log( Nt/δ )/ϵ 2) shots. The number of circuit executions therefore drops from linear to logarithmic in the number of time points. The same construction with one additional control qubit handles two different probe operators A and B. Furthermore, the argument does not assume a pure state, so thermal state correlations can be covered on the same footing. Several aspects of our construction are particularly fa-vorable for quantum hardware. First, the Hamiltonian simulation part is never controlled. Only the insertion of 
+
+A depends on the clock. When A is Pauli, its insertion involves a multi-controlled gate with a non-Clifford cost scaling as O(log Nt) [49–51], which dominates the fault-tolerant overhead. This contrasts with quantum phase estimation [52, 53], where the evolution itself is controlled by an ancilla register throughout the dynamics. Second, because the QFT immediately proceeds measurement, it can be implemented semiclassically using single-qubit rotations and classical feedforward, with no additional entangling gates [54]. The system register need not be measured. Third, the clock register also realizes a history state in the sense of Feynman and Kitaev [55, 56], but here it serves as a measurement device rather than an encoding of a computation. Measuring it in the Fourier basis resolves the transition frequencies of H, i.e. , the energy differences coupled by A, while leaving the under-lying dynamics uncontrolled. Finally, the separation be-tween free Hamiltonian evolution and clock-conditioned Pauli insertions also makes the protocol naturally com-patible with analog simulators supplemented by a small digital register [57–59]. Our contributions are as follows. We present the algo-rithm and prove the core identity underlying it in Sec. II. The reduced clock state is the correlation function, its Fourier statistics are the windowed spectral function, and both statements are exact for any stationary state. We establish an O(log( Nt/δ )/ϵ 2) sample complexity for all lags simultaneously and show that no measurement on independent copies of the clock state, however elaborate, can improve on it. In Sec. III, we compare the resulting resource requirements with those of the Hadamard test, including the costs from Trotterization- and qubitization-based time evolution. In Sec. IV, we demonstrate our protocol numerically for an interacting fermionic system and characterize its finite-shot behavior. We summarize and conclude in Sec. V.  
+
+> II. THE ALGORITHM
+
+We take the Hamiltonian H be time independent, and the state of the system to be stationary. A pure state |ψ⟩
+
+satisfies H |ψ⟩ = E |ψ⟩, whereas a mixed state ρ satisfies [H, ρ ] = 0. For clarity, we focus on pure states and note where mixed states differ. We denote the one step unitary by U = e−i∆tH and define an Nt-point grid, tr = r∆t,with 
+
+r = 0 , 1, 2, . . . , N t − 1. (2) On this grid, the Heisenberg-evolved probe is A(tr ) = 
+
+U −r AU r . We will assume that A is unitary, for instance a Pauli string. Non-unitary probes, including fermionic operators, can be expanded in Pauli basis and treated by the two-operator construction of Sec. II E. Let us first consider the equilibrium autocorrelation function: 
+
+GAA (ts − tr ) = ⟨ψ| A(ts)†A(tr ) |ψ⟩ , (3) where unitarity of A implies GAA (0) = 1, |GAA (t)| ≤ 1, and GAA (−t) = GAA (t)∗. The autocorrelation function also admits a spectral representation useful throughout. Expanding A |ψ⟩ = P 
+
+> n
+
+an |En⟩ in the eigenstates of H,we obtain 
+
+GAA (t) = X
+
+> n
+
+|an|2e−i(En−E)t =
+
+Z
+
+dν S (ν)e−iνt , (4) where S(ν) = P
+
+> n
+
+|an|2 δ(ν − (En − E)) is the spectral function of A that assigns weight |an|2 to each transition frequency En −E accessible from |ψ⟩. In particular, S(ν)is nonnegative and, since GAA (0) = 1, normalized. Thus, 
+
+GAA is the Fourier transform of a probability distribution 3
+
+|0⟩ HX or Y
+
+|ψ⟩ B U j A
+
+# ⟨ψ|A(tj )†B|ψ⟩
+
+(a) 
+
+· · · · · · · · · |0⟩
+
+QFT 
+
+|0⟩⊗b H⊗b 0 1 Nt−1
+
+|ψ⟩ A U A U U A
+
+# ⟨ψ|A(t)†A(t′)|ψ⟩
+
+(b) 
+
+· · · · · · · · · · · · |0⟩
+
+QFT 
+
+|0⟩⊗b H⊗b 0 0 1 1 Nt−1 Nt−1
+
+|0⟩ HX or Y
+
+|ψ⟩ A B U A B U U A B
+
+# ⟨ψ|A(t)†B(t′)|ψ⟩
+
+(c) FIG. 1. Comparison of circuits for the equilibrium two-point correlation function GAB (tj ) = ⟨ψ| A(tj )†B |ψ⟩ on the time grid 
+
+tj = j∆t, with U = e−i∆tH . (a) Hadamard test circuit. The ancilla selects which operator acts, i.e. , A on the |0⟩ branch (open circle) and B on the |1⟩ branch (filled circle), and its X or Y expectation value recovers the real or imaginary part of GAB (tj )for the single time tj fixed by the circuit. (b) Clock circuit for the autocorrelation function GAA (tj ) = ⟨ψ| A(tj )†A |ψ⟩. A clock register of b = log 2 Nt qubits in an equal superposition sets the insertion time: the boxed value r on the clock wire conditions the insertion of A on the clock value r, and the system evolves through uncontrolled time steps U . A quantum Fourier transform (QFT) over the clock and one padding qubit, followed by their measurement, yields samples from which GAA (tj ) is estimated simultaneously for all |j| ≤ Nt/2. (c) Clock circuit for the cross-correlation function GAB (tj ) of two different operators A and 
+
+B. A selector ancilla chooses A or B at every clocked insertion as in (a). Its X or Y measurement, combined with the QFT outcome, estimates the real or imaginary part of GAB (tj ) simultaneously for all |j| ≤ Nt/2. 
+
+over transition frequencies. For a stationary mixed state 
+
+ρ = P 
+
+> n
+
+pn |ψn⟩ ⟨ ψn|, the same representation holds with frequencies Em − En, now weighted by pn|Amn |2.
+
+A. Two-point correlations in a clock register 
+
+We introduce a clock register of b = log 2 Nt ancillas and prepare it in a uniform superposition with a single layer of Hadamard gates. This gives the initial state, 1
+
+√NtNt−1X
+
+> r=0
+
+|r⟩ ⊗ | ψ⟩ . (5) Let Cr (A) = |r⟩ ⟨ r|⊗ A+( I −| r⟩ ⟨ r|)⊗I denote the inser-tion of A conditioned on the clock state |r⟩. The circuit, shown in Fig. 1(b) with the selector qubit omitted, is the interleaving sequence, 
+
+CNt−1(A)U · · · U C 1(A)U C 0(A), (6) read from right to left. Specifically, on the clock branch 
+
+|r⟩, A is inserted after r applications of U . Because each 
+
+U acts unconditionally on the system, the Hamiltonian evolution remains uncontrolled; the clock affects only the insertions. The resulting state is 
+
+|Ψ⟩ = 1
+
+√NtNt−1X
+
+> r=0
+
+|r⟩ ⊗ U Nt−r−1AU r |ψ⟩
+
+= 1
+
+√NtNt−1X
+
+> r=0
+
+|r⟩ ⊗ U Nt−1A(tr ) |ψ⟩ .
+
+(7) The factor U Nt−1 is common to all the branches and does not affect their overlaps. Up to this common evolution, 4the state is a superposition of Nt histories, one for each possible insertion time of A, with the clock labeling the histories. This is a history state in the sense of Feynman and Kitaev [55, 56], used here as a measuring instrument. Tracing out the system leaves the clock in the state, 
+
+ρClk = 1
+
+NtNt−1X
+
+> r,s =0
+
+|r⟩ ⟨ s| · ⟨ ψ| A(ts)†A(tr ) |ψ⟩ ,
+
+= 1
+
+NtNt−1X
+
+> r,s =0
+
+|r⟩ ⟨ s| · GAA (ts − tr ),
+
+(8) Thus, all grid values of the correlation function appear as matrix elements of the Nt × Nt clock state ρClk , stored on log 2 Nt qubits by a single circuit. Stationarity makes 
+
+ρClk Toeplitz, with each diagonal corresponding to a fixed time lag, while its positivity reflects the positive-definite structure of GAA . For a stationary mixed state, the same circuit gives Eq. (8) with GAA (t) = Tr[ ρ A (t)†A]. In the energy basis the clock state reads off the spectral function explicitly. Substituting the expansion of A |ψ⟩
+
+into Eq. (7) and using H |ψ⟩ = E |ψ⟩,
+
+|Ψ⟩ = X
+
+> n
+
+an e−iE n(Nt−1)∆ t |χ(En − E)⟩ ⊗ | En⟩ ,
+
+|χ(ν)⟩ = 1
+
+√NtNt−1X
+
+> r=0
+
+eiνr ∆t |r⟩ ,
+
+(9) such that ρClk = P
+
+> n
+
+|an|2 |χ(En − E)⟩ ⟨ χ(En − E)|. The spectral function is therefore represented in the clock as a mixture of phase states |χ⟩. This parallels the textbook quantum phase estimation. Here, nonetheless, the phases encode transition frequencies E−En rather than absolute energies En, and are acquired under the same control-free time evolution on every clock branch.  
+
+> B. Fourier readout
+
+The clock state Eq. (8) contains GAA in its off-diagonal entries, which cannot be read out in the computational basis. A Fourier transform converts this information into directly measurable statistics. If ρClk were circulant, i.e. ,Toeplitz with periodic wrap-around, a quantum Fourier transform (QFT) on the clock state would diagonalize it exactly. However, the time difference ts −tr spans 2 Nt −1distinct lags, while an Nt-dimensional Fourier transform can only resolve Nt frequency modes, causing the positive and negative lags to alias. To address this ambiguity, we employ a single padding qubit, initialized in |0⟩ and left untouched until the QFT, thereby embedding the clock state in a 2 Nt-dimensional register: ˜ρClk =
+
+ρClk 00 0
+
+
+
+. (10) Crucially, the extra qubit eliminates the aliasing without changing the system dynamics. No additional time steps or controlled Hamiltonian evolution are required. We then apply the QFT to the 1 + log Nt ancillas and measure them in the computational basis. An outcome 
+
+k ∈ { 0, . . . , 2Nt − 1} corresponds to the frequency ωk =
+
+kπ/ (Nt∆t), with frequency spacing π/ (Nt∆t) [60]. The probability of sampling ω ∈ { 0, . . . , (2 Nt − 1) π/ (Nt∆t)}
+
+is the diagonal element of the Fourier-transformed clock state at that frequency. Grouping the terms in Eq. (8) by the lag j = s − r, which occurs for Nt − | j| pairs ( r, s ), gives ˜ρωω = 12NtNt−1X
+
+> j=−(Nt−1)
+
+
+
+1 − |j|
+
+Nt
+
+
+
+eit j ω GAA (tj ). (11) for ω ∈ πZ/N t∆t. Equation (11) has two complementary interpretations. Substituting the spectral representation Eq. (4) and evaluating the finite sum yields ˜ρωω = 12Nt
+
+Z
+
+dν S (ν)FNt (( ω − ν)∆ t),FNt (θ) = 1
+
+Nt
+
+sin 2(Ntθ/ 2) sin 2(θ/ 2) ,
+
+(12) where FNt is the Fej´ er kernel. Thus, the Fourier-outcome histogram is the spectral function smoothed by a window of width O(2 π/ (Nt∆t)), set by the total evolution time. The clock realizes this finite-time-broadened frequency distribution, without first reconstructing the correlation function at individual lags. Additionally, Eq. (11) is a finite Fourier series whose coefficients are the correlation values multiplied by the triangular factor 1 − | j|/N t. Inverting this series over the 2Nt Fourier modes gives, for every |j| ≤ Nt − 1, 
+
+G(tj ) = Nt
+
+Nt − | j|
+
+X
+
+> ω
+
+e−it j ω ˜ρωω 
+
+= Nt
+
+Nt − | j| Eω
+
+e−it j ω  ,
+
+(13) where Eω is the expectation value under the probability distribution ˜ ρωω . Over the doubled frequency grid, phase factors associated with all lags |j| ≤ Nt − 1 are mutually orthogonal so that each GAA (tj ) can be recovered exactly from this distribution. The factor Nt/(Nt − | j|) corrects for the smaller number of ( r, s ) pairs at larger lags and increases as |j| approaches its maximum value of Nt − 1. Keeping this factor O(1) prevents the statistical error [c.f. RHS of Eq. (13)] from growing with Nt. We thus restrict to |j| ≤ Nt/2 for which Nt/(Nt − | j|) ≤ 2. The restricted range still contains all Nt + 1 lags j = −Nt/2, . . . , N t/2, obtained from the same stream of Fourier measurements.  
+
+> C. Optimal sampling of all time lags
+
+Equation (13) also provides a natural estimator for the correlation function. After M circuit executions yielding 5outcomes ω(1) , . . . , ω (M ), we define ˆGAA (tj ) = Nt
+
+Nt − | j|
+
+1
+
+M
+
+> M
+
+X
+
+> μ=1
+
+e−it j ω(μ)
+
+. (14) The same set of outcomes can be shared across all lags, and each estimate is unbiased by our construction. Since 
+
+|e−it j ω | = 1, Hoeffding’s inequality [48] implies that, for either the real or imaginary part of the sample mean, the probability of a deviation greater than η/ √2 is at most 2e−M η 2/4. Hence, the deviation from Eω [e−it j ω ] exceeds 
+
+η with probability at most 4 e−M η 2/4. This corresponds to ϵj = Nt/(Nt −| j|)η accuracy for GAA (tj ) computation. If we only consider Nt +1 lags with |j| ≤ Nt/2, we obtain 
+
+ϵj ≤ 2η. Applying a union bound over these Nt + 1 lags gives the following result: 
+
+Theorem 1 (Sample complexity) . Let 0 < ϵ, δ < 1.With 
+
+M =
+
+l 16 
+
+ϵ2 log 4( Nt + 1) 
+
+δ
+
+m
+
+(15) 
+
+executions of the circuit, the estimates Eq. (14) satisfy 
+
+| ˆGAA (tj )−GAA (tj )| ≤ ϵ simultaneously for all |j| ≤ Nt/2
+
+with probability at least 1 − δ.
+
+The number of shots is therefore O(log( Nt/δ )/ϵ 2), only logarithmic in the number of time points. By contrast, the Hadamard test needs a separate circuit for each lag and O(log( Nt/δ )/ϵ 2) repetitions per circuit to reach the same guarantee, resulting in an additional factor of Nt in the total shot count. We make this comparison at equal total evolution time in Sec. III. The same measurement record can also be post-processed in different ways. The 
+
+M outcomes yield the time-domain estimates above, the frequency distribution in Eq. (12), and linear functionals of GAA needed by downstream calculations, for example exponentially damped or imaginary-time correlators (the latter used in embedding methods). These quantities can all be extracted at the resolution fixed by the finite time window, with no additional circuit executions. The logarithmic dependence of the sample complexity on Nt is not an artifact of the QFT readout. In fact, any unrestricted protocol that can store independent copies of the clock state and measure them collectively must use 
+
+M = Ω(log Nt/ϵ 2) copies to estimate all lags to additive error ϵ. It follows that our approach attains the optimal 
+
+Nt-scaling, up to constant factors, in the sample-access model. 
+
+Theorem 2 (Copy lower bound) . Let ϵ ≤ 1/8. Any protocol that receives M independent copies of the clock state ρClk , performs an arbitrary collective measurement on them, and outputs estimates of GAA (tj ) for all |j| ≤ 
+
+Nt/2 with additive error at most ϵ and success probability at least 2/3 on every stationary instance must use 
+
+M ≥ log 2(Nt/2) − 3/296 ϵ2 (16) 
+
+copies. Proof. Set a = 4 ϵ ≤ 1/2. For each j0 ∈ { 1, . . . , N t/2},consider an autocorrelation function with 
+
+G(0) = 1 , G(±tj0 ) = a, 
+
+and G(tj ) = 0 for other lags j̸ = j0. This sequence is the Fourier series of the density [1+2 a cos( j0θ)] /2π and, thus, defines a valid stationary instance: the spectral function with the following amplitudes and frequencies 
+
+an =
+
+s
+
+1 + 2 a cos(2 πj 0n/ 2Nt)2Nt
+
+, νn = nπ Nt∆t ,
+
+indeed satisfy P2Nt−1 
+
+> n=0
+
+|an|2e−iν ntj = δj, 0 +a(δj,j 0 +δj, −j0 )for each |j| ≤ Nt −1. One may realize it, through Eq. (4), by choosing H with levels E + νn, |ψ⟩ to be an eigenstate at energy E, and A that sends |ψ⟩ to the corresponding superposition P 
+
+> n
+
+an |En⟩.By Eq. (8), the resulting clock states are 
+
+ρClk ,j 0 = I + a(Tj0 + T† 
+
+> j0
+
+)
+
+Nt
+
+, ρClk ,0 = INt
+
+,
+
+where Tj0 is the truncated shift on the jth 0 superdiagonal, and ρClk ,0 denotes the case a = 0. The operator Tj0 +T†
+
+> j0
+
+is traceless, has eigenvalues in [ −2, 2], and satisfies Tr (Tj0 + T† 
+
+> j0
+
+)2 = 2( Nt − j0).
+
+Therefore ρClk ,j 0 ≥ 0, and using log(1 + z) ≤ z,
+
+D(ρClk ,j 0 ∥ρClk ,0) ≤ a2
+
+Nt
+
+Tr (Tj0 + T† 
+
+> j0
+
+)2 ≤ 2a2,
+
+where D is the quantum relative entropy and S the von Neumann entropy. Relative entropy is additive under tensor products, so the Holevo information of a uniform ensemble {ρ⊗M 
+
+> Clk ,j 0
+
+}j0
+
+is at most 2 M a 2. Conversely, an ϵ-accurate estimate of all lags locates j0. The j = 0 lag carries no information, because GAA (0) = 1 for a unitary probe A. Among the lags 1 ≤ j ≤ Nt/2, the estimate at the marked lag tj0 has magnitude at least a − ϵ = 3 ϵ, whereas all other lags have magnitude at most ϵ. Hence, the estimation problem can distinguish among Nt/2 equiprobable choices of j0. By Fano’s inequality, achieving this with error probability at most 1 /3 requires at least 23 log 2(Nt/2) − 1bits of mutual information. The Holevo bound, however, limits the available information to 2 M a 2/ log 2 bits. Combining these bounds and substituting a = 4 ϵ gives the stated result. Thm. 2 assumes sample access: the protocol receives copies of the clock state, which it may store and measure jointly, but cannot coherently call the state preparation 6circuit or its inverse. This access model is natural for ana-log simulators, thermal ensembles, and irreversible state preparation procedures. When coherent access to the full preparation circuit and its inverse is available, stronger primitives can be invoked. Amplitude estimation [61, 62] achieves 1 /ϵ scaling for a single lag or spectral band, and shared multi-observable estimation [63] can recover all lags with eO(√Nt/ϵ ) preparation calls. Neither requires controlled Hamiltonian evolution.  
+
+> D. Resource requirements
+
+The total quantum resources required for the algorithm will primarily depend on how the evolution U = e−i∆tH 
+
+is implemented. Let ε denote the target error of the full real-time evolution, distinct from the statistical precision 
+
+ϵ. Our circuit contains Nt − 1 evolution segments, so it is sufficient to implement each to accuracy O(ε/N t). Below we first summarize the register, insertion, and readout overheads. We then estimate the simulation cost using 
+
+dth -order product formulas and qubitization. We include product formulas here because, for local Hamiltonians at practical accuracies, e.g. , ε ∼ 10 −3, they can outperform methods with better asymptotic scaling [15, 64], whereas qubitization becomes advantageous only at sufficiently small ε [16, 65]. 
+
+Qubits. The algorithm uses the system register, log 2 Nt
+
+clock qubits, as well as one padding qubit. Correlations between two different operators A and B require an extra selector qubit. These counts exclude ancilla workspace needed by the Hamiltonian simulation routine of choice. Unary iteration, when used for the insertions below, adds a small reusable ancilla workspace. 
+
+Probe insertions. Each Cr (A) applies A conditioned on the clock state being in |r⟩. For a Pauli operator A, this is a multi-controlled Pauli gate with log 2 Nt control qubits. Standard decompositions require O(log Nt) Toffoli gates and O(log log Nt) depth [49–51, 66], for which the Toffoli count sets the dominant non-Clifford overhead in a fault-tolerant implementation. Because the clock addresses are visited sequentially as r = 0 , 1 . . . , N t −1, unary iteration can update the address decoding incrementally between successive insertions. [51, 67]. This makes the total non-Clifford cost O(Nt) across all Nt insertions, by reusing the workspace of a unary-iteration circuit. Equivalently, the insertion cost is at most O(log Nt) per time step (with no added ancillary workspace), and O(1) amortized (with shared decoding). These are the only operations that are conditioned on the clock. 
+
+Readout. Because the QFT immediately precedes mea-surement, it can be implemented in the semiclassical form of Griffiths and Niu [54]. In particular, the clock qubits are processed and measured one at a time. After each qubit is measured, its outcome determines the phase rota-tion applied to the qubits that remain. This replaces the controlled rotations of the standard QFT by single-qubit gates and classical feedforward. No entangling gates are therefore required within the clock register. The system register itself need not be measured. 
+
+Time evolution. Each circuit execution contains Nt −1applications of U , amounting to a total physical evolution time T ≃ (Nt − 1)∆ t = O(Nt∆t). This is comparable to a single Hadamard-test circuit evaluated with the longest lag. Moreover, resolving GAA (tNt−1) necessarily requires histories across a time separation tNt−1, so this evolution time cannot be reduced by the clock construction. The computational cost of reaching T , however, depends on the Hamiltonian simulation method.  
+
+> 1. Time evolution via Trotterization
+
+For a product formula of order d, implementing one segment U to accuracy ε/N t takes 
+
+O ∆t1+1 /d N 1/d t
+
+ε1/d 
+
+!
+
+(17) Trotter steps, up to constants determined by commutator norms of the Hamiltonian terms [15]. Summing over the 
+
+Nt segments gives 
+
+O ∆t1+1 /d N 1+1 /d t
+
+ε1/d 
+
+!
+
+= O
+
+ T 1+1 /d 
+
+ε1/d 
+
+
+
+, (18) which is the usual cost of simulating total evolution time 
+
+T to accuracy ε, independent of how T is divided among the Nt segments. Combining this with the shot count in Eq. (15), simultaneously estimating all lags incurs a total Hamiltonian simulation gate complexity 
+
+O
+
+ T 1+1 /d 
+
+ε1/d ϵ2 log Nt
+
+δ
+
+
+
+. (19) At fixed ∆ t and tolerances, the quantum resource scales as O(N 1+1 /d t log Nt), or O(N 1/d t log Nt) per retained lag.  
+
+> 2. Time evolution via qubitization
+
+With qubitization, implementing U to accuracy ε/N t
+
+costs 
+
+O
+
+
+
+α∆t + log( Nt/ε )log log( Nt/ε )
+
+
+
+(20) queries to a block encoding of H [16, 65]. Here, α is the block encoding normalization, typically given by the sum of the absolute Pauli coefficients. Over all Nt segments, the query complexity is 
+
+O
+
+
+
+αT + Nt log( Nt/ε )log log( Nt/ε )
+
+
+
+. (21) 7Again accounting for the shot count in Eq. (15), the total Hamiltonian simulation query complexity is 
+
+O
+
+ 
+
+αT + Nt log( Nt/ε )log log( Nt/ε )
+
+ log( Nt/δ )
+
+ϵ2
+
+
+
+. (22) The relative importance of the two terms is influenced by 
+
+α, T , Nt and 1 /ε . Holding ∆ t, α, and tolerances fixed, 
+
+T = O(Nt) and the precision-dependent term eventually dominates, entailing O(Nt(log Nt)2/ log log Nt) quantum resource in total, or O((log Nt)2/ log log Nt) per retained lag. Conversely, if α∆t dominates the cost per segment, the corresponding scaling becomes O(Nt log Nt) in total, or O(log Nt) per time lag.  
+
+> E. Two-operator construction
+
+For two different unitary probes A and B, their cross-correlation function GAB (t) = ⟨ψ| A(t)†B |ψ⟩ needs both families of histories, one in which A acts and one in which 
+
+B acts. A single selector qubit creates this superposition, as shown in Fig. 1(b). Prepared in |+⟩, the selector qubit determines which probe is inserted at each clock time r:
+
+A on the |0⟩ branch and B on the |1⟩ branch. The final state is 1
+
+√2NtNt−1X
+
+> r=0
+
+|r⟩ ⊗ U Nt−1h
+
+|0⟩ A(tr ) + |1⟩ B(tr )
+
+i
+
+|ψ⟩ ,
+
+(23) where the reduced state of selector and clock consists of four Nt×Nt blocks ρuu ′ , with u, u ′ ∈ { 0, 1}. The diagonal blocks contain the autocorrelation matrices of A and B,each with weight 1 /2. The off-diagonal block ρ10 carries matrix elements, [ ρ10 ]rs = 12Nt ⟨ψ| A(ts)†B(tr ) |ψ⟩, while 
+
+ρ01 = ρ†
+
+> 10
+
+. Hence, the desired cross-correlation function resides entirely in the coherence between the two selector branches. The readout combines Hadamard-like measurement of the selector with Fourier measurement of the clock. We measure selector in the X or Y basis, with a respective ±1outcome denoted as x or y, while the padded clock yields a frequency outcome ω. Applying the same inversion in Eq. (13) to the off-diagonal blocks gives 
+
+GAB (tj ) = Nt
+
+Nt − | j|
+
+ E xe −it j ω  + iE ye −it j ω  , (24) for all |j| ≤ Nt − 1, where the two expectation values are taken over their respective joint selector-clock outcomes. Reading the selector in the Z basis instead separates the diagonal blocks, recovering GAA and GBB . We note that the sample complexity bound in Thm. 1 is asymptotically preserved with the selector outcome included. Only the constant prefactor is modified, leaving the overall scaling as O(log( Nt/δ )/ϵ 2). Furthermore, the two-operator construction extends to nonunitary probes through Pauli decomposition. After a Jordan-Wigner or Bravyi-Kitaev transformation, for ex-ample, fermionic annihilation and creation operators map to 
+
+ci = 12
+
+ eAi − i eBi
+
+
+
+, c† 
+
+> i
+
+= 12
+
+ eAi + i eBi
+
+
+
+, (25) where eAi and eBi denote Pauli strings. A single-particle Green’s function is therefore a fixed linear combination of four Pauli string cross-correlations, each evaluated using Eq. (24).  
+
+> III. COMPARISON WITH HADAMARD TEST
+
+As a baseline for the resource comparison, we consider the Hadamard test that evaluates a correlation function one time lag at a time. As shown in Fig. 1, our algorithm instead elevates the insertion time to a quantum variable using the clock register, enabling many lags to be encoded in a single circuit while leaving Hamiltonian simulation uncontrolled. In this section, we quantify the resulting resource tradeoffs, first agnostic to the underlying time evolution routine and then for two representative choices: product formulas and qubitization. We target GAA (tj ) for lags 0 < j ≤ Nt/2 to additive precision ϵ with failure probability δ (negative lags follow from GAA (−t) = GAA (t)∗). The time record has length (Nt − 1)∆ t. The Hadamard test measures the ancilla in both the X and Y bases to extract the real and imaginary parts of GAA (tj ). In contrast, our clock protocol recovers both from the same Fourier-basis measurement data. We account for the difference explicitly in our comparison.  
+
+> A. Cost models
+
+Our comparison considers four resource metrics. M
+
+is the total number of circuit executions, including all state preparations and measurements. T is the maximal evolution time in a single execution, and Talg is the total algorithmic runtime summed over all executions. Finally, 
+
+Q is the Hamiltonian simulation cost, counted in Trotter steps or block encoding queries. While M , T , and Talg 
+
+are independent of the simulation routine, Q reflects how the time evolution is implemented. For Q, we revisit the product-formula and qubitization cost models introduced within Sec. II D. In shorthand, an evolution of duration 
+
+t to accuracy ε costs 
+
+QPF = O
+
+ t1+1 /d 
+
+ε1/d 
+
+
+
+, QQSP = O
+
+
+
+αt + L
+
+ 1
+
+ε
+
+ 
+
+, (26) where α is the block encoding normalization and L(z) = log z/ log log z.The Hadamard-test and clock-based circuits enter the cost models differently. A Hadamard test evolves in one uninterrupted stretch to the target lag, whereas our clock construction divides the evolution into Nt − 1 segments 8separated by operator insertions. For product formulas, subdividing the time interval does not change the leading scaling in the total interval length. However, qubitization acquires an additional Nt-dependent overhead since each segment incurs its own precision cost. This distinction is central in our subsequent analysis. To compare the number of circuit executions, we define a sample round as the executions needed to produce one sample for every target lag. The clock method completes a round in a single circuit execution. The Hadamard test runs at Nt/2 positive lags and in two ancilla measurement bases per lag, leading to Nt executions per round. Both methods then require O(log( Nt/δ )/ϵ 2) such rounds for a simultaneous accuracy guarantee. The overall resource comparison therefore separates cleanly into the cost per round and the common number of round repetitions.  
+
+> B. Circuit executions and evolution time
+
+We first examine the resources that do not depend on the Hamiltonian simulation routine. For Hadamard test, we estimate the real and imaginary parts of each target lag to accuracy ϵ/ √2. A union bound over the resulting 
+
+Nt estimates implies a round-repetition count of 
+
+RHT =
+
+ 4
+
+ϵ2 log 2Nt
+
+δ
+
+
+
+. (27) Because each round contains Nt circuits, MHT = NtRHT .The longest run occurs at j = Nt/2 with 
+
+THT = Nt
+
+2 ∆t, (28) and summing the evolution time over all lags, bases, and repetitions gives 
+
+T HT alg = 2 RHT 
+
+> Nt/2
+
+X
+
+> j=1
+
+tj ≈ N 2 
+
+> t
+
+∆tϵ2 ln 2Nt
+
+δ . (29) For our clock construction, Thm. 1 establishes 
+
+RClk =
+
+ 16 
+
+ϵ2 log 4( Nt + 1) 
+
+δ
+
+
+
+. (30) As one circuit run samples the target lags, MClk = RClk .Each run sweeps through the entire time grid, so 
+
+TClk = ( Nt − 1)∆ t (31) and 
+
+T Clk alg = RClk (Nt − 1)∆ t ≈ 16 Nt∆tϵ2 ln 4( Nt + 1) 
+
+δ . (32) Up to the slowly varying logarithmic factors, the clock construction reduces the circuit executions by a factor of Nt/4 and the total algorithmic runtime by Nt/16, at the cost of nearly doubling the maximum evolution time 
+
+T . The O(Nt) asymptotic gain is achieved by replacing measurements at each lag with a common sample stream. This overall advantage, on the other hand, is tempered by two constant-factor penalties. One comes from the Fej´ er-window normalization, Nt/(Nt − | j|) ≤ 2, which appears quadratically in the sample complexity and contributes a factor of 4 in MClk relative to MHT . An additional factor of 4 appears in Talg because any clock run traverses the full record, whereas the average Hadamard-test run over 
+
+j = 1 , . . . , N t/2 lasts approximately Nt∆t/ 4.  
+
+> C. Implementation of Hamiltonian simulation
+
+We next compare the Hamiltonian simulation cost Q,where the uninterrupted evolution of the Hadamard test and the segmented evolution of our clock-based protocol give different resource scalings. 
+
+Trotterization. For product formulas, our algorithm introduces no additional asymptotic cost due to splitting the time evolution into short segments. By Eq. (18), one clock sample round has a cost O(( Nt∆t)1+1 /d /ε 1/d ). By contrast, one Hadamard-test sample round contains two circuits for each lag tj = j∆t with j = 1 , . . . , N t/2. Thus summing their costs gives 2
+
+> Nt/2
+
+X
+
+> j=1
+
+(j∆t)1+1 /d 
+
+ε1/d = O
+
+ Nt(Nt∆t)1+1 /d 
+
+(2 + 1 /d )2 1+1 /d ε1/d 
+
+
+
+(33) per round. Multiplying by the repetition counts within Sec. III B, we arrive at the Trotterization simulation costs: 
+
+QClk PF = (Nt∆t)1+1 /d 
+
+ε1/d 
+
+16 log(4 Nt/δ )
+
+ϵ2 , (34) 
+
+QHT PF = Nt(Nt∆t)1+1 /d 
+
+(2 + 1 /d ) 2 1+1 /d ε1/d 
+
+4 log(2 Nt/δ )
+
+ϵ2 , (35) for our clock method and the Hadamard test respectively. Keeping the leading constants from the sampling bounds, 
+
+QHT PF 
+
+QClk PF 
+
+≃ Nt
+
+4(2 + 1 /d )2 1+1 /d , (36) up to constants in the logarithmic factors. At any fixed product-formula order, our clock algorithm hence attains a Θ( Nt) reduction in the Hamiltonian simulation cost. At fixed ∆ t, the total cost scales as O(N 1+1 /d t log Nt), or 
+
+O(N 1/d t log Nt) per lag, versus O(N 2+1 /d t log Nt) for the Hadamard test. 
+
+Qubitization. Unlike with product formulas, splitting the evolution now places a precision-dependent overhead on each segment. We recall that the clock sweep consists of Nt −1 = O(Nt) segments, all implemented to accuracy 
+
+ε/N t. By Eq. (21) one sample round of our clock protocol costs O(αN t∆t + NtL(Nt/ε )). A Hadamard-test sample round makes Nt simulation calls, but each performed to 910 3 10 4 10 5 10 6 10 7 10 8 10 9
+
+αT                
+
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> Q Clk QSP /Q  Had QSP
+> Nt= 2 4
+> Nt= 2 6
+> Nt= 2 8
+> Nt= 2 10
+> Nt= 2 12
+> Nt= 2 14
+> Nt= 2 16
+> Nt= 2 18
+> Nt= 2 20
+
+ε = 10 −6
+
+> 4L(1 /ε )/(αT )4/N t
+
+(a) 10 3 10 4 10 5 10 6 10 7 10 8 10 9
+
+αT          
+
+> Nt= 2 4
+> Nt= 2 6
+> Nt= 2 8
+> Nt= 2 10
+> Nt= 2 12
+> Nt= 2 14
+> Nt= 2 16
+> Nt= 2 18
+> Nt= 2 20
+
+ε = 10 −12  
+
+> 4L(1 /ε )/(αT )4/N t
+
+(b) 10 3 10 4 10 5 10 6 10 7 10 8 10 9
+
+αT          
+
+> Nt= 2 4
+> Nt= 2 6
+> Nt= 2 8
+> Nt= 2 10
+> Nt= 2 12
+> Nt= 2 14
+> Nt= 2 16
+> Nt= 2 18
+> Nt= 2 20
+
+ε = 10 −100  
+
+> 4L(1 /ε )/(αT )4/N t
+
+(c) FIG. 2. Ratio of the qubitization-based Hamiltonian simulation costs of the clock and Hadamard-test algorithms, QClk QSP /Q HT QSP ,as a function of αT . The panels show simulation accuracies (a) ε = 10 −6, (b) ε = 10 −12 , and (c) ε = 10 −100 . Different curves correspond to different values of Nt. Each ratio initially follows the O(1 /(αT )) scaling in the L(ε) ≪ αT ≪ NtL(Nt/ε ) regime, and eventually converges to the 4 /N t scaling in the αT ≫ NtL(Nt/ε ) regime. At ε = 10 −6 and ε = 10 −12 , we observe that the clock algorithm reduces the quantum simulation resources by up to two orders of magnitude for αT ≳ 10 4.
+
+accuracy ε. Their durations sum to O(N 2 
+
+> t
+
+∆t), so the cost per round is O(αN 2 
+
+> t
+
+∆t + NtL(1 /ε )). Accounting for the repetition counts from Sec. III B yields 
+
+QClk QSP = [ αN t∆t + NtL(Nt/ε )] 16 log( Nt/δ )
+
+ϵ2 , (37) 
+
+QHT QSP = αN 2 
+
+> t
+
+∆t + NtL(1 /ε ) 4 log( Nt/δ )
+
+ϵ2 , (38) for the clock construction and the Hadamard test. Their ratio, modulo logarithmic constants, is 
+
+QClk QSP 
+
+QHT QSP 
+
+≃ 4[ αN t∆t + NtL(Nt/ε )] 
+
+αN 2 
+
+> t
+
+∆t + NtL(1 /ε )
+
+≃ 4
+
+Nt
+
+αT + NtL(Nt/ε )
+
+αT + L(1 /ε )(39) The relative advantage is shaped by the balance between the evolution-time and precision-overhead contributions 
+
+αT, L(ε), and NtL(Nt/ε ), which proposes three limits. Before analyzing these limits, it is useful to establish the practical scales of α, T, N t, and ε. The block encoding normalization α, i.e. , the sum of absolute coefficients of the Pauli terms in the Hamiltonian, is a system-extensive quantity that grows with both system size and interaction strength. For local many-body models, α = O(L) where 
+
+L is the system size, and for molecular Hamiltonians α =
+
+O(poly( L)). Large systems can therefore have α values in the hundreds or thousands. This growth in α, however, does not extend to the frequencies relevant to correlation function under local Hamiltonians: energy scales induced by local perturbations are often intensive O(1) quantities, up to finite-size corrections. Capturing these frequencies requires ∆ t = O(1) by the Nyquist theorem, so we have 
+
+T ∼ Nt∆t = O(Nt). The number of time points is set by the desired frequency resolution. Nt ∼ 10 2-10 3, together with α ∼ 10 2-10 3, hence yields the representative range 
+
+αT ≃ 10 4-10 6. Finally, the time evolution precision ε and measurement precision ϵ contribute a total error bounded by ϵ + 2 ε. There is therefore little benefit in adopting an extremely small ε deep below ϵ. For material simulations, it is generally sufficient to achieve a total error of 10 −6.We will consider ε ≃ 10 −6 as a practical value, while also examining smaller ε values to explore the more extreme asymptotic limit. Fig. 2 plots the estimated quantum resource ratios for 
+
+ε = 10 −6, 10 −12 ,10 −100 within panels (a)-(c) respectively, across Nt = 2 4, 25, . . . , 220 . For each Nt and ε, the ratio of clock-algorithm resources to Hadamard-test resources, 
+
+QClk QSP /Q HT QSP , exhibits an initial O(1 /(αT )) scaling and then approaches an O(∆ t/T ) asymptote at large αT . To understand this behavior, we distinguish the three limits defined by the interplay of evolution-time and precision-overhead terms αT , L(ε), and NtL(Nt/ε ). 
+
+Case 1: αT ≫ NtL(Nt/ε ). Here, the cost is dominated by evolution time. The clock scales as O(Nt) per round while the Hadamard test scales as O(N 2 
+
+> t
+
+), yielding 
+
+QClk QSP 
+
+QHT QSP 
+
+≃ 4αT NtαT ≃ 4
+
+Nt
+
+, (40) 10 
+
+i.e. , a Θ( Nt) reduction in Hamiltonian simulation cost. This is the asymptotic value approached by each curve in Fig. 2 as αT → ∞ . As seen in panels (a)-(c), the onset of convergence occurs at progressively larger αT for smaller 
+
+ε.
+
+Case 2: L(ε) ≪ αT ≪ NtL(Nt/ε ). In this crossover, the Hadamard test is dominated by simulation time, and the clock algorithm is dominated by precision overhead. Thus, 
+
+QClk QSP 
+
+QHT QSP 
+
+≃ 4NtL(Nt/ε )
+
+NtαT ≃ 4L(Nt/ε )
+
+αT . (41) This O(1 /(αT )) behavior is evident on the left-hand side of the curves in Fig. 2. Curves with different Nt nearly overlap on the log-log scale because the prefactor L(Nt/ε )varies only logarithmically with Nt.In this limit, when ∆ t is fixed, the ratio of costs scales as O(log Nt/N t) as Nt → ∞ . The clock algorithm there-fore holds, up to logarithmic factor, a linear advantage in 
+
+Nt. However, when T is fixed instead, L(Nt/ε ) continues to grow with Nt and the Hadamard test will ultimately be less expensive. The critical transition happens at roughly 
+
+N ∗ 
+
+> t
+
+= eαT / 4ε, where its precise location depends on ε and 
+
+αT . As discussed above and illustrated in Fig. 2, relevant values of αT and ε imply N ∗ 
+
+> t
+
+≃ 10 11000 ε. This places the transition far beyond the practical range of Nt ≤ 220 and 
+
+ε ≥ 10 −100 .
+
+Case 3: αT ≪ L (1 /ε ). The cost is then dominated by precision overhead for both algorithms. A clock protocol now loses its linear advantage in Nt, and the relative cost in this limit is governed by L(Nt/ε )/L(1 /ε ). Particularly, for ε = N −pt with p > 0, 
+
+QClk QSP 
+
+QHT QSP 
+
+≃ L(Nt/ε )
+
+L(1 /ε ) → 1 + 1
+
+p , (42) so a constant factor separation remains asymptotically. For fixed ε, the cost ratio scales as Θ(log Nt/ log log Nt), thus benefiting the Hadamard test. Reaching this regime, nonetheless, requires extremely high simulation precision for the parameter range typical of materials simulations. For αT > 10 4, αT ≪ L (1 /ε ) comes into play only around 
+
+ε∗ = 10 −250 ,000 , which is essentially unattainable. In summary, Cases 1 and 2 cover the only limits of practical relevance, and both decisively favor our clock algorithm over the Hadamard test by a factor of Θ( Nt)and Θ( Nt/ log Nt) in resource requirements. We further evaluate this advantage numerically in Sec. IV.  
+
+> IV. NUMERICAL EXAMPLE
+
+In this section, we numerically test the performance of our clock-based algorithm using an interacting fermionic system. We focus on its behavior at finite shot counts and compare its resource requirements with those discussed in Secs. II and III.  
+
+> A. Spinless Hubbard chain
+
+We consider the spinless Fermi-Hubbard model on a one-dimensional chain of L sites, 
+
+H = −J
+
+> L−1
+
+X
+
+> i=1
+
+
+
+c† 
+
+> i
+
+ci+1 + c†
+
+> i+1
+
+ci
+
+
+
++ V
+
+> L−1
+
+X
+
+> i=1
+
+nini+1 , (43) where ci (c† 
+
+> i
+
+) is the annihilation (creation) operator at site i, and ni = c† 
+
+> i
+
+ci the corresponding number operator. The two Hubbard parameters J and V set, respectively, the hopping amplitude and nearest-neighbor interaction strength. Under the Jordan-Wigner transformation, ci =
+
+Z1 · · · Zi−1(Xi − iY i)/2. Let |ψ⟩ be the ground state at a fixed particle number. As the probe, we choose the Majorana operator, 
+
+γi = ci + c† 
+
+> i
+
+= Z1 · · · Zi−1Xi, (44) which is Hermitian and squares to one, hence unitary, so it can be inserted directly and no selector qubit is needed. Its autocorrelation function 
+
+Gγγ (t) = ⟨ψ| ci(t)c† 
+
+> i
+
+|ψ⟩ + ⟨ψ| c† 
+
+> i
+
+(t)ci |ψ⟩ , (45) where the remaining terms vanish because |ψ⟩ has fixed particle number. Thus Gγγ (t) combines the local particle and hole propagators. Its spectral function captures the single-particle density of states for adding or removing a fermion at site i, with the removal excitations reflected to positive frequency. As a further consequence, the particle and hole contributions can be separated to construct the retarded Green’s function; this involves cross-correlation with the second Majorana operator, ˜ γi = i(ci − c† 
+
+> i
+
+) = 
+
+Z1 · · · Zi−1Yi, which can be computed using our selector construction from Sec. II E. For our numerical results below, we measure Gγγ (t) on the middle site at half-filling with J = V = 1. We choose 
+
+L = 8 sites for convenience, although the protocol and calculations scale directly to much larger system sizes.  
+
+> B. Resource-matched estimation errors
+
+For comparison with the Hadamard test, we chose the qubitization-based evolution and match the Hamiltonian simulation resources of the two protocols. Starting from a shot count M for the clock algorithm, we determine for the Hadamard test the shot budget that gives an identical overall qubitization cost. To do so, we benchmark in the evolution-time-dominated regime (c.f. Sec. III C) for two reasons. First, this regime suits the thermodynamic limit in which many-body phenomena ( e.g. , phase transitions) sharply emerge, while our results extend simply to large-scale fault-tolerant quantum simulation. Second, our L =8 example already provides a reasonable approximation, since we have α = ( L−1)(2 J +V ) = 21. With simulation accuracy ε = 10 −6 and duration T = 1000, this leads to 11 25 26 27 28 29 210 
+
+Nt
+
+> 10 −3
+> 10 −2
+> 10 −1
+> max
+> |t| T/ 2
+> | ˆGγγ  (t) − Gγγ (t)|
+
+(a) 
+
+M = 10 5     
+
+> Clock Hadamard
+> ²Clk
+> ²HT
+> 2526272829210
+
+Nt
+
+(b) 
+
+M = 10 6     
+
+> 2526272829210
+
+Nt
+
+(c) 
+
+M = 10 7
+
+FIG. 3. Theoretical and numerical errors of Gγγ (t) calculated with the clock and Hadamard-test protocols. The two approaches are compared using an equal qubitization query budget, with M total shots for the clock algorithm and 2 M total shots for the Hadamard test. We choose M = 10 5 in panel (a), M = 10 6 in panel (b), and M = 10 7 in panel (c). Both the Hadamard test and the clock algorithm were evaluated over 10 independent runs. The solid lines indicate the mean error, and the top (bottom) boundaries of the shaded regions indicate minimum (maximum) error. The dashed lines mark the theoretical precision given in Eq. (46). The Hadamard-test error increases much more rapidly with Nt, while the clock-algorithm error remains relatively stable, pointing to a clear advantage at large Nt.
+
+αT = 2 .1×10 4. As shown in Fig. 2(a), the resource ratios are quite close to their large-αT limits for Nt ≤ 210 . The same regime thereby serves as a natural benchmark even for our finite system. At fixed total quantum resources, M shots for the clock algorithm then correspond to 2 M/N t shots per lag for the Hadamard test. We consider Nt = 2 5, 2 6, . . . , 2 10 time points spanning a maximal evolution time T = Nt∆t =1000, and we allocate M = 10 5, 10 6, and 10 7 shots for the clock algorithm. The equivalent full shot budgets for the Hadamard test are 2 M = 2 ×10 5, 2×10 6, and 2 ×10 7. For each case, these shots are distributed over Nt/2 lags and 2 ancilla measurement bases per lag. With these matched shot counts, the expected accuracies of our algorithm and the Hadamard test can be found from Eqs. (27) and (30) as the following: 
+
+ϵClk = 4 
+
+r log(4 Nt/δ )
+
+M ,ϵHT = 2 
+
+r Nt log(2 Nt/δ )2M .
+
+(46) Fig. 3 shows values of the maximum estimation error, max |t|≤ T / 2 | ˆGγγ (t) − Gγγ (t)|, for the clock algorithm and the Hadamard test, together with their theoretical upper bounds. We notice that the numerical errors consistently track the predicted Nt-dependence in the upper bounds 
+
+ϵClk and ϵHT , although these bounds appear conservative. Across simulation, the Hadamard-test error is on average 
+
+∼ 0.6ϵHT , while the clock error is ∼ 0.2ϵClk . The actual error of our protocol is well below its theoretical ceiling. Increasing M improves the accuracy of both protocols, but their dependence on Nt is qualitatively distinct. The clock error stays almost constant over the plotted range, reflecting its weak plog( Nt) dependence. The Hadamard test, however, has power-law error due to its pNt log( Nt)dependence. Recall that this difference arises because the Hadamard-test budget must be split evenly among O(Nt)individual circuits, whereas every clock shot contributes information about all time lags. As a consequence, the accuracy advantage of the clock algorithm grows with Nt.
+
+V. DISCUSSION AND OUTLOOK 
+
+In this work, we introduced a clock-register approach to equilibrium correlation functions in which we promote the probe insertion time from a fixed circuit parameter to a quantum variable. The system undergoes the same un-controlled Hamiltonian evolution on every clock branch, with the probe inserted at a time selected by that branch. For a stationary state, the clock captures the correlation function at all time lags, where a Fourier measurement of the clock yields the corresponding finite-time-broadened spectral distribution. These relations are exact for both pure and mixed stationary states. Moreover, each Fourier outcome contributes simultaneously to every target lag, allowing all Nt correlators to be estimated to a precision ϵ
+
+with M = O(log( Nt/δ )/ϵ 2) total shots. The lower bound 12 of Thm. 2 shows this scaling is optimal, up to constants, in the sample-access model. With a single selector qubit, the same construction applies to correlations between two different operator probes. Compared with the Hadamard test, our construction replaces separate measurements at individual lags by a shared measurement record. This reduces the number of circuit executions by O(Nt) and, in turn, yields an O(Nt)saving in total runtime, up to constant and logarithmic factors. The improvement carries over directly to Trotter simulation. For qubitization, the relative cost depends on the balance between the physical evolution and precision overhead incurred from the Nt evolution segments. For all practical cases of Hamiltonian simulation, we find that the evolution cost is dominated by simulation time, and in this regime the clock approach requires at best O(Nt)(Case 1 in Sec. III C), and at worst O(Nt/ log Nt) (Case 2 in Sec. III C) fewer quantum resources. Our numerical example demonstrates this finite-shot behavior in a spin-less Hubbard model and directly compares the observed accuracy with theoretical prediction. Several aspects of the construction appear favorable for practical implementation. The Hamiltonian evolution is uncontrolled, the QFT can be performed semiclassically [54], and unary iteration achieves probe insertions with a linear Toffoli cost [67]. The measurement outcomes also reveal spectral information, such as linear functionals of the correlation function, without additional circuit runs. The protocol is therefore well suited to settings in which forward evolution is readily available but coherent control or reversal of the full simulation is demanding, including hybrid analog-digital platforms. A further advantage of our algorithm, which was not discussed above, is its efficiency in repeated initial state preparation. While we assumed time evolution accounts for most of the quantum resources, each circuit execution requires a fresh copy of the stationary system state |ψ⟩,whose preparation can itself be nontrivial. In particular, preparing ground states of generic Hamiltonians is known to be QMA-complete [68]. Moreover, state-preparation strategies based on variational quantum eigensolver [69, 70], quantum phase estimation combined with amplitude amplification [17], and variations of quantum imaginary time evolution [18, 71] can lead to deep circuits. Because the clock protocol reduces the number of total shots from 
+
+O(Nt log( Nt/δ )/ϵ 2) for the standard Hadamard test to 
+
+O(log( Nt/δ )/ϵ 2), it likewise reduces the number of state preparations by a factor of O(Nt). This saving can hence be especially beneficial when preparing |ψ⟩ is comparable to, or even more expensive than, the subsequent real-time evolution. Beyond the applications considered here, the clock framework opens a broader route to quantum dynamical measurements. If a family of observables can be accessed by coherent circuit control of when or where an operator probe is inserted, many classically distinct measurements may be combined into a shared quantum experiment. Extensions to nonequilibrium Green’s functions and out-of-time-order (OTOC) correlators will require additional structure, because these settings do not generally inherit the Toeplitz form that is guaranteed by time translational invariance at equilibrium. Developing such extensions is an interesting direction for future studies. Moreover, our results show that promoting measurement parameters to quantum variables can reduce the number of circuit runs while leaving many-body evolution uncontrolled, offering a powerful paradigm for obtaining dynamical information from large-scale quantum simulations. 
+
+> ACKNOWLEDGMENTS
+
+We acknowledge support from the U.S. Department of Energy (DOE) via Office of Science, under Contract No. DE-AC02-05CH11231. YS and RVB were funded through Accelerated Research in Quantum Computing, Fundamental Algorithmic Research toward Quantum Utility (FAR-Qu). EK and WAdJ were funded through the Office of Advanced Scientific Computing Research’s Accelerated Research for Quantum Computing Program (FAR-QC).                                          
+
+> [1] L. Van Hove, Phys. Rev. 95 , 249 (1954). [2] G. L. Squires, Introduction to the Theory of Thermal Neutron Scattering , 3rd ed. (Cambridge University Press, Cambridge, 2012). [3] R. Kubo, J. Phys. Soc. Jpn. 12 , 570 (1957). [4] A. Damascelli, Z. Hussain, and Z.-X. Shen, Rev. Mod. Phys. 75 , 473 (2003). [5] G. D. Mahan, Many-Particle Physics , 3rd ed. (Kluwer Academic/Plenum Publishers, New York, 2000). [6] H. B. Callen and T. A. Welton, Phys. Rev. 83 , 34 (1951). [7] H. Bruus and K. Flensberg, Many-Body Quantum Theory in Condensed Matter Physics: An Introduction (Oxford University Press, Oxford, 2004). [8] G. Stefanucci and R. van Leeuwen, Nonequilibrium Many-Body Theory of Quantum Systems: AModern Introduction (Cambridge University Press, Cambridge, 2013). [9] A. Georges, G. Kotliar, W. Krauth, and M. J. Rozenberg, Rev. Mod. Phys. 68 , 13 (1996). [10] G. Kotliar, S. Y. Savrasov, K. Haule, V. S. Oudovenko, O. Parcollet, and C. A. Marianetti, Rev. Mod. Phys. 78 ,865 (2006). [11] B. Bauer, D. Wecker, A. J. Millis, M. B. Hastings, and M. Troyer, Phys. Rev. X 6, 031045 (2016). [12] I. Rungger, N. Fitzpatrick, H. Chen, C. H. Alderete, H. Apel, A. Cowtan, A. Patterson, D. Munoz Ramo, Y. Zhu, N. H. Nguyen, E. Grant, S. Chretien, L. Wossnig, N. M. Linke, and R. Duncan, arXiv 10.48550/arXiv.1910.04735 (2019). [13] R. P. Feynman, Int. J. Theor. Phys. 21 , 467 (1982).
+
+13 
+
+[14] S. Lloyd, Science 273 , 1073 (1996). [15] A. M. Childs, Y. Su, M. C. Tran, N. Wiebe, and S. Zhu, Phys. Rev. X 11 , 011020 (2021). [16] G. H. Low and I. L. Chuang, Quantum 3, 163 (2019). [17] L. Lin and Y. Tong, Quantum 4, 372 (2020). [18] M. Motta, C. Sun, A. T. K. Tan, M. J. O’Rourke, E. Ye, A. J. Minnich, F. G. S. L. Brand˜ ao, and G. K.-L. Chan, Nat. Phys. 16 , 205 (2020). [19] A. M. Dalzell, S. McArdle, M. Berta, P. Bienias, C.-F. Chen, A. Gily´ en, C. T. Hann, M. J. Kastoryano, E. T. Khabiboulline, A. Kubica, G. Salton, S. Wang, and F. G. S. L. Brand˜ ao, Quantum Algorithms: A Survey of Appli-cations and End-to-End Complexities (Cambridge Uni-versity Press, 2025). [20] G. Ortiz, J. E. Gubernatis, E. Knill, and R. Laflamme, Phys. Rev. A 64 , 022319 (2001). [21] R. Somma, G. Ortiz, J. E. Gubernatis, E. Knill, and R. Laflamme, Phys. Rev. A 65 , 042323 (2002). [22] J. M. Kreula, L. Garc´ ıa- ´Alvarez, L. Lamata, S. R. Clark, E. Solano, and D. Jaksch, EPJ Quantum Technol. 3, 11 (2016). [23] T. Keen, T. Maier, S. Johnston, and P. Lougovski, Quan-tum Sci. Technol. 5, 035001 (2020). [24] T. Steckmann, T. Keen, E. K¨ okc¨ u, A. F. Kemper, E. F. Dumitrescu, and Y. Wang, Phys. Rev. Research 
+
+5, 023198 (2023). [25] N. Hogan, E. K¨ okc¨ u, T. Steckmann, L. P. Doak, C. Mejuto-Zaera, D. Camps, R. Van Beeumen, W. A. de Jong, and A. Kemper, npj Computational Materials (2026). [26] A. Chiesa, F. Tacchino, M. Grossi, P. Santini, I. Tav-ernelli, D. Gerace, and S. Carretta, Nat. Phys. 15 , 455 (2019). [27] A. Francis, J. K. Freericks, and A. F. Kemper, Phys. Rev. B 101 , 014411 (2020). [28] S. Endo, I. Kurata, and Y. O. Nakagawa, Phys. Rev. Research 2, 033281 (2020). [29] F. Libbi, J. Rizzo, F. Tacchino, N. Marzari, and I. Tav-ernelli, Phys. Rev. Research 4, 043038 (2022). [30] J. S. Pedernales, R. Di Candia, I. L. Egusquiza, J. Casanova, and E. Solano, Phys. Rev. Lett. 113 , 020505 (2014). [31] M. L. Baez, M. Goihl, J. Haferkamp, J. Bermejo-Vega, M. Gluza, and J. Eisert, Proc. Natl. Acad. Sci. U.S.A. 
+
+117 , 26123 (2020). [32] E. K¨ okc¨ u, H. A. Labib, J. K. Freericks, and A. F. Kem-per, Nat. Commun. 15 , 3881 (2024). [33] S. Piccinelli, F. Tacchino, I. Tavernelli, and G. Carleo, Quantum 10 , 2060 (2026). [34] Y. Tong, D. An, N. Wiebe, and L. Lin, Phys. Rev. A 
+
+104 , 032422 (2021). [35] A. Roggero, Phys. Rev. A 102 , 022409 (2020). [36] S. Lu, M. C. Ba˜ nuls, and J. I. Cirac, PRX Quantum 2,020321 (2021). [37] T. Keen, E. Dumitrescu, and Y. Wang, arXiv 10.48550/arXiv.2112.05731 (2021). [38] T. Kosugi and Y.-I. Matsushita, Phys. Rev. Research 2,033043 (2020). [39] D. Sels and E. Demler, Phys. Rev. B 103 , 014301 (2021). [40] H. Chen, M. Nusspickel, J. Tilly, and G. H. Booth, Phys. Rev. A 104 , 032405 (2021). [41] K. Huang, X. Cai, H. Li, Z.-Y. Ge, R. Hou, H. Li, T. Liu, Y. Shi, C. Chen, D. Zheng, K. Xu, Z.-B. Liu, Z. Li, H. Fan, and W.-H. Fang, J. Phys. Chem. Lett. 13 , 9114 (2022). [42] F. Jamet, A. Agarwal, and I. Rungger, arXiv 10.48550/arXiv.2205.00094 (2022). [43] P. W. K. Jensen, P. D. Johnson, and A. A. Kunitsa, Phys. Rev. A 108 , 022422 (2023). [44] R. D. Somma, New J. Phys. 21 , 123025 (2019). [45] L. Lin and Y. Tong, PRX Quantum 3, 010318 (2022). [46] Y. Dong, L. Lin, and Y. Tong, PRX Quantum 3, 040305 (2022). [47] M. E. Stroeks, J. Helsen, and B. M. Terhal, New J. Phys. 
+
+24 , 103024 (2022). [48] W. Hoeffding, J. Am. Stat. Assoc. 58 , 13 (1963). [49] C. Gidney, Quantum 2, 74 (2018). [50] J. Nie, W. Zi, and X. Sun, arXiv 10.48550/arXiv.2402.05053 (2024). [51] T. Khattar and C. Gidney, Quantum 9, 1752 (2025). [52] A. Y. Kitaev, arXiv 10.48550/arXiv.quant-ph/9511026 (1995). [53] R. Cleve, A. Ekert, C. Macchiavello, and M. Mosca, Proc. R. Soc. Lond. A 454 , 339 (1998). [54] R. B. Griffiths and C.-S. Niu, Phys. Rev. Lett. 76 , 3228 (1996). [55] R. P. Feynman, Found. Phys. 16 , 507 (1986). [56] A. Y. Kitaev, A. H. Shen, and M. N. Vyalyi, Classical and Quantum Computation , Graduate Studies in Mathemat-ics, Vol. 47 (American Mathematical Society, Providence, RI, 2002). [57] I. Bloch, J. Dalibard, and S. Nascimb` ene, Nat. Phys. 8,267 (2012). [58] C. Monroe, W. C. Campbell, L.-M. Duan, Z.-X. Gong, A. V. Gorshkov, P. W. Hess, R. Islam, K. Kim, N. M. Linke, G. Pagano, P. Richerme, C. Senko, and N. Y. Yao, Rev. Mod. Phys. 93 , 025001 (2021). [59] A. Browaeys and T. Lahaye, Nat. Phys. 16 , 132 (2020). [60] Here we adopt QFT |r⟩ = (2 Nt)−1/2 P 
+
+> k
+
+e−iω k tr |k⟩. The opposite sign convention exchanges ω with −ω.[61] G. Brassard, P. Høyer, M. Mosca, and A. Tapp, Contemp. Math. 305 , 53 (2002). [62] D. Grinko, J. Gacon, C. Zoufal, and S. Woerner, npj Quantum Inf. 7, 52 (2021). [63] W. J. Huggins, K. Wan, J. McClean, T. E. O’Brien, N. Wiebe, and R. Babbush, Phys. Rev. Lett. 129 , 240501 (2022). [64] A. M. Childs, D. Maslov, Y. Nam, N. J. Ross, and Y. Su, Proc. Natl. Acad. Sci. U.S.A. 115 , 9456 (2018). [65] G. H. Low and I. L. Chuang, Phys. Rev. Lett. 118 ,010501 (2017). [66] S. Dutta, S. Wang, A. Baksi, A. Chattopadhyay, and S. Maitra, Phys. Rev. A 111 , 052611 (2025). [67] R. Babbush, C. Gidney, D. W. Berry, N. Wiebe, J. Mc-Clean, A. Paler, A. Fowler, and H. Neven, Phys. Rev. X 
+
+8, 041015 (2018). [68] J. Kempe, A. Kitaev, and O. Regev, SIAM Journal on Computing 35 , 1070 (2006). [69] H. R. Grimsley, S. E. Economou, E. Barnes, and N. J. Mayhall, Nat. Commun. 10 , 3007 (2019). [70] J. Tilly, H. Chen, S. Cao, D. Picozzi, K. Setia, Y. Li, E. Grant, L. Wossnig, I. Rungger, G. H. Booth, et al. ,Phys. Rep. 986 , 1 (2022). [71] M. Gluza, J. Son, B. H. Tiang, R. Zander, R. Seidel, Y. Suzuki, Z. Holmes, and N. H. Ng, Phys. Rev. Lett. 
+
+136 , 020601 (2026).

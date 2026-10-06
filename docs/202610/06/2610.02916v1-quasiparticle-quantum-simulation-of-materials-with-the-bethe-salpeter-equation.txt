@@ -1,0 +1,2026 @@
+Title: Quasiparticle quantum simulation of materials with the Bethe-Salpeter equation
+
+URL Source: https://arxiv.org/pdf/2610.02916v1
+
+Published Time: Mon, 05 Oct 2026 00:45:41 GMT
+
+Number of Pages: 31
+
+Markdown Content:
+## Quasiparticle quantum simulation of materials with the Bethe-Salpeter equation 
+
+Jielun Chen, 1, 2, 3, ∗ Jiace Sun, 4, 3, ∗ and Garnet Kin-Lic Chan 4, 2, 3, †
+
+> 1
+
+Division of Physics, Mathematics, and Astronomy, California Institute of Technology, Pasadena, California 91125, USA 
+
+> 2
+
+Institute for Quantum Information and Matter, Pasadena, California 91125, USA 
+
+> 3
+
+Marcus Center for Theoretical Chemistry, California Institute of Technology, Pasadena, California 91125, USA 
+
+> 4
+
+Division of Chemistry and Chemical Engineering, California Institute of Technology, Pasadena, California 91125, USA 
+
+The first-principles quantum simulation of the full electronic Hamiltonian of a material model of realistic size appears daunting even in a future era of fully fault-tolerant quantum computers. In contrast, classical simulations of material excited states rely on heuristic quasiparticle frameworks, such as the GW approximation and Bethe-Salpeter equation, where only a few quasiparticles are explicitly considered. Here we give a detailed description of quasiparticle quantum simulation for multi-excitonic states within the BSE. We develop an explicit first-quantized, orbital-based block encoding of the multi-exciton BSE Hamiltonian for qubitization, and reduce its cost using inte-gral factorization and crystal symmetries. For a materials model of size N , and a fixed number of quasiparticles, the resulting algorithms require eO(N ) Toffoli gates and O(log N ) logical qubits, or, using space-time tradeoffs, eO(√N ) Toffoli gates and eO(√N ) logical qubits, achieving up to a sixth power reduction in Toffoli count, or up to exponential reduction in qubit count, versus standard full Hamiltonian simulation techniques that have been explored in materials simulation. Resource estimates for the classically challenging problem of triexcitonic eigenvalue estimation across a range of semiconductor models of a realistic physical size of O(10 3) atoms, show that our Toffoli-optimized implementation reduces the Toffoli count by 10 6 − 10 7 relative to full Hamiltonian simulation es-timates, while a qubit-optimized implementation requires only a few hundred logical qubits. More broadly, these results show that classical heuristic frameworks will be essential in the design of future fault-tolerant quantum algorithms for materials. 
+
+I. INTRODUCTION 
+
+The quantum simulation of materials is a highly an-ticipated application of quantum computing [1–12]. For many materials, the key questions involve the electronic structure, spectroscopy, and dynamics. These can be addressed by solving the time-independent and time-dependent electronic Schr¨ odinger equations. In the context of first principles fault-tolerant quantum materials simulation, computing the electronic Hamil-tonian eigenstates and dynamics has already been ex-plored [4, 9, 10, 13, 14]. These formulations have focused on exact simulations of the full electronic Hamiltonian of the material. However, since current first principles ma-terial simulations with density functional theory often involve a few thousand atoms and O(10 4) electrons or more, replacing such classical simulations is a formidable task. As we detail below, using existing techniques of full Hamiltonian simulation, the Toffoli counts needed to compute an excitation energy to a relevant precision ex-ceed even the resources that are expected to be available in the era of full fault-tolerance by many orders of magni-tude. Additional approximations must therefore be made for the quantum simulation of materials to be practical. Full Hamiltonian simulation is not the problem that is tackled by most beyond density functional classical   
+
+> ∗These authors contributed equally to this work.
+> †Corresponding author: gkc1000@gmail.com
+
+approaches. Instead, these work within a quasiparticle picture of electronic behaviour. This limits the explicit modeling of correlation effects to a few (quasi)particles. While the quasiparticle equations are augmented with additional heuristic assumptions that mean that they are not exact, their domain of applicability is understood through empirical validation. For example, the GW and GW/Bethe-Salpeter quasiparticle theories are probably the most commonly applied electronic structure simula-tions in materials beyond density functional theory [15– 18], and have found particular value in the modeling of semiconductor excitations [19, 20]. Recently, we have described the formulation of quan-tum simulation within the quasiparticle approximation and have shown that, in a setting that takes advantage of low-energy quasiparticles as well as locality, and un-der standard initial state preparation assumptions, quan-tum algorithms can achieve a large asymptotic speedup over classical algorithms within the same heuristic frame-work [21]. Here, we move beyond asymptotic scaling and provide a detailed analysis of the quasiparticle GW/BSE for excited state properties and dynamics. We focus only on the quasiparticle heuristic rather than also using lo-cality, as this more general setting covers a wider range of materials, and provides a baseline for the incorporation of more heuristic information in the future. We focus on the modeling of high order multi-excitonic states and dy-namics in semiconductors, which is extremely expensive and which has yet to be studied in first principles classi-cal simulations. We achieve, relative to full Hamiltonian arXiv:2610.02916v1 [quant-ph] 2 Oct 2026 2quantum simulation approaches that have been bench-marked in materials, a ∼ 6th order polynomial speedup in scaling when optimizing for Toffoli count, and up to an exponential compression when optimizing for qubit count. Relative to standard classical matrix-vector algo-rithms for the Bethe-Salpeter equation, the speedup is exponential in the multi-exciton order m, and for the tri-excitonic case, corresponds to a ∼ 12th order speedup in speed and an exponential reduction in classical resources. We perform explicit compilation of quasiparticle quan-tum simulation, working within a first-quantized, orbital basis formulation. Our compilation has some features in common with that of first- and second-quantized Hamil-tonian simulation compilation, such as the use of factor-ized integral representations, qubit/Toffoli data loading tradeoffs, and symmetry adaptation, but we use a new block encoding strategy that is adapted to the physi-cal form of the GW/BSE Hamiltonian. We carry out quantum resource estimates of tri-excitonic state simula-tion for a range of semiconductor materials, where we find ∼ 10 6 − 10 7 reduction in Toffoli-gate count rela-tive to full Hamiltonian simulation using realistic basis sets and problem sizes of a few thousand atoms. Our work therefore provides quantitative evidence of the ad-vantages of quasiparticle quantum simulation in future first-principles studies of materials using quantum com-puters.   
+
+> II. QUASI-PARTICLE QUANTUM SIMULATION A. The Bethe-Salpeter equation
+
+We are concerned with simulating electronic structure and dynamics. In atomic units, the corresponding elec-tronic Hamiltonian in the non-relativistic approximation is 
+
+H = X
+
+> i
+
+− 12 ∇2 
+
+> i
+
++ vext (ri) + X
+
+> i>j
+
+1
+
+rij 
+
+(1) where for an isolated system vext (r) is the external poten-tial from the nuclei. The system size will be denoted by 
+
+N , and we generally consider the setting where the num-ber of electrons is ∝ N . The task of quantum simulation is to obtain the eigenstates and dynamics given by the time-independent and dependent Schr¨ odinger equations 
+
+HΨ = EΨ (2) 
+
+i∂ tΨ = HΨ (3) One common framework is to simulate in second-quantization, where a single particle orthogonal basis 
+
+{ϕi} is introduced, and H is approximated by its finite basis second quantized counterpart [1, 2]. Another frame-work is first quantized quantum simulation [13]. There, the computational basis states are simple product states, and antisymmetrization is enforced by initial state prepa-ration. Both first- and second-quantized approaches have been studied in materials simulation, and their relative advantages and disadvantages discussed [9, 10]. The above frameworks simulate all electrons in a ma-terial. However, in a macroscopic sample, this may ap-proach ∼ 10 23 electrons. While most electronic proper-ties converge at smaller system sizes, as a practical guide we can consider the problem sizes in density functional materials calculations, which in simple semiconductors typically involve O(1000) atoms, with ∼ 10 4 electrons or more. These would require impractical amounts of quan-tum resources to address. However, in many materials of interest, the low-energy excitations are captured by a small number ( mtot = O(1) in total) of electronic quasiparticles, namely, dressed elec-trons and holes. This suggests that one may not need to simulate the vast majority of the electrons. Formally, quasiparticles are described by Green’s functions [22]. For example, writing 1 ≡ (r1σ1t1) (where σ is the spin index) and ˆψ(1) for the Heisenberg-picture field opera-tor, then individual quasiparticles, and pairs of quasi-particles, are described by the zero-temperature 1- and 2-particle Green’s functions 
+
+G(1 , 1′) = −i Ψ0 T  ˆψ(1) ˆψ†(1 ′) Ψ0 , (4) 
+
+G2(1 , 2; 1 ′, 2′) = ( −i)2 Ψ0 T  ˆψ(1) ˆψ(2) ˆψ†(2 ′) ˆψ†(1 ′) Ψ0 ,
+
+(5) where T is the time-ordering operator and |Ψ0⟩ is the ground state of H; we abbreviate G ≡ G1. We can write down equations-of-motion for the Green’s functions, such as the Dyson equation for G,
+
+i∂ t1 G(1 , 1′) = δ(1 , 1′)+ h(1) G(1 , 1′)+ 
+
+Z
+
+d2 Σ(1 , 2) G(2 , 1′),
+
+(6) where Σ is the self-energy that encapsulates all the many-body effects. Limiting ourselves to neutral excitations for simplic-ity, we denote the number of electron–hole pairs by m,so that mtot = 2 m. An excitation with m electrons and 
+
+m holes is described by G2m; for m = 1, the excita-tion is a ‘single’ excitonic state (note, we use excitonic state to refer to any excitation, regardless of whether the electron and hole are bound; the bound-case corresponds to an exciton) and for m > 1, it is a multi-excitonic state. G2m captures the exact (multi)-excitonic energies and dynamics. However, solving the exact equation of motion is no easier than solving for the full dynamics, due to the complexity of the exact self-energy and sim-ilar quantities. Thus, in practical quasiparticle classical simulations, additional approximations are made. The validity and accuracy of these heuristic approximations (for certain applications) is ultimately justified by their empirical success and widespread use. From a quantum simulation perspective, these approximations are also sig-nificant: the exact equations of motion are non-linear and 3involve non-Hermitian operators, while the standard clas-sical approximations render them linear with Hermitian operators. Although we are ultimately interested in the quan-tum simulation of multi-excitonic states, we first present the simplification of the equation-of-motion for single-excitonic states to reduce the notational complexity. Sin-gle excitonic energies appear as poles of the particle-hole correlation function, written as 
+
+L(1 , 2; 1 ′, 2′) = −G2(1 , 2; 1 ′, 2′) + G(1 , 1′)G(2 , 2′), (7) The equation-of-motion of L is the Bethe-Salpeter equa-tion (BSE) [23, 24], 
+
+L(1 , 2; 1 ′, 2′) = L0(1 , 2; 1 ′, 2′) + 
+
+Z
+
+d(3456) L0(1 , 4; 1 ′, 3) K(3 , 5; 4 , 6) L(6 , 2; 5 , 2′), (8) where L0 = G(1 , 2′)G(2 , 1′). We next introduce the approximate GW-BSE expres-sions that are used when solving the BSE in first-principles calculations [16, 17, 19]. Within this formula-tion, Σ ≈ G · W [15] where · abbreviates the integrations, 
+
+W is the screened interaction, and further, in the subse-quent BSE equation, Σ is taken to be static. Then single quasiparticles are eigenstates of a modified single-particle Hamiltonian, written as P 
+
+> i
+
+ϵp|p⟩⟨ p|, where p labels the single particle state, and ϵi is its (self-energy) corrected eigenvalue. Next, the kernel K(3 , 5; 4 , 6) is approximated by 
+
+K(3 , 5; 4 , 6) = −iδ (3 , 4) δ(5 , 6) V (3 , 6) + iδ (3 , 6) δ(4 , 5) W (3 , 4) (9) The first term involves the standard Coulomb interac-tion V (3 , 6) = 1 /|r3 − r6|, this term is called the ex-change term. The second term involves the screened Coulomb interaction W (3 , 4) and is called the direct term; this is formally frequency dependent also, but in most GW-BSE calculations, one uses the static approx-imation W (3 , 4) = W (r3, r4, ω = 0). Finally, dropping the coupling between forwards-in-time and backwards-in-time propagating electron-hole pairs (the Tamm-Dancoff approximation), we arrive at the standard GW-BSE de-scription of dynamics where the equation-of-motion of L
+
+is generated by a static Hermitian electron-hole effective Hamiltonian HBSE ,
+
+HBSE = H0 + K (10) We can write the two parts of K as Hex  
+
+> ov
+
++ Hdir  
+
+> ov
+
+; the ex-change part describes the scattering from one electron-hole pair into another one by the Coulomb interaction, while the direct part describes the scattering between the electron and hole in an electron-hole pair via the screened interaction. The determination of eigenstates and dy-namics within the Bethe–Salpeter equation reduces to the solution of a time-independent and time-dependent Schr¨ odinger equation, 
+
+HBSE A = Ω A, (11) 
+
+i∂ tA = HBSE A. (12) where A is the excitonic state wavefunction and Ω is the excitation energy. We now see that we can make a simple generalization of GW-BSE to multi-excitonic states. This is achieved by taking the Hilbert space to be that of multi-excitonic states, and describing the propagation of electrons and holes by the Fock term H0 and the scattering between electron-hole pairs by Hex  
+
+> ov
+
+and Hdir  
+
+> ov
+
+. The only additional ingredient is to treat the electron-electron and hole-hole interactions between different excitons; this takes place via the screened interaction, similar to the direct term.  
+
+> B. General nature of speedups versus classical and standard quantum simulation
+
+We may now choose to solve the GW-BSE quasipar-ticle Schrodinger equations with standard quantum al-gorithms, for example quantum phase estimation for the eigenvalue problem and Hamiltonian simulation for the dynamics problems. The main difference from the stan-dard quantum simulation problem is that it now involves only mtot quasiparticles, counting electrons and holes to-gether. The Hilbert space is polynomial in size and thus the classical GW-BSE simulation methods are polyno-mial cost in N , which is why they are widely used. The quantum speedup we can expect is therefore a polyno-mial one. We can now establish the origin of the quantum versus classical speedup and the speedup of quasiparti-cle quantum algorithms versus standard full Hamiltonian simulation quantum algorithms. The classical linear algebra algorithm involves linear algebra in a Hilbert space of dimension N mtot . With-out additional heuristic structure, we store the classical vector with space N mtot , and the cost is that of oper-ating on it with the Hamiltonian operator. For a typi-cal 2-body Hamiltonian whose integral matrix elements can be written as a N 2 × N 2 matrix, the cost of apply-ing the Hamiltonian by a matrix-vector product has a 
+
+O(N mtot +2 ) cost. In the quasiparticle quantum simulation, one is carry-ing out quantum linear algebra. The qubit count expo-4nentially compresses the Hilbert space, thus there is an exponential savings to represent the state. In terms of gate counts, the cost is to implement the Hamiltonian as a block-encoding [25, 26], where the cost is related to the classical data that needs to be loaded and the resulting subnormalization of the Hamiltonian, i.e. 
+
+C ∼ subnormalization cost × data (13) However, because the Hamiltonian only contains some fixed-body level of interactions (e.g. two-particle inter-actions) the amount of data that needs to be loaded is poly( N ), independent of mtot . Similarly, because the Hamiltonian is an effective Hamiltonian for mtot -particles (regardless of system size), then its subnor-malization (lower bounded by the largest singular value of the Hamiltonian) is expected to be poly( mtot ), thus we get the reduction from a N mtot +c classical cost to poly( mtot )poly( N ) quantum cost. Similarly, we can compare an equivalent operation with the full quantum simulation (either in first or second quantization) [9, 10]. In this case, the cost has a sim-ilar form, the amount of data to load to represent the two-particle interactions is similarly poly( N ). However, since the Hamiltonian is now describing N -particles, we expect the subnormalization to be poly( N ), thus giving a poly( N )/poly( mtot ) factor speedup. While we can tune these speedups to be arbitrarily large by making mtot or N arbitrarily large, in this work we will be interested in speedup under practical simula-tion settings. This means that both mtot and N must correspond to physically relevant problem sizes, while the absolute costs must also be in a reasonable range for an actual simulation. For material sizes we therefore consider N in the range of ∼ 1000 atoms. For the neu-tral BSE applications considered here, biexcitons have 
+
+m = 2 electron–hole pairs ( mtot = 4), and triexcitons have m = 3 pairs ( mtot = 6). We mainly focus on the 
+
+m = 3 triexcitonic case in our resource estimates below as such states are generated and studied in physical ex-periments [27, 28], and serve as a balance between clas-sical complexity and direct relevance in multi-excitonic physics.   
+
+> III. EXPLICIT FORMULATION A. Computational representation
+
+We now specify the multi-exciton Bethe-Salpeter equa-tions, within the Tamm-Dancoff formulation, and using static self-energies and static screening, as commonly used in the GW-BSE framework. We assume we have obtained single-particle mean-field orbitals {ϕ} and the self-energy corrected orbital energies {ϵ}. We label the occupied (hole) orbitals by i, j, . . . and virtual (particle) orbitals, labelled by a, b, . . . ; when we do not distinguish between occupied and virtual indices, we use the labels 
+
+p, q, . . . . The number of occupied labels will be denoted 
+
+No, the number of virtual labels Nv , and the total num-ber of labels NAO . The material contains O(N ) electrons, while the neutral m-exciton sector contains mtot = 2 m
+
+quasiparticles ( m electrons and m holes), and (with-out translational symmetry, see below) NAO = O(N ), 
+
+No = O(N ) and Nv = O(N ). We will assume a spin-orbital basis, i.e. the basis states are of the form |ϕσ ⟩
+
+with σ ∈ {↑ , ↓} . In a crystalline material, the occupied orbitals constitute the core and valence bands, while the virtual orbitals are the conduction bands. The computational basis is the first-quantized mean-field m-particle/ m-hole basis, i.e. the basis states are labelled 
+
+|ij . . . ab . . . ) ≡ ϕi(1) ϕj (2) . . . ϕ a(1 ′)ϕb(2 ′) (14) However, we only interested in the Hamiltonian in the antisymmetric sector of this space, i.e. spanned by states 
+
+|ij . . . ab . . . ⟩ ≡ [A ϕi(1) ϕj (2) . . . ][ A ϕa(1 ′)ϕb(2 ′) . . . ](15) where the two antisymmetrizers act separately on the hole and particle states, and the numeric label range is 1, 2, . . . , m . Since we will always prepare antisymmetric initial states, we define HBSE to obtain the correct ma-trix elements under this assumption, which leads to sim-plifications below (i.e. it removes the need for explicit exchange terms in Hdir  
+
+> oo
+
+and Hdir  
+
+> vv
+
+). The number of qubits to store the state is 
+
+O(mtot log N ) = O(m log N ), which is to be compared with classical dense vector storage of O(N 2m), and first-and second-quantized quantum simulation storage of 
+
+O(N log N ) and O(N ), respectively, when the electron number is proportional to N . Thus the quasiparticle quantum representation uses exponentially less storage than the classical dense representation, as well as stan-dard first- and second-quantized quantum simulation. The multi-exciton BSE Hamiltonian is a sum of five terms 
+
+HBSE = H0 + Hdir  
+
+> vv
+
++ Hdir  
+
+> oo
+
++ Hex  
+
+> ov
+
++ Hdir  
+
+> ov
+
+. (16) (Similar forms of HBSE appear in Refs. [29–32]). The Fock term H0 propagates the electrons and holes. We denote the occupied and virtual blocks of the effective single-particle Fock matrix by f o and f v , respectively; here these blocks include the static self-energy correction. In a general basis within each sector, 
+
+H0 = X
+
+> e
+
+X
+
+> abσ
+
+f vab |aσ ⟩⟨ bσ |e
+
+− X
+
+> h
+
+X
+
+> ijσ
+
+f oji |iσ ⟩⟨ jσ |h. (17) Here h, e label the m holes and electrons. More com-monly, one works in the orbital-energy basis, f oij = ϵiδij 
+
+and f vab = ϵaδab , so H0 is diagonal. The hole contribu-tion carries −(f o)T. Thus H0 denotes the full Fock term, whereas f o, f v denote its single-particle blocks. 5
+
+Hdir  
+
+> vv
+
+and Hdir  
+
+> oo
+
+describe the screened electron-electron and hole-hole interactions 
+
+Hdir  
+
+> vv
+
+= X
+
+> e<e ′
+
+X
+
+> abcd
+
+X
+
+> σ,σ ′
+
+Wac,bd |a σ ⟩⟨ c σ |e |b σ ′⟩⟨ d σ ′|e′ , (18) 
+
+Hdir  
+
+> oo
+
+= X
+
+> h<h ′
+
+X
+
+> ijkl
+
+X
+
+> σ,σ ′
+
+Wki,lj |i σ ⟩⟨ k σ |h |j σ ′⟩⟨ l σ ′|h′ , (19) The direct term of Hov contains the screened electron-hole interaction 
+
+Hdir  
+
+> ov
+
+= − X
+
+> eh
+
+X
+
+> abij
+
+X
+
+> σ,σ ′
+
+Wba,ij |b σ ⟩⟨ a σ |e |j σ ′⟩⟨ i σ ′|h, (20) where we note the minus sign, which produces exciton binding. The remaining exchange term uses the bare Coulomb interaction in the ( ov |vo ) ordering and exchanges the two spin labels 
+
+Hex  
+
+> ov
+
+= X
+
+> he
+
+X
+
+> abij
+
+X
+
+> σ,σ ′
+
+Via,bj |j σ ′⟩⟨ i σ |h |b σ ′⟩⟨ a σ |e. (21) This term is responsible for the energy splitting of singlet and triplet excitons. The one and two-particle terms in HBSE sum over 
+
+O(m) and O(m2) quasiparticle terms in their expressions, to be contrasted with the standard first quantized Hamil-tonian, which sums over O(N ) and O(N 2) terms. This reflects the fact that we are working in a fixed O(m)quasiparticle manifold.  
+
+> B. Integral representation and symmetry
+
+The data specifying the Hamiltonian in Eq. (16) are the Fock blocks f o, f v (or their eigenvalues ϵ in the orbital-energy basis) and the interaction integrals. We use X ∈ { W, V } for either the screened interaction W
+
+or the bare Coulomb interaction V . W and V have 
+
+O(N 4) entries and thus dominate the data requirements. However, W and V are matrix elements of real-space interaction operators, and their data requirements can be reduced using tensor factorization [9, 33]. Here, we use tensor hypercontraction (THC) [34, 35], similarly to Ref. [33], where we write 
+
+Xpq,rs ≈ X
+
+> μν
+
+χX∗ 
+
+> pμ
+
+χXqμ ζXμν χX∗ 
+
+> rν
+
+χXsν , (22) where μ, ν are auxiliary indices of dimension NTHC . The orbital indices p, q, r, s range over both occupied and vir-tual orbitals; i, j, . . . and a, b, . . . select the occupied and virtual rows of the same tensor χX . We retain sector la-bels only for whole block operators, denoting these row restrictions by χX,o and χX,v . The W and V factoriza-tions are fitted separately and may have different aux-iliary dimensions; NTHC denotes the dimension of the factorization under discussion. In standard electronic structure applications with a local atomic basis of di-mension NAO , the factorization is chosen to preserve a fixed relative error in the total energies by using con-stant cIP = NTHC /N AO with system size. This reduces the data to O(N 2). As analyzed in Ref. [9], we can further reduce the data requirements using translational symmetry. In a crys-talline material, we can construct single-particle Bloch states labelled by crystal momentum k. We use the stan-dard prescription of taking values on an evenly spaced Brillouin zone mesh with Nk points [36]; Nk labels the size of an equivalent computational supercell with pe-riodic boundary conditions, and for a fixed number of bands NAO , N = NkNAO . The crystalline electron and hole orbitals acquire are labelled by ik and ak respec-tively, where No now labels the occupied bands per cell, and Nv , the virtual bands per cell. Crystal-momentum conservation allows us to write the integrals as 
+
+Xpk, q (k⊖Q), r (k′⊖Q), s k′ , (23) where ⊖ denotes subtraction modulo reciprocal lattice vectors. The common THC factorization is 
+
+Xpk, q (k⊖Q), r (k′⊖Q), s k′
+
+≈ 1
+
+Nk
+
+X
+
+> μν
+
+χX∗ 
+
+> pk,μ
+
+χXq(k⊖Q),μ ζX 
+
+> Q,μν
+
+χX∗ 
+
+> r(k′⊖Q),ν
+
+χXsk′,ν . (24) This expression applies to all orbital sectors. The di-rect terms use X = W with the orbital-index choices in Eqs. (18)–(20); the exchange term uses X = V with the mixed occupied–virtual pairs in Eq. (21). The data size is then O(NkcIP N 2AO ) + O(Nkc2IP N 2AO ). Since NAO 
+
+and cIP are independent of system size, and Nk = O(N ), the total data requirement is reduced to O(N ). Beyond lattice translational symmetry, most crystals have addi-tional symmetry elements given by their space group [37]. We denote the finite symmetry group of the periodic su-percell by G and its compatible point group by P , so that 
+
+|G| = Nk|P |. The momentum vectors are then split into approximately Nk/|P | momentum stars (with each star specified by the same data), where |P | is the order of the crystal point group. We discuss the detailed implemen-tation of space-group adaptation further in section III C.  
+
+> C. Block encoding and data loading
+
+We now determine the quantum resource cost of quan-tum phase estimation (QPE) [38] for computing eigen-values of the BSE Hamiltonian HBSE . We do not in-clude the initial state preparation cost, although adi-abatic state preparation is a natural strategy [39, 40] for weakly- to moderately-correlated semiconductor exci-tonic states, starting from the orbital product states. We use a fault-tolerant cost model of Toffoli count and logical qubit count. In this cost model, the standard method is to use qubitization [25, 33, 41, 42], where one constructs 6the walk operator W = (2 |0⟩⟨ 0| ⊗ I − I)U , where U is a self-inverse block encoding of HBSE . The eigenvalues of W are e±i arccos( E/λ ), where E are the eigenvalues of 
+
+HBSE and λ is the subnormalization of the block encod-ing. As shown in Ref. [33], to estimate an eigenvalue to accuracy ϵQPE , the total cost is 
+
+CQPE =
+
+ πλ 
+
+2ϵQPE 
+
+
+
+Cwalk . (25) Up to the small number of Toffolis associated with the re-flection operation in W , Cwalk is equivalent to the block-encoding cost, thus both Cwalk and λ are set by the block encoding method. A standard block encoding strategy is to decompose the Hamiltonian into a linear combination of unitaries (LCU) [43], with H = P 
+
+> μ
+
+cμUμ, where Uμ does not re-quire an additional complicated synthesis, and with a total subnormalization λ = P 
+
+> μ
+
+|cμ|. Examples of this approach include the sum of Paulis LCU in second quan-tized quantum simulation, where the coefficients are the integrals, e.g. Vpq,rs , or the tensor hypercontraction ana-log, where the coefficients are e.g. ζV 
+
+> Q,μν
+
+,and the unitaries are Givens rotations of Pauli operators [33, 41, 44]. However, the BSE Hamiltonian, and especially its ex-change part, has a different structure, that makes an analogous LCU summation (and in particular a sum-mation over Q) unfavourable. Physically, treating an electron–hole pair as a single exciton (mathematically grouping the ia and jb indices in Eq. 21), the exchange Hamiltonian for one pair can be written conceptually as 
+
+Hex ,proto  
+
+> ov
+
+= X
+
+> Q
+
+V (Q)|exciton , Q⟩⟨ exciton , Q|. (26) Here |exciton , Q⟩ represents a Bloch exciton state with momentum Q. In the long-range asymptotic limit, V (Q)is governed by the dipole–dipole kernel QQ /|Q|2 − I/ 3(see details in Appendix C), therefore each Q has almost uniform O(1) operator norm, while the full exchange Hamiltonian also has O(1) operator norm. Therefore, a naive LCU sum over Q introduces an unnecessary O(Nk)higher subnormalization, even if each momentum block is encoded optimally. We thus use a more natural LCU construction of HBSE .More specifically, from Eq. 16, we have (i) a sum over 5 terms (templates), (ii) within each term, we have a sum over the quasiparticles (electrons, e, or holes h) and occupied/virtual combinations, and then finally (iii) a summation over the orbital labels, which yields the pro-toterms, which we can construct by direct synthesis. For example, for Hdir  
+
+> oo
+
+, the prototerm is 
+
+Hdir ,proto  
+
+> oo
+
+= X
+
+> σσ ′
+
+X
+
+> ijkl
+
+Wki,lj |i σ ⟩⟨ k σ | ⊗ | j σ ′⟩⟨ l σ ′|. (27) The prototerm is the same for any pair of holes. Thus the summation in (i) is implemented by a PREPARE and standard SELECT LCU, but in (ii) PREPARE is followed by a SELECT which is implemented by a routing network which routes the selected hole registers h, h ′ to a single synthesized prototerm. The resulting Toffoli cost and subnormalization are given by 
+
+Cwalk = C0 + Cdir  
+
+> oo
+
++ Cdir  
+
+> vv
+
++ Cex  
+
+> ov
+
++ Cdir  
+
+> ov
+
++ Cextra , (28) 
+
+λ = λ0 + λex + λdir , (29) 
+
+λ0 = m˜λ0, λex = m2 ˜λex  
+
+> ov
+
+, (30) 
+
+λdir =
+
+m
+
+2
+
+ ˜λdir  
+
+> oo
+
++ ˜λdir 
+
+> vv
+
+ + m2 ˜λdir  
+
+> ov
+
+. (31) Here C0 and λ0 are the walk cost and subnormalization of the Fock term H0. λ (without the tilde) denotes subnor-malizations of the full m-exciton effective Hamiltonian and its components, while ˜λ denotes those of individual one- or two-body terms acting on one or two electrons or holes. The cost Cextra contains extra subleading terms, such as preparing the LCU coefficients, register routing, momentum arithmetic, Fourier transforms, and reflection operator for the walk operator (note all such costs are in-cluded in our numerical resource estimates). For gapped systems at fixed basis resolution and fitting accuracy, the prototerm subnormalizations ˜λ and, at fixed m, the total subnormalization λ, are theoretically expected to scale asymptotically as O(1) (see Appendix D). In the numer-ical results for the Coulomb interaction below, we observe an effective scaling λ ∝ N α over the system sizes studied, with a small exponent α ≪ 1. Since m = O(1), for N
+
+of interest, the total subnormalization is within a small factor of the optimal subnormalization of HBSE .We now discuss the synthesis and subnormalization of the prototerms. We note that the Fock term H0 is diago-nal in the orbital-energy basis, and the two-particle ma-trices X ∈ { W, V } are block-diagonal due to translational symmetry. We will use optimized direct synthesis meth-ods based on the interferometer-based unitary synthesis in Sec III of [45], a modified column-by-column isometry synthesis [46], and QROAM-loaded rotations for diagonal operators, all adapted to block-diagonal matrices. The Fock term can be synthesized easily and con-tributes little to the total cost, so we start with the two-body oo , vv , and ov direct terms. Since the procedure is similar for all three, we continue with the oo exam-ple. Using the factorized integrals, we rewrite the same prototerm defined in Eq. (27) as 7(a) k                      
+
+> i
+> k′⊖Q
+> j
+> k⊖Q
+> i′
+> k′
+> j′
+> χW,o †χW,o
+> χW,o †χW,o
+> ˜ζW
+> F†FF†F
+> R1
+> μ
+> R2
+> ν
+> (b)k′
+> i
+> k′⊕Q
+> a
+> k
+> j
+> k⊕Q
+> b
+> (χV,v )T(χV,v )∗
+> χV,o SχV,o †
+> S
+> ζV
+> ⟨+||+⟩⊖⊕
+> Q
+> νμ
+
+Figure 1. Block encodings of the direct and exchange term. (a) The direct oo circuit, where F is the Fourier trans-form on the momentum registers, χW,o is the block isometry of Eq. (33), and ˜ζW is the diagonal operator of Eq. (36). The 
+
+vv and direct ov circuits use the same structure. (b) The exchange ov circuit, where χV,o S is the state preparation of Eq. (46), controlled by k and the auxiliary index. 
+
+Hdir ,proto  
+
+> oo
+
+= 1
+
+Nk
+
+X
+
+> kk ′Q
+
+X
+
+> μν
+
+ζW
+
+> Q,μν
+
+hX 
+
+> ii ′
+
+χWi′(k⊖Q),μ χW ∗ 
+
+> ik,μ
+
+|i′, k ⊖ Q⟩⟨ i, k|
+
+i
+
+⊗
+
+hX 
+
+> jj ′
+
+χWj′k′,ν χW ∗ 
+
+> j(k′⊖Q),ν
+
+|j′, k′⟩⟨ j, k′ ⊖ Q|
+
+i
+
+(32) where we have suppressed the spin summation for sim-plicity. (Technically, if we include spin, Hdir ,proto  
+
+> oo
+
+→
+
+Hdir ,proto  
+
+> oo
+
+⊗ Iσ , where I is an identity operator in the spin sector and does not increase the subnormalization, and the additional synthesis can be implemented with subleading costs). Define the block-diagonal matrix 
+
+χW,o = X
+
+> kiμ
+
+χWik,μ |ki⟩⟨ kμ|, (33) 
+
+Hdir ,proto  
+
+> oo
+
+can thus be expressed as 
+
+Hdir ,proto  
+
+> oo
+
+=  χW,o ⊗ χW,o Zdir 
+
+> oo
+
+ χW,o ⊗ χW,o † (34) with 
+
+Zdir  
+
+> oo
+
+= 1
+
+Nk
+
+X
+
+> kk ′Q
+
+X
+
+> μν
+
+ζW 
+
+> Q,μν
+
+|k⊖Q, μ ⟩⟨ k, μ |⊗| k′, ν ⟩⟨ k′⊖Q, ν |
+
+(35) and our task is to encode the operators χW,o and Zdir  
+
+> oo
+
+.We first transform to real space where Zdir  
+
+> oo
+
+is diagonal, which means that loading the diagonal entries achieves the optimal subnormalization. Define the Fourier-transformed central factor ˜ζW 
+
+> R,μν
+
+= N −1
+
+> k
+
+P 
+
+> Q
+
+eiQ·RζW 
+
+> Q,μν
+
+,together with the diagonal operator ˜ζW = X
+
+> R1μR2ν
+
+˜ζW 
+
+> R1⊖R2,μν
+
+|R1μR2ν⟩⟨ R1μR2ν|. (36) Then Zdir  
+
+> oo
+
+= (F ⊗ F ) ˜ζW (F ⊗ F )†, where F |R⟩ =
+
+N −1/2
+
+> k
+
+P 
+
+> k
+
+eik·R|k⟩ is the Fourier transform on a momen-tum register. To encode ˜ζW , we compute R = R1 ⊖ R2
+
+in place for addressing and use QROAM [42, 47] to load the elements ˜ζWR,μν /∥˜ζW ∥ via the the angles θRμν =arccos  ˜ζWR,μν /∥˜ζW ∥ and a multiplexed rotation to trans-fer them into the block encoding [48] with subnormaliza-tion ∥˜ζW ∥; the angle and the difference are subsequently uncomputed. Using ˜ζW and the Fourier transform circuit, we com-pose the block-encoding circuit shown in Figure 1(a). The matrix χW,o contains Nk blocks of size No × NTHC .We normalize all blocks by the common norm ∥χW,o ∥,embed each block into an isometry, and synthesize the blocks together using the column-by-column method de-scribed in Appendix A 4, where the dominant cost is again the QROAM data-loading of rotation angles. The 
+
+vv and direct ov terms have the same structure, with the appropriate occupied or virtual factors and Fourier directions. Note that there are shared circuit compo-nents; for example, the oo , vv , and direct ov terms share the same χW,o , χ W,v , ˜ζW . The cost accounting for these shared components is summarized in Table III of Ap-pendix A. The primitive direct subnormalizations are computed as ˜λdir  
+
+> oo
+
+= ∥χW,o ∥4∥˜ζW ∥, (37) ˜λdir  
+
+> vv
+
+= ∥χW,v ∥4∥˜ζW ∥, (38) ˜λdir  
+
+> ov
+
+= ∥χW,o ∥2∥χW,v ∥2∥˜ζW ∥. (39) Here ∥˜ζW ∥ is the largest absolute real-space matrix ele-ment in Eq. 36. We next describe the synthesis cost and the subnor-malization of the exchange ov term. With THC integrals, 8and temporarily neglecting spin, this takes the form 
+
+Hex,proto  
+
+> ov
+
+= 1
+
+Nk
+
+X
+
+> kk ′Q
+
+X
+
+> μν
+
+ζV
+
+> Q,μν
+
+hX 
+
+> ij
+
+χVjk,μ χV ∗ 
+
+> ik′,ν
+
+|j, k⟩⟨ i, k′|
+
+i
+
+> h
+
+⊗
+
+hX 
+
+> ab
+
+χV ∗
+
+> b(k⊕Q),μ
+
+χVa(k′⊕Q),ν |b, k ⊕ Q⟩⟨ a, k′ ⊕ Q|
+
+i
+
+> e
+
+(40) Factoring out the orbital factors as before gives 
+
+Hex,proto  
+
+> ov
+
+=  χV,o ⊗ (χV,v )∗Zex 
+
+> ov
+
+ χV,o ⊗ (χV,v )∗† (41) with 
+
+Zex  
+
+> ov
+
+= 1
+
+Nk
+
+X
+
+> kk ′Q
+
+X
+
+> μν
+
+ζV 
+
+> Q,μν
+
+|k, μ ⟩⟨ k′, ν |h
+
+⊗ | k ⊕ Q, μ ⟩⟨ k′ ⊕ Q, ν |e.
+
+(42) Two features distinguish this from Zdir  
+
+> oo
+
+of Eq. (35). First, 
+
+μ labels both kets and ν both bras, so ζV acts as a matrix from ν to μ rather than as a coefficient. Second, the mo-menta enter as correlated electron–hole pairs, ( k, k ⊕ Q)on the ket side and ( k′, k′ ⊕ Q) on the bra side, shar-ing a common exciton momentum Q. Both features are expressed by the two isometries, 
+
+T = 1
+
+√Nk
+
+X
+
+> kQ
+
+ |k⟩| k ⊕ Q⟩⟨Q|, Φ = X
+
+> μ
+
+ |μ⟩| μ⟩⟨μ|,
+
+(43) which build the correlated momentum pair and dupli-cate the auxiliary label respectively. Defining the block-diagonal matrix, 
+
+ζV = X
+
+> Qμν
+
+ζV 
+
+> Q,μν
+
+|Qμ⟩⟨ Qν|, (44) with dense square blocks of sizes NTHC × NTHC , we have 
+
+Zex  
+
+> ov
+
+= ( T ⊗ Φ) ζV (T ⊗ Φ) †, (45) To block encode ζV , we decompose each block into the U DU † form, construct the eigenbasis transformation using the block unitary synthesis [42], [45] detailed in Appendix A 3 and encode the eigenvalues as a diagonal operator. Similarly to the direct case, we encode χV,v as a block isometry. For χV,o , we find an improved Toffoli count and subnormalization by fusing χV,o with Φ (which consumes one of the μ copies in Φ, leaving the other to act on by χV,v ). The fused operator corresponds to 
+
+χV,o S := X
+
+> kμ
+
+|kμ⟩⟨ kμ|
+
+"
+
+1
+
+γo
+
+X
+
+> i
+
+(χVik,μ )∗⟨i|
+
+!
+
++ ⟨⊥ k,μ |
+
+#
+
+,
+
+(46) 
+
+γo := max 
+
+> k,μ
+
+X
+
+> i
+
+χVik,μ 
+
+> 2
+
+!1/2
+
+. (47) where ⟨⊥ k,μ | is an orthogonal component that normal-izes the state, which will be projected out in the block-encoding. Compared with the block isometry encoding, this replaces the operator norm with γo, the largest col-umn norm over ( k, μ ). The overall circuit construction is shown in Fig. 1(b). Together, these factors give the primitive exchange subnormalization ˜λex  
+
+> ov
+
+:= 2 ∥χV,v ∥2∥ζV ∥γ2 
+
+> o
+
+. (48) where the additional factor of 2 now comes from restoring the treatment of spin. The leading synthesis cost above comes from the use of QROM/QROAM data loading (Appendix A 1). Here, one can use a Toffoli-ancilla tradeoff to change the Toffoli cost from O(data) to O(√data) using O(√data) ancillas. Using the cost formulae in Table III of Appendix A, and taking the NTHC parameter assumed in earlier second quantized work [9] NTHC /N AO = 8 and a rotation bit-precision b = 32, the Toffoli counts per walk query for the qubit- and Toffoli-optimized versions have leading orders 
+
+Cwalk ≈
+
+(
+
+313 Nk N 2AO , Qubit-optimal ,
+
+1268 √Nk N 3/2AO , Toffoli-optimal , (49) and the leading-order peak ancilla count is approximately 
+
+Awalk ≈
+
+(
+
+96 + log 2
+
+ 64 NkN 2AO 
+
+ , Qubit-optimal ,
+
+45 √Nk NAO , Toffoli-optimal .
+
+(50) Space-group adaptation, introduced in Sec. III B, fur-ther reduces the data that must be loaded. Here, this denotes exploiting crystal symmetries beyond the trans-lations already incorporated throughout. An element g
+
+of the space group G defined there maps Bloch orbitals at 
+
+k to orbitals at gk, atomic orbital components to (super-position of) other atomic orbital components, and maps interpolation points to symmetry-equivalent points. We denote its unitary representation on the orbital index (p, k) by Dorb  
+
+> g
+
+, which is Dog or Dvg in the occupied or virtual sector, and its representation on the THC index (k, μ ) by DTHC  
+
+> g
+
+. The latter is a phased permutation: it permutes momenta and interpolation points and at-taches a Bloch phase (Appendix B). The THC fitting of Sec. III D makes the factors symmetric, 
+
+Dorb  
+
+> g
+
+χX DTHC † 
+
+> g
+
+= χX ,DTHC  
+
+> g
+
+ζX DTHC † 
+
+> g
+
+= ζX , g ∈ G. (51) 9Let Sorb and STHC be unitaries that decompose the two representations into irreducible representations (ir-reps) [37], St†Dtg St = L 
+
+> λ
+
+Dλ(g) ⊗ Intλ for t ∈{orb , THC }, where irrep λ has dimension mλ and multi-plicity ntλ. By Schur’s lemma, Eq. (51) makes the factors block diagonal in these bases, 
+
+ζX 
+
+> sg
+
+= STHC †ζX STHC = M
+
+> λ
+
+Imλ ⊗ ζXλ , (52) 
+
+χX 
+
+> sg
+
+= Sorb †χX STHC = M
+
+> λ
+
+Imλ ⊗ χXλ , (53) with ζXλ of size nTHC  
+
+> λ
+
+×nTHC  
+
+> λ
+
+and χXλ of size norb  
+
+> λ
+
+×nTHC  
+
+> λ
+
+.The original factors are recovered exactly as χX =
+
+Sorb χX
+
+> sg
+
+STHC † and ζX = STHC ζX 
+
+> sg
+
+STHC †. In the space-group-adapted block encoding, we therefore synthesize 
+
+χX 
+
+> sg
+
+and ζX 
+
+> sg
+
+instead of the original factors wherever possi-ble. Specifically, we synthesize the block operators χW,o ,
+
+χW,v , χV,v and ζV through their space-group-adapted forms, using the procedures above with blocks indexed by 
+
+λ, and transform them with Sorb and STHC . The identity factor Imλ means that all mλ copies of a block share the same data, so only the blocks χXλ and ζVλ are loaded. The remaining operators, ˜ζW and χV,o S , do not take the form of a block-diagonal operator conjugated by STHC . We therefore synthesize them in the original translation-only form. Finally, Sorb is a unitary basis change that does not change the spectrum, so it need not be implemented (up to the initial state). The cost of STHC is subleading; its synthesis is described in Appendix B. Now we analyze the qualitative reduction of cost by space-group adaptation. Symmetry-related momenta form a momentum star, with one representative in the irreducible Brillouin zone. A generic star contains |P |
+
+momenta whose blocks share the same independent data, reducing the number of independently synthesized blocks from Nk to approximately Nk/|P |. High-symmetry points, lines, and planes can have smaller stars, but their fraction of a uniformly refined momentum mesh vanishes in the thermodynamic limit. The leading qubit-optimal and Toffoli-optimal costs therefore decrease by factors of approximately |P | and p|P |, respectively.  
+
+> D. THC optimization
+
+We initialize THC through the interpolable separable density fitting form [49, 50], where the index μ corre-sponds to real-space grid points at rμ, selected by a piv-oted Cholesky operation on the orbital product matrix evaluated on a predefined grid in the cell. Then the 
+
+χX tensors are simply the orbital values on the grids: 
+
+χXpk,μ = ϕpk(rμ). Once the χX tensors are determined, the ζX tensors can be obtained by a by least-squares fit [35], with a regularization to balance between accu-racy and sub-normalization [33]. The least-squares loss function is conceptually written as 
+
+L = log(relative ERI error) + α(subnormlization) , (54) where the relative ERI error is given by relative ERI error = ∥Xfit − X∥2
+
+∥X∥2
+
+(55) where X ∈ {W, V } as above, and α serves as an externally-controlled hyperparameter to balance accu-racy and sub-normalization. In practice, the loss function form is slightly adapted for better empirical performance. For each system, we sweep over a few different values of α to obtain a set of THC decompositions with different accuracies and subnormalizations. For the bare interac-tion, we assess the fitting accuracy using the second-order Moller-Plesset (MP2) [51] energy error per cell, follow-ing Ref. [9]. The diamond data show an overall increase in MP2 error with the relative fitting error of the bare (ov |vo ) block. We use this relation to calibrate relative-error targets, which are then applied to the ( ov |W |vo )projection of the fitted full screened interaction, as de-tailed in Appendix E. To perform the space-group-adapted THC fitting, one additionally requires that the orbitals can be labelled by the additional space-group labels. A sufficient (but not necessary) condition that the fitted THC form has the full 
+
+A1 symmetry, is that the χX and ζX tensors both have full A1 symmetry. To use this, we explicitly symmetrize the input χX tensor by 
+
+χX → 1
+
+|G|
+
+X
+
+> g∈G
+
+Dorb  
+
+> g
+
+χX DTHC ,† 
+
+> g
+
+,
+
+where Dorb  
+
+> g
+
+is one of Dog , D vg , the representation of the element g in the orbital space, and similarly for DTHC  
+
+> g
+
+.The symmetry of ζX , obtained from the least-squares solution, is automatically guaranteed by this structure. The same loss function is then used for the optimization. In practice, we find that the assumption of fully sym-metric χX and ζX does not lead to a significant loss of accuracy.  
+
+> E. Summary of asymptotic speedups
+
+We now describe the asymptotic speedups achievable by quasiparticle quantum simulation of the multi-exciton BSE Hamiltonian, versus first- and second-quantized simulation of the full Hamiltonian, as well as standard classical simulation. For the quantum algorithms, we report the Toffoli and qubit cost of λC walk , while for the classical algorithm, we give the scaling assuming BSE is solved iteratively by dense matrix-vector multi-plications [52, 53]. We consider increasing the number of translationally equivalent primitive cells Nk in a su-percell with periodic boundary conditions, keeping the 10 
+
+(a) Quantum Algorithms Method Toffoli count Logical qubits 
+
+> Subnormalization
+> λ
+> Block-encoding
+> Cwalk
+
+Total 
+
+λC walk 
+
+Quantum BSE T-optimal N α N 1/2 N 1/2+ α N 1/2
+
+Quantum BSE Q-optimal N α N N 1+ α log N
+
+Second quantization, THC N 2 N N 3 N
+
+First quantization N 2 N N 3 N
+
+(b) Classical Algorithms Method Time Space 
+
+Classical BSE N 2m N 2m−1
+
+Table I. Resource scaling for crystalline systems with periodic boundary conditions. The system size is varied through the number of translationally equivalent primitive cells Nk , keeping the orbital basis per primitive cell, THC rank ratio cIP , and electron–hole pair number m fixed. Thus N = Nk NAO ∝ Nk , and the tabulated powers describe scaling with the number of primitive cells. (a) Quantum resources at fixed QPE precision. Under a fixed QPE target error, the total Toffoli scaling is proportional to the product of the subnormalization λ and block-encoding cost Cwalk . For quantum BSE, λ ∝ N α,with theoretical asymptotic exponent α = 0 (Appendices C and D); finite-size numerical estimates instead give a small effective exponent α ≈ 0.2 (Fig. 2). (b) Classical BSE, exploiting translational symmetry at fixed total crystal momentum. Classical exponents depend explicitly on m, whereas quantum BSE exponents are independent of fixed m. Logarithmic factors are omitted for the full-Hamiltonian quantum methods. 
+
+primitive-cell structure, orbital basis per cell NAO , and THC rank ratio cIP fixed. The size parameter is there-fore N = NkNAO ∝ Nk. In Table I we show simplified scalings at fixed electron–hole pair number m, retain-ing the explicit m dependence of the classical exponents. Detailed costs of the block-encoding primitives, includ-ing their dependence on block dimensions and rotation precision, are given in Appendix A. The subnormalization is theoretically expected to scale asymptotically as λ = O(1) at fixed excitation num-ber and accuracy (Appendix D), giving O(N 1/2) and 
+
+O(N ) Toffoli costs for the Toffoli- and qubit-optimized algorithms, respectively. Retaining the effective numer-ical scaling λ ∝ N α, quasiparticle simulation has a cost of O(N 1/2+ α) Toffolis and O(N 1/2) qubits (Toffoli-optimized), and O(N 1+ α) Toffolis and O(log N ) qubits (qubit efficient), with a small numerical exponent α ≪ 1over the system sizes studied (see next section). For classical BSE, exploiting translational symmetry at fixed total crystal momentum reduces the cost of a matrix– vector multiplication from O(N 2m+2 ) to O(N 2m) and the storage from O(N 2m) to O(N 2m−1). For triexci-tonic states ( m = 3), this gives O(N 6) time and O(N 5)space. Approximating α ≈ 0, we achieve up to a 12th power time speedup (Toffoli-optimized) and an exponen-tial savings in space (qubit-optimized algorithm) over the default classical algorithm. First- and second-quantized algorithms using LCU block encodings for full Hamiltonian simulation require 
+
+eO(N ) Toffolis to apply terms across the electron or or-bital registers [9, 10]. The associated subnormalization is also expected to scale as eO(N 2): in second quantiza-tion, THC sums magnitudes of effective interaction co-efficients and exhibits approximately quadratic growth in materials benchmarks [9, 33], while in first quantiza-tion it depends explicitly on the O(N 2) electron pairs [10]. For excitations, resolving a fixed absolute excita-tion energy further requires computing both ground- and excited-state total energies to fixed additive accuracy, un-like per-cell accuracy which permits total-energy errors that grow with N . Thus at fixed excitation-energy pre-cision, this yields an overall Toffoli cost of eO(N 3), while storing the state requires O(N ) or O(N log N ) qubits. Assuming α ≈ 0, the quasiparticle quantum simula-tion thus achieves a 6th power speedup in time (Toffoli-optimized) and an exponential savings in space (qubit-optimized) over full Hamiltonian simulation (although, of course, the problem being simulated is not identical). As discussed above, this speedup comes from reducing the block-encoding cost, where the only N scaling comes from data-loading, as well as the favourable subnormal-ization, which physically arises from the O(1) spectral width of HBSE .We note briefly that there are very recent full-Hamiltonian simulation algorithms that improve on this LCU scaling. Trotter-based methods with tighter er-ror bounds and cheaper Trotter steps [54–56] can reach 
+
+N 5/3+ o(1) gates when the numbers of electrons and or-bitals both scale as N , and sum-of-squares spectral am-plification [57–59] reduces the subnormalization, by a fac-tor of O(N 1/2) in first quantization. We do not use these methods as baselines, since comparable end-to-end re-source estimates for the materials and system sizes con-sidered here are largely unavailable. We note that their asymptotic costs remain well above the O(N 1/2+ α) Tof-foli scaling of the quasiparticle simulation. 11 23 33 43 53 63 83 10 3                               
+
+> Nk
+> 10 1
+> 10 2
+> λ (Eh)
+> Fock λ0N0.03
+> k
+> Direct λdir N−0.02
+> k
+> Exchange λex N0.42
+> k
+> Total λN0.21
+> k
+> 23334353638310 3
+> Nk
+> 10 4
+> 10 5
+> 10 6
+> 10 7
+> Toffoli count
+> Fock N0.50
+> k
+> Direct N0.50
+> k
+> Exchange N0.50
+> k
+> Total N0.50
+> k
+> 23334353638310 3
+> Nk
+> 10 6
+> 10 7
+> 10 8
+> Toffoli count
+> T-optimal N0.5
+> k
+> Q-optimal N1.0
+> k
+> (a) Subnormalization (b) Walk (T-optimal) (c) Total walk
+
+Figure 2. Subnormalizations and walk costs for triexcitonic BSE eigenvalue estimation in diamond without using space-group adaptation, using a THC fitting criterion of approximately 0 .1 m Eh MP2 energy error per unit cell. (a) Fock, direct, exchange, and total subnormalizations, including the m = 3 excitation-order factors defined in Eqs. (30) and (31). Thin lines connect successive points, scaling fits are obtained from the last three data points, and open markers denote extrapolated data. (b) Toffoli-optimized walk components and their sum. (c) Total walk costs for both T-optimal and Q-optimal compilation; the legend gives the theoretical leading powers N 0.5 
+
+> k
+
+and N 1.0 
+
+> k
+
+.
+
+IV. RESOURCE ESTIMATES FOR MULTI-EXCITON SIMULATION IN SEMICONDUCTORS 
+
+We now present logical resource estimates for the BSE simulation of multi-excitonic states. As above, we choose the m = 3 triexcitonic state setting as one which balances physical relevance and classical difficulty. Classical pre-processing of the data is performed using PySCF [62, 63], and we also use its implementation of periodic GW (specifically, G0W0) [64]. The calculations used the GTH-cc-pVDZ basis of Ye and Berkelbach [60] for di-amond, MgO, BN, and AlN, and use the GTH-DZVP-MOLOPT-SR basis [61] for CdSe. The materials were chosen for benchmarking value 
+
+System Atoms Active electrons NAO 
+
+Diamond 2 8 26 MgO 2 16 27 BN 2 8 26 AlN 4 16 52 CdSe 4 36 76 Table II. System information for resource estimates consid-ered in this work. All counts are per unit cell; NAO is the number of atomic-orbital basis functions. Diamond, MgO, BN, and AlN use the GTH-cc-pVDZ basis [60], while CdSe uses the GTH-DZVP-MOLOPT-SR basis [61]. 
+
+rather than for a direct relevance to multi-excitonic physics. Diamond, BN, and AlN have previously been studied in the context of first and second quantized simu-lation resource estimation [9, 10]. MgO is a material with a strongly bound m = 1 exciton [65], and CdSe is a ma-terial studied in the context of multi-exciton generation in nanocrystals and engineered nanostructures [66, 67]. However, even for CdSe, which we treat here as a peri-odic bulk material, the focus of the current work is on resource estimation as a foundation for future simula-tions of the multi-exciton generation process. Table II summarizes the numbers of atoms, active electrons, and basis functions per unit cell for the various semiconduc-tors. We first examine the subnormalization and walk costs, then compare the resulting resource scaling with stan-dard full Hamiltonian quantum simulation at the same target accuracy (a typical electronic spectroscopy com-putational accuracy of 0 .1 eV). 
+
+A. Resource scaling of walk cost and subnormalization 
+
+We first examine the resources required for each step of the algorithm and their dependence on Nk, using di-amond as an example. Here, we do not use space-group adaptation. To be consistent with Ref. [9], we fit the THC factors so that the estimated ground-state MP2 er-ror is approximately 0 .1 m Eh per unit cell or less. The de-12 23 33 43 53 63 83 10 3                   
+
+> Nk
+> 10 9
+> 10 11
+> 10 13
+> 10 15
+> 10 17
+> 10 19
+> 10 21
+> 10 23
+> 10 25
+> 10 27
+> Quantum BSE T-optimal N0.71
+> k
+> Quantum BSE Q-optimal N1.21
+> k
+> Classical BSE FLOPs N6.00
+> k
+> Second quantized N2.56
+> k
+> First quantized N2.89
+> k
+> 10 12
+> 10 16
+> 10 20
+> Quantum BSE T-optimal N0.53
+> k
+> Quantum BSE Q-optimal N0.04
+> k
+> Classical BSE storage N5.00
+> k
+> Second quantized N0.57
+> k
+> First quantized N0.66
+> k
+> 23334353638310 3
+> Nk
+> 10 2
+> 10 3
+> 10 4
+> 10 5
+> 10 6
+> (a) Toffoli count (b) Logical qubits
+
+Figure 3. Quantum and classical resource estimates for diamond. The BSE calculations use m = 3, a THC fitting tolerance of 0.1 m Eh MP2 error per unit cell, and no space-group adaptation. All quantum methods target 0 .1 eV QPE error per eigenvalue estimate: an excitation energy for BSE and a total supercell energy for the full-Hamiltonian methods. Constant overheads for combining ground- and excited-state estimates are omitted. (a) Quantum Toffoli counts and classical BSE FLOPs. (b) Logical qubits and classical BSE storage, counted in floating-point values. Open markers denote extrapolated data. 
+
+tailed parameters are described in Appendix E. Figure 2 shows the subnormalizations in panel (a), the Toffoli-optimized counts for different walk components in (b), and the total walk costs in (c). In panel (a), we see that the Fock and direct contri-butions to the subnormalization are nearly independent of system size, whereas exchange grows as a function of the mesh size. Its growth rate nevertheless decreases for larger Nk, consistent with the arguments for ∼ O(1) asymptotic scaling given in Appendices C and D. Fit-ting to the last three measured meshes gives N 0.42  
+
+> k
+
+for exchange and N 0.21  
+
+> k
+
+for the total, and the total subnor-malization increases only from 87 .5 to 175 .7 Eh as Nk
+
+increases 27-fold, from 8 to 216. The open markers show extrapolations to Nk = 512 and 1000. Panel (b) shows that the direct and exchange terms dominate the Toffoli-optimized walk cost, while the Fock contribution is smaller. (Here the resource estimates allow for general occupied and virtual Fock blocks f o
+
+and f v ; using their diagonal orbital-energy representa-tion would give a small savings). The walk costs are evaluated from the circuit-cost formulae, which allows us to directly extract their scaling. Their leading system-size dependence is N 0.5 
+
+> k
+
+under Toffoli optimization and 
+
+N 1.0 
+
+> k
+
+under qubit optimization, as derived in Sec. III E. Panel (c) displays these two behaviors. The slow growth of the subnormalization therefore provides only a mod-est additional system-size dependence in the total phase-estimation cost. 
+
+B. Comparison to first- and second-quantized simulations 
+
+We compare quantum BSE with first- and second-quantized full-Hamiltonian simulations at a QPE error of 0 .1 eV ≃ 3.68 m Eh per eigenvalue estimate. BSE directly estimates excitation energies, whereas the full-Hamiltonian methods require differences between inde-pendently resolved total supercell energies. The second-quantized reference’s original tolerance of 1 kcal mol −1
+
+per cell [9] must therefore be converted to fixed super-cell accuracy, introducing an additional factor of Nk
+
+in the QPE cost at the same numerical tolerance; the first-quantized reference already uses total-energy accu-racy [10]. Figure 3 shows the resulting estimates, retain-ing the preceding subsection’s THC criterion of 0 .1 m Eh
+
+MP2 error per cell and using no space-group adapta-tion. Details of the reference estimates are given in Ap-pendix F. We show the Toffoli counts in panel (a) of Fig. 3. The BSE Toffoli counts scale as N 0.71  
+
+> k
+
+and N 1.21  
+
+> k
+
+under Toffoli and qubit optimization, respectively. These ex-ponents are consistent with the theoretical N 1/2+ αk and 
+
+N 1+ αk scalings in Table I, with the weak subnormalization growth α ≈ 0.2 observed above. The full-Hamiltonian es-timates scale as N 2.56  
+
+> k
+
+in second quantization and N 2.89 
+
+> k
+
+in first quantization over the plotted range. This is below their theoretical asymptotic cubic dependence because at these sizes, the lower-order contributions still dominate. 13 0 4 8       
+
+> ×10 11
+> Diamond, m= 2 Diamond MgO BN AlN CdSe 1.12 0.23 2.35 0.47 2.31 0.57 1.90 0.57 3.77 1.40 7.48 2.76
+> (a) Toffoli count
+> 048
+> ×10 4
+> 1.66 1.66 1.66 1.66 3.30 6.58
+> (b) Logical qubits
+> No space-group adaptation Space-group adapted
+
+Figure 4. Toffoli-optimized multi-exciton BSE resources at 
+
+Nk = 1000, with a target QPE error of 0 .1 eV in the excita-tion energy and a THC fitting tolerance below 0 .005 eV MP2 error per active electron. All cases use m = 3 unless oth-erwise labelled. (a) Toffoli counts without (blue) and with (orange) space-group adaptation. Diamond uses subnormal-izations from space-group-adapted fits; the other materials retain those from fits without space-group adaptation. (b) Logical-qubit counts, which agree between the two settings at the displayed precision. Input estimates and subnormal-ization extrapolations are detailed in Appendix G. 
+
+Due to the difference in scaling, the resource advan-tage of quantum simulation of the BSE problem versus the full Hamiltonian problem increases with system size. At Nk = 1000, the Toffoli-optimized BSE Toffoli count is 5 .5 × 10 11 , compared with 3 .7 × 10 17 and 4 .2 × 10 18 
+
+for second and first quantization, respectively, i.e. we achieve a 10 6 −10 7× reduction. The corresponding qubit-optimized BSE Toffoli count is 2 .0 × 10 13 .Panel (b) shows the logical qubit requirements. The Toffoli-optimized BSE qubit count scales approximately as N 0.53  
+
+> k
+
+, close to the theoretical square-root dependence, while the qubit-optimized count grows only from 215 to 266, consistent with logarithmic scaling. The full-Hamiltonian qubit counts have effective exponents 0 .57 and 0 .66 over this range, below the asymptotic linear de-pendence in Table I. At Nk = 1000, the BSE formulation requires 3 .3 × 10 4 or 266 qubits under the two optimiza-tion choices, compared with 4 .1 × 10 5 and 2 .0 × 10 5 for second and first quantization. Finally, in both panels, we give a classical reference cost for a linear matrix-vector solve, assuming 10 itera-tions and dense matrix-vector multiplication, with cost 10 N 3 
+
+> o
+
+N 5 
+
+> v
+
+N 6 
+
+> k
+
+FLOPs. At Nk = 1000, the classical calcula-tion requires 3 .30 × 10 27 FLOPs and 6 .8 × 10 20 words of memory, both far exceeding any practical computational resource today. 
+
+C. Optimized resource estimates for BSE calculations 
+
+We now obtain our best quantum resource estimates by further optimizing the computational settings for multi-exciton BSE calculations targeting 0 .1 eV resolution in the excitation energy on the 10 × 10 × 10 k-point mesh. We focus on minimizing the Toffoli count. Since we are working with a quasiparticle theory and few-body Hamil-tonians, it is reasonable to consider the THC error as incurred per electron. We thus adjust the conservative THC fitting criterion used above to achieve an MP2 er-ror of below 0 .005 eV per active electron, and use space-group adaptation. The corresponding relative-integral-error criterion for the screened interaction is described in Appendix E. Details of the extrapolated inputs and error conventions are given in Appendix G. Diamond has 48 point-group operations, giving an ideal Toffoli-optimized reduction of approximately √48 ≃ 6.9. At fixed THC ranks, space-group adaptation reduces the walk cost by a factor of 4 .0: the direct cen-tral tensor ˜ζW and exchange state preparation remain in the physical basis, while the STHC transforms add over-head. Space-group-adapted fitting also yields a modestly smaller subnormalization at comparable relative ERI er-ror: for m = 3 and Nk = 1000, the extrapolated value de-creases from 157 .3 to 126 .7 Eh, which we attribute to the improved optimization landscape. Together, these effects reduce the Toffoli count by a factor of 5 .0, to 4 .7 × 10 10 ,while the logical-qubit count remains 1 .7 × 10 4 to the displayed precision. Following [9], assuming each Toffoli gate requires around 25 μs, we obtain a total runtime of about 14 days (as opposed to an estimated 10 5 −10 6 years with existing full Hamiltonian simulation protocols). For MgO, BN, AlN, and CdSe, we combine the space-group-adapted walk costs with the subnormalizations from the fits without space-group adaptation. These fixed-subnormalization estimates yield Toffoli reductions of 2 .7–4 .0, as shown in Fig. 4; detailed values are pro-vided in Appendix G. Without space-group adaptation, diamond, MgO, and BN have similar costs, between 1 .9 × 10 11 and 2 .3 × 10 11 
+
+Toffolis. These systems have similar basis sizes of 26–27 atomic orbitals per unit cell in the GTH-cc-pVDZ basis (Table II). AlN has 52 orbitals per unit cell in the same basis and correspondingly higher requirements, at 3 .8 ×
+
+10 11 Toffolis and 3 .3 × 10 4 qubits, compared with 1 .7 ×
+
+10 4 qubits for the other three materials. CdSe has the largest orbital space with 76 basis functions and 36 active electrons per primitive cell; the full simulation is thus of 76,000 orbitals. The triexcitonic calculation then requires approximately 7 .5 × 10 11 Toffolis and 6 .6 × 10 4 logical qubits. 14 
+
+V. CONCLUSIONS 
+
+We have presented a detailed quasiparticle quantum simulation framework for multi-excitonic states within the Bethe-Salpeter equation. Our analysis of scaling ad-vantage versus standard full Hamiltonian quantum sim-ulation reveals up to 6th power asymptotic speedup in Toffoli gates and up to an exponential reduction in qubit count for quantum phase estimation. We further de-scribed an explicit first-quantized, orbital-based, block-encoding compilation and carried out detailed resource estimates for the classically challenging, but physically relevant, problem of tri-excitonic eigenvalue estimation across a range of semiconductor models. For the diamond benchmark system, at a realistic Brillouin zone sampling of 10 ×10 ×10, we achieve a 10 6 −10 7 reduction in Toffoli gate count versus standard full Hamiltonian simulation, reducing the estimated quantum run time from 10 4–10 5
+
+years to roughly two weeks. Overall, this work illustrates the importance of existing classical heuristic frameworks in the era of fault-tolerant quantum simulation. The applicability of the heuristic approximations is to the same physical problem domains as studied in the classical simulations; however, quantum algorithms allow the possibility of extending the prob-lem domains in practice, for example, as pursued here in the description of multi-excitonic as opposed to single-excitonic solutions of the Bethe-Salpeter equation. This supports a broader thesis that existing classical heuristic ideas contain essential information that should be utilized in simulations of the physical world, and that designing quantum algorithms in the regimes where classical heuris-tics work [21] will be an essential direction in the further development of the field. 
+
+[1] B. Bauer, S. Bravyi, M. Motta, and G. K.-L. Chan, Quantum algorithms for quantum chemistry and quan-tum materials science, Chemical Reviews 120 , 12685 (2020). [2] S. McArdle, S. Endo, A. Aspuru-Guzik, S. C. Benjamin, and X. Yuan, Quantum computational chemistry, Re-views of Modern Physics 92 , 015003 (2020). [3] B. Bauer, D. Wecker, A. J. Millis, M. B. Hastings, and M. Troyer, Hybrid quantum-classical approach to corre-lated materials, Physical Review X 6, 031045 (2016). [4] R. Babbush, N. Wiebe, J. McClean, J. McClain, H. Neven, and G. K.-L. Chan, Low-depth quantum simu-lation of materials, Physical Review X 8, 011044 (2018). [5] I. D. Kivlichan, C. Gidney, D. W. Berry, N. Wiebe, J. McClean, W. Sun, Z. Jiang, N. Rubin, A. Fowler, A. Aspuru-Guzik, H. Neven, and R. Babbush, Improved fault-tolerant quantum simulation of condensed-phase correlated electrons via Trotterization, Quantum 4, 296 (2020). [6] H. Ma, M. Govoni, and G. Galli, Quantum simulations of materials on near-term quantum computers, npj Com-putational Materials 6, 85 (2020). [7] A. Delgado, P. A. M. Casares, R. dos Reis, M. S. Zini, R. Campos, N. Cruz-Hern´ andez, A.-C. Voigt, A. Lowe, S. Jahangiri, M. A. Martin-Delgado, J. E. Mueller, and J. M. Arrazola, Simulating key properties of lithium-ion batteries with a fault-tolerant quantum computer, Phys-ical Review A 106 , 032428 (2022). [8] M. Shokrian Zini, A. Delgado, R. dos Reis, P. A. Moreno Casares, J. E. Mueller, A.-C. Voigt, and J. M. Arrazola, Quantum simulation of battery materials using ionic pseudopotentials, Quantum 7, 1049 (2023). [9] N. C. Rubin, D. W. Berry, F. D. Malone, A. F. White, T. Khattar, A. E. DePrince, S. Sicolo, M. K¨ uhn, M. Kaicher, J. Lee, and R. Babbush, Fault-tolerant quan-tum simulation of materials using Bloch orbitals, PRX Quantum 4, 040303 (2023), arXiv:2302.05531 [quant-ph]. [10] D. W. Berry, N. C. Rubin, A. O. Elnabawy, G. Ahlers, A. E. DePrince, J. Lee, C. Gogolin, and R. Babbush, Quantum simulation of realistic materials in first quan-tization using non-local pseudopotentials, npj Quantum Information 10 , 130 (2024). [11] N. C. Rubin, D. W. Berry, A. Kononov, F. D. Malone, T. Khattar, A. White, J. Lee, H. Neven, R. Babbush, and A. D. Baczewski, Quantum computation of stopping power for inertial fusion target design, Proceedings of the National Academy of Sciences 121 , e2317772121 (2024). [12] L. Clinton, T. Cubitt, B. Flynn, F. M. Gambetta, J. Klassen, A. Montanaro, S. Piddock, R. A. Santos, and E. Sheridan, Towards near-term quantum simulation of materials, Nature Communications 15 , 211 (2024). [13] Y. Su, D. W. Berry, N. Wiebe, N. Rubin, and R. Bab-bush, Fault-tolerant quantum simulations of chemistry in first quantization, PRX Quantum 2, 040332 (2021). [14] A. V. Ivanov, C. S¨ underhauf, N. Holzmann, T. Ellaby, R. N. Kerber, G. Jones, and J. Camps, Quantum compu-tation for periodic solids in second quantization, Physical Review Research 5, 013200 (2023). [15] L. Hedin, New method for calculating the one-particle Green’s function with application to the electron-gas problem, Physical Review 139 , A796 (1965). [16] M. S. Hybertsen and S. G. Louie, Electron correlation in semiconductors and insulators: Band gaps and quasipar-ticle energies, Physical Review B 34 , 5390 (1986). [17] G. Onida, L. Reining, and A. Rubio, Electronic exci-tations: density-functional versus many-body Green’s-function approaches, Reviews of Modern Physics 74 , 601 (2002). [18] D. Golze, M. Dvorak, and P. Rinke, The GW com-pendium: A practical guide to theoretical photoemission spectroscopy, Frontiers in Chemistry 7, 377 (2019). [19] M. Rohlfing and S. G. Louie, Electron-hole excitations and optical spectra from first principles, Physical Review B 62 , 4927 (2000). [20] X. Blase, I. Duchemin, and D. Jacquemin, The Bethe– Salpeter equation in chemistry: relations with TD-DFT, applications and challenges, Chemical Society Reviews 
+
+47 , 1022 (2018). [21] J. Chen and G. K.-L. Chan, Framework for robust quan-tum speedups in practical correlated electronic struc-ture and dynamics, Physical Review Letters 137 , 130601 (2026). 15 
+
+[22] R. M. Martin, L. Reining, and D. M. Ceperley, Inter-acting Electrons: Theory and Computational Approaches 
+
+(Cambridge University Press, 2016). [23] E. E. Salpeter and H. A. Bethe, A relativistic equation for bound-state problems, Physical Review 84 , 1232 (1951). [24] G. Strinati, Application of the Green’s functions method to the study of the optical properties of semiconductors, La Rivista del Nuovo Cimento 11 , 1 (1988). [25] G. H. Low and I. L. Chuang, Hamiltonian simulation by qubitization, Quantum 3, 163 (2019), arXiv:1610.06546 [quant-ph]. [26] A. Gily´ en, Y. Su, G. H. Low, and N. Wiebe, Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics, in Pro-ceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing (ACM, 2019) pp. 193–204. [27] C. Bonati, M. B. Mohamed, D. Tonti, G. Zgrablic, S. Haacke, F. van Mourik, and M. Chergui, Spectral and dynamical characterization of multiexcitons in colloidal CdSe semiconductor quantum dots, Physical Review B 
+
+71 , 205317 (2005). [28] K. E. Shulenberger, T. S. Bischof, J. R. Caram, H. Utzat, I. Coropceanu, L. Nienhaus, and M. G. Bawendi, Multi-exciton lifetimes reveal triexciton emission pathway in CdSe nanocrystals, Nano Letters 18 , 5153 (2018). [29] A. Steinhoff, M. Florian, A. Singh, K. Tran, M. Ko-larczik, S. Helmrich, A. W. Achtstein, U. Woggon, N. Owschimikow, F. Jahnke, and X. Li, Biexciton fine structure in monolayer transition metal dichalcogenides, Nature Physics 14 , 1199 (2018). [30] A. Torche and G. Bester, Biexcitons fine structure and non-equilibrium effects in transition metal dichalco-genides monolayers from first principles, Communica-tions Physics 4, 67 (2021). [31] A. Torche and G. Bester, First-principles many-body the-ory for charged and neutral excitations: Trion fine struc-ture splitting in transition metal dichalcogenides, Physi-cal Review B 100 , 201403 (2019). [32] T. Deilmann, M. Dr¨ uppel, and M. Rohlfing, Three-particle correlation from a Many-Body Perspective: Tri-ons in a Carbon Nanotube, Physical Review Letters 116 ,196804 (2016). [33] J. Lee, D. W. Berry, C. Gidney, W. J. Huggins, J. R. Mc-Clean, N. Wiebe, and R. Babbush, Even More Efficient Quantum Computations of Chemistry Through Tensor Hypercontraction, PRX Quantum 2, 030305 (2021). [34] E. G. Hohenstein, R. M. Parrish, and T. J. Mart´ ınez, Tensor hypercontraction density fitting. I. quartic scal-ing second- and third-order Møller-Plesset perturbation theory, The Journal of Chemical Physics 137 , 044103 (2012). [35] R. M. Parrish, E. G. Hohenstein, T. J. Mart´ ınez, and C. D. Sherrill, Tensor hypercontraction. II. least-squares renormalization, The Journal of Chemical Physics 137 ,224106 (2012). [36] H. J. Monkhorst and J. D. Pack, Special points for Brillouin-zone integrations, Physical Review B 13 , 5188 (1976). [37] C. J. Bradley and A. P. Cracknell, The Mathematical Theory of Symmetry in Solids: Representation Theory for Point Groups and Space Groups (Oxford University Press, 2009). [38] A. Y. Kitaev, Quantum measurements and the Abelian stabilizer problem (1995), arXiv:quant-ph/9511026 [quant-ph]. [39] A. Aspuru-Guzik, A. D. Dutoi, P. J. Love, and M. Head-Gordon, Simulated quantum computation of molecular energies, Science 309 , 1704 (2005). [40] T. Albash and D. A. Lidar, Adiabatic quantum compu-tation, Reviews of Modern Physics 90 , 015002 (2018). [41] R. Babbush, C. Gidney, D. W. Berry, N. Wiebe, J. Mc-Clean, A. Paler, A. Fowler, and H. Neven, Encoding Electronic Spectra in Quantum Circuits with Linear T Complexity, Physical Review X 8, 041015 (2018), arXiv:1805.03662 [quant-ph]. [42] D. W. Berry, C. Gidney, M. Motta, J. R. McClean, and R. Babbush, Qubitization of Arbitrary Basis Quantum Chemistry Leveraging Sparsity and Low Rank Factoriza-tion, Quantum 3, 208 (2019), arXiv:1902.02134 [quant-ph]. [43] A. M. Childs and N. Wiebe, Hamiltonian simulation using linear combinations of unitary operations, Quan-tum Information and Computation 12 , 901 (2012), arXiv:1202.5822 [quant-ph]. [44] I. D. Kivlichan, J. McClean, N. Wiebe, C. Gidney, A. Aspuru-Guzik, G. K.-L. Chan, and R. Babbush, Quantum simulation of electronic structure with linear depth and connectivity, Physical Review Letters 120 ,110501 (2018). [45] D. W. Berry, Y. Tong, T. Khattar, A. White, T. I. Kim, S. Boixo, L. Lin, S. Lee, G. K.-L. Chan, R. Babbush, and N. C. Rubin, Rapid initial state preparation for the quan-tum simulation of strongly correlated molecules (2024). [46] R. Iten, R. Colbeck, I. Kukuljan, J. Home, and M. Chri-standl, Quantum Circuits for Isometries (2015). [47] G. H. Low, V. Kliuchnikov, and L. Schaeffer, Trading T gates for dirty qubits in state preparation and unitary synthesis, Quantum 8, 1375 (2024), arXiv:1812.00954 [quant-ph]. [48] C. S¨ underhauf, E. T. Campbell, and J. Camps, Block-encoding structured matrices for data input in quantum computing, Quantum 8, 1226 (2024), arXiv:2302.10949 [quant-ph]. [49] J. Lu and L. Ying, Compression of the electron repulsion integral tensor in tensor hypercontraction format with cubic scaling cost, Journal of Computational Physics 
+
+302 , 329 (2015). [50] W. Hu, L. Lin, and C. Yang, Interpolative separable den-sity fitting decomposition for accelerating hybrid density functional calculations with applications to defects in sil-icon, Journal of Chemical Theory and Computation 13 ,5420 (2017). [51] C. Møller and M. S. Plesset, Note on an approximation treatment for many-electron systems, Physical Review 
+
+46 , 618 (1934). [52] J. Deslippe, G. Samsonidze, D. A. Strubbe, M. Jain, M. L. Cohen, and S. G. Louie, BerkeleyGW: A mas-sively parallel computer package for the calculation of the quasiparticle and optical properties of materials and nanostructures, Computer Physics Communications 183 ,1269 (2012). [53] D. Sangalli, A. Ferretti, H. Miranda, C. Attaccalite, I. Marri, E. Cannuccia, P. Melo, M. Marsili, F. Paleari, A. Marrazzo, G. Prandini, P. Bonf` a, M. O. Atambo, F. Affinito, M. Palummo, A. Molina-S´ anchez, C. Hogan, M. Gr¨ uning, D. Varsano, and A. Marini, Many-body perturbation theory calculations using the yambo code, Journal of Physics: Condensed Matter 31 , 325902 (2019). 16 
+
+[54] Y. Su, H.-Y. Huang, and E. T. Campbell, Nearly tight Trotterization of interacting electrons, Quantum 5, 495 (2021). [55] G. H. Low, Y. Su, Y. Tong, and M. C. Tran, Complexity of implementing Trotter steps, PRX Quantum 4, 020323 (2023). [56] D. W. Berry, K. Wan, A. D. Baczewski, E. C. Ek-lund, A. Tikku, and R. Babbush, Quantum simulation of electronic structure via quantum fast multipole method, PRX Quantum 7, 033025 (2026). [57] R. King, G. H. Low, R. Babbush, R. D. Somma, and N. C. Rubin, Quantum simulation with sum-of-squares spectral amplification, Physical Review Letters 136 ,110601 (2026). [58] G. H. Low, R. King, D. W. Berry, Q. Han, A. E. De-Prince, III, A. F. White, R. Babbush, R. D. Somma, and N. C. Rubin, Fast quantum simulation of electronic structure by spectral amplification, Physical Review X 
+
+15 , 041016 (2025). [59] A. Dutkiewicz, A. F. White, G. H. Low, A. E. DePrince, M. P. Harrigan, M. Kieferova, R. Babbush, D. W. Berry, and N. C. Rubin, Spectral amplification for ground-state energy estimation of electronic structure in first quanti-zation (2026), arXiv:2607.15358 [quant-ph]. [60] H.-Z. Ye and T. C. Berkelbach, Correlation-consistent Gaussian basis sets for solids made simple, Journal of Chemical Theory and Computation 18 , 1595 (2022). [61] J. VandeVondele and J. Hutter, Gaussian basis sets for accurate calculations on molecular systems in gas and condensed phases, The Journal of Chemical Physics 127 ,114105 (2007). [62] Q. Sun, T. C. Berkelbach, N. S. Blunt, G. H. Booth, S. Guo, Z. Li, J. Liu, J. D. McClain, E. R. Sayfut-yarova, S. Sharma, S. Wouters, and G. K.-L. Chan, PySCF: the Python-based simulations of chemistry framework, WIREs Computational Molecular Science 8,e1340 (2018). [63] Q. Sun, X. Zhang, S. Banerjee, P. Bao, M. Barbry, N. S. Blunt, N. A. Bogdanov, G. H. Booth, J. Chen, Z.-H. Cui, J. J. Eriksen, Y. Gao, S. Guo, J. Hermann, M. R. Hermes, K. Koh, P. Koval, S. Lehtola, Z. Li, J. Liu, N. Mardirossian, J. D. McClain, M. Motta, B. Mussard, H. Q. Pham, A. Pulkin, W. Purwanto, P. J. Robin-son, E. Ronca, E. R. Sayfutyarova, M. Scheurer, H. F. Schurkus, J. E. T. Smith, C. Sun, S.-N. Sun, S. Upad-hyay, L. K. Wagner, X. Wang, A. White, J. D. Whitfield, M. J. Williamson, S. Wouters, J. Yang, J. M. Yu, T. Zhu, T. C. Berkelbach, S. Sharma, A. Y. Sokolov, and G. K.-L. Chan, Recent developments in the PySCF program package, The Journal of Chemical Physics 153 , 024109 (2020). [64] T. Zhu and G. K.-L. Chan, All-electron Gaussian-based 
+
+G0W0 for valence and core excitation energies of periodic systems, Journal of Chemical Theory and Computation 
+
+17 , 727 (2021). [65] F. Fuchs, C. R¨ odl, A. Schleife, and F. Bechstedt, Efficient 
+
+O(N 2) approach to solve the Bethe–Salpeter equation for excitonic bound states, Physical Review B 78 , 085103 (2008). [66] J. Xiao, Y. Wang, Z. Hua, X. Wang, C. Zhang, and M. Xiao, Carrier multiplication in semiconductor nanocrystals detected by energy transfer to organic dye molecules, Nature Communications 3, 1170 (2012). [67] J. Noh, C. Livache, D. Hahm, V. Pinchetti, H. Jin, C. Kim, and V. I. Klimov, Highly efficient carrier mul-tiplication in inverted CdSe/HgSe quantum dots medi-ated by magnetic impurities, Nature Communications 
+
+16 , 2952 (2025). [68] F. Rupprecht and S. W¨ olk, Sparse quantum state prepa-ration with improved Toffoli cost (2026), version Number: 1. [69] C. Gidney, Halving the cost of quantum addition, Quan-tum 2, 74 (2018), arXiv:1709.06648 [quant-ph]. [70] Y. R. Sanders, Compilation of Fault-Tolerant Quantum Heuristics for Combinatorial Optimization, PRX Quan-tum 1, 10.1103/PRXQuantum.1.020312 (2020). [71] M. M¨ ott¨ onen, J. J. Vartiainen, V. Bergholm, and M. M. Salomaa, Quantum circuits for general multiqubit gates, Physical Review Letters 93 , 130502 (2004). [72] V. Shende, S. Bullock, and I. Markov, Synthesis of quantum-logic circuits, IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 25 ,1000 (2006). [73] F. Rupprecht and S. W¨ olk, Faster matrix product state preparation by exploiting symmetry-induced block-sparsity (2026), arXiv:2605.28489 [quant-ph]. [74] X. Tan, Unitary synthesis with fewer T gates (2025), arXiv:2509.25702 [quant-ph]. [75] P. Yuan, S. Zhang, and W. Zi, Quantum circuit for gen-eral unitary: Improved T-count via block flattening and dilation (2026), arXiv:2608.17846 [quant-ph]. [76] W. Fang, C. Heunen, and Q. Wang, Unitary synthe-sis with near-optimal T-count for near-Clifford unitaries (2026), arXiv:2607.12907 [quant-ph]. [77] B. D. Clader, A. M. Dalzell, N. Stamatopoulos, G. Salton, M. Berta, and W. J. Zeng, Quantum Re-sources Required to Block-Encode a Matrix of Classical Data, IEEE Transactions on Quantum Engineering 3, 1 (2022), arXiv:2206.03505 [quant-ph]. [78] C. Brouder, G. Panati, M. Calandra, C. Mourougane, and N. Marzari, Exponential localization of Wannier functions in insulators, Physical Review Letters 98 ,046402 (2007). [79] N. Marzari, A. A. Mostofi, J. R. Yates, I. Souza, and D. Vanderbilt, Maximally localized Wannier functions: Theory and applications, Reviews of Modern Physics 84 ,1419 (2012). [80] M. Gatti and F. Sottile, Exciton dispersion from first principles, Physical Review B 88 , 155113 (2013). [81] E. Prodan and W. Kohn, Nearsightedness of electronic matter, Proceedings of the National Academy of Sciences 
+
+102 , 11635 (2005). [82] Strictly speaking MP2 only uses (ov |ov ) instead of (ov |vo ), however for systems satisfying time-reversal symmetry, they are equivalent up to an index permu-tation and complex conjugation, therefore we use this principle to convert ( ov |vo ) to ( ov |ov ) for the MP2 en-ergy evaluation. [83] S. Goedecker, M. Teter, and J. Hutter, Separable dual-space Gaussian pseudopotentials, Physical Review B 54 ,1703 (1996). [84] C. Hartwigsen, S. Goedecker, and J. Hutter, Relativistic separable dual-space Gaussian pseudopotentials from H to Rn, Physical Review B 58 , 3641 (1998). 17 
+
+SUPPLEMENTARY MATERIAL Appendix A: Primitives used for block-encoding and their costs 
+
+The BSE block-encoding mainly uses block unitary synthesis, block isometry synthesis, block state preparation, and diagonal matrix synthesis. We give the Toffoli and ancilla costs of each primitive used to construct the proto-terms in the BSE block-encoding. Table III illustrates their composition and leading costs for the translation-only construction, where each primitive acts on blocks of equal size. Space-group adaptation produces blocks of varying sizes; the same constructions apply using the primitives described below, so we omit a separate summary table. The additional space-group transformation is treated in Appendix B. 
+
+(a) Factors in each term Term χo χv χoS ζV ζW
+
+Fock — — — — —
+
+oo direct 4 — — — 1
+
+vv direct — 4 — — reused 
+
+ov direct reused reused — — reused 
+
+ov exchange — 2 2 1 —Walk operator 4 6 2 1 1
+
+(b) Primitives used by each factor Part Block isometry Block state prep. Block unitary Diagonal 
+
+count (blocks B, rows N , cols M ) count (blocks B, entries N ) count (blocks B, rows & cols N ) count entries Nχo 1 (Nk , N THC + No, N o) — — — — — —
+
+χv 1 (Nk , N THC + Nv , N v ) — — — — — —
+
+χoS — — 1 (Nk NTHC , N o) — — — —
+
+ζV — — — — 2 (Nk , N THC ) 1 Nk NTHC 
+
+ζW — — — — — — 1 Nk N 2THC 
+
+f o, f v
+
+(Fock blocks) — — — — 4 (Nk , N o), (Nk , N v ) 2 Nk No, N k Nv
+
+Walk operator 10 — 2 — 6 — 4 —                                                            
+
+> (c) Leading resource cost of each primitive Primitive Operator Q-optimal T-optimal Toffolis Ancillas Toffolis Ancillas
+> Block isometry synthesis LBk=1 Vk,Vk∈CN×M2M N B 3b+ log 2(N B )7√bM √N B √bN B
+> Block state preparation LBk=1 Sk,Sk|0⟩=|ψk⟩ ∈ CN2N B 3b+ log 2(N B )3√bN B + 2 bN √2bN B
+> Block unitary synthesis LBk=1 Uk,Uk∈CN×NBN 23b+ log 2(N B )2√bB N 3/2√bN B
+> Diagonal (real entries) PNn=1 dn|n⟩⟨ n|,dn∈RN3b+ log 2N2 √b+ 1 √N√bN
+
+Table III. Primitive composition and leading costs for the translation-only block-encoding. (a) gives the factors whose product forms each term of the BSE block-encoding, the entries counting how often each factor appears; (b) gives the primitives each factor is synthesized from; and (c) gives the Toffoli and ancilla cost of each primitive for equal-sized blocks. The interaction label on χo, χ v is suppressed in this cost table: direct terms use χW,o , χ W,v , exchange uses χV,v and the state-preparation operator χV,o S , and the separately fitted W and V factors need not coincide. Multiplying (a) by (b) yields the “walk operator” row of (b). Each shared part is counted once, so the oo direct term reuses the parts of the direct terms and adds no cost of its own. The Fock term draws on no shared part, being the eigendecomposition of the occupied and virtual Fock blocks 
+
+f o and f v , and is listed in (b) so that the totals stay column sums. Here B is the block count, N the matrix dimension, M ≤ N
+
+the number of isometry columns, and b the angle precision. For block isometries, N is the padded row count. The Q-optimal and T-optimal variants are defined in Appendix A 1 and derived at the end of each primitive’s subsection. Numerical prefactors are rounded to integers and subleading terms omitted; unequal blocks arising from space-group adaptation are handled by the subset constructions below. 18  
+
+> 1. QROM and QROAM data-loading
+
+All primitives will consist of a sequence of coherent data-loading of rotation angles, which are fed into multi-controlled rotation gates. Our primary data-loading primitive is quantum read-only memory (QROM) and its im-proved version QROAM [42]. Given a table of L entries f (j) ∈ { 0, 1}b, QROM implements the coherent map 
+
+|j⟩| 0⟩⊗b 7 −→ | j⟩| f (j)⟩. Ref. [41] introduced unary-iteration QROM, which uses exactly L − 1 Toffolis. Ref. [47] introduced the Select–Swap network, enabling a Toffoli–ancilla trade-off that reduces the forward cost to O(√bL ). Ref. [42] introduced QROAM, which uses measurement and classical feedforward to uncompute the data registers at cost O(√L) independent of the word size b. In what follows, QROAM uses unary-iteration QROM as a subroutine, and all lookup costs include one external control. In our applications, the set of valid addresses is often a subset S ⊆ { 0, . . . , 2n − 1} (e.g., addresses distributed across padded blocks). We therefore require a lookup that acts as the identity outside S, namely the subset-restricted QROM 
+
+X
+
+> j∈S
+
+|j⟩⟨ j| ⊗ Xf (j) + X
+
+> j / ∈S
+
+|j⟩⟨ j| ⊗ I, (A1) where Xf (j) applies X to each target qubit for which f (j) has bit value 1. Relative to the usual unary-iteration formulation, (i) the address set need not be a contiguous interval such as [0 , L − 1], and (ii) addresses outside the set are explicitly assigned the all-zero word, ensuring that they leave the output unchanged. For a contiguous interval, this corresponds to “restricted partial unary iteration” as studied in Ref. [68]; here we use the same idea for an arbitrary subset. We construct subset-restricted QROM by pruning the binary-tree traversal used in unary iteration. Leaves represent addresses, and internal nodes represent prefixes shared by the addresses beneath them. Starting from the external control, the circuit checks successive address bits while descending the tree: each internal node uses one Toffoli to select its first child and a CNOT to switch to the other child. At a leaf, CNOTs write the selected data word. The circuit then returns up the tree, clearing temporary controls using measurements and Clifford corrections. For subset restriction, we skip branches containing no address in S but keep all address checks on the remaining paths, so that any j / ∈ S leaves the output register unchanged. The Toffoli cost is the number of internal nodes remaining after pruning. For a fixed most-significant-bit-first traversal order, 
+
+CQROM (S, n ) = 
+
+> n
+
+X
+
+> r=1
+
+ j
+
+2r
+
+
+
+: j ∈ S 
+
+
+
+. (A2) The circuit uses n clean ancillas, excluding the address register, the output register, and the external control. For 
+
+S = {0, . . . , L − 1}, each term equals ⌈L/ 2r ⌉, giving CQROM ([0 , L − 1] , n ) = L − 1 + n − popcount( L − 1), where popcount counts ones in the binary representation, recovering the contiguous-interval formula in Ref. [68]. To obtain a subset-restricted QROAM, choose a power of two λ ≤ 2n and split the address as j = qλ + r with quotient q = ⌊j/λ ⌋ and remainder r = j mod λ. Define the quotient subset Sλ = {⌊ j/λ ⌋ : j ∈ S} . A quotient lookup loads a block of λ candidate entries into λ registers of b qubits each (entries outside S are loaded as all zeros). Aswap tree controlled by the remainder moves the selected entry into the output register. The swap network has λ − 1register swaps, each costing b Toffolis, so the total forward cost is 
+
+CQROAM (S, n, b, λ ) = CQROM (Sλ, n − log 2 λ) + b(λ − 1) . (A3) The forward step uses b(λ − 1) + n − log 2 λ clean workspace qubits. As in Appendix B of Ref. [42], we may measure and release the unused data registers, storing their outcomes so that the induced phases can be corrected during the final uncomputation; Eq. (A3) assumes this delayed correction. For the QROAM uncomputation (Appendix C of Ref. [42]), the output word is measured in the X basis and the outcomes are used to build a classical sign-fixup table. Choose an independent power of two 2 ≤ λ′ ≤ 2n. The circuit (Fig. 6 of Ref. [42]) encodes the remainder in a one-hot register, uses a quotient lookup to apply the required phase, and clears the one-hot register using measurements and Clifford corrections. Only the quotient lookup requires the external control. Preparing the one-hot register costs λ′ − 2 Toffolis. For erasing a lookup result supported on S, the cost is 
+
+CQROAM −1 (S, n, λ ′) = CQROM (Sλ′ , n − log 2 λ′) + λ′ − 2. (A4) Uncomputation uses λ′ + n − log 2 λ′ clean workspace qubits; the measured output can be reset and reused for this workspace. If phase corrections from unused forward registers were delayed, they must be included in the fixup table. 19 It is sufficient to include every address in any block loaded during the forward step. When λ′ ≥ λ, these additional addresses do not change Sλ′ , so Eq. (A4) applies as written; otherwise, the quotient subset must be enlarged to include their corrections. Finally, subset restriction also covers multiple address registers: we concatenate their bits into one address and take 
+
+S to be the Cartesian product of the valid ranges. For QROAM, the concatenated high-order bits can be handled by subset-restricted QROM, and the remaining low-order bits select within the loaded block via the swap network. The trade-off parameters are chosen in one of two ways, which define the Toffoli-optimized (T-optimal) and qubit-optimized (Q-optimal) variants of the primitives below and in Table III(c). Consider a lookup of L words of b bits. In the T-optimal variant, λ ≃ pL/b minimizes Eq. (A3), giving approximately 2 √bL Toffolis with √bL workspace qubits, and λ′ ≃ √L minimizes Eq. (A4), giving approximately 2 √L Toffolis. In the Q-optimal variant, the forward lookup uses λ = 1, i.e. plain QROM, which costs approximately L Toffolis and needs no data registers beyond the 
+
+b-bit output. The uncomputation parameter λ′ is not fixed to a small value such as 1 or 2: it is chosen to minimize the Toffoli count subject to not raising the peak qubit count. The uncomputation reuses the measured output register and the released address controls, so every power of two with λ′ − log 2 λ′ ≤ b fits within the workspace of the forward step, and the optimum is the largest of them ( λ′ = 32 for b = 32). The uncomputation then costs approximately L/λ ′
+
+Toffolis, a negligible correction to the forward lookup. When a loaded angle is applied by addition into the phase-gradient register [69, 70], the Q-optimal peak consists of the b-bit angle word, the b-qubit phase-gradient register, the 
+
+b − 1 carry qubits of the adder, and the address controls, i.e. approximately 3 b + log 2 L qubits.  
+
+> 2. Multiplexed rotations and diagonal matrix synthesis
+
+Throughout the construction of primitives, data-loading is mainly used to supply rotation angles to standard multiplexed single-qubit rotations [71, 72] 
+
+Umux = 
+
+> N−1
+
+X
+
+> j=0
+
+|j⟩⟨ j| ⊗ Rz (θj ), (A5) where the address register stores j and the target is rotated by an angle θj specified by classical data. One can convert to Rx and Ry rotations by Clifford gates. In our implementation, the angles are stored to b bits and are loaded coherently with subset-restricted QROAM on a set S of addresses that require a nontrivial rotation; after applying the rotation, the angle word is uncomputed. For n = ⌈log 2 N ⌉ address qubits and λ′ ≥ λ, the Toffoli cost is 
+
+Cmux = CQROAM (S, n, b, λ ) + ( b − 2) + CQROAM −1 (S, n, λ ′). (A6) where the explicit ( b − 2) term accounts for applying the b-bit rotation once the angle has been loaded. Several steps in the block-encoding reduce to applying diagonal operators (e.g., the diagonal real-space central factor). A single multiplexed Ry rotation is directly a block-encoding of a real diagonal matrix D = PN −1 
+
+> j=0
+
+dj |j⟩⟨ j|,by treating the target qubit of the rotation as the ancilla and setting ⟨0|Ry (2 θj )|0⟩ = dj /α . To satisfy the self-inverse requirement, we append a single Z gate since ( Ry (2 θ)Z)† = ZR y (−2θ) = Ry (2 θ)Z. Choose a normalization constant 
+
+α ≥ max j |dj | with α > 0 so that each entry can be realized as a rotation amplitude. Load θj = arccos( dj /α ) to b
+
+bits, apply Ry (2 θj )Z to a signal qubit, and uncompute the angle. The signal-|0⟩ block is D/α up to angle rounding. Let S be the set of basis states j such that dj̸ = α, for n = ⌈log 2 N ⌉ and λ′ ≥ λ, the Toffoli cost is 
+
+Cdiag = CQROAM (S, n, b, λ ) + ( b − 2) + CQROAM −1 (S, n, λ ′). (A7) Optimized lookups give the leading cost 2( √b + 1) p|S| and workspace pb|S| , recovering 2( √b + 1) √N and √bN in the dense case S = {0, . . . , N − 1}.For a dense diagonal with N entries, the T-optimal variant loads the angles with λ ≃ pN/b and erases them with 
+
+λ′ ≃ √N , which gives 2 √bN + 2 √N = 2( √b + 1) √N Toffolis and √bN workspace qubits. The Q-optimal variant loads them with λ = 1, at N Toffolis, and erases them with the optimized λ′ of Appendix A 1, at N/λ ′ Toffolis. Its leading cost is therefore N Toffolis with 3 b + log 2 N qubits. These are the diagonal entries of Table III(c). 20  
+
+> 3. Block-unitary synthesis
+
+The central ζV matrix in the exchange term is synthesized by performing an eigendecomposition and synthesizing the unitary eigentransformation directly. We extend Refs. [45, 73] to the synthesis of a block-diagonal unitary with unequal block sizes using subset-restricted QROAM. Consider B unitary blocks of size Ni × Ni, each embedded into an Ri × Ri matrix with Ni ≤ Ri. We assume Ni and Ri are even (an odd dimension can be handled by padding with one identity row and column); all remaining rows and columns act as the identity. Order the blocks by size, 
+
+N0 ≥ N1 ≥ · · · ≥ NB−1. Block i begins at address si = P 
+
+> j<i
+
+Rj in an n = ⌈log 2
+
+P 
+
+> i
+
+Ri⌉-qubit address register. Any unused basis states beyond the embedded blocks also act as the identity. This formalism covers all unitary blocks in our block-encoding: for the eigenbasis transformation of ζV under translation symmetry, B = Nk, Ni = NTHC , and 
+
+Ri = 2 ⌈log 2 NTHC ⌉, whereas in the space-group-adapted case, B is the number of irreducible representations and the unitaries act on the corresponding copy blocks with Ni = Ri.The construction applies a sequence of layers that couple adjacent basis states. Successive layers alternate between the two pairing patterns 
+
+
+
+∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗ ∗ ∗ 
+
+
+
+,
+
+
+
+∗∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗
+
+
+
+. (A8) Here asterisks denote potentially nonzero entries and blanks denote zeros. Each 2 × 2 unitary acting on a selected pair is decomposed into two phase rotations and two Hadamard gates, followed by diagonal phases. The intermediate diagonal phases are pushed into subsequent layers, leaving a single diagonal phase layer at the end. An “odd” layer (the right-hand pattern) is implemented by decrementing the address, applying the pair rotations, and incrementing the address. Figure 5 shows the circuit and how successive layers grow the synthesized blocks. At each layer, the two b-bit angles for the 2 × 2 decomposition are loaded jointly via subset-restricted QROAM with trade-off parameter λ and applied using addition into a phase-gradient state [70]. After application, the angle registers and any unused QROAM words are measured in the X basis and reused; the resulting known signs are tracked classically and folded into later angle data and the final phase layer. With this bookkeeping, each layer effectively costs one forward QROAM. The Toffoli count is determined by the lookup subsets used in each subset-QROAM call. At layer ℓ, each unfinished block contributes Ni/2 lookup addresses, while blocks completed by layer ℓ contribute none, giving 
+
+Sℓ = [ 
+
+> i:Ni>ℓ
+
+ si
+
+2 + j : 0 ≤ j < Ni
+
+2
+
+
+
+, |S ℓ| = 12
+
+X 
+
+> i:Ni>ℓ
+
+Ni. (A9) When Ri = Ni, each subset is a contiguous prefix; padding introduces gaps, which subset-QROAM handles directly. The final diagonal phase layer uses a subset Sphase that contains all unitary-block addresses together with any padding or unused addresses that may acquire signs from QROAM measurements. Because QROAM loads records in groups, a measurement sign can affect the 2 λ addresses sharing the same upper bits (i.e., those obtained by varying the last log 2(2 λ) bits). We therefore include each such group and the address immediately after it (to account for odd-layer shifts), yielding a phase subset satisfying P 
+
+> i
+
+Ni ≤ |S phase | ≤ 2n. The final lookup and its erasure are performed only once, so they contribute only a small fraction of the total synthesis cost. Assume n, b ≥ 2 and that a phase-gradient state is available. Fix a power of two 1 ≤ λ ≤ 2n−1 for all forward lookups, including the final phase lookup. Choose an independent power of two max {2, λ } ≤ λ′ ≤ 2n for the final sign fixup. The constraint λ′ ≥ λ ensures that any additional addresses affected by measurements in the final phase lookup fall within the same λ′ quotient blocks already included in Sphase . The Toffoli count is 
+
+Cblock =
+
+> N0−1
+
+X
+
+> ℓ=0
+
+[CQROAM (Sℓ, n − 1, 2b, λ ) + 2( b − 2)] + N0(n − 2) + CQROAM (Sphase , n, b, λ ) + ( b − 2) + CQROAM −1 (Sphase , n, λ ′).
+
+(A10) 21 
+
+(a) Rz Rz
+
+# −1
+
+# H H Rz Rz
+
+# +1 
+
+# H H... ∆Layer 1 Layer 2 
+
+(b) ∗ ∗ 0 0 0 0 0 0 0 0 0 0 0
+
+∗ ∗ 0 0 0 0 0 0 0 0 0 0 00 0 ∗ ∗ 0 0 0 0 0 0 0 0 00 0 ∗ ∗ 0 0 0 0 0 0 0 0 00 0 0 0 ∗ ∗ 0 0 0 0 0 0 00 0 0 0 ∗ ∗ 0 0 0 0 0 0 00 0 0 0 0 0 ∗ ∗ 0 0 0 0 00 0 0 0 0 0 ∗ ∗ 0 0 0 0 00 0 0 0 0 0 0 0 ∗ ∗ 0 0 00 0 0 0 0 0 0 0 ∗ ∗ 0 0 00 0 0 0 0 0 0 0 0 0 ∗ ∗ 00 0 0 0 0 0 0 0 0 0 ∗ ∗ 00 0 0 0 0 0 0 0 0 0 0 0 ⋱∗ ∗ 0 0 0 0 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ 0 0 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ 0 0 0 0 0 0 0 0 00 0 ∗ ∗ ∗ ∗ 0 0 0 0 0 0 00 0 ∗ ∗ ∗ ∗ 0 0 0 0 0 0 00 0 0 0 ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 0 0 ∗ ∗ 0 0 0 0 00 0 0 0 0 0 0 0 ∗ ∗ 0 0 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 0 0 ∗ ∗ 00 0 0 0 0 0 0 0 0 0 0 0 ⋱∗ ∗ ∗ ∗ 0 0 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ 0 0 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0 0 00 0 ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 0 0 0 0 ⋱∗ ∗ ∗ ∗ 0 0 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 0 0 0 0 ⋱∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 0 0 0 0 ⋱∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 0 0 0 0 ⋱∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 0 0 0 0 ⋱∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 0
+
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ 0 0 0 0 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 ∗ ∗ ∗ ∗ 00 0 0 0 0 0 0 0 0 0 0 0 ⋱
+
+After layer 1 After layer 2 After layer 3 After layer 4 After layer 5 After layer 6 After layer 7 After layer 8 
+
+Figure 5. Block-unitary synthesis. (a) The circuit that synthesizes the block-unitary, composed of alternating layers followed by a diagonal phase layer ∆. White squares indicate multiplexed rotations; ±1 denotes increment/decrement. (b) Growth of the synthesized blocks under the applications of each layer (final phase layer omitted). Blue boxes mark entries updated by each layer, and orange boxes mark entries that were previously zero and become non-zero. 
+
+The summand accounts for one angle lookup and two rotations per layer. Each shift costs n − 2 Toffolis, contributing 
+
+N0(n − 2). The remaining terms apply the final phases and uncompute the lookup registers, including measurement-induced sign corrections. Ancillas are reused throughout; phase-gradient-state preparation is counted separately. For B blocks of equal size N , the synthesis has N layers, and each layer looks up the angles of BN/ 2 rotation pairs. In the T-optimal variant, the two b-bit angles of a pair are loaded jointly as one 2 b-bit word, as in Eq. (A10). With λ ≃ pBN/ (4 b), each layer costs approximately 2 p2b · BN/ 2 = 2 √bBN Toffolis and uses √bBN workspace qubits, so the N layers cost 2 √bB N 3/2 Toffolis. In the Q-optimal variant, a joint word would occupy 2 b data qubits, so the two angles are instead loaded by two separate λ = 1 lookups into a single b-bit register. Each layer then costs 2 · BN/ 2 = BN Toffolis, and the N layers cost BN 2 Toffolis with 3 b + log 2(N B ) qubits. The final phase layer and its sign fixup, with λ′ optimized as in Appendix A 1, add only O(BN ) Toffolis. These are the block-unitary entries of Table III(c). Recent advances in unitary synthesis could further reduce the walk cost. For a single N × N unitary, recent constructions lower the N 3/2 scaling to O(N 4/3 log 2/3 N ) [74] and eO(N 5/4) [75] T gates, and to eO(N ) for near-Clifford unitaries [76]. Since block-unitary synthesis dominates the ζV encoding, these could reduce the walk cost further. However, their constant factors have not been worked out and may outweigh the modest asymptotic gain at 22 the block sizes relevant here, so we leave them as potential future improvements.  
+
+> 4. Block-isometry synthesis
+
+The occupied and virtual factors χX,o and χX,v contain blocks that have NTHC columns but only No or Nv rows. Because the column-row ratio is large, embedding them into unitaries is expensive, motivating an isometry synthesis primitive, i.e. a unitary where only the first few columns need to be specified and the rest can be arbitrary. We synthesize these columns by a column-elimination circuit and then reverse it. This subsection is a blockwise extension of the column-by-column construction of Ref. [46] to unequal block sizes, with subset-restricted QROAM providing the phase and rotation angles shared across all active blocks. Consider B blocks Vi ∈ CNi×Mi satisfying V † 
+
+> i
+
+Vi = IMi and 1 ≤ Mi ≤ Ni, ordered so that N0 ≥ · · · ≥ NB−1. Pad block i to Ri = 2 pi rows, where pi = ⌈log 2 Ni⌉, and embed it at offset si = P 
+
+> j<i
+
+Rj in an n = ⌈log 2
+
+P 
+
+> i
+
+Ri⌉-qubit register. Row x of block i has global address si + x. Since the padded sizes are decreasing powers of two, each block begins at a multiple of its own size; equivalently, the lowest pi address bits are exactly the local row bits. This alignment lets us apply the same binary-tree rotation pattern in every block without mixing rows from different blocks. We construct a column-elimination circuit U † such that, for each block i and each prescribed column 0 ≤ c < M i,
+
+U †
+
+> Ni−1
+
+X
+
+> x=0
+
+(Vi)xc |si + x⟩ = |si + c⟩. (A11) Reversing this circuit gives the desired synthesis U , with input |si + c⟩ selecting column c of block i. Although only these columns are specified, the resulting gate sequence fixes a full unitary completion on each padded block; addresses outside the embedded blocks are left unchanged by the corrected circuit. The elimination proceeds column by column. For a given column c, we (i) apply a diagonal phase layer to make the active entries real and nonnegative, and then (ii) apply a conditioned binary tree of real rotations to concentrate the remaining amplitude into the single target row si + c in every block with c < M i. At tree level t, we rotate the qubit 
+
+n − t and condition on the lower t bits matching those of c. Because these lower bits are fixed by earlier levels, each enabled rotation combines the two surviving amplitudes in its selected pair, stores the norm in the member whose target-bit value matches c, and zeros the other. We omit rotations that intersect already cleared rows or have zero angle; a zero entry does not by itself remove the operation if the nonzero entry lies in the “wrong” member of the pair (in which case a swap is still required). Rotations act on all uncleared columns, so the phase and rotation tables used for later columns must be computed from the ideal elimination sequence. Once a block has no remaining columns, it receives no further reference gates. In particular, column c requires at most max i:c<M i pi rotation levels, so a large block with few columns can finish early, reducing the depth of later trees. The orange entries in Fig. 6(b) illustrate why the elimination may require access to padding: clearing one column can move a different column’s amplitude into padded rows. The first column’s tree preserves the original row support of every supplied column, but later columns can populate padding in a structured way. Writing qi = ⌈log 2 Mi⌉, it suffices to track support rounded up to groups of 2 qi rows, 
+
+N eff  
+
+> i
+
+= 2 qi
+
+ Ni
+
+2qi
+
+
+
+≤ Ri. (A12) The lowest qi address bits mix rows only within these groups. At higher levels, every destination c < M i has target-bit value zero, so if a pair straddles the boundary of this support then its “outside” member already has amplitude in the correct member and the rotation is skipped. Subset-restricted QROAM supplies one angle table for each nontrivial phase layer or rotation level, combining all active blocks in a single lookup. Let Pc be the set of full row addresses requiring a nonzero phase at column c, and let Sc,t be the set of pair addresses requiring a nonzero rotation at level t. Phase lookups use all n address bits and are confined to uncleared rows below N eff  
+
+> i
+
+in active blocks. Rotation lookups use the upper n − t − 1 bits: deleting the target bit and the fixed lower bits yields a unique address per selected pair, and the lookup is enabled only when the lower t bits match c. Completed blocks and zero-angle records are omitted, leaving gaps that subset-restricted QROAM handles directly. We compute these tables from the ideal elimination sequence, round each angle once to b
+
+bits, and retain the same lookup subsets after rounding. After each loaded angle is applied, we measure all QROAM data registers in the X basis and reuse them. We can follow similar strategies of Ref. [45] which delays the uncomputation towards the last layer, leaving only the forward computation cost for each layer. To achieve this, the measurements introduce known signs on computational-basis 23 
+
+(a) Ry 1
+
+# Ry
+
+# Ry
+
+# Ry
+
+# 10100∆ · · · 
+
+# 1st column 2nd column 
+
+# Ry 0
+
+# Ry
+
+# Ry
+
+# Ry
+
+# 00000∆
+
+(b) ∗ ∗ ⋯ 0 0 0 0
+
+∗ ∗ ⋯ 0 0 0 0
+
+∗ ∗ ⋯ 0 0 0 0
+
+∗ ∗ ⋯ 0 0 0 0
+
+∗ ∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 0 ∗ ∗ ⋯ 00 0 0 ∗ ∗ ⋯ 00 0 0 ∗ ∗ ⋯ 00 0 0 0 0 ⋯ 00 0 0 0 0 0 ⋱∗ ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 0
+
+∗ ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 0
+
+∗ ∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 0 ∗ ∗ ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 ∗ ∗ ⋯ 00 0 0 0 0 ⋯ 00 0 0 0 0 0 ⋱∗ ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 0
+
+∗ ∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 0 1 0 ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 0 ⋯ 00 0 0 0 0 0 ⋱       
+
+> 10⋯00000
+
+∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 0 1 0 ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 0 ⋯ 00 0 0 0 0 0 ⋱       
+
+> 10⋯00000
+
+∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 0 1 0 ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 0 ⋯ 00 0 0 0 0 0 ⋱       
+
+> 10⋯00000
+
+∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 0 1 0 ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 0 ⋯ 00 0 0 0 0 0 ⋱       
+
+> 10⋯00000
+
+∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 0 1 0 ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 0 ⋯ 00 0 0 0 ∗ ⋯ 00 0 0 0 0 0 ⋱       
+
+> 10⋯00000
+
+∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 ∗ ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 ⋯ 0 0 0 00 0 0 1 0 ⋯ 00 0 0 0 1 ⋯ 00 0 0 0 0 ⋯ 00 0 0 0 0 ⋯ 00 0 0 0 0 0 ⋱                                                                              
+
+> 10⋯000001⋯000000⋯000000⋯000000⋯000000⋯000000⋯000000⋯000000010⋯000001⋯000000⋯000000⋯0000000
+
+⋱                                                                              
+
+> 10⋯000001⋯000000⋯000000⋯000000⋯000000⋯000000⋯000000⋯000000010⋯000001⋯000000⋯000000⋯0000000
+
+⋱
+
+After gate 1 After gate 2 After gate 3 After gate 4 After gate 5 After gate 6 After gate 7 After gate 8 After gate 9 After gate 10 
+
+Figure 6. Block-isometry synthesis. (a) Column elimination using diagonal phase layers ∆ and controlled Ry rotations; reversing the circuit synthesizes the isometry. In this notation, blank white boxes represent multiplexed rotations, while white boxes marked with bit labels mean the rotation is applied only when the qubit matches the bit value shown in the box. (b) Ideal elimination of the first two columns of a 5 × 3 block and a 3 × 2 block, padded to eight and four rows, respectively. The upper and lower sequences clear columns zero and one. Blue boxes mark entries whose phases are cancelled, blue dots mark rows participating in a rotation, and orange boxes mark nonzero entries in padding. Stars denote nonzero entries; ellipses abbreviate the remaining columns of each full unitary block and the trailing identity block. Gates 5 and 10 are identity levels. The larger block’s third column is cleared by a subsequent sequence, not shown. 
+
+amplitudes. Rather than correcting after every lookup, we track these signs classically. Before a subsequent real rotation, we flip the sign of its angle if the two basis states in the selected pair have different tracked signs; if their signs agree, the angle is left unchanged. This passes the accumulated signs through the rotation without changing the intended operation (diagonal phase layers already commute with them). Since each rotation record addresses one selected pair, this adjustment changes only the sign of the angle and does not change the lookup subset. A final diagonal correction removes the accumulated signs on the entire register, preserving the chosen unitary completion in either circuit direction (this is required to ensure the entire block-encoding unitary is self-inverse). Let 
+
+F be a sufficient set of addresses for this correction. It must include signs induced by measuring unused QROAM words, which can occur even when a selected angle is zero. For each lookup with computation parameter λ, we 24 therefore expand its retained subset to whole aligned groups of λ lookup addresses (restoring the deleted bits for rotation lookups by inserting the lower t bits of c and both values of the target bit). Taking the union over all lookups defines F, including any affected padding, completed blocks, or unused addresses. The final correction table records the accumulated sign on each address in F and applies no correction elsewhere. To count Toffolis, let ℓ index the nonempty phase and rotation lookups, with subset Sℓ and address width nℓ
+
+(equal to n for phases and n − t − 1 for a level-t rotation). Each lookup has an independently chosen power-of-two computation parameter 1 ≤ λℓ ≤ 2nℓ . Lower-bit conditions are built incrementally as shared temporary ANDs [69], starting from the external control. If dc is the highest level t with a retained rotation at column c (or zero if there are none), these controls require dc Toffolis to compute and only measurements and Clifford corrections to erase. Writing 
+
+M∗ = max i Mi, the scheduled cost in either circuit direction is 
+
+Cisometry = X
+
+> ℓ
+
+[CQROAM (Sℓ, n ℓ, b, λ ℓ) + ( b − 2)] +
+
+> M∗−1
+
+X
+
+> c=0
+
+dc + CQROAM −1 (F, n, λ ′).
+
+(A13) The three contributions are the angle lookups and applications, the shared controls, and the final sign correction. The last term uses the measurement-based QROAM uncomputation primitive with an independent power of two 2 ≤ λ′ ≤ 2n, and it vanishes when F is empty. No ordering condition between λ′ and the computation parameters is needed because F already covers the full support of the deferred signs. Ancillas are reused throughout; the cost excludes preparation of the phase-gradient state and classical table processing. For B blocks with N padded rows and M columns each, every column needs one phase lookup over N B addresses and, at successive tree levels, rotation lookups over N B/ 2, N B/ 4, . . . pair addresses. In the T-optimal variant, each lookup uses its own optimal λℓ, so a column costs approximately 2 √bN B  1 + 2 −1/2 + 2 −1 + · · ·  = 2(2 + √2) √bN B ≃
+
+7√bN B Toffolis. The M columns cost 7 √b M √N B Toffolis, with √bN B workspace qubits set by the phase lookup. In the Q-optimal variant, every lookup uses λℓ = 1: a column costs N B Toffolis for its phases and N B ( 12 + 14 +· · · ) ≃ N B 
+
+for its rotations, so the M columns cost 2 M N B Toffolis with 3 b + log 2(N B ) qubits. The final sign correction, with λ′
+
+optimized as in Appendix A 1, adds approximately N B/λ ′ Toffolis. These are the block-isometry entries of Table III(c).  
+
+> 5. Block-state preparation
+
+In the synthesis of exchange proto-term, we will use the block-state preparation, which is the single-column case of block-isometry synthesis: for each block i, an operator Si satisfies Si|0⟩ = |ψi⟩ ∈ CNi and can be implemented with the same binary-tree pattern of rotations, but without the lower-bit controls needed to select among multiple columns. When the state dimension is much smaller than the number of blocks, it is more efficient to “load all angles at once” (rather than querying a new angle at every tree node). We therefore use the load-all construction of Sec. III.C (Fig. 10) of Ref. [77]. Concretely, we pad all states to a common power-of-two dimension R = 2 p ≥ max i Ni so that a single fixed rotation tree can be reused for every block. One QROAM query addressed by the block index then loads the full set of angles needed for that tree: the R − 1 magnitude angles and the R phases, as a single word of width 
+
+W = (2 R − 1) b. Controlled swaps route the appropriate angle to the active rotation at each tree level (and route the final phase); after applying the rotations, we reverse the swaps and erase the loaded word using measurement-based QROAM uncomputation. Writing B = {0, . . . , B − 1} and nB = ⌈log 2 B⌉, the Toffoli cost is 
+
+Cstate = CQROAM (B, n B , W, λ )+ CQROAM −1 (B, n B , λ ′) + 2 b(2 R − p − 2) + ( p + 1)( b − 2) . (A14) Here λ′ ≥ λ ensures that the final uncomputation accounts for signs induced by measurements on unused QROAM words. The explicit 2 b(2 R − p − 2) ≃ 4bR term comes from routing the angle word to the rotation sites and then restoring it; the rotations themselves and any shared controls contribute only ( p + 1)( b − 2), for the p magnitude levels and the final phase. The inverse applies the same rounded rotations in reverse order and has the same cost. For B states of dimension N = R, the T-optimal variant costs (2 √W B −W )+2 √B+4 bN ≃ 2√2√bN B +2 √B+2 bN 
+
+Toffolis, with W = (2 N − 1) b ≃ 2bN , which rounds to the 3 √bN B + 2 bN of Table III(c); its peak ancilla count is max {W λ, λ ′}+O(b+nB +p), with W λ ≃ √2bN B . Since the loaded word alone requires W ≃ 2bN ancilla qubits, even at λ = 1, the Q-optimal variant instead uses the single-column case of the block-isometry synthesis of Appendix A 4: 25 a phase lookup over N B addresses and rotation-angle lookups over N B/ 2, N B/ 4, . . . addresses, each with λ = 1 and one b-bit angle register. It costs 2 N B Toffolis and 3 b + log 2(N B ) ancilla qubits, with the measurement-based uncomputation using the optimized λ′ of Appendix A 1. These are the block-state-preparation entries of Table III(c). 
+
+> Appendix B: Synthesis of the space-group transformation
+
+This appendix describes the circuit for the THC-side basis change STHC of Eqs. (52)–(53). Its columns form a space-group-adapted basis for the representation DTHC  
+
+> g
+
+on the THC index ( k, μ ). A space-group irrep λ = ( f, α ) is labelled by a momentum star f , with representative momentum kf , and an irrep α of the little group of kf [37]; its dimension mλ is the number of star members times the dimension of α.The key idea is to avoid synthesizing an independent unitary at every momentum. Since DTHC  
+
+> g
+
+maps the THC space at kf to that at gkf , the basis vectors at every star member follow from those at the representative by applying the symmetry itself, i.e. by a permutation of interpolation points and a Bloch phase. We therefore (i) synthesize unitary blocks only at the star representatives, using the block-unitary primitive of Appendix A 3, and (ii) use QROAM to convert coherently between the space-group labels and the momentum labels needed to apply the appropriate permutation and phase. The circuit has five stages, described below. 
+
+a. Registers and target map. Let B be the number of irrep blocks and Nf the number of momentum stars. The input register |L⟩ encodes ( λ, c ), where c < n λ is the copy index. Block λ occupies ¯ nλ addresses, with ¯ nλ the smallest power of two at least nλ for χX and the smallest even integer at least nλ for ζX . The partner register |a⟩ = |κ⟩| β⟩
+
+indexes the mλ copies in Imλ : it contains the star-member index κ and the row index β of the little-group irrep α.The target map is 
+
+|L⟩| a⟩ −→ |k⟩ X
+
+> μ
+
+STHC (k,μ ),(λ,a,c )|μ⟩. (B1) 
+
+b. Stage 1: space-group labels. We first recover the space-group labels from L. With offsets sλ = P 
+
+> j<λ
+
+¯nj and compact offsets tλ = P 
+
+> j<λ
+
+nj , the staircase shift L 7 → L + P 
+
+> j:L≥tj+1
+
+(¯ nj − nj ) separates the block and copy indices. Ordering the power-of-two blocks by decreasing size aligns each sλ to a multiple of ¯ nλ, so the lowest log 2 ¯nλ bits already encode c for χX . A coherent binary search over the B − 1 block boundaries recovers λ in ⌈log 2 B⌉ levels, using comparators of width n = ⌈log 2
+
+P 
+
+> λ
+
+¯nλ⌉. The first threshold is constant and the second is selected by CNOTs; only levels r ≥ 3 require lookups, with 2 r−1 entries per level and O(B) entries in total. Two B-entry lookups map λ
+
+to ( f, α ) and erase λ, while an offset lookup and subtraction recover c = L − P 
+
+> j<λ
+
+nj . Schur’s lemma makes these lookups independent of a, so padding a into fixed-width κ and β subregisters requires no gates. The label-conversion cost is O(n log B + √B log B) Toffolis. 
+
+c. Stage 2: momentum. The momentum is reconstructed as k = Ag kf , where kf is loaded from an Nf -entry table, g is the coset representative selected by κ, and Ag is the action of g on momenta ( gk ≡ Ag k). In cubic coordinates, Ag is a signed permutation of the three components, giving a specialized cost of O(|P | + pNf log Nk), where |P | is the point-group order. The tabulated implementation instead uses a ( g, f )-indexed lookup in primitive reciprocal coordinates. 
+
+d. Stage 3: representative blocks. At each star representative, the little group permutes the interpolation points, which therefore separate into little-group orbits. In this orbit basis, the representative block of STHC is 
+
+STHC  
+
+> f
+
+= M
+
+> ω
+
+Uω , Uω ∈ CNω ×Nω , (B2) where the orbit sizes Nω divide |P | and sum to NTHC within each star. We apply the block-unitary synthesis of Eq. (A10), with lookups addressed by ( f, ω ). The circuit has max ω Nω ≤ | P | layers, and layer ℓ loads P 
+
+> Nω>ℓ
+
+⌊Nω /2⌋
+
+rotation pairs. Subset lookups leave completed orbits and unused addresses unchanged. The synthesis cost is 
+
+O(|P |pNf NTHC b); its mesh dependence enters only through the number of stars Nf .
+
+e. Stage 4: remaining star members. The block at k = Ag kf is obtained by applying the corresponding block of 
+
+DTHC  
+
+> g
+
+to the representative block (induction): 
+
+STHC  
+
+> k
+
+= Π( g) Λ( g, k) STHC  
+
+> f
+
+, Λμμ (g, k) = e−ik·Lμ(g). (B3) Here Π( g) maps μ to perm[ g, μ ], and the lattice vector Lμ(g) satisfies g rμ = rperm[ g,μ ] + Lμ(g). Two geometry tables of size |P | × NTHC store these permutations and lattice vectors, independently of k. The Bloch phase factorizes over the three axes, e−ik·Lμ(g) = Q 
+
+> j
+
+e−2πikj Lμ,j (g)/N j for a N1 × N2 × N3 mesh. For each axis, a lookup over the Nj26 mesh values loads the b-bit phase kj /N j , which is then added into the phase-gradient register once per bit of Lμ,j (g), controlled on that bit (subtracted for the sign bit); the weights 2 i are bit shifts. It cancels across the diagonal central factor of the direct term but remains in the exchange term. The induction cost is O(p|P |NTHC log NTHC + b P 
+
+> j
+
+wj ), where wj is the bit width of Lμ,j (g), fixed by the geometry. 
+
+f. Stage 5: uncomputation. Finally, k uniquely determines ( f, κ ), so these temporary labels can be erased by measurement-based QROAM uncomputation over Nk addresses, at a cost of O(√Nk) Toffolis. Alternatively, the canonical representative k∗ = min g Ag k can be computed over the |P | group operations at cost O(|P | log Nk); the lookup is cheaper for the meshes considered here. 
+
+g. Cost. Table IV reports the cost of one application of STHC . It increases by a factor of 1 .24 between 2 × 2 × 2and 6 × 6 × 6, while Nk increases by a factor of 27. The representative unitaries have dimension at most |P |, but their number grows with the number of stars Nf , which accounts for most of the mesh dependence; the label conversion, the momentum lookup, and the final momentum-addressed uncomputation contribute the rest.                             
+
+> NkNfBToffolis for STHC
+> 8320 10936 64 836 12492 216 16 57 13548 512 29 87 15131 1000 47 124 16545 Table IV. Illustrative space-group synthesis costs for diamond. Counts for one application of STHC from the implemented five-stage model at b= 32 and NTHC = 208 use the selected-point geometry to determine the momentum stars, irreps, and little-group orbits, with even-padded copy blocks. Momentum reconstruction uses a ( g, f ) lookup in primitive reciprocal coordinates. The counts exclude phase-gradient-state preparation.
+> Appendix C: Operator norm of the BSE Hamiltonian
+
+The goal of this appendix is to explain why the physical BSE Hamiltonian has an O(1) operator norm in the thermodynamic limit, at fixed excitation number and basis resolution. We consider a gapped system and assume that the occupied and retained virtual spaces admit exponentially localized orbitals, with localization lengths independent of system size [78, 79]. Assuming bounded eigenvalues of the Fock blocks, we only need to show that the individual direct and exchange Hamiltonians have O(1) norm. The full m-exciton Hamiltonian then also has O(1) norm in system size, up to a poly( m) factor from the number of Fock and two-body terms. For the direct interaction, exponential localization gives (pq |W |rs ) = O
+
+
+
+e−ad (p,q )e−ad (r,s )
+
+, (C1) where d(p, q ) is the separation between the orbital centers. Here we assume that short-range interaction matrix elements remain bounded at fixed basis resolution. Viewed as a matrix with row index ( p, r ) and column index ( q, s ), the exponential decay means that each row couples appreciably to only O(1) entries. The direct Hamiltonian therefore has O(1) operator norm, even though the interaction between the two orbital pairs remains long-ranged. For exchange, the occupied–virtual transition densities are charge-neutral because the occupied and virtual orbitals are orthogonal. Their leading long-range interaction is therefore dipole–dipole, giving (pq |V |rs ) = O
+
+ e−ad (p,q )e−ad (r,s )
+
+d(pq, rs )3
+
+
+
+(C2) at large separation d(pq, rs ) between the two orbital pairs. Including its angular dependence, the dipole–dipole interaction transforms into a momentum-space kernel [80] proportional to 
+
+QQ 
+
+|Q|2 − I
+
+3 , (C3) which is bounded independently of system size. Together with the bounded short-range contribution, this gives an 
+
+O(1) norm for the exchange Hamiltonian viewed as a matrix between transition-pair indices. Thus the full BSE Hamiltonian has O(1) operator norm for fixed m.27 
+
+> Appendix D: THC rank and subnormalization
+
+The goal of this appendix is to explain why the THC-based block-encoding can retain the O(1) physical norm established in Appendix C while using an O(N ) THC rank. We use the same assumptions of a gapped system, fixed basis resolution, and exponentially localized occupied and virtual orbitals. To guide the argument, we exhibit an explicit, although unoptimized, construction at fixed approximation accuracy. This provides a baseline that THC optimization can further improve by reducing the rank and subnormalization. For either interaction X ∈ { W, V } and any ERI block, consider the exact THC representation in which the auxiliary index is the orbital-pair label ( P Q ): (pq |X|rs ) = X
+
+> (P Q ),(RS )
+
+χX,A p, (P Q )χX,B q, (P Q )
+
+× χX,C r, (RS )χX,D s, (RS )ζX
+
+> (P Q ),(RS )
+
+,
+
+(D1) with 
+
+χX,A p, (P Q ) = δpP ,χX,B q, (P Q ) = δqQ ,ζX 
+
+> (P Q ),(RS )
+
+= ( P Q |X|RS ),
+
+and similarly for χX,C , χ X,D . Here A, B, C, D label the four tensor-leg selector maps. This representation is exact but has an unhelpful rank. Exponential locality allows us to discard orbital pairs whose members are far apart [81], with an error that decreases exponentially with the retained separation. At fixed accuracy, each P connects to only O(1) values of Q, and vice versa. Hence the number of surviving pair indices scales as O(N ). The same structure keeps the operator norms of the χX,A , χ X,B , χ X,C , χ X,D matrices O(1): each row contains only 
+
+O(1) nonzero entries, and each column selects a single orbital. For the direct channels, ζW enters the circuit as a diagonal operator whose norm is its largest absolute entry, which remains O(1). For exchange, ζV is the physical exchange matrix restricted to the retained transition pairs, so its operator norm remains O(1) by Appendix C. The resulting products of factor norms therefore give O(1) primitive subnormalizations. This explicit construction demonstrates that O(N ) THC rank is sufficient to achieve O(1) subnormalization at fixed excitation number and accuracy. The construction is not intended to give optimal constants; further THC optimization can reduce the required rank and subnormalization while maintaining the target accuracy. 
+
+> Appendix E: Calibration of THC fitting accuracy
+
+The bare and screened interactions require a common criterion for selecting THC decompositions with sufficient accuracy. For the bare interaction V , the MP2 correlation-energy error provides an energy-based measure of the fitting error in the occupied–virtual block ( ov |vo ) [82], as used in Ref. [9]. The screened interaction W entering the BSE does not have a corresponding standard MP2 energy-error metric. We therefore calibrate a relative-integral-error tolerance using the bare interaction and transfer that tolerance to the screened interaction. In the following we state the principle using diamond as an example, while other materials just follow the same principle. Figure 7 shows the diamond calibration data for n × n × n meshes with n = 2 , . . . , 6 and THC rank as NTHC =
+
+cIP NAO , cIP = 5 and 8, including varying α from 0.003 to 0.3 that balances the fitting accuracy and subnormalization via the optimization loss function (see Eq. 54). The MP2 energy error per primitive cell generally increases with the relative error of the bare ( ov |vo ) block, although the relation has scatter and depends on the mesh and fitting parameters. We use this relation to estimate the relative-error scale associated with each of the two energy-accuracy criteria used in the main text. For comparison with the full-Hamiltonian quantum simulation references, an MP2 error of 0 .1 m Eh per cell corresponds to relative integral errors of ∼ 10 −3; we use a target of 4 × 10 −3. For the realistic BSE estimates, the target is 0 .005 eV per active electron. Diamond has 8 active electrons in its two-carbon primitive cell, excluding the core electrons represented by the pseudopotential [83, 84]. This criterion is therefore 0.040 eV ≃ 1.47 m Eh per cell. The corresponding relative-error scale is a few percent; we use a target of 2 × 10 −2.For X = V or W , write the relative error in the projected block as 
+
+ϵX = XTHC  
+
+> ov,vo
+
+− Xov,vo 2
+
+∥Xov,vo ∥2
+
+, (E1) 28 using the same relative-error norm as in the main text. We fit the full screened ERI tensor and evaluate ϵW on its ( ov |W |vo ) projection. The two screened-interaction fitting targets are thus ϵW ≲ 4 × 10 −3 and ϵW ≲ 2 × 10 −2,respectively. This projection is used to assess the accuracy of the full screened fit, rather than restricting the fit to that block. The transfer from the bare-integral calibration is an empirical fitting criterion; it does not introduce an MP2 energy for the screened interaction. 10 −2              
+
+> Bare ( ov |vo ) relative fitting error, εV
+> 10 −2
+> 10 −1
+> 10 0
+> Absolute MP2 error (m Eh per cell)
+> 0.1 m Eh/cell 0.005 eV/active electron 4 × 10 −3 2 × 10 −2
+> cIP = 5 cIP = 8
+> kmesh ( Nk=n3)
+> n= 2
+> n= 3
+> n= 4
+> n= 5
+> n= 6
+> 0.003 0.01 0.03 0.1 0.3
+> Norm ratio  α
+
+Figure 7. Calibration of THC fitting accuracy in diamond. Absolute MP2 energy error per primitive cell versus the relative THC fitting error ϵV of the bare ( ov |vo ) block. Marker size indicates the mesh edge n, with Nk = n3, and color indicates the norm-ratio parameter α used in the THC optimization, on a logarithmic color scale. Circles and squares indicate cIP = 5 and cIP = 8, respectively. All sampled optimization settings are included. Horizontal dashed lines mark 0 .1 m Eh per cell and 0.005 eV per active electron, the latter equivalent to 1 .47 m Eh per diamond cell when counting its 8 active electrons. Vertical dotted lines mark the relative-error targets 4 × 10 −3 and 2 × 10 −2 used in the calculations for the ( ov |W |vo ) projection of the full screened THC fit. 
+
+Appendix F: Extrapolation details 
+
+This appendix describes how the first- and second-quantized full-Hamiltonian estimates in Fig. 3 are extended beyond the meshes reported in Refs. [9, 10]. At every mesh we evaluate the published circuit formulas, and fit only the quantities that the sources do not give in closed form. 
+
+a. Precision. All quantum methods in Fig. 3 use ϵQPE = 0 .1 eV ≃ 3.675 m Eh for one eigenvalue estimate: an excitation energy for BSE or a total supercell energy for the full Hamiltonian. Constant overheads for combining two total-energy estimates into an excitation energy are omitted. The published reference estimates use ϵref = 1 .6 m Eh;changing the numerical tolerance therefore rescales the number of walk steps by ϵref /ϵ QPE ≈ 0.435. For second quantization [9], the additional conversion from per-primitive-cell to total-supercell accuracy contributes a factor of 
+
+Nk, giving an overall walk-count factor of approximately 0 .435 Nk relative to the published convention. No such Nk
+
+conversion is needed for first quantization [10]. Circuit costs and phase-estimation register sizes are evaluated at the new precision. 
+
+b. Second quantization. We use the symmetry-adapted k-point THC construction of Ref. [9] with 52 spin orbitals per primitive cell and NTHC = 8 NAO = 208. The subnormalization λTHC depends on the optimized THC factors and is reported only for diamond meshes up to 2 × 2 × 2. The THC sum contains O(N 3 
+
+> k
+
+) momentum combinations, but each effective coefficient is expected to decay as O(N −1 
+
+> k
+
+), giving 
+
+λTHC = O(N 2 
+
+> k
+
+) (F1) 29 at fixed NTHC [9]. The fits in Fig. 9(b) of Ref. [9] are consistent with this: over the benchmark set, λTHC grows slightly faster than quadratically for symmetry-adapted THC and slightly slower for supercell THC. We therefore take λTHC to be quadratic, so that λTHC /N k is linear in Nk, and fix the line with the two cubic meshes 1 × 1 × 1 and 2 × 2 × 2: 
+
+λTHC 
+
+Nk
+
+= 557 .5808 Nk − 214 .5719 . (F2) The walk cost and logical-qubit count then follow from the published Appendix-D circuit formulas at each mesh; the qubit count includes the phase-estimation register required by the larger number of walk steps. At 10 × 10 × 10, this gives λTHC = 5 .6 × 10 8, 1 .6 × 10 6 Toffolis per walk, 4 .1 × 10 5 logical qubits, and 3 .7 × 10 17 Toffolis. At fixed THC rank ratio and precision, the total Toffoli count scales as 
+
+eO(λTHC NkNAO ). (F3) 
+
+c. First quantization. We use the pseudopotential plane-wave construction of Ref. [10], anchored at its diamond 3 × 3 × 3 instance: λ = 8 .402 × 10 6, 23 ,576 Toffolis per walk, and 1 .94 × 10 14 Toffolis in total at 1 .6 m Eh. We hold the 80 Ry plane-wave resolution of that instance fixed, so that the extrapolation isolates the mesh dependence. For a 
+
+k × k × k crystal, the momentum register then has width 
+
+n(k) = ⌈log 2(21 k + 1) ⌉ . (F4) At each k, we evaluate the kinetic, electron–electron, local-pseudopotential, and nonlocal-pseudopotential subnormal-izations and the block-encoding cost from the source formulas on this grid; no fit is applied. The logical-qubit count adds the system register, the phase-estimation register, and 8000 arithmetic ancillas, the last being an extrapolation assumption. At 10 × 10 × 10, this gives λ = 1 .2 × 10 10 , 8 .1 × 10 5 Toffolis per walk, 2 .0 × 10 5 logical qubits, and 4.2 × 10 18 Toffolis. At fixed composition, pseudopotential parameters, and precision, the total Toffoli count scales as 
+
+eO
+
+
+
+N 2 
+
+> k
+
+n2/3PW + N 3 
+
+> k
+
+n1/3PW + N 3
+
+> k
+
+
+
+, (F5) where nPW is the number of plane waves per primitive cell. The three terms arise from the kinetic, Coulomb, and pseudopotential subnormalizations, respectively, and give cubic scaling in Nk at fixed nPW .30 
+
+> Appendix G: Resource data and tables
+
+Table V extends Fig. 4 to the smaller k-point meshes, and lists the data used to extrapolate to 10 × 10 × 10. The settings are those of the figure: Toffoli-optimized walks, 0 .1 eV QPE precision, and THC fits at 0 .005 eV MP2 error per active electron, with rank cIP = 5 for the exchange terms and cIP = 4 for the direct terms. For CdSe, we use 
+
+cIP = 5 for both the exchange and direct terms, and extrapolate from only two evaluated meshes, 2 × 2 × 2 and 3 × 3 × 3. The 2 × 2 × 2 mesh has subnormalization λ = 71 .7 Eh and is not shown in the table. Rows marked (SG) use space-group adaptation and the same ranks as the rows without it. The exchange terms use the symmetric selection of interpolating points at cIP = 5. For diamond, MgO, BN, and AlN, the direct terms use cIP = 4. For CdSe, both terms use cIP = 5. The direct and exchange terms have different irrep blocks and separate STHC , giving ten applications of STHC per walk (four from direct and six from exchange). For diamond, λ (SG) is the subnormalization of the space-group-adapted fits. The diamond (SG) Toffoli and qubit counts use this fitted subnormalization. For MgO, BN, AlN, and CdSe, the (SG) rows combine the space-group-adapted walk with the subnormalization from the fit without space-group adaptation. 31 
+
+System 3 × 3 × 3 4 × 4 × 4 5 × 5 × 5 6 × 6 × 6 8 × 8 × 8 10 × 10 × 10 Diamond, m = 2 λ 46 .2 51 .2 55 .6 60 .8 68 .3∗ 75 .1∗
+
+λ (SG) 47 .4 50 .0 52 .2 54 .9 58 .4∗ 61 .5∗
+
+Toffolis per walk 5.9×10 5 8.8×10 5 1.3×10 6 1.6×10 6 2.5×10 6 3.5×10 6
+
+Toffolis per walk (SG) 1.6×10 5 2.8×10 5 3.2×10 5 4.0×10 5 6.7×10 5 8.6×10 5
+
+Logical qubits 4,260 4,265 8,365 8,370 16 ,566 16 ,571 Logical qubits (SG) 4,260 4,265 8,365 8,370 16 ,566 16 ,571 Total Toffolis 1.2×10 10 1.9×10 10 3.0×10 10 4.2×10 10 7.4×10 10 ∗ 1.1×10 11 ∗
+
+Total Toffolis (SG) 3.3×10 9 5.9×10 9 7.2×10 9 9.3×10 9 1.7×10 10 ∗ 2.3×10 10 ∗
+
+Diamond λ 92 .1 104 .5 114 .1 125 .6 142 .3∗ 157 .3∗
+
+λ (SG) 95 .2 102 .0 106 .8 112 .5 120 .1∗ 126 .7∗
+
+Toffolis per walk 5.9×10 5 8.8×10 5 1.3×10 6 1.6×10 6 2.5×10 6 3.5×10 6
+
+Toffolis per walk (SG) 1.6×10 5 2.8×10 5 3.2×10 5 4.0×10 5 6.7×10 5 8.6×10 5
+
+Logical qubits 4,284 4,291 8,393 8,400 16 ,598 16 ,607 Logical qubits (SG) 4,284 4,291 8,393 8,400 16 ,598 16 ,605 Total Toffolis 2.3×10 10 3.9×10 10 6.1×10 10 8.8×10 10 1.5×10 11 ∗ 2.3×10 11 ∗
+
+Total Toffolis (SG) 6.6×10 9 1.2×10 10 1.5×10 10 1.9×10 10 3.5×10 10 ∗ 4.7×10 10 ∗
+
+MgO λ 143 .1 145 .6 146 .3 149 .4 151 .6∗ 153 .8∗
+
+Toffolis per walk 6.0×10 5 8.9×10 5 1.3×10 6 1.6×10 6 2.6×10 6 3.5×10 6
+
+Toffolis per walk (SG) 1.6×10 5 2.7×10 5 3.1×10 5 3.9×10 5 6.7×10 5 8.7×10 5
+
+Logical qubits 4,284 4,291 8,393 8,400 16 ,598 16 ,607 Logical qubits (SG) 4,284 4,291 8,393 8,400 16 ,598 16 ,607 Total Toffolis 3.6×10 10 5.5×10 10 7.9×10 10 1.0×10 11 1.7×10 11 ∗ 2.3×10 11 ∗
+
+Total Toffolis (SG) 9.7×10 9 1.7×10 10 2.0×10 10 2.5×10 10 4.4×10 10 ∗ 5.7×10 10 ∗
+
+BN λ 81 .3 92 .2 98 .7 106 .7 117 .7∗ 127 .6∗
+
+Toffolis per walk 5.9×10 5 8.8×10 5 1.3×10 6 1.6×10 6 2.5×10 6 3.5×10 6
+
+Toffolis per walk (SG) 2.1×10 5 3.0×10 5 4.4×10 5 5.6×10 5 7.9×10 5 1.0×10 6
+
+Logical qubits 4,284 4,291 8,393 8,400 16 ,598 16 ,605 Logical qubits (SG) 4,284 4,291 8,393 8,400 16 ,598 16 ,605 Total Toffolis 2.1×10 10 3.5×10 10 5.3×10 10 7.4×10 10 1.3×10 11 ∗ 1.9×10 11 ∗
+
+Total Toffolis (SG) 7.4×10 9 1.2×10 10 1.9×10 10 2.5×10 10 4.0×10 10 ∗ 5.7×10 10 ∗
+
+AlN λ 67 .2 71 .2 75 .3 78 .2∗ 83 .3∗ 87 .5∗
+
+Toffolis per walk 1.7×10 6 2.5×10 6 3.5×10 6 4.7×10 6 7.0×10 6 1.0×10 7
+
+Toffolis per walk (SG) 6.3×10 5 8.9×10 5 1.1×10 6 2.0×10 6 2.8×10 6 3.7×10 6
+
+Logical qubits 8,385 8,392 16 ,590 16 ,599 32 ,989 32 ,996 Logical qubits (SG) 8,385 8,392 16 ,590 16 ,599 32 ,989 32 ,996 Total Toffolis 4.7×10 10 7.7×10 10 1.1×10 11 1.6×10 11 ∗ 2.5×10 11 ∗ 3.8×10 11 ∗
+
+Total Toffolis (SG) 1.8×10 10 2.7×10 10 3.6×10 10 6.6×10 10 ∗ 9.9×10 10 ∗ 1.4×10 11 ∗
+
+CdSe λ 77 .8 82 .5∗ 86 .3∗ 89 .5∗ 94 .9∗ 99 .3∗
+
+Toffolis per walk 2.9×10 6 4.5×10 6 6.3×10 6 8.2×10 6 1.3×10 7 1.8×10 7
+
+Toffolis per walk (SG) 1.1×10 6 1.4×10 6 1.8×10 6 3.4×10 6 4.8×10 6 6.5×10 6
+
+Logical qubits 8,389 16 ,587 32 ,977 32 ,984 65 ,758 65 ,765 Logical qubits (SG) 16 ,580 16 ,587 32 ,977 32 ,984 65 ,758 65 ,765 Total Toffolis 9.7×10 10 1.6×10 11 ∗ 2.3×10 11 ∗ 3.1×10 11 ∗ 5.2×10 11 ∗ 7.5×10 11 ∗
+
+Total Toffolis (SG) 3.5×10 10 5.0×10 10 ∗ 6.8×10 10 ∗ 1.3×10 11 ∗ 1.9×10 11 ∗ 2.8×10 11 ∗
+
+Table V. BSE resources across k-point meshes. Triexcitonic ( m = 3) estimates unless labelled, with space-group adap-tation only in the (SG) rows; the 10 × 10 × 10 column is Fig. 4. Diamond (SG) totals use the space-group-adapted fitted subnormalizations; the other materials retain the subnormalizations without space-group adaptation. Subnormalizations λ are in Eh. Asterisks mark subnormalizations, and the resulting Toffoli counts, obtained from a power-law fit to the total subnor-malization at the last three evaluated meshes except CdSe (CdSe uses 2 × 2 × 2 and 3 × 3 × 3 for extrapolation), as in Fig. 2(a). Walk costs are evaluated at every mesh, and logical qubits are total counts: the 2 m particle registers (momentum, band, and spin), the LCU control, the THC-index extension of the two routed registers, two exchange qubits (spin-projector signal and state-preparation flag), the peak primitive workspace, and the phase-estimation register of 2 ⌈log 2(I + 1) ⌉ − 1 qubits for I walk steps [33].

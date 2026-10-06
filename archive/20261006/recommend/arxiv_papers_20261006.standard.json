@@ -1,0 +1,183 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-06T01:08:49.971788+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 1,
+    "deep_cap": 7,
+    "deep_selected": 1,
+    "quick_candidates": 3,
+    "quick_skim_target": 12,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2610.03686v1",
+      "source": "arxiv",
+      "title": "Efficient Block Encoding of Structured Hamiltonians by Separating Where and What",
+      "abstract": "Fault-tolerant block encodings of structured Hamiltonians can reduce their non-Clifford cost in SELECT by selecting where an operator acts separately from what is applied. We construct permute-act-unpermute circuits whose CSWAP networks exploit the support geometry: a selected support is brought to a fixed target register, a shared local circuit acts there, and the permutation is undone. For supports of fixed size, the $T$ count of SELECT then grows with the system size rather than with the number of terms, without requiring translational symmetry or factorised coefficients. For two-site supports, we establish and attain the minimum CSWAP count within address-controlled networks of site transpositions. Compiled for Pauli terms, these circuits use $8SN+O(\\log N)$ $T$ gates with $O(\\log N)$ permutation work qubits, where $N$ is the number of system qubits and $S$ is determined by the support geometry, with $S=1$ for nearest-neighbour interactions and $S=3/2$ for all-to-all pairs. We also introduce a bridged CSWAP that retains and repairs a temporary AND across the target action. When the repair is Clifford, it halves the $T$ count of a matched forward-inverse CSWAP pair at the cost of one retained work qubit. For a Heisenberg ring, the complete block-encoding query reduces the $T$ count by a factor approaching 3 as the system size grows. For a five-orbital Anderson impurity model, which combines nearest-neighbour and all-to-all support geometries, the reduction is about 1.7 at large bath sizes. Both comparisons use the lowest-cost compiled baselines considered, at unchanged block-encoding normalisation and comparable peak ancilla counts.",
+      "authors": [
+        "Alessandro Summer",
+        "François Jamet"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cond-mat.stat-mech",
+        "cond-mat.str-el"
+      ],
+      "published": "2026-10-02T17:50:48+00:00",
+      "link": "https://arxiv.org/pdf/2610.03686v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "fault-tolerant block encoding of structured Hamiltonians",
+      "llm_evidence_cn": "结构化哈密顿量的容错块编码",
+      "llm_evidence": "结构化哈密顿量的容错块编码",
+      "canonical_evidence": "结构化哈密顿量的容错块编码",
+      "llm_tldr_en": "Constructs permute-act-unpermute circuits for fault-tolerant block encoding of structured Hamiltonians, cutting SELECT T-count by exploiting support geometry without translational symmetry.",
+      "llm_tldr_cn": "针对结构化哈密顿量容错块编码中SELECT门非Clifford开销高的问题，本文提出将作用位置与作用内容分离的置换-作用-逆置换电路。通过CSWAP网络利用支撑几何，把选定支撑搬到固定目标寄存器后施加共享局部电路，再撤销置换。对固定大小支撑，SELECT的T计数随系统规模而非项数增长，且不要求平移对称或系数可分解，为容错量子模拟提供了更省资源的块编码实现途径。",
+      "llm_tldr": "针对结构化哈密顿量容错块编码中SELECT门非Clifford开销高的问题，本文提出将作用位置与作用内容分离的置换-作用-逆置换电路。通过CSWAP网络利用支撑几何，把选定支撑搬到固定目标寄存器后施加共享局部电路，再撤销置换。对固定大小支撑，SELECT的T计数随系统规模而非项数增长，且不要求平移对称或系数可分解，为容错量子模拟提供了更省资源的块编码实现途径。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "block encoding techniques for accessing matrices in quantum algorithms",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2610.03673v1",
+      "source": "arxiv",
+      "title": "Quantum Simulation on Riemannian Manifolds",
+      "abstract": "We investigate algorithms for the quantum simulation of the Schrödinger equation on a Riemannian manifold, where the kinetic operator is defined by the Laplace--Beltrami operator corresponding to the metric. Our first algorithms are based on a global spectral method based on the identification of an efficient transform to the eigenbasis of the Laplace--Beltrami operator. We use this method to provide explicit, efficient, quantum simulation algorithms for the Riemannian Schrödinger equation on tori and spheres with their standard metrics, simplices with the Wright--Fisher metric, truncated positive orthants and their invertible affine images with the log-barrier Hessian metric, and $\\ell_p$ balls with a metric induced by the Duffy map. Our second algorithm is based on a coherent simulation of local spectral methods on multiple charts, and is in principle applicable to any compact manifold. We first analyze this algorithm in the continuum and derive conditions under which a polynomial spectral cutoff suffices. We also provide a discretization analysis of a polynomial spectral cutoff for tensor-products of constant-dimensional manifolds. Finally, we consider applications of these methods to optimization and physical simulation. For optimization, we provide results including a generalization and convergence analysis of Quantum Hamiltonian Descent for geodesically convex functions that leads to explicit algorithms on the sphere and simplex, and a Riemannian generalization of the Real-Space Adiabatic Algorithm. For physical simulation, we show that our algorithms can simulate certain spatially discretized field theories, including a variant of the nonlinear sigma model.",
+      "authors": [
+        "Dylan Herman",
+        "Jacob Watkins",
+        "Guneykan Ozgul",
+        "Jiayu Shen",
+        "Brandon Augustino",
+        "Junhyung Lyle Kim",
+        "Shouvanik Chakrabarti"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.DS"
+      ],
+      "published": "2026-10-02T17:43:15+00:00",
+      "link": "https://arxiv.org/pdf/2610.03673v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "quantum simulation of the Schrödinger equation as a PDE on Riemannian manifolds",
+      "llm_evidence_cn": "黎曼流形上薛定谔方程这一偏微分方程的量子模拟",
+      "llm_evidence": "黎曼流形上薛定谔方程这一偏微分方程的量子模拟",
+      "canonical_evidence": "黎曼流形上薛定谔方程这一偏微分方程的量子模拟",
+      "llm_tldr_en": "Develops efficient quantum simulation algorithms for the Schrödinger equation on Riemannian manifolds via spectral transforms to the Laplace-Beltrami eigenbasis and coherent approaches.",
+      "llm_tldr_cn": "论文针对流形上薛定谔方程这一偏微分方程的量子模拟问题，提出基于拉普拉斯-贝尔特拉米算子本征基变换的全局谱方法，以及一种相干方法。作者为环面、球面、单纯形、正卦限与椭球等具体度量给出了显式高效的量子模拟算法。该工作把量子模拟技术推广到非欧几何上的微分方程，为量子偏微分方程求解提供了可构造的算法框架。",
+      "llm_tldr": "论文针对流形上薛定谔方程这一偏微分方程的量子模拟问题，提出基于拉普拉斯-贝尔特拉米算子本征基变换的全局谱方法，以及一种相干方法。作者为环面、球面、单纯形、正卦限与椭球等具体度量给出了显式高效的量子模拟算法。该工作把量子模拟技术推广到非欧几何上的微分方程，为量子偏微分方程求解提供了可构造的算法框架。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.40349v1",
+      "source": "arxiv",
+      "title": "Efficient Calculation of Equilibrium Correlation Functions",
+      "abstract": "A majority of measurable dynamic quantities of a physical system is described as an equilibrium correlation function of the form $G_{AB}(t-t') = \\left<A(t)B(t')\\right>$, where $t'$ represents the impact time and $t$ represents the response time. Conventional quantum algorithms to compute such quantities via Hamiltonian simulation such as the Hadamard test, variational methods, or linear-response-based algorithms share one feature in common: each time point $t-t'$ is calculated by a different quantum circuit, leading to at least $O(N_t)$ total shots, and at least $O(N_t^2)$ total quantum gates. Here, we provide a different approach: utilizing $O(\\log N_t)$ ancilla qubits to store time as a quantum variable, and effectively parallelize the computation of an equilibrium correlation function by requiring only a single quantum circuit for all time points. We show that this circuit needs to be run only $O(\\log N_t)$ times, which in total requires $O(N_t \\log N_t)$ quantum resources in the large system size limits. We prove that this scaling is optimal, and demonstrate our algorithm calculating the Green's function of a one-dimensional spinless Hubbard model.",
+      "authors": [
+        "Yizhi Shen",
+        "Roel Van Beeumen",
+        "Wibe A. de Jong",
+        "Efekan Kökcü"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cond-mat.stat-mech",
+        "physics.comp-ph"
+      ],
+      "published": "2026-09-30T17:59:06+00:00",
+      "link": "https://arxiv.org/pdf/2609.40349v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Hamiltonian simulation with improved gate and shot complexity via encoding time",
+      "llm_evidence_cn": "通过编码时间改进门与采样复杂度的哈密顿量模拟",
+      "llm_evidence": "通过编码时间改进门与采样复杂度的哈密顿量模拟",
+      "canonical_evidence": "通过编码时间改进门与采样复杂度的哈密顿量模拟",
+      "llm_tldr_en": "Encodes time as a quantum variable with O(log N_t) ancilla qubits to compute equilibrium correlation functions in parallel, cutting the O(N_t^2) gate and O(N_t) shot overhead of standard Hamiltonian-simulation approaches.",
+      "llm_tldr_cn": "传统通过哈密顿量模拟计算平衡关联函数时，每个时间点都需独立线路，导致至少O(N_t)次采样与O(N_t^2)个量子门。本文用O(log N_t)个辅助量子比特将时间编码为量子变量，从而并行计算关联函数。结果显著降低了门与采样复杂度。该方法为高效计算平衡关联函数提供了新途径。",
+      "llm_tldr": "传统通过哈密顿量模拟计算平衡关联函数时，每个时间点都需独立线路，导致至少O(N_t)次采样与O(N_t^2)个量子门。本文用O(log N_t)个辅助量子比特将时间编码为量子变量，从而并行计算关联函数。结果显著降低了门与采样复杂度。该方法为高效计算平衡关联函数提供了新途径。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "efficient Hamiltonian simulation algorithms with rigorous gate and query complexity guarantees",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.02916v1",
+      "source": "arxiv",
+      "title": "Quasiparticle quantum simulation of materials with the Bethe-Salpeter equation",
+      "abstract": "The first-principles quantum simulation of the full electronic Hamiltonian of a material model of realistic size appears daunting even in a future era of fully fault-tolerant quantum computers. In contrast, classical simulations of material excited states rely on heuristic quasiparticle frameworks, such as the GW approximation and Bethe-Salpeter equation, where only a few quasiparticles are explicitly considered. Here we give a detailed description of quasiparticle quantum simulation for multi-excitonic states within the BSE. We develop an explicit first-quantized, orbital-based block encoding of the multi-exciton BSE Hamiltonian for qubitization, and reduce its cost using integral factorization and crystal symmetries. For a materials model of size $N$, and a fixed number of quasiparticles, the resulting algorithms require $\\widetilde{O}(N)$ Toffoli gates and $O(\\log N)$ logical qubits, or, using space-time tradeoffs, $\\widetilde{O}(\\sqrt{N})$ Toffoli gates and $\\widetilde{O}(\\sqrt{N})$ logical qubits, achieving up to a sixth power reduction in Toffoli count, or up to exponential reduction in qubit count, versus standard full Hamiltonian simulation techniques that have been explored in materials simulation. Resource estimates for the classically challenging problem of triexcitonic eigenvalue estimation across a range of semiconductor models of a realistic physical size of $O(10^3)$ atoms, show that our Toffoli-optimized implementation reduces the Toffoli count by $10^6-10^7$ relative to full Hamiltonian simulation estimates, while a qubit-optimized implementation requires only a few hundred logical qubits. More broadly, these results show that classical heuristic frameworks will be essential in the design of future fault-tolerant quantum algorithms for materials.",
+      "authors": [
+        "Jielun Chen",
+        "Jiace Sun",
+        "Garnet Kin-Lic Chan"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "physics.chem-ph"
+      ],
+      "published": "2026-10-02T07:04:53+00:00",
+      "link": "https://arxiv.org/pdf/2610.02916v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "explicit orbital-based block encoding of the BSE Hamiltonian for qubitization",
+      "llm_evidence_cn": "为BSE哈密顿量构造轨道基块编码以支持qubitization",
+      "llm_evidence": "为BSE哈密顿量构造轨道基块编码以支持qubitization",
+      "canonical_evidence": "为BSE哈密顿量构造轨道基块编码以支持qubitization",
+      "llm_tldr_en": "An explicit first-quantized orbital-based block encoding of the multi-exciton Bethe-Salpeter Hamiltonian enables qubitization with reduced cost via integral factorization and crystal symmetries.",
+      "llm_tldr_cn": "对真实尺寸材料完整电子哈密顿量的第一性原理量子模拟即使在未来容错量子计算时代也代价高昂，本文转向准粒子框架。作者为多激子Bethe-Salpeter方程哈密顿量构造第一量子化、基于轨道的显式块编码以支持qubitization，并用积分分解与晶体对称性降低开销。结果给出一套可执行的块编码方案并显著减少资源需求，为材料激发态的实用量子模拟提供了可行路径。",
+      "llm_tldr": "对真实尺寸材料完整电子哈密顿量的第一性原理量子模拟即使在未来容错量子计算时代也代价高昂，本文转向准粒子框架。作者为多激子Bethe-Salpeter方程哈密顿量构造第一量子化、基于轨道的显式块编码以支持qubitization，并用积分分解与晶体对称性降低开销。结果给出一套可执行的块编码方案并显著减少资源需求，为材料激发态的实用量子模拟提供了可行路径。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "block encoding techniques for accessing matrices in quantum algorithms",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
