@@ -1,0 +1,41 @@
+{
+  "date": "20261007",
+  "date_label": "",
+  "generated_at": "2026-10-07 23:20:49 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.06987v1",
+      "route": "202610/07/2610.06987v1-a-structure-aware-construction-of-quantum-bpx-preconditioners-for-q1-finite-element-discretizations-of-reaction-diffusion-problems",
+      "title": "A structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of reaction-diffusion problems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向反应扩散方程有限元离散的量子BPX预条件子，改善条件数",
+      "first_seen_at": "2026-10-07 23:20:49 UTC",
+      "updated_at": "2026-10-07 23:20:49 UTC"
+    },
+    {
+      "paper_id": "2610.03295v1",
+      "route": "202610/07/2610.03295v1-hamiltonian-eigenvalue-transformation-by-tridiagonal-gadgets",
+      "title": "Hamiltonian Eigenvalue Transformation by Tridiagonal Gadgets",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过辅助比特链实现局部哈密顿量多项式P(H)的矩阵函数变换",
+      "first_seen_at": "2026-10-07 23:20:49 UTC",
+      "updated_at": "2026-10-07 23:20:49 UTC"
+    }
+  ]
+}

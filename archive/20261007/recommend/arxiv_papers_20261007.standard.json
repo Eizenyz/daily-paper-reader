@@ -1,0 +1,96 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-07T23:20:14.110452+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 0,
+    "deep_cap": 7,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 12,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2610.06987v1",
+      "source": "arxiv",
+      "title": "A structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of reaction-diffusion problems",
+      "abstract": "We present a structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of constant-coefficient reaction--diffusion equations on the unit cube, including the Poisson equation. Building on existing quantum finite element and finite difference methods, we express the preconditioned operator through explicit one-dimensional maps, tensor products, and norm-preserving interlevel transfers. Symmetric preconditioning gives multilevel coefficients, and its favorable conditioning alone does not ensure efficient recovery of a state in the original finite element nodal basis. We instead use the local $L^2$-orthonormal basis underlying the construction as the output representation of the same finite element function. Its coefficient norm equals the continuous $L^2$ norm. Assuming direct access to the preconditioned right-hand side, we prepare this orthonormal coefficient state with a represented function error at most $\\varepsilon$. The expected query complexity is \\[ \\mathcal{O}\\!\\Big(dL^3\\frac{\\|f\\|_{L^2}}{\\|u\\|_{L^2}} \\log\\!\\Big(2+\\frac{L\\|f\\|_{L^2}}{\\varepsilon}\\Big)\\Big), \\] where $u$ is the exact solution, $f$ is the right-hand side, $d$ is the spatial dimension, and $L=\\log_2(1/h)$ for mesh width $h$. The bound holds for $0<\\varepsilon\\le\\|u\\|_{L^2}/2$ and depends only polylogarithmically on mesh refinement for fixed continuous data. We also analyze linear-functional estimation and illustrate the construction and continuous error bounds with a one-dimensional UnitaryLab experiment.",
+      "authors": [
+        "Yin Yang",
+        "Yue Yu",
+        "Long Zhang"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-10-04T06:59:50+00:00",
+      "link": "https://arxiv.org/pdf/2610.06987v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "quantum BPX preconditioners for finite element discretizations of reaction-diffusion equations improve conditioning",
+      "llm_evidence_cn": "面向反应扩散方程有限元离散的量子BPX预条件子，改善条件数",
+      "llm_evidence": "面向反应扩散方程有限元离散的量子BPX预条件子，改善条件数",
+      "canonical_evidence": "面向反应扩散方程有限元离散的量子BPX预条件子，改善条件数",
+      "llm_tldr_en": "Proposes structure-aware quantum BPX preconditioners for Q1 finite element discretizations of reaction-diffusion and Poisson equations, using tensor-product maps and interlevel transfers to improve conditioning and enable efficient state recovery.",
+      "llm_tldr_cn": "量子有限元求解反应扩散与泊松方程时，预条件算子条件数虽可改善，但在原始有限元节点基下高效恢复解态仍很困难。本文提出结构感知的量子BPX预条件子构造，通过显式一维映射、张量积与保范层间转移表达预条件算子，并采用构造所依赖的局部L2正交基作为输出基。该工作降低了条件数依赖并改进了解态恢复方式，为量子线性求解器在偏微分方程离散上的高效应用提供了新构造。",
+      "llm_tldr": "量子有限元求解反应扩散与泊松方程时，预条件算子条件数虽可改善，但在原始有限元节点基下高效恢复解态仍很困难。本文提出结构感知的量子BPX预条件子构造，通过显式一维映射、张量积与保范层间转移表达预条件算子，并采用构造所依赖的局部L2正交基作为输出基。该工作降低了条件数依赖并改进了解态恢复方式，为量子线性求解器在偏微分方程离散上的高效应用提供了新构造。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum algorithms for linear systems and matrix functions with improved complexity, including preconditioning and polynomial approximation",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.03295v1",
+      "source": "arxiv",
+      "title": "Hamiltonian Eigenvalue Transformation by Tridiagonal Gadgets",
+      "abstract": "An analog device implements a local Hamiltonian H, but a polynomial P (H) is in general not local, so the device cannot implement it. We carry P (H), to any prescribed accuracy, as the action of a single time-independent local Hamiltonian on an explicitly described invariant subspace. Short chains of ancilla qubits are attached to H. A chain of 2m sites has a unique isolated eigenvalue that is an analytic function of the input vanishing to order exactly 2m, because the input must cross the chain and come back before it can shift the energy at the far end. Chains of different lengths therefore form a triangular family, and a weighted sum of them reproduces a prescribed polynomial term by term. Even chains give the even part and odd chains the odd part, so any polynomial is reached. We prove uniqueness, analyticity and coefficient bounds uniform in the chain length for inputs H of norm below any r < 1. Where the circuit model pays degree 2l in 2l sequential oracle calls, the result here is one Hamiltonian of locality two more than that of H, which pays the degree in O(l^2 + log2^(1/eps)) ancillas and in energy scale. As an application we filter a marked eigenstate of a local Hamiltonian. Composing a synthesised square along the Chebyshev doubling identity works, but its energy scale grows quasi-polynomially with the degree. Iterating instead the exact eigenvalue branch of the two-site chain k times gives a filter on k + 1 ancilla qubits whose error decays geometrically in k, at an energy scale polynomial in the inverse passband width and independent of k, the locality growing by one per stage. In adiabatic optimisation with a rank-one driver, the construction replaces that non-local driver, by a Hamiltonian with O(log n) ancillas and O(log n)- body terms, at an energy scale polynomial in n. Simulations including every ancilla reproduce the spectrum of the ideal algorithm.",
+      "authors": [
+        "Arthur Braida",
+        "Joseph Cunningham",
+        "Jérémie Roland"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.DS"
+      ],
+      "published": "2026-10-02T13:37:39+00:00",
+      "link": "https://arxiv.org/pdf/2610.03295v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "realizing polynomial P(H) of a local Hamiltonian via ancilla chains for matrix-function transformation",
+      "llm_evidence_cn": "通过辅助比特链实现局部哈密顿量多项式P(H)的矩阵函数变换",
+      "llm_evidence": "通过辅助比特链实现局部哈密顿量多项式P(H)的矩阵函数变换",
+      "canonical_evidence": "通过辅助比特链实现局部哈密顿量多项式P(H)的矩阵函数变换",
+      "llm_tldr_en": "An analog device implementing a local Hamiltonian H cannot generally realize nonlocal P(H). Attaching short ancilla chains to H yields an invariant subspace on which P(H) acts as a single time-independent local Hamiltonian, with chain eigenvalues reproducing each polynomial term.",
+      "llm_tldr_cn": "模拟器件只能实现局部哈密顿量H，而一般的多项式P(H)并非局部，难以直接在器件上实现。本文通过在主哈密顿量上连接短辅助比特链，构造显式不变子空间，使P(H)等效为单个时间无关局部哈密顿量的作用。不同长度链的孤立本征值构成三角族，其加权和可逐项复现给定多项式，偶链与奇链分别给出偶部与奇部。该构造为哈密顿量本征值变换与多项式函数实现提供了新思路。",
+      "llm_tldr": "模拟器件只能实现局部哈密顿量H，而一般的多项式P(H)并非局部，难以直接在器件上实现。本文通过在主哈密顿量上连接短辅助比特链，构造显式不变子空间，使P(H)等效为单个时间无关局部哈密顿量的作用。不同长度链的孤立本征值构成三角族，其加权和可逐项复现给定多项式，偶链与奇链分别给出偶部与奇部。该构造为哈密顿量本征值变换与多项式函数实现提供了新思路。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum singular value transformation for matrix functions and polynomial approximation",
+      "matched_requirement_id": "req-14",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -1,0 +1,3797 @@
+Title: A structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of reaction-diffusion problems
+
+URL Source: https://arxiv.org/pdf/2610.06987v1
+
+Published Time: Wed, 07 Oct 2026 00:05:03 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# A structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of reaction–diffusion problems 
+
+Yin Yang ∗
+
+, Yue Yu †
+
+, and Long Zhang School of Mathematics and Computational Science, Xiangtan University, Xiangtan, Hunan 411105, China Hunan Research Center of the Basic Discipline Fundamental Algorithmic Theory and Novel Computational Methods, Xiangtan, Hunan 411105, China National Center for Applied Mathematics in Hunan, Xiangtan, Hunan 411105, China October 7, 2026 
+
+Abstract 
+
+We present a structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of constant-coefficient reaction–diffusion equations on the unit cube, including the Poisson equation. Building on existing quantum finite element and finite difference methods, we express the preconditioned operator through explicit one-dimensional maps, tensor products, and norm-preserving interlevel transfers. Symmetric preconditioning gives multilevel coefficients, and its favorable conditioning alone does not ensure efficient recovery of a state in the original finite element nodal basis. We instead use the local L2-orthonormal basis underlying the construction as the output representation of the same finite element function. Its coefficient norm equals the continuous L2 norm. Assuming direct access to the preconditioned right-hand side, we prepare this orthonormal coefficient state with a represented function error at most ε.The expected query complexity is 
+
+O
+
+
+
+dL 3 ∥f ∥L2
+
+∥u∥L2
+
+log 
+
+
+
+2 + L∥f ∥L2
+
+ε
+
+ 
+
+,
+
+where u is the exact solution, f is the right-hand side, d is the spatial dimension, and 
+
+L = log 2(1 /h ) for mesh width h. The bound holds for 0 < ε ≤ ∥ u∥L2 /2 and depends only poly-logarithmically on mesh refinement for fixed continuous data. We also analyze linear-functional estimation and illustrate the construction and continuous error bounds with a one-dimensional UnitaryLab experiment. 
+
+Keywords : Reaction–diffusion equation; Q1 finite elements; Quantum algorithms; BPX pre-conditioning; Block encoding 
+
+> ∗
+
+yangyinxtu@xtu.edu.cn 
+
+> †
+
+terenceyuyue@xtu.edu.cn 
+
+1arXiv:2610.06987v1 [math.NA] 4 Oct 2026 1 Introduction 
+
+Finite element discretizations of elliptic partial differential equations lead to large sparse linear systems whose conditioning deteriorates under mesh refinement [1]. Multilevel preconditioning addresses this difficulty by combining corrections on a hierarchy of approximation spaces. The classical BPX construction [2] and the subspace-correction framework [3] provide the foundations for such additive multilevel methods. Quantum linear system algorithms prepare states encoding solutions without computing ev-ery coefficient, beginning with the algorithm of Harrow, Hassidim, and Lloyd [4]. Subsequent developments improve the dependence on precision [5] and provide a general framework for matrix transformations through block encodings [6]. For elliptic problems, Cao et al. [7] give a quantum algorithm and circuit construction for the discretized Poisson equation, while Montanaro and Pal-lister [8] analyze finite element algorithms with discretization and output accuracy included in the comparison with classical methods. These works emphasize that input access, matrix conditioning, and the requested output must all enter the complexity analysis. Quantum preconditioning has been studied for general linear systems [9], including fast inver-sion for constructing inverse preconditioners [10]. For multilevel discretizations, a central difficulty is that multiplying separate block encodings of the system matrix and the preconditioner can retain the unfavorable normalization of the original discretization. A spectral bound for the precondi-tioned matrix alone is therefore insufficient. Deiml and Peterseim [11] address this issue for Q1 discretizations of elliptic diffusion problems by constructing the preconditioned gradient through local L2-orthonormal coordinates and multi-level transfers. Their analysis allows variable diffusion tensors and establishes complexity bounds for linear functionals. Jin, Liu, Ma, and Yu [12] develop a related finite difference construction using a commuting identity and Schr¨ odingerization. Together, these works motivate constructing the complete preconditioned operator from its discretization structure. The present work develops this approach for the Q1 discretization of −∆u+cu = f on the unit cube, with constant c ≥ 0. Reaction–diffusion systems also occur as the shifted elliptic subproblems in rational approximations of fractional operators. We examine a BPX factor that combines inverse mass square roots with weights depending on the reaction coefficient. The analysis tracks the dimension, refinement level, and reaction coefficient explicitly, and connects circuit accuracy to the continuous L2 error of the represented finite element function. The choice of output representation is essential. Symmetric BPX preconditioning solves for multilevel coefficients; obtaining a state of the coefficients in the original finite element nodal ba-sis requires a further transformation whose cost is not controlled by the preconditioned condition number alone. We therefore use the local L2-orthonormal basis, already introduced to construct the block encodings, to represent the output solution. This changes the coefficient representation while preserving the finite element function. The Euclidean error of these orthonormal coefficients is exactly the continuous L2 error between the represented functions, so the analysis can address continuous accuracy directly. Our solution-state complexity bound concerns this orthonormal rep-resentation; it does not include an additional conversion to a nodal coefficient state. 2Building on the quantum finite element framework of [11], we focus on the parameters and coefficient representations that determine the quantum cost. That work already provides the un-derlying orthonormal gradient construction and isometric transfers, with a block-encoding normal-ization proportional to dL for unit diffusion. The present contributions refine this framework in the following four respects. 
+
+• Explicit dimension dependence in the quantum error and complexity analysis. We give a finite element L2 error constant of 3, an effective condition-number bound of 12 dL 2 for the BPX system, and a matrix block-encoding normalization of 12 dL . Here d is the spatial dimension, L = log 2(1 /h ) is the number of refinement levels, and h is the finest mesh width; the effective condition number uses only nonzero eigenvalues. These bounds hold uniformly in the reaction coefficient c ≥ 0 and make explicit the dimension dependence left implicit in the BPX condition estimate of [11]. 
+
+• Solution-state preparation under a continuous L2 error requirement. Let u be the exact solution with right-hand side f , and let uqh denote the function represented by the output coefficients in the local L2-orthonormal basis. Assuming direct access to the preconditioned right-hand side, we establish ∥u − uqh∥L2 ≤ ε for a prescribed accuracy 0 < ε ≤ ∥ u∥L2 /2. For fixed ∥f ∥L2 /∥u∥L2 , the query bound has no algebraic inverse-mesh factor, including the cost of converting multilevel coefficients to this orthonormal coefficient state. This complements the linear-functional complexity result in [11, Theorem 6.5]. 
+
+• A structure-aware block encoding of the preconditioned system. Following the ap-proach of [12], we exploit the nested Cartesian grids to express the required maps through explicit one-dimensional matrices and tensor products. Commuting identities move differen-tiation to each coarse level, where the BPX weights balance its scale, and norm-preserving transfers then lift the coefficients to the finest level. This gives a block encoding of the com-plete preconditioned operator with controlled normalization. By specializing the framework of [11] to this tensor structure, we obtain a transparent sequence of encoding steps with explicit normalization factors. 
+
+• A modified BPX factor connecting quantum coefficients to continuous norms. 
+
+The level-ℓ block of our BPX factor is Sℓ = ( h−2 
+
+> ℓ
+
++ c)−1/2PℓM −1/2 
+
+> ℓ
+
+, where hℓ is the mesh width, Mℓ is the mass matrix, and Pℓ prolongs nodal coefficients to the finest grid. The inverse mass square root replaces scalar mass scaling. On each level, the Euclidean norm of the coefficients in the mass-normalized basis equals the represented function’s L2 norm, giving an exact correspondence without additional mesh- or dimension-dependent norm-equivalence factors. These query bounds exclude construction of the supplied input oracles and classical readout of the full solution. A one-dimensional UnitaryLab experiment illustrates finite element convergence, the preconditioned spectrum, and the accuracy of the represented response; it does not serve as evidence of asymptotic quantum advantage. 3In Section 2, we formulate the Q1 discretization and BPX system and establish their error and spectral bounds. Section 3 develops the block encodings from local coefficients and interlevel transfers. We analyze continuous accuracy and the two output tasks in Section 4. Numerical results are presented in Section 5, and Section 6 compares the costs and discusses the conclusions. Appendix A gives the proof of an explicit finite element error constant. 
+
+# 2 Multilevel BPX preconditioning for Q1 finite elements 
+
+Let Ω = (0 , 1) d. We give a review of a BPX preconditioner for the Q1 finite element discretiza-tion of a reaction–diffusion equation with homogeneous Dirichlet boundary conditions: 
+
+−∆u + cu = f in Ω , u = 0 on ∂Ω, (2.1) where c > 0 is a constant reaction coefficient and f ∈ L2(Ω). 
+
+2.1 Q1 finite element discretization 
+
+Let V = H10 (Ω). The variational formulation of (2.1) is to find u ∈ V such that 
+
+a(u, v ) = ( f, v ) for all v ∈ V, 
+
+where 
+
+a(w, v ) := ( ∇w, ∇v) + c(w, v ), w, v ∈ V, 
+
+and ( ·, ·) denotes the L2(Ω) inner product. We next consider a conforming Q1 finite element discretization. For ℓ = 1 , · · · , L , let Tℓ be the uniform Cartesian partition of Ω into cubes of side length hℓ = 2 −ℓ. Define 
+
+Vℓ := {v ∈ V : v|T ∈ Q1(T ) for every T ∈ T ℓ},
+
+where Q1(T ) consists of polynomials of degree at most one in each coordinate. The spaces are nested, V1 ⊂ · · · ⊂ VL, and dim Vℓ = (2 ℓ − 1) d. Set h = hL, Vh = VL, and N = dim Vh = (2 L − 1) d.The discrete variational problem is to find uh ∈ Vh such that 
+
+a(uh, v h) = ( f, v h) for all vh ∈ Vh.
+
+To express this problem in nodal coordinates, let x(ℓ) 
+
+> j
+
+= jh ℓ, 0 ≤ j ≤ 2ℓ, be the one-dimensional mesh nodes. For 1 ≤ j ≤ 2ℓ − 1, the nodal basis function ϕ(ℓ) 
+
+> j
+
+is continuous and affine on each mesh interval, and satisfies ϕ(ℓ) 
+
+> j
+
+(x(ℓ) 
+
+> i
+
+) = δij for 0 ≤ i ≤ 2ℓ, where δij is the Kronecker delta. For the spatial coordinate vector x = ( x1, · · · , x d) ∈ Ω, the tensor-product basis of Vℓ is 
+
+ϕ(ℓ) 
+
+> j
+
+(x) = 
+
+> d
+
+Y
+
+> q=1
+
+ϕ(ℓ) 
+
+> jq
+
+(xq), j = ( j1, · · · , j d) ∈ I ℓ,d := {1, · · · , 2ℓ − 1}d.
+
+The finite element solution has the expansion 
+
+uh = X
+
+> j∈I ℓ,d
+
+(uh)j ϕ(L) 
+
+> j
+
+, uh ∈ RN .
+
+4The level-ℓ mass and stiffness matrices are defined by (Mℓ)i,j = ( ϕ(ℓ) 
+
+> j
+
+, ϕ (ℓ) 
+
+> i
+
+), (Aℓ)i,j = ( ∇ϕ(ℓ) 
+
+> j
+
+, ∇ϕ(ℓ) 
+
+> i
+
+).
+
+The one-dimensional mass and stiffness matrices, both of size (2 ℓ − 1) × (2 ℓ − 1), are 
+
+Mhℓ = hℓ
+
+6
+
+
+
+4 1 01 4 1. . . . . . . . .1 4 10 1 4
+
+
+
+, Ahℓ = 1
+
+hℓ
+
+
+
+2 −1 0
+
+−1 2 −1. . . . . . . . .
+
+−1 2 −10 −1 2
+
+
+
+. (2.2) The tensor-product basis and separation of the integrals yield 
+
+Mℓ = M ⊗dhℓ , Aℓ =
+
+> d
+
+X
+
+> q=1
+
+M ⊗(q−1)  
+
+> hℓ
+
+⊗ Ahℓ ⊗ M ⊗(d−q) 
+
+> hℓ
+
+. (2.3) The matrix representing the full bilinear form a on Vℓ is 
+
+Kℓ = Aℓ + cM ℓ, Kh,d = KL = Ah,d + cM h,d , (2.4) where Ah,d = AL and Mh,d = ML. The discrete variational problem is therefore equivalent to 
+
+Kh,d uh = fh,d , (fh,d )j = ( f, ϕ (L) 
+
+> j
+
+). (2.5) For later norm estimates, define Ah : Vh → Vh by ( Ahvh, w h) = a(vh, w h) for all vh, w h ∈ Vh.If v and w are the nodal vectors of vh and Ahvh, respectively, this definition gives Mh,d w = Kh,d v.Thus the coefficient matrix of Ah is M −1 
+
+> h,d
+
+Kh,d = M −1 
+
+> h,d
+
+Ah,d + cI . Let Π h denote the L2-orthogonal projection onto Vh. Equation (2.5) is equivalently uh = A−1 
+
+> h
+
+Πhf .For each level ℓ, define the one-dimensional sine vectors s(ℓ) 
+
+> j
+
+∈ R2ℓ−1 by (s(ℓ) 
+
+> j
+
+)i =
+
+r 22ℓ sin 
+
+ πij 
+
+2ℓ
+
+
+
+, 1 ≤ i, j ≤ 2ℓ − 1.
+
+They form an orthonormal basis in the Euclidean inner product and satisfy Ahℓ s(ℓ) 
+
+> j
+
+= λ(ℓ) 
+
+> j
+
+s(ℓ) 
+
+> j
+
+and 
+
+Mhℓ s(ℓ) 
+
+> j
+
+= μ(ℓ) 
+
+> j
+
+s(ℓ) 
+
+> j
+
+, where 
+
+λ(ℓ) 
+
+> j
+
+= 4
+
+hℓ
+
+sin 2 πj 
+
+2ℓ+1 , μ(ℓ) 
+
+> j
+
+= hℓ
+
+3
+
+
+
+2 + cos πj 
+
+2ℓ
+
+
+
+.
+
+Let vh ∈ Vh \ { 0} have nodal coefficient vector v. Since Ah is represented by M −1 
+
+> h,d
+
+Kh,d , the eigenvalue equation Ahvh = θv h is equivalent to 
+
+M −1 
+
+> h,d
+
+Kh,d v = θv ⇐⇒ Kh,d v = θM h,d v.
+
+The values θ satisfying the latter equation for some v̸ = 0 are called the generalized eigenvalues of the matrix pair ( Kh,d , M h,d ). On the finest mesh, the corresponding d-dimensional basis vectors are 
+
+sj = s(L) 
+
+> j1
+
+⊗ · · · ⊗ s(L) 
+
+> jd
+
+, j = ( j1, · · · , j d) ∈ I L,d .
+
+5These N vectors form an orthonormal basis of the nodal coefficient space RN . Substituting v = sj
+
+into the generalized eigenvalue equation and using (2.3) and (2.4) gives 
+
+θj = c +
+
+> d
+
+X
+
+> q=1
+
+λ(L)
+
+> jq
+
+μ(L)
+
+> jq
+
+, c + 4 d ≤ θj ≤ c + 12 dh2 . (2.6) These eigenvalues describe Ah in the L2 inner product and will be used to compare the norms of Πhf and uh. The reaction term shifts each diffusion eigenvalue by c. The upper bound in (2.6) follows from λ(L) 
+
+> j
+
+≤ 4/h and μ(L) 
+
+> j
+
+≥ h/ 3; the lower bound follows from sin( π/ 2L+1 ) ≥ 2−L and 
+
+μ(L) 
+
+> j
+
+≤ h. The mass eigenvalues also give 
+
+hdℓ
+
+3d I ⪯ Mℓ ⪯ hdℓ I. (2.7) 
+
+Lemma 2.1 (Finite element error) . Suppose u ∈ H2(Ω) ∩ H10 (Ω) . The Q1 Galerkin approximation satisfies 
+
+∥u − uh∥L2 ≤ CFE h2∥u∥H2 , CFE = 3 . (2.8) The proof in Appendix A is included solely to give an explicit upper bound for CFE .
+
+2.2 BPX preconditioner for Q1 finite elements 
+
+The classical BPX preconditioner combines level corrections additively [2]; its analysis fits the subspace-correction framework of [3]. Here we use this multilevel structure with mass normalization and reaction-dependent weights. Let Pℓ ∈ RN ×(2 ℓ−1) d
+
+be the nodal prolongation from level ℓ to the finest level L. It represents the inclusion Vℓ ⊂ VL: multiplying a coarse nodal vector by Pℓ gives the fine nodal vector of the same function. In particular, PL = I.To balance the diffusion scale h−2 
+
+> ℓ
+
+and the reaction scale c, define 
+
+ωℓ = ( h−2 
+
+> ℓ
+
++ c)−1/2, Sℓ = ωℓPℓM −1/2 
+
+> ℓ
+
+,S = [ S1, · · · , S L], B = SS T =
+
+> L
+
+X
+
+> ℓ=1
+
+ω2 
+
+> ℓ
+
+PℓM −1 
+
+> ℓ
+
+P Tℓ .
+
+(2.9) The Poisson BPX constructions in [11, Section 5.2] and [12, Section 3.3] use, in our notation, the level factor h1−d/ 2 
+
+> ℓ
+
+Pℓ = hℓPℓ(h−d/ 2 
+
+> ℓ
+
+I). Here h−d/ 2 
+
+> ℓ
+
+supplies the mesh scaling associated with the 
+
+L2 norm. In (2.9), we use the symmetric inverse mass square root M −1/2 
+
+> ℓ
+
+in place of h−d/ 2 
+
+> ℓ
+
+I to normalize the level coefficients with respect to the L2 inner product. In fact, for vℓ ∈ Vℓ with nodal coefficient vector vℓ, define the normalized coefficient vector zℓ = M 1/2 
+
+> ℓ
+
+vℓ. Then 
+
+∥vℓ∥2 
+
+> L2
+
+= vTℓ Mℓvℓ = ∥zℓ∥22.
+
+Thus continuous L2 errors on level ℓ correspond to Euclidean errors in the normalized coefficients 
+
+zℓ, whereas errors in the nodal coefficients vℓ are measured in the mass-matrix norm. The weight ωℓ behaves like hℓ when ch 2 
+
+> ℓ
+
+≪ 1, and like c−1/2 when ch 2 
+
+> ℓ
+
+≫ 1. Thus the same factor controls both terms of the energy. When c = 0, it reduces to Sℓ = hℓPℓM −1/2 
+
+> ℓ
+
+. The 6preconditioner B is related to the BPX preconditioners in [11,12], extended here with the reaction-dependent weights ωℓ, as follows: 
+
+> L
+
+X
+
+> ℓ=1
+
+ω2 
+
+> ℓ
+
+h−dℓ PℓP Tℓ ⪯ B ⪯ 3dLX
+
+> ℓ=1
+
+ω2 
+
+> ℓ
+
+h−dℓ PℓP Tℓ .
+
+The prolongation matrices admit an explicit tensor-product construction. We first describe one refinement step in one dimension. Let v be a continuous piecewise linear function on the one-dimensional level-ℓ mesh, with zero boundary values. Let v = ( v1, · · · , v 2ℓ−1)T contain its interior nodal values, where vj = v(x(ℓ) 
+
+> j
+
+)and v0 = v2ℓ = 0. Refinement inserts the midpoint of every coarse interval, so hℓ+1 = hℓ/2. The prolongation matrix 
+
+P 1d  
+
+> ℓ→ℓ+1
+
+∈ R(2 ℓ+1 −1) ×(2 ℓ−1) 
+
+converts v into the vector w of values of the same function at the fine interior nodes: w = P 1d 
+
+> ℓ→ℓ+1
+
+v,with wi = v(x(ℓ+1)  
+
+> i
+
+). Its rows correspond to fine interior nodes and its columns to coarse interior nodes, both ordered from left to right. An even fine index corresponds to an existing coarse node, since x(ℓ+1) 2j = x(ℓ) 
+
+> j
+
+. An odd fine index corresponds to the midpoint of a coarse interval, where linearity gives the average of its endpoint values. Thus 
+
+w2j = vj , 1 ≤ j ≤ 2ℓ − 1,w2j+1 = vj + vj+1 
+
+2 , 0 ≤ j ≤ 2ℓ − 1.
+
+For example, refinement from level 2 to level 3 maps three interior nodal values to seven: 
+
+
+
+w1
+
+w2
+
+w3
+
+w4
+
+w5
+
+w6
+
+w7
+
+
+
+= P 1d 2→3
+
+
+
+v1
+
+v2
+
+v3
+
+ =
+
+ 
+
+> 12
+
+0 01 0 0 
+
+> 1212
+
+00 1 00 1212
+
+0 0 10 0 12
+
+
+
+v1
+
+v2
+
+v3
+
+ .
+
+The first and last rows use the zero boundary values. Prolongation changes the nodal representation while preserving the function exactly: P2ℓ−1 
+
+> j=1
+
+vj ϕ(ℓ) 
+
+> j
+
+(x) = P2ℓ+1 −1 
+
+> i=1
+
+wiϕ(ℓ+1)  
+
+> i
+
+(x). Composing these successive refinements gives 
+
+P 1d  
+
+> ℓ
+
+= P 1d  
+
+> L−1→L
+
+· · · P 1d 
+
+> ℓ→ℓ+1
+
+, Pℓ = ( P 1d  
+
+> ℓ
+
+)⊗d.
+
+Then Pℓ represents the inclusion Vℓ ⊂ VL, so 
+
+P Tℓ Ah,d Pℓ = Aℓ, P Tℓ Mh,d Pℓ = Mℓ, P Tℓ Kh,d Pℓ = Kℓ.
+
+The classical left-preconditioned system is BK h,d uh = Bfh,d . For a symmetric quantum encoding, introduce multilevel coordinates z = ( zT 
+
+> 1
+
+, · · · , zTL )T and solve 
+
+AS z = ST fh,d , AS = ST Kh,d S, uh = Sz. (2.10) 7In particular, each level equation is 
+
+> L
+
+X
+
+> ℓ′=1
+
+ωℓωℓ′ M −1/2 
+
+> ℓ
+
+P Tℓ Kh,d Pℓ′ M −1/2 
+
+> ℓ′
+
+zℓ′ = ωℓM −1/2 
+
+> ℓ
+
+P Tℓ fh,d . (2.11) The off-diagonal blocks in (2.11) couple corrections on different levels. The matrix AS has order 
+
+PLℓ=1 (2 ℓ − 1) d. We embed its coordinate space in ⌈log 2 L⌉ + dL qubits: the level is stored as |ℓ − 1⟩,and each spatial register is padded to L qubits. Inactive level labels and spatial indices correspond to zero matrix blocks. Since SL = ωLM −1/2 
+
+> L
+
+is invertible, S has full row rank. However, its columns are redundant when L > 1, and ker AS = ker S. The right-hand side of (2.10) belongs to range( AS ) = range( ST ), so the system is compatible. Its minimum-norm solution is 
+
+z = A+ 
+
+> S
+
+ST fh,d , SA + 
+
+> S
+
+ST = K−1
+
+> h,d
+
+, (2.12) where A+ 
+
+> S
+
+is the Moore–Penrose pseudoinverse. All solutions of the redundant system recover the same nodal solution, because differences between them lie in ker S.The following spectral bounds follow from an L2 projection decomposition and the finite el-ement inverse estimate. Their explicit dependence on d and L will determine the inverse-query bound. 
+
+Theorem 2.1 (Spectral bounds for the preconditioned matrix) . For every c ≥ 0, every nonzero eigenvalue of AS satisfies 1
+
+L ≤ λ(AS ) ≤ 12 dL. (2.13) 
+
+The effective condition number, defined on range( AS ), is consequently at most 12 dL 2, uniformly in 
+
+c. These nonzero eigenvalues are also the eigenvalues of B1/2Kh,d B1/2.Proof. Let Qℓ be the L2-orthogonal projection onto Vℓ and set Q0 = 0. The one-dimensional approximation estimate in [13, Theorem 4], together with the best-approximation property and tensor-product orthogonality of the L2 projection, yields 
+
+∥v − Qℓv∥L2 ≤ hℓ
+
+π ∥∇ v∥L2 , v ∈ H10 (Ω) . (2.14) For v ∈ VL, put vℓ = ( Qℓ−Qℓ−1)v. Then v = PLℓ=1 vℓ and orthogonality gives PLℓ=1 ∥vℓ∥2 
+
+> L2
+
+= ∥v∥2 
+
+> L2
+
+.For ℓ ≥ 2, nested orthogonal projections and (2.14) give 
+
+h−2 
+
+> ℓ
+
+∥vℓ∥2 
+
+> L2
+
+≤ 4
+
+π2 ∥∇ v∥2 
+
+> L2
+
+.
+
+For ℓ = 1, the Poincar´ e inequality on the cube gives h−21 ∥Q1v∥2 
+
+> L2
+
+≤ 4∥∇ v∥2 
+
+> L2
+
+/(dπ 2). Hence 
+
+> L
+
+X
+
+> ℓ=1
+
+ω−2 
+
+> ℓ
+
+∥vℓ∥2 
+
+> L2
+
+=
+
+> L
+
+X
+
+> ℓ=1
+
+h−2 
+
+> ℓ
+
+∥vℓ∥2 
+
+> L2
+
++ c∥v∥2
+
+> L2
+
+≤ 4Lπ2 ∥∇ v∥2 
+
+> L2
+
++ c∥v∥2 
+
+> L2
+
+≤ L ∥∇ v∥2 
+
+> L2
+
++ c∥v∥2
+
+> L2
+
+.
+
+(2.15) If vℓ is the level-ℓ nodal vector of vℓ, choose zℓ = ω−1 
+
+> ℓ
+
+M 1/2 
+
+> ℓ
+
+vℓ. Then Sz = v, where v is the fine nodal vector of v, and ∥z∥22 equals the sum in (2.15). The minimum-norm identity 
+
+vT B−1v = min  
+
+> Sz=v
+
+∥z∥22
+
+8therefore implies B−1 ⪯ LK h,d and proves the lower eigenvalue bound. For the upper bound, the diffusion part of (2.6) at level ℓ gives ∥∇ vℓ∥2 
+
+> L2
+
+≤ 12 dh −2 
+
+> ℓ
+
+∥vℓ∥2 
+
+> L2
+
+.Consequently, 
+
+∥K1/2 
+
+> h,d
+
+Sℓ∥2 = ω2 
+
+> ℓ
+
+∥M −1/2 
+
+> ℓ
+
+KℓM −1/2 
+
+> ℓ
+
+∥ ≤ 12 d h −2 
+
+> ℓ
+
++ ch−2 
+
+> ℓ
+
++ c ≤ 12 d. 
+
+Cauchy–Schwarz over the L level blocks yields ∥K1/2 
+
+> h,d
+
+S∥2 ≤ 12 dL . Finally, the nonzero spectra of ST Kh,d S and K1/2 
+
+> h,d
+
+BK 1/2 
+
+> h,d
+
+coincide. The latter is similar to BK h,d , as is B1/2Kh,d B1/2, which completes the proof. The estimate 12 dL 2 is sufficient for the analysis below, although its dependence on the number of levels is not asserted to be optimal. It is uniform in c and depends on the mesh through 
+
+L = log 2(1 /h ). 
+
+# 3 Block encoding through local value and gradient coordinates 
+
+We construct the block encoding through Gram factorizations of the mass and stiffness ma-trices, following the strategies in [11, 12]. Local L2-orthonormal coordinates convert function inner products into Euclidean coefficient products and make interlevel transfer isometric. We first con-struct these maps, then combine them with the inverse mass square roots and BPX weights. 
+
+3.1 Block-encoding preliminaries 
+
+Following [12, Section 4.1], we first recall block encodings of square matrices and then extend the definition to the rectangular maps used below. All matrix errors in this subsection are measured in the operator norm. 
+
+Definition 3.1 (Block encoding) . Let D ∈ CN ×N , and let bD ∈ C2n×2n
+
+be its zero-padded extension, where n = ⌈log 2 N ⌉. A unitary UD acting on a + n qubits is an (αD, a, ϵ D)-block encoding of D if 
+
+αD ≥ ∥ D∥, αD > 0, and 
+
+bD − αD(⟨0|⊗a ⊗ I2n )UD(|0⟩⊗a ⊗ I2n ) ≤ ϵD.
+
+The encoding is exact when ϵD = 0 .
+
+The value, gradient, and interlevel transfer matrices generally have different input and output dimensions. We therefore use generalized block encodings, which allow these two spaces to be embedded separately in the circuit register [6, 11]. 
+
+Definition 3.2 (Generalized block encoding) . Let D ∈ CNout ×Nin , and let 
+
+Πin : CNin −→ C2m
+
+, Πout : CNout −→ C2m
+
+be isometries, so that Π†
+
+> in
+
+Πin = INin and Π†
+
+> out
+
+Πout = INout . A unitary UD on m qubits is a generalized (αD, ϵ D)-block encoding of D if αD ≥ ∥ D∥, αD > 0, and 
+
+D − αDΠ†
+
+> out
+
+UDΠin ≤ ϵD.
+
+9For an exact encoding, this reduces to 
+
+Π†
+
+> out
+
+UDΠin = D/α D.
+
+Here the isometries initialize auxiliary registers and embed the active indices into qubit reg-isters; the corresponding orthogonal projectors are Π in Π† 
+
+> in
+
+and Π out Π†
+
+> out
+
+. For an exact encoding and a unit input vector x, projecting UDΠin x onto the output subspace gives Π out Dx/α D, with success probability ∥Dx∥22/α 2
+
+> D
+
+. Thus the normalization affects the cost of using the encoded ma-trix. We describe the constructions in the ideal arithmetic model and account for finite precision in Section 4. The following rules are standard consequences of generalized block-encoding arithmetic [6]. 
+
+Lemma 3.1 (Matrix arithmetic for generalized block-encodings) . Let U1 be a generalized (γ1, ε 1)-block-encoding of S1 with respect to (Π 0, Π1), and let U2 be a generalized (γ2, ε 2)-block-encoding of 
+
+S2 with respect to (Π 1, Π2). Assume that the embeddings can be implemented. Then: 1. Adjoint. U † 
+
+> 1
+
+is a generalized (γ1, ε 1)-block-encoding of S† 
+
+> 1
+
+with respect to (Π 1, Π0).2. Product. Composing the encodings with separate flags and the intermediate projection gives a generalized (γ1γ2, γ 2ε1 + γ1ε2)-block-encoding of S2S1 with respect to (Π 0, Π2).3. Tensor product. Let U ′ 
+
+> 1
+
+be a generalized (γ′
+
+> 1
+
+, ε ′
+
+> 1
+
+)-block-encoding of S′ 
+
+> 1
+
+with respect to 
+
+(Π ′
+
+> 0
+
+, Π′
+
+> 1
+
+), acting on a disjoint register. Then U1 ⊗ U ′ 
+
+> 1
+
+is a generalized (γ1γ′
+
+> 1
+
+, γ ′
+
+> 1
+
+ε1 + γ1ε′
+
+> 1
+
+)-block-encoding of S1 ⊗ S′ 
+
+> 1
+
+with respect to (Π 0 ⊗ Π′
+
+> 0
+
+, Π1 ⊗ Π′
+
+> 1
+
+).4. Direct sum. If Uj encodes Sj with parameters (γ, ε j ) for every j, then P 
+
+> j
+
+|j⟩⟨ j| ⊗ Uj is a generalized (γ, max j εj )-block-encoding of L 
+
+> j
+
+Sj with the corresponding direct-sum embed-dings. 5. Concatenation. Let UA and UB be generalized (γA, ε A)- and (γB , ε B )-block-encodings of A and B. With a common output embedding, [A B] admits a generalized 
+
+(
+
+q
+
+γ2 
+
+> A
+
++ γ2 
+
+> B
+
+,
+
+q
+
+ε2 
+
+> A
+
++ ε2 
+
+> B
+
+)-block-encoding. With a common input embedding, the same parame-ters apply to [A† B†]†. For several blocks, the parameters are the square roots of the corre-sponding sums of squares. 
+
+Applying the product rule directly to separate encodings of ST , Kh,d , and S produces an encoding of AS = ST Kh,d S with normalization 
+
+αprod  
+
+> AS
+
+= α2 
+
+> S
+
+αKh,d ≥ ∥ S∥2∥Kh,d ∥ = ∥B∥ ∥ Kh,d ∥. (3.1) The product normalization depends on the separate factors and can be much larger than the norm of the preconditioned matrix. Indeed, Theorem 2.1 gives B ⪰ L−1K−1
+
+> h,d
+
+, and hence 
+
+αprod  
+
+> AS
+
+≥ κ2(Kh,d )
+
+L , κ2(Kh,d ) = ∥Kh,d ∥ ∥ K−1
+
+> h,d
+
+∥.
+
+For fixed d and c, the sine eigenvalues imply κ2(Kh,d ) = Θ( h−2) under refinement. Thus even optimally normalized separate factors retain algebraic mesh dependence when combined by the 10 product rule. Since the inverse-query cost depends on the encoding normalization relative to the smallest nonzero eigenvalue, the spectral improvement alone is insufficient. Following [12, Section 4.2], we instead construct the complete level contributions to the energy map C in (3.14). The commuting identities move differentiation to level ℓ, where its scale is balanced by ωℓ, before transferring the coefficients to the finest mesh. The Gram product AS = CT C then has normalization 12 dL , as shown in Theorem 3.1. The construction below proceeds from local value and gradient matrices to interlevel transfers, normalized level encodings, and finally the BPX system. 
+
+3.2 The value and gradient matrices 
+
+Following the Gram-factorization strategy used for the finite difference operator in [12, Sec-tion 4.2], we seek factors of the finite element mass and stiffness matrices. We begin in one dimension and aim to construct the matrices in Lemma 3.2 so that 
+
+Mhℓ = ( E1d  
+
+> ℓ
+
+)T E1d  
+
+> ℓ
+
+, Ahℓ = ( C1d  
+
+> ℓ
+
+)T C1d  
+
+> ℓ
+
+.
+
+For arbitrary nodal vectors v, w ∈ R2ℓ−1, let vh = P 
+
+> j
+
+vj ϕ(ℓ) 
+
+> j
+
+and wh = P 
+
+> j
+
+wj ϕ(ℓ) 
+
+> j
+
+. The desired factorizations are equivalent to the identities (E1d  
+
+> ℓ
+
+v)T (E1d  
+
+> ℓ
+
+w) = vT (E1d  
+
+> ℓ
+
+)T E1d  
+
+> ℓ
+
+w = vT Mhℓ w = ( vh, w h)L2(0 ,1) ,
+
+(C1d  
+
+> ℓ
+
+v)T (C1d  
+
+> ℓ
+
+w) = vT (C1d  
+
+> ℓ
+
+)T C1d  
+
+> ℓ
+
+w = vT Ahℓ w = ( v′
+
+> h
+
+, w ′
+
+> h
+
+)L2(0 ,1) .
+
+These identities require the coefficient inner products to reproduce the L2 inner products of the functions and their derivatives. An L2-orthonormal basis provides exactly this property. Cellwise constant and linear modes represent both the finite element functions and their derivatives, so they give the required one-dimensional factors. We assemble the local maps and then extend them by tensor products. The resulting coordinates agree with the local representation used in [11, Section 6.1]. 
+
+One-dimensional local coefficients. Fix a level ℓ and let xi = ih ℓ, i = 0 , · · · , 2ℓ. A piece-wise linear finite element function vh ∈ Vℓ ⊂ Vh is determined by its interior nodal vector 
+
+v = ( v1, · · · , v 2ℓ−1)T , where vj = vh(xj ) and v0 = v2ℓ = 0 at the boundary. Equivalently, 
+
+vh = P2ℓ−1 
+
+> j=1
+
+vj ϕ(ℓ) 
+
+> j
+
+, where ϕ(ℓ) 
+
+> j
+
+is the piecewise linear nodal basis function associated with xj .On the interval I(ℓ) 
+
+> i
+
+= ( xi, x i+1 ), write φ = ( x − xi)/h ℓ. Then 
+
+vh(x) = (1 − φ)vi + φv i+1 , v′
+
+> h
+
+(x) = vi+1 − vi
+
+hℓ
+
+.
+
+To realize the required inner-product identities, choose the following L2-orthonormal basis on each interval: 
+
+ψ(ℓ) 
+
+> i, 0
+
+(x) = 1
+
+√hℓ
+
+, ψ(ℓ) 
+
+> i, 1
+
+(x) = 
+
+r 3
+
+hℓ
+
+(2 φ − 1) , x ∈ I(ℓ) 
+
+> i
+
+, (3.2) extended by zero outside I(ℓ) 
+
+> i
+
+. They satisfy R
+
+> I(ℓ)
+> i
+
+ψ(ℓ) 
+
+> i,ν
+
+ψ(ℓ) 
+
+> i,μ
+
+dx = δνμ . The identity vh = ( vi + vi+1 )/2 + (vi+1 − vi)(2 φ − 1) /2 therefore gives the exact local expansions 
+
+vh|I(ℓ)
+
+> i
+
+=
+
+√hℓ
+
+2 (vi + vi+1 )ψ(ℓ) 
+
+> i, 0
+
++
+
+r hℓ
+
+12 (vi+1 − vi)ψ(ℓ) 
+
+> i, 1
+
+,v′
+
+> h
+
+|I(ℓ)
+
+> i
+
+= vi+1 − vi
+
+√hℓ
+
+ψ(ℓ) 
+
+> i, 0
+
+.
+
+11 Thus the function has two local coefficients, while its derivative has only a constant coefficient. Define E1d  
+
+> ℓ
+
+and C1d  
+
+> ℓ
+
+to collect these coefficients over all intervals. Their action on interval i is 
+
+"(E1d  
+
+> ℓ
+
+v)i, 0
+
+(E1d  
+
+> ℓ
+
+v)i, 1
+
+#
+
+=
+
+" √hℓ/2 √hℓ/2
+
+−phℓ/12 phℓ/12 
+
+# " vi
+
+vi+1 
+
+#
+
+,
+
+"(C1d  
+
+> ℓ
+
+v)i, 0
+
+(C1d  
+
+> ℓ
+
+v)i, 1
+
+#
+
+=
+
+"−1/√hℓ 1/√hℓ
+
+0 0
+
+# " vi
+
+vi+1 
+
+#
+
+.
+
+(3.3) The two output rows correspond to the constant and linear modes on the interval. In particular, the zero row of the derivative map records that v′ 
+
+> h
+
+is constant there. 
+
+Assembly on the one-dimensional mesh. For example, stacking the local value maps in (3.3) for ℓ = 2, with v0 = v4 = 0, gives 
+
+
+
+(E1d 2 v)0,0
+
+(E1d 2 v)0,1
+
+(E1d 2 v)1,0
+
+(E1d 2 v)1,1
+
+(E1d 2 v)2,0
+
+(E1d 2 v)2,1
+
+(E1d 2 v)3,0
+
+(E1d 2 v)3,1
+
+
+
+= ph2
+
+ 
+
+> 12
+
+0 0 
+
+> 1√12
+
+0 0 
+
+> 1212
+
+0
+
+− 1√12 1√12 00 1212
+
+0 − 1√12 1√12 
+
+0 0 12
+
+0 0 − 1√12 
+
+
+
+v1
+
+v2
+
+v3
+
+ .
+
+Each output row is indexed by ( i, ν ): i identifies the interval I(ℓ) 
+
+> i
+
+, and ν = 0 , 1 identifies the constant or linear mode. The entry of E1d  
+
+> ℓ
+
+v is the coefficient of ψ(ℓ) 
+
+> i,ν
+
+in vh; the corresponding entry of C1d  
+
+> ℓ
+
+v
+
+is its coefficient in v′
+
+> h
+
+. Within each interval the constant mode precedes the linear mode, giving the row order (0 , 0) , (0 , 1) , · · · , (2 ℓ − 1, 0) , (2 ℓ − 1, 1). The columns correspond to the interior nodal values. Both matrices have size 2 ℓ+1 × (2 ℓ − 1), with entries (E1d  
+
+> ℓ
+
+)(i, 0) ,j =
+
+√hℓ
+
+2 (δi,j + δi+1 ,j ),
+
+(E1d  
+
+> ℓ
+
+)(i, 1) ,j =
+
+r hℓ
+
+12 (δi+1 ,j − δi,j ),
+
+(C1d  
+
+> ℓ
+
+)(i, 0) ,j = δi+1 ,j − δi,j 
+
+√hℓ
+
+, (C1d  
+
+> ℓ
+
+)(i, 1) ,j = 0 .
+
+(3.4) Here δij is the Kronecker delta. Since boundary values are fixed to zero, no boundary columns are included. 
+
+Lemma 3.2 (One-dimensional mass and stiffness factorizations) . For every level ℓ ≥ 1, the matrices defined in (3.4) satisfy 
+
+(E1d  
+
+> ℓ
+
+)T E1d  
+
+> ℓ
+
+= Mhℓ , (C1d  
+
+> ℓ
+
+)T C1d  
+
+> ℓ
+
+= Ahℓ .
+
+In particular, for vh = P2ℓ−1 
+
+> j=1
+
+vj ϕ(ℓ) 
+
+> j
+
+with nodal coefficient vector v,
+
+∥E1d  
+
+> ℓ
+
+v∥22 = ∥vh∥2
+
+> L2(0 ,1)
+
+, ∥C1d  
+
+> ℓ
+
+v∥22 = ∥v′
+
+> h
+
+∥2
+
+> L2(0 ,1)
+
+.
+
+12 Proof. The expansions in (3.3) show that E1d  
+
+> ℓ
+
+v and C1d  
+
+> ℓ
+
+v are the exact coefficients of vh and v′
+
+> h
+
+in {ψ(ℓ) 
+
+> i,ν
+
+}i,ν . This family is orthonormal in L2(0 , 1), since it is orthonormal on each interval and has disjoint supports across intervals. Hence the coefficient inner products equal the function and derivative inner products, as required above. Since v and w are arbitrary, both Gram factorizations follow. Taking w = v gives the norm identities. 
+
+Tensor products in d dimensions. On the Cartesian grid, the nodal basis and the cellwise orthonormal basis are products of their one-dimensional counterparts: 
+
+ϕ(ℓ) 
+
+> j
+
+(x) = 
+
+> d
+
+Y
+
+> q=1
+
+ϕ(ℓ) 
+
+> jq
+
+(xq), ψ(ℓ) 
+
+> m,ν
+
+(x) = 
+
+> d
+
+Y
+
+> q=1
+
+ψ(ℓ)  
+
+> mq,ν q
+
+(xq).
+
+Here j ∈ I ℓ,d , m ∈ I ℓ,d , and ν ∈ { 0, 1}d. The function ψ(ℓ) 
+
+> m,ν
+
+is supported on Qdq=1 I(ℓ) 
+
+> mq
+
+. These functions form an orthonormal basis of the space Qℓ of cellwise multilinear functions, with no continuity imposed across cell boundaries. There are 2 d modes on each of the 2 ℓd cells. We order the output indices by the coordinate pairs ( m1, ν 1), · · · , (md, ν d). To represent the function, apply the one-dimensional value map in every coordinate. To represent its qth partial derivative, apply the derivative map in coordinate q and the value map in every other coordinate. For example, in two dimensions this gives 
+
+Eℓ = E1d  
+
+> ℓ
+
+⊗ E1d  
+
+> ℓ
+
+, Cℓ =
+
+"C1d  
+
+> ℓ
+
+⊗ E1d 
+
+> ℓ
+
+E1d  
+
+> ℓ
+
+⊗ C1d 
+
+> ℓ
+
+#
+
+.
+
+In general, for 1 ≤ q ≤ d, define 
+
+Eℓ = ( E1d  
+
+> ℓ
+
+)⊗d, Cℓ =
+
+h
+
+(C(1)  
+
+> ℓ
+
+)T · · · (C(d) 
+
+> ℓ
+
+)T
+
+iT
+
+,C(q) 
+
+> ℓ
+
+= ( E1d  
+
+> ℓ
+
+)⊗(q−1) ⊗ C1d  
+
+> ℓ
+
+⊗ (E1d  
+
+> ℓ
+
+)⊗(d−q).
+
+(3.5) Thus Eℓ ∈ R2d(ℓ+1) ×(2 ℓ−1) d
+
+and Cℓ ∈ Rd 2d(ℓ+1) ×(2 ℓ−1) d
+
+. For vh = P 
+
+> j
+
+vj ϕ(ℓ) 
+
+> j
+
+, these matrices provide the exact expansions 
+
+vh = X
+
+> m,ν
+
+(Eℓv)m,ν ψ(ℓ) 
+
+> m,ν
+
+, ∂qvh = X
+
+> m,ν
+
+(C(q) 
+
+> ℓ
+
+v)m,ν ψ(ℓ) 
+
+> m,ν
+
+. (3.6) Equivalently, the corresponding matrix entries are ( ϕ(ℓ) 
+
+> j
+
+, ψ (ℓ) 
+
+> m,ν
+
+) and ( ∂qϕ(ℓ) 
+
+> j
+
+, ψ (ℓ) 
+
+> m,ν
+
+). The weak deriva-tive is computed cellwise; each ∂qvh belongs to Qℓ. Orthonormality gives ∥Eℓv∥22 = ∥vh∥2 
+
+> L2
+
+and 
+
+∥Cℓv∥22 = Pdq=1 ∥∂qvh∥2 
+
+> L2
+
+. Taking the tensor products of the one-dimensional mass identities in Lemma 3.2 and summing the derivative contributions therefore yields 
+
+ETℓ Eℓ = Mℓ, CTℓ Cℓ = Aℓ, Kℓ = CTℓ Cℓ + cE Tℓ Eℓ. (3.7) 
+
+3.3 Interlevel transfers and commuting identities 
+
+Every function in Qℓ also belongs to QL, because a multilinear polynomial on a coarse cell remains multilinear when restricted to each of its fine subcells. For a function w ∈ Q ℓ, let wℓ and 
+
+wL denote its coefficient vectors in the orthonormal bases of Qℓ and QL, respectively. We define 13 T (0)  
+
+> ℓ→L
+
+as the matrix that converts the coefficients in the coarse-mesh basis into the coefficients of the same function in the fine-mesh basis: 
+
+wL = T (0) 
+
+> ℓ→L
+
+wℓ.
+
+Both coefficient vectors represent exactly the same function w. To represent the gradient of a finite element function on the fine mesh, we apply this coefficient conversion separately to each of its d
+
+components. The matrix that performs these d conversions is denoted by Tℓ→L. If β labels a basis function on the coarse mesh and α labels a basis function on the fine mesh, the two matrices are given by (T (0) 
+
+> ℓ→L
+
+)αβ = ( ψ(ℓ) 
+
+> β
+
+, ψ (L) 
+
+> α
+
+), Tℓ→L = diag( T (0) 
+
+> ℓ→L
+
+, · · · , T (0) 
+
+> ℓ→L
+
+| {z } 
+
+> dblocks
+
+).
+
+Inclusion, differentiation, and coefficient transfer satisfy a commuting relation. It is the finite element relation underlying [11, Section 6.1]; a corresponding discrete-gradient identity organizes the finite difference construction in [12]. 
+
+Lemma 3.3 (Commuting identities for the value and gradient maps) . For 1 ≤ ℓ ≤ L, the transfer maps T (0)  
+
+> ℓ→L
+
+and Tℓ→L are isometries, and 
+
+ELPℓ = T (0) 
+
+> ℓ→L
+
+Eℓ, CLPℓ = Tℓ→LCℓ. (3.8) 
+
+Proof. Take an arbitrary coarse nodal vector v and let vh = P 
+
+> j
+
+vj ϕ(ℓ) 
+
+> j
+
+. Since Vℓ ⊂ VL and Pℓ is the nodal prolongation, Pℓv represents the same function on the fine mesh: 
+
+vh = X
+
+> i
+
+(Pℓv)iϕ(L) 
+
+> i
+
+.
+
+For each fine basis index α, the definition of T (0)  
+
+> ℓ→L
+
+and the expansion (3.6) give (ELPℓv)α = ( vh, ψ (L) 
+
+> α
+
+) = X
+
+> β
+
+(Eℓv)β (ψ(ℓ) 
+
+> β
+
+, ψ (L) 
+
+> α
+
+) = ( T (0) 
+
+> ℓ→L
+
+Eℓv)α.
+
+This proves the first identity. Refinement also leaves the weak derivative of vh ∈ H10 (Ω) unchanged. Since ∂qvh ∈ Q ℓ, its exact coarse-level expansion in (3.6) similarly yields (C(q) 
+
+> L
+
+Pℓv)α = ( ∂qvh, ψ (L) 
+
+> α
+
+) = X
+
+> β
+
+(C(q) 
+
+> ℓ
+
+v)β (ψ(ℓ) 
+
+> β
+
+, ψ (L) 
+
+> α
+
+) = ( T (0) 
+
+> ℓ→L
+
+C(q) 
+
+> ℓ
+
+v)α, 1 ≤ q ≤ d. 
+
+Stacking the d component identities proves CLPℓv = Tℓ→LCℓv. Since v was arbitrary, both matrix identities follow. Finally, the two orthonormal representations of any w ∈ Q ℓ have the same coefficient norm ∥w∥L2 . Hence ( T (0) 
+
+> ℓ→L
+
+)T T (0)  
+
+> ℓ→L
+
+= I, and its componentwise extension is also an isometry. 
+
+Remark 3.1 (Gradient transfers in the finite difference and finite element constructions) . The difference lies in the representation of the gradient coefficients. In the finite difference construction 14 of [12, Section 4.2.2], differentiation leaves nodal values in the other coordinate directions. For example, in two dimensions the first directional difference is D(1)  
+
+> ℓ
+
+= D1d  
+
+> ℓ
+
+⊗ I, and, with r = 2 L−ℓ,
+
+D(1)  
+
+> L
+
+Pℓ = 1
+
+r
+
+ E1d  
+
+> ℓ→L
+
+⊗ P 1d 
+
+> ℓ
+
+D(1)  
+
+> ℓ
+
+.
+
+Here E1d  
+
+> ℓ→L
+
+is the edge-replication matrix of that reference: it copies coarse differences along the differentiated direction. The other direction still requires nodal interpolation by P 1d  
+
+> ℓ
+
+, which must therefore be included in the transfer encoding. In the present finite element construction, the undifferentiated direction is also converted to local L2-orthonormal coefficients. Thus 
+
+C(1)  
+
+> ℓ
+
+= C1d  
+
+> ℓ
+
+⊗ E1d  
+
+> ℓ
+
+, C(1)  
+
+> L
+
+Pℓ =  T 1d  
+
+> ℓ→L
+
+⊗ T 1d 
+
+> ℓ→L
+
+C(1)  
+
+> ℓ
+
+,
+
+where T 1d  
+
+> ℓ→L
+
+transfers one-dimensional local orthonormal coefficients, as constructed below. Both directions now use orthonormal coefficient transfer, so a separate encoding of P 1d  
+
+> ℓ
+
+is unnecessary. Its action is retained through the commuting identity. This distinction concerns the chosen gra-dient representations; replacing the finite difference transfer by the present one would also require compatible gradient factors whose Gram matrix remains the original difference operator. The commuting identities explain how to encode the level contribution without introducing the fine-mesh derivative scale h−1. Since Sℓ = ωℓPℓM −1/2 
+
+> ℓ
+
+, they give 
+
+CLSℓ = ωℓTℓ→LCℓM −1/2 
+
+> ℓ
+
+, √c E LSℓ = √c ω ℓT (0) 
+
+> ℓ→L
+
+EℓM −1/2 
+
+> ℓ
+
+.
+
+The usefulness of these identities can be understood from two perspectives. 1. Moving differentiation to the coarse level. Applying the product rule to separately encoded factors on the left can introduce the fine-grid scale 1 /h . Indeed, 
+
+CLSℓ = ωℓ(CLM −1/2 
+
+> L
+
+)( M 1/2 
+
+> L
+
+PℓM −1/2 
+
+> ℓ
+
+),
+
+and the first factor has encoding normalization √12 d/h . Even with normalization 1 for the second factor, the product normalization is ωℓ
+
+√12 d/h . On the right, differentiation is performed on level ℓ, so the corresponding normalization is √12 d/h ℓ. The weight ωℓ balances this coarse-level scale, giving 
+
+ωℓ
+
+√12 dhℓ
+
+=
+
+√12 d
+
+q
+
+1 + ch 2
+
+> ℓ
+
+≤ √12 d. 
+
+The transfer Tℓ→L contributes normalization 1. Similarly, the reaction contribution has nor-malization √c ω ℓ ≤ 1. 2. Transferring the block encoding without increasing its normalization. The factor 1/h above arises from encoding the left-hand factors separately; it is not an unavoidable normalization for the complete preconditioned map CLSℓ. The commuting identity pro-vides a way to encode this complete map through the coarse-level matrix ωℓCℓM −1/2 
+
+> ℓ
+
+. Since 
+
+T Tℓ→LTℓ→L = I, we also have 
+
+ωℓCℓM −1/2 
+
+> ℓ
+
+= T Tℓ→L(CLSℓ).
+
+15 Lemma 3.4 supplies exact encodings of Tℓ→L and its transpose with normalization 1. Conse-quently, a generalized ( α, ε )-block-encoding of either CLSℓ or ωℓCℓM −1/2 
+
+> ℓ
+
+yields an encoding of the other with the same parameters, by the product rule. We can therefore construct the encoding on the coarse level, using the one-dimensional maps and tensor products in Lemma 3.5, and transfer it to the finest level without losing its favorable normalization. The same argument applies to the value map and T (0) 
+
+> ℓ→L
+
+.Combining the gradient and reaction contributions gives the mesh-independent energy normaliza-tion in (3.16). The transfer circuit is built from the one-dimensional subdivision matrix used in [11, Sec-tion 6.1]. Its derivation below accounts explicitly for the change in the local basis normalization. 
+
+Lemma 3.4 (Block encodings of the interlevel transfers) . For 1 ≤ ℓ ≤ L, the matrices T (0)  
+
+> ℓ→L
+
+and 
+
+Tℓ→L admit generalized block encodings with normalization 1 in the ideal arithmetic model. Their implementations use a number of gates polynomial in d and L.Proof. We first consider one subdivision in one dimension. On a parent interval I(ℓ) 
+
+> i
+
+, write φ =(x − xi)/h ℓ and let w0, w 1 be the coefficients of a linear function in the local orthonormal basis: 
+
+w(x) = w0
+
+√hℓ
+
++
+
+r 3
+
+hℓ
+
+w1(2 φ − 1) .
+
+The left and right halves are [ xi, x i + hℓ/2] and [ xi + hℓ/2, x i + hℓ], respectively, and both have length hℓ+1 = hℓ/2. The local coordinate on each half measures the distance from its own left endpoint, divided by its own length. Thus 
+
+φ− = x − xi
+
+hℓ/2 = 2 φ, φ+ = x − (xi + hℓ/2) 
+
+hℓ/2 = 2 φ − 1.
+
+Each coordinate maps its corresponding half to [0 , 1]: it equals 0 at that half’s left endpoint and 1 at its right endpoint. On the reference interval [0 , 1], the orthonormal basis functions are 1 and 
+
+√3(2 φ± − 1). Mapping them to a half-interval of length hℓ+1 requires the additional factor h−1/2 
+
+> ℓ+1
+
+.Thus the orthonormal basis functions on the left and right halves are, respectively, 1
+
+phℓ+1 
+
+,
+
+s
+
+3
+
+hℓ+1 
+
+(2 φ− − 1) , and 1
+
+phℓ+1 
+
+,
+
+s
+
+3
+
+hℓ+1 
+
+(2 φ+ − 1) .
+
+Each basis function is extended by zero outside its corresponding half. To express the coarse-cell function in these bases, we use the identities 2φ − 1 = 12 (2 φ− − 1) − 12 , 2φ − 1 = 12 (2 φ+ − 1) + 12 .
+
+The coefficients w−,0, w −,1 and w+,0, w +,1 are defined by expanding the same function w in the orthonormal bases on the left and right halves: 
+
+w(x) = w−,0
+
+phℓ+1 
+
++
+
+s
+
+3
+
+hℓ+1 
+
+w−,1(2 φ− − 1) , x ∈ [xi, x i + hℓ/2] ,w(x) = w+,0
+
+phℓ+1 
+
++
+
+s
+
+3
+
+hℓ+1 
+
+w+,1(2 φ+ − 1) , x ∈ [xi + hℓ/2, x i + hℓ].
+
+16 Substituting the coordinate identities into the coarse-cell expansion gives, on the left half, 
+
+w(x) = w0 − 
+
+> √32
+
+w1
+
+√hℓ
+
++
+
+r 3
+
+hℓ
+
+w1
+
+2 (2 φ− − 1) ,
+
+and, on the right half, 
+
+w(x) = w0 + 
+
+> √32
+
+w1
+
+√hℓ
+
++
+
+r 3
+
+hℓ
+
+w1
+
+2 (2 φ+ − 1) .
+
+Comparing the constant and linear coefficients with the two normalized expansions, and using 
+
+hℓ+1 = hℓ/2, yields 
+
+w−,0 = 1
+
+√2
+
+
+
+w0 −√32 w1
+
+
+
+, w−,1 = w1
+
+2√2 ,w+,0 = 1
+
+√2
+
+
+
+w0 +
+
+√32 w1
+
+
+
+, w+,1 = w1
+
+2√2 .
+
+Collecting these four scalar relations gives the local transfer matrix: 
+
+
+
+w−,0
+
+w−,1
+
+w+,0
+
+w+,1
+
+
+
+= 1
+
+√2
+
+
+
+1 −√3/20 1/21 √3/20 1/2
+
+"w0
+
+w1
+
+#
+
+.
+
+Thus the first two rows give the constant and linear coefficients on the left half, and the last two rows give those on the right half. The factor 1 /√2 comes from the change in normalization when the cell length is halved. Both coefficient vectors represent exactly the same function on the parent interval. Applying this local conversion independently to all 2 ℓ parent intervals gives 
+
+T 1d  
+
+> ℓ→ℓ+1
+
+= I⊗ℓ ⊗ 1
+
+√2
+
+
+
+1 −√3/20 1/21 √3/20 1/2
+
+
+
+.
+
+Here I is the 2 × 2 identity, so I⊗ℓ acts on the parent-cell index and repeats the local conversion along the diagonal. Consequently, T 1d  
+
+> ℓ→ℓ+1
+
+maps 2 ℓ+1 coarse coefficients to 2 ℓ+2 fine coefficients. The local 4 × 2 map, including the factor 1 /√2, has orthonormal columns. It can therefore be completed to a 4 ×4 unitary by initializing one additional qubit in |0⟩. This realizes one subdivision with normalization 1. Applying the same construction successively gives 
+
+T 1d  
+
+> ℓ→L
+
+= T 1d  
+
+> L−1→L
+
+· · · T 1d 
+
+> ℓ→ℓ+1
+
+, T (0)  
+
+> ℓ→L
+
+= ( T 1d 
+
+> ℓ→L
+
+)⊗d.
+
+For ℓ = L, the transfer is the identity. Each subdivision appends one child-cell bit, and the tensor product applies this operation separately in each coordinate. All these maps have normalization 1, so the product and tensor-product rules preserve this normalization. Finally, Tℓ→L applies T (0)  
+
+> ℓ→L
+
+independently to each gradient component. Its circuit leaves the direction register unchanged. Thus the direct sum over directions also has normalization 1. There are d(L−ℓ) local subdivisions; the qubit permutations and the tests of active indices have polynomial cost in d and L.17 3.4 The one-dimensional inverse mass square root 
+
+The factor Sℓ contains M −1/2 
+
+> ℓ
+
+. Its tensor-product structure reduces the construction to (M 1d  
+
+> ℓ
+
+)−1/2, where M 1d  
+
+> ℓ
+
+= Mhℓ . We implement this one-dimensional map by a discrete sine trans-form, an eigenvalue-dependent flag rotation, and the inverse transform, before combining it with the local value and derivative maps. On the 2 ℓ − 1 interior nodes, the mass matrix is 
+
+M 1d  
+
+> ℓ
+
+= hℓ
+
+6 tridiag(1 , 4, 1) .
+
+Its eigenvectors are the discrete sine vectors. Indeed, with zero values at the two boundary nodes, the identity sin π(i − 1) j
+
+2ℓ + sin π(i + 1) j
+
+2ℓ = 2 cos πj 
+
+2ℓ sin πij 
+
+2ℓ
+
+shows that multiplying a sine vector by M 1d  
+
+> ℓ
+
+multiplies it by hℓ(2 + cos( πj/ 2ℓ)) /3. Let Fℓ denote the discrete sine transform with entries (Fℓ)ij =
+
+r 22ℓ sin πij 
+
+2ℓ , 1 ≤ i, j ≤ 2ℓ − 1.
+
+These sine vectors are orthonormal. We represent the interior indices by the computational states 
+
+|1⟩, · · · , |2ℓ − 1⟩ of an ℓ-qubit register and extend Fℓ by fixing the unused state |0⟩. On the active subspace spanned by the interior indices, 
+
+M 1d  
+
+> ℓ
+
+= Fℓ diag j (μ(ℓ) 
+
+> j
+
+)F† 
+
+> ℓ
+
+,μ(ℓ) 
+
+> j
+
+= hℓ
+
+3
+
+
+
+2 + cos πj 
+
+2ℓ
+
+
+
+, 1 ≤ j ≤ 2ℓ − 1.
+
+(3.9) Consequently, its inverse square root is obtained by replacing each eigenvalue by its inverse square root: (M 1d  
+
+> ℓ
+
+)−1/2 = Fℓ diag j
+
+ (μ(ℓ) 
+
+> j
+
+)−1/2F† 
+
+> ℓ
+
+.
+
+The bounds hℓ/3 ≤ μ(ℓ) 
+
+> j
+
+≤ hℓ imply ∥(M 1d  
+
+> ℓ
+
+)−1/2∥ ≤ p3/h ℓ. We therefore choose the block-encoding normalization α(M 1d   
+
+> ℓ)−1/2
+
+= p3/h ℓ. With this choice, all the diagonal entries to be encoded lie between 1 /√3 and 1. We now implement this diagonal action using a flag qubit initialized in |0⟩. First apply F† 
+
+> ℓ
+
+to express the input in the sine basis. For each eigenvalue index j, reversibly compute the angle 
+
+θ(ℓ) 
+
+> j
+
+= 2 arccos 
+
+ 1
+
+p2 + cos( πj/ 2ℓ)
+
+
+
+in an arithmetic register and apply the controlled rotation Ry(θ(ℓ) 
+
+> j
+
+) to the flag. Its amplitude on 
+
+|0⟩ is 1
+
+α(M 1d  
+
+> ℓ)−1/2
+
+q
+
+μ(ℓ)
+
+> j
+
+= 1
+
+p2 + cos( πj/ 2ℓ) , α(M 1d   
+
+> ℓ)−1/2
+
+= p3/h ℓ. (3.10) Thus, after returning the arithmetic register to zero, the resulting controlled rotation Urot  
+
+> ℓ
+
+acts as 
+
+|j⟩| 0⟩ 7 −→ | j⟩
+
+ |0⟩
+
+p2 + cos( πj/ 2ℓ) +
+
+s
+
+1 − 12 + cos( πj/ 2ℓ) |1⟩
+
+
+
+.
+
+18 For the unused index j = 0, we instead flip the flag to |1⟩, so that this index has zero amplitude in the successful branch. Finally, apply Fℓ to return to nodal coordinates. Suppressing the arithmetic registers, which have been returned to zero, the ideal unitary is 
+
+U(M 1d   
+
+> ℓ)−1/2
+
+= ( Fℓ ⊗ I)Urot  
+
+> ℓ
+
+(F† 
+
+> ℓ
+
+⊗ I).
+
+For any normalized input |v⟩ supported on the interior nodes, its output has the form 
+
+U(M 1d  
+
+> ℓ)−1/2
+
+ |v⟩| 0⟩ = (M 1d  
+
+> ℓ
+
+)−1/2|v⟩
+
+p3/h ℓ
+
+|0⟩ + |fail v⟩| 1⟩,
+
+where |fail v⟩ denotes the possibly unnormalized vector in the other flag branch. Projecting onto flag state |0⟩ therefore gives (I⊗ℓ ⊗ ⟨ 0|)U(M 1d   
+
+> ℓ)−1/2
+
+(I⊗ℓ ⊗ | 0⟩) = (M 1d  
+
+> ℓ
+
+)−1/2
+
+p3/h ℓ
+
+. (3.11) Here the matrix on the right is extended by zero on the unused index. The projection identifies the encoded block; no measurement is required when this unitary is composed with the value and derivative encodings below. The sine transform can be implemented using a quantum Fourier transform [14, Chapter 5] on an odd extension of the nodal vector. Since 2 ℓ is a power of two, the extended transform uses ℓ + 1 qubits. The scalar functions used in the rotation are evaluated on 2 + cos( πj/ 2ℓ) ∈ [1 , 3], so their arguments remain bounded away from the singularity of the inverse square root. The transforms, reversible arithmetic, and rotations can therefore be implemented with a gate cost polynomial in 
+
+ℓ and the number of precision bits. If the implemented unitary differs from the ideal one by at most ζ in operator norm, its successful block differs by at most ζ, and the corresponding absolute error in the inverse mass square root is at most p3/h ℓ ζ. Thus an absolute matrix tolerance δ is achieved by choosing ζ ≤ δphℓ/3. This precision requirement is retained when the inverse mass encoding is composed with the local value and derivative maps. 
+
+3.5 Block encodings of the normalized value and gradient maps 
+
+We now encode EℓM −1/2 
+
+> ℓ
+
+and CℓM −1/2 
+
+> ℓ
+
+. The key step is to reduce the normalization of the one-dimensional value encoding to 1 before taking tensor products. Only the derivative factor then contributes a mesh-dependent normalization. 
+
+Lemma 3.5 (Normalized value and gradient encodings) . For 1 ≤ ℓ ≤ L, the matrices EℓM −1/2
+
+> ℓ
+
+and CℓM −1/2 
+
+> ℓ
+
+admit generalized block encodings with normalizations 1 and √12 d/h ℓ, respectively, in the ideal arithmetic model. Proof. Step 1: One-dimensional value and derivative matrices. For v = ( v1, · · · , v 2ℓ−1)T ,set v0 = v2ℓ = 0 and define the two endpoint maps by 
+
+Rℓ, 0v =
+
+> 2ℓ−1
+
+X
+
+> i=0
+
+vi|i⟩, Rℓ, 1v =
+
+> 2ℓ−1
+
+X
+
+> i=0
+
+vi+1 |i⟩.
+
+19 Both maps send distinct interior nodes to distinct cell indices, so RTℓ,r Rℓ,r = I for r = 0 , 1. They are implemented by index shifts with zero padding and admit exact generalized (1 , 0)-block-encodings 
+
+U0, U 1 with common input and output embeddings. If H denotes the Hadamard gate, the selector circuits 
+
+U± = ( H ⊗ I)
+
+
+
+|0⟩⟨ 0| ⊗ U1 ± | 1⟩⟨ 1| ⊗ U0
+
+
+
+(H ⊗ I)have successful blocks ( Rℓ, 1 ±Rℓ, 0)/2. Thus the endpoint sum and difference both admit generalized (2 , 0)-block-encodings. By (3.3), with the output ordered as |i⟩| ν⟩,
+
+E1d  
+
+> ℓ
+
+=
+
+√hℓ
+
+2 (Rℓ, 1 + Rℓ, 0) ⊗ | 0⟩ +
+
+r hℓ
+
+12 (Rℓ, 1 − Rℓ, 0) ⊗ | 1⟩,C1d  
+
+> ℓ
+
+= 1
+
+√hℓ
+
+(Rℓ, 1 − Rℓ, 0) ⊗ | 0⟩.
+
+The two value components therefore have normalizations √hℓ and phℓ/3. The concatenation rule in Lemma 3.1 gives 
+
+αE1d 
+
+> ℓ
+
+=
+
+r
+
+hℓ + hℓ
+
+3 =
+
+r 4hℓ
+
+3 , αC1d 
+
+> ℓ
+
+= 2
+
+√hℓ
+
+.
+
+For example, the value encoding uses the selector state ( √3|0⟩ + |1⟩)/2 and applies U+ or U−,retaining the selector as the local mode index. Its successful output is E1d  
+
+> ℓ
+
+v/p4hℓ/3. 
+
+Step 2: Composition with the inverse mass square root. The inverse mass encoding in (3.11) has normalization p3/h ℓ. Applying the product rule with separate flags yields 
+
+αE1d     
+
+> ℓ(M1d
+> ℓ)−1/2
+
+=
+
+r 4hℓ
+
+3
+
+r 3
+
+hℓ
+
+= 2 ,αC1d     
+
+> ℓ(M1d
+> ℓ)−1/2
+
+= 2
+
+√hℓ
+
+r 3
+
+hℓ
+
+=
+
+√12 
+
+hℓ
+
+.
+
+The first normalization can be reduced to 1. Indeed, Lemma 3.2 gives 
+
+
+
+E1d  
+
+> ℓ
+
+(M 1d  
+
+> ℓ
+
+)−1/2T 
+
+E1d  
+
+> ℓ
+
+(M 1d  
+
+> ℓ
+
+)−1/2
+
+= ( M 1d  
+
+> ℓ
+
+)−1/2M 1d  
+
+> ℓ
+
+(M 1d  
+
+> ℓ
+
+)−1/2 = I. 
+
+Let U denote the product encoding of this value map, and write its successful block as 
+
+F := Π †
+
+> out
+
+U Πin = 12 E1d  
+
+> ℓ
+
+(M 1d  
+
+> ℓ
+
+)−1/2, F †F = 14 I. 
+
+Using reflections about the active input and successful output subspaces, define 
+
+Rin = 2Π in Π† 
+
+> in
+
+− I, Rout = 2Π out Π† 
+
+> out
+
+− I, Uamp = −U R in U †Rout U. 
+
+Its successful block is Π†
+
+> out
+
+Uamp Πin = 3 F − 4F F †F = 2 F = E1d  
+
+> ℓ
+
+(M 1d  
+
+> ℓ
+
+)−1/2.
+
+Thus one oblivious amplitude-amplification step, using three calls to U or U †, gives a generalized (1 , 0)-block-encoding of the normalized value map. The derivative encoding retains normalization 20 √12 /h ℓ. Finite-precision implementations can be treated by robust oblivious amplitude amplifica-tion [6, Theorem 28]. 
+
+Step 3: Tensor products and the gradient components. Since Mℓ = ( M 1d  
+
+> ℓ
+
+)⊗d, we have 
+
+EℓM −1/2 
+
+> ℓ
+
+=
+
+h
+
+E1d  
+
+> ℓ
+
+(M 1d  
+
+> ℓ
+
+)−1/2i⊗d
+
+, αEℓM −1/2
+
+> ℓ
+
+= 1 d = 1 . (3.12) Here each one-dimensional value encoding is amplified before forming the tensor product. For the 
+
+qth gradient component, 
+
+C(q) 
+
+> ℓ
+
+M −1/2 
+
+> ℓ
+
+=
+
+h
+
+E1d  
+
+> ℓ
+
+(M 1d  
+
+> ℓ
+
+)−1/2i⊗(q−1) 
+
+⊗
+
+h
+
+C1d  
+
+> ℓ
+
+(M 1d  
+
+> ℓ
+
+)−1/2i
+
+⊗
+
+h
+
+E1d  
+
+> ℓ
+
+(M 1d  
+
+> ℓ
+
+)−1/2i⊗(d−q)
+
+,αC(q)  
+
+> ℓM−1/2
+> ℓ
+
+= 1 q−1
+
+√12 
+
+hℓ
+
+1d−q =
+
+√12 
+
+hℓ
+
+.
+
+Prepare the direction state d−1/2 Pdq=1 |q − 1⟩ and apply the component encodings controlled on this register. For an input v, retaining the direction label gives the successful output 1
+
+√d
+
+> d
+
+X
+
+> q=1
+
+|q − 1⟩ ⊗ C(q) 
+
+> ℓ
+
+M −1/2 
+
+> ℓ
+
+v
+
+√12 /h ℓ
+
+= CℓM −1/2 
+
+> ℓ
+
+v
+
+√12 d/h ℓ
+
+,
+
+where the right-hand side uses the stacked ordering of the gradient components. Hence 
+
+αCℓM −1/2
+
+> ℓ
+
+=
+
+ dX
+
+> q=1
+
+12 
+
+h2
+
+> ℓ
+
+1/2
+
+=
+
+√12 dhℓ
+
+. (3.13) 
+
+3.6 Block encoding of the BPX system 
+
+The level encodings yield the BPX matrix AS = ST Kh,d S and an L2 representation of the finite element solution. Define 
+
+E = ELS = [ E1 · · · E L],
+
+C =
+
+" CLS
+
+√c E LS
+
+#
+
+= [ C1 · · · C L]. (3.14) We call E = ELS the L2 solution representation map. For a solution z of (2.10), the coefficient transformations are 
+
+z|{z} 
+
+> multilevel coefficients
+> S
+
+−−→ uh = Sz
+
+| {z }
+
+> nodal coefficients
+> EL
+
+−−−→ ELuh = Ez
+
+| {z }
+
+> L2-orthonormal coefficients
+
+.
+
+The last two vectors represent the same finite element function uh: the former uses the nodal basis, and the latter uses the finest-level cellwise L2-orthonormal basis {ψ(L) 
+
+> m,ν
+
+}. This orthonormal basis spans the space of cellwise multilinear functions containing Vh; it is not obtained merely by rescaling the nodal basis. We use its coefficients as the solution representation, with ∥E z∥2 = ∥uh∥L2 . The arrows describe coefficient identities: the circuit implements the composite map E without first 21 preparing an intermediate nodal coefficient state. Thus the local orthonormal basis serves both the block-encoding construction and the final output. The map C additionally represents the gradient and multiplies the value coefficients by √c, so its Gram matrix gives the preconditioned reaction– diffusion system. 
+
+Level encodings. The commuting identities give 
+
+Eℓ = ωℓT (0) 
+
+> ℓ→L
+
+EℓM −1/2 
+
+> ℓ
+
+,
+
+Cℓ = ωℓ
+
+" Tℓ→LCℓM −1/2
+
+> ℓ
+
+√c T (0) 
+
+> ℓ→L
+
+EℓM −1/2
+
+> ℓ
+
+#
+
+,AS = CT C = ST (Ah,d + cM h,d )S. 
+
+(3.15) By Lemmas 3.4 and 3.5, the gradient and value maps inside these expressions admit encodings with normalizations √12 d/h ℓ and 1, respectively. To combine the two parts of Cℓ, prepare (√12 d/h ℓ)|0⟩ + √c|1⟩
+
+q
+
+12 d h −2 
+
+> ℓ
+
++ c
+
+and apply the gradient or value encoding controlled on this selector, followed by the appropriate transfer. For an input zℓ, the successful output is 1
+
+q
+
+12 d h −2 
+
+> ℓ
+
++ c
+
+
+
+|0⟩ ⊗ Tℓ→LCℓM −1/2 
+
+> ℓ
+
+zℓ + √c|1⟩ ⊗ T (0) 
+
+> ℓ→L
+
+EℓM −1/2 
+
+> ℓ
+
+zℓ
+
+
+
+= Cℓzℓ
+
+ωℓ
+
+q
+
+12 d h −2 
+
+> ℓ
+
++ c,
+
+where the selector distinguishes the gradient and value output spaces. Consequently, 
+
+αEℓ = ωℓ ≤ hℓ, α2 
+
+> Cℓ
+
+= ω2 
+
+> ℓ
+
+(12 d h −2 
+
+> ℓ
+
++ c) = 12 d h −2 
+
+> ℓ
+
++ ch−2 
+
+> ℓ
+
++ c ≤ 12 d. (3.16) At c = 0, only the gradient branch is present. Evaluation of the selector amplitudes and weights is included in the arithmetic gate cost. 
+
+Theorem 3.1 (Block encodings of the reaction–diffusion BPX system) . In the ideal arithmetic model, C, AS , and E admit generalized (αC , 0) -, (αAS , 0) -, and (αE , 0) -block-encodings, respectively, with 
+
+αC = √12 dL, αAS = 12 dL, αE = 1
+
+√3 . (3.17) 
+
+Moreover, ∥E∥ ≤ 1/√3. These bounds are uniform in c ≥ 0. The circuits use polynomially many gates in d, L, and the arithmetic bit lengths, including the representation of c.Proof. Step 1: Combining the level energy maps. An additional flag rotation with successful amplitude αCℓ /√12 d raises each level normalization to √12 d. Apply these encodings controlled on the level register of 
+
+z =
+
+> L
+
+X
+
+> ℓ=1
+
+|ℓ − 1⟩ ⊗ zℓ,
+
+22 and project that register onto L−1/2 PLℓ=1 |ℓ − 1⟩. The successful output is 1
+
+√L
+
+> L
+
+X
+
+> ℓ=1
+
+Cℓzℓ
+
+√12 d = Cz
+
+√12 dL .
+
+This projection is implemented coherently by inverse state preparation and a success flag. It gives an encoding UC satisfying Π†
+
+> out
+
+UC Πin = C√12 dL .
+
+Step 2: Encoding the BPX matrix. Use the adjoint encoding for CT and the product rule with separate flags and the intermediate success projection. The resulting successful block is 
+
+CT
+
+√12 dL 
+
+C√12 dL = ST (CTL CL + cE TL EL)S
+
+12 dL = AS
+
+12 dL .
+
+Thus αAS = 12 dL . The intermediate projection is essential: the unprojected product U †C UC would simply be the identity. 
+
+Step 3: Encoding the L2 solution representation map. For Eℓ, a flag rotation with successful amplitude ωℓ/h ℓ gives normalization hℓ. Apply the level-controlled encodings and project the level register onto PLℓ=1 hℓ|ℓ − 1⟩
+
+  P Lℓ=1 h2
+
+> ℓ
+
+1/2 .
+
+The successful output is 1
+
+  P Lℓ=1 h2
+
+> ℓ
+
+1/2
+
+> L
+
+X
+
+> ℓ=1
+
+hℓ
+
+Eℓzℓ
+
+hℓ
+
+= Ez
+
+  P Lℓ=1 h2
+
+> ℓ
+
+1/2 .
+
+Since hℓ = 2 −ℓ, LX
+
+> ℓ=1
+
+h2 
+
+> ℓ
+
+= 1 − 4−L
+
+3 .
+
+A final flag rotation with successful amplitude √1 − 4−L therefore raises the normalization to 1 /√3. Also, the isometry identities give ∥E ℓzℓ∥2 = ωℓ∥zℓ∥2, and hence 
+
+∥E z∥2 ≤
+
+> L
+
+X
+
+> ℓ=1
+
+ωℓ∥zℓ∥2 ≤
+
+ LX
+
+> ℓ=1
+
+h2
+
+> ℓ
+
+1/2
+
+∥z∥2 ≤ 1
+
+√3 ∥z∥2.
+
+The local circuits, controlled level selection, flag rotations, and level-state preparations have poly-nomial gate costs in the stated parameters. Amplifying the one-dimensional normalized value map before taking tensor products prevents a normalization loss in the nondifferentiated coordinates. Stacking the d gradient components then gives the factor √d, and the final matrix normalization is 12 dL . In particular, no factor 3d−1 appears. The nodal BPX construction in [11] also admits favorable encodings; the constants derived here apply to (2.9). 
+
+# 4 Error and complexity analysis 
+
+We assume direct access to the preconditioned input states and analyze preparation of the solution state in the local L2-orthonormal basis and estimation of a bounded linear functional. 23 4.1 Solution-state preparation 
+
+Preconditioned right-hand side and oracle access. Following the input model of [12, Sec-tion 5.1], define 
+
+bS = ST fh,d , AS z = bS , z = A+ 
+
+> S
+
+bS . (4.1) For bS̸ = 0, assume a state-preparation oracle 
+
+OSb |0⟩ = |bS ⟩ = bS
+
+∥bS ∥2
+
+,
+
+together with the supplied norm ∥bS ∥2. The query bounds count calls to this oracle and to the multilevel block encodings, including their inverses and controlled versions. They do not include the construction of OSb from the original load vector or from classical data. In particular, applying 
+
+ST to a separately prepared load state is not part of the assumed input procedure. If bS = 0, full row rank of S implies fh,d = 0, and the discrete solution is zero. For later norm estimates, let f L2 
+
+> h
+
+denote the coefficients of Π hf in the finest-level orthonormal basis. Since ETL f L2 
+
+> h
+
+= fh,d and E = ELS, we have 
+
+bS = ET f L2 
+
+> h
+
+, ∥bS ∥2 ≤ 1
+
+√3 ∥Πhf ∥L2 ≤ 1
+
+√3 ∥f ∥L2 . (4.2) This identity bounds the supplied input norm; it is not an additional input-state preparation step. 
+
+Approximation of the inverse. Theorems 2.1 and 3.1 imply 
+
+σ(AS ) \ { 0} ⊂ [1 /L, 12 dL ], σ AS /(12 dL ) \ { 0} ⊂ [1 /(12 dL 2), 1] .
+
+Quantum singular value transformation [6] gives an odd inverse polynomial, written in the original matrix scale as pδ, satisfying 
+
+∥pδ(AS ) − A+ 
+
+> S
+
+∥ ≤ δ, pδ(0) = 0 . (4.3) Its generalized (2 L, 0)-block-encoding in ideal arithmetic uses 
+
+O dL 2 log(2 + L/δ ) (4.4) queries to the encoding of AS and its inverse. Here 2 L is the encoding normalization of the polynomial approximation, while δ measures its error relative to A+ 
+
+> S
+
+. The condition pδ(0) = 0 preserves the nullspace of the redundant BPX system. Given ε > 0, we seek a represented function uqh satisfying 
+
+∥u − uqh∥L2 ≤ ε. (4.5) For solution-state preparation, we consider the accuracy regime 0 < ε ≤ ∥ u∥L2 /2. The solution norm enters the complexity analysis but is not required as an input to the algorithm. We allocate 
+
+ε/ 3 each to finite element discretization, inverse approximation, and circuit implementation. By Lemma 2.1, a sufficient mesh condition is 3 h2∥u∥H2 ≤ ε/ 3. Starting from the supplied preconditioned right-hand side, the coefficient transformations are 
+
+bSA+
+
+> S
+
+−−−→ z S
+
+−−→ uhEL
+
+−−−→ ELuh, Ez = ELuh.
+
+24 The circuit combines the inverse encoding with the encoding of E, using separate flags. With the exact pseudoinverse, the joint successful branch would be 
+
+EA+ 
+
+> S
+
+bS
+
+2Lα E ∥bS ∥2
+
+= ELuh
+
+(2 L/ √3) ∥bS ∥2
+
+, αE = 1
+
+√3 . (4.6) Replacing A+ 
+
+> S
+
+by pδ(AS ) defines 
+
+uqh = Sp δ(AS )bS , uqh = X
+
+> j
+
+(uqh)j ϕ(L) 
+
+> j
+
+. (4.7) The vector uqh in (4.7) defines the nodal expansion of the represented function, but the circuit outputs its coefficients in the local L2-orthonormal basis. Specifically, the successful branch is 
+
+ELuqh/[(2 L/ √3) ∥bS ∥2], and its normalized state is 
+
+ELuqh
+
+∥ELuqh∥2
+
+= ELuqh
+
+∥uqh∥L2
+
+.
+
+Multiplication of the successful branch by the known scale (2 L/ √3) ∥bS ∥2 defines the “unnormal-ized” representative ELuqh. The quotation marks distinguish this scaled branch from the normalized output state. Its error satisfies 
+
+∥ELuh − ELuqh∥2 = ∥uh − uqh∥L2 .
+
+This identity lets us retain the orthonormal representation when imposing continuous accuracy, without converting the output to the nodal coefficient state uqh/∥uqh∥2. The function error is measured using the scaled branch, without requiring the exact solution norm. 
+
+Theorem 4.1 (Solution error and query complexity) . Assume the stated preconditioned input access. Let 0 < ε ≤ ∥ u∥L2 /2, choose a mesh satisfying ∥u − uh∥L2 ≤ ε/ 3, and set 
+
+δ = min 
+
+n
+
+1, ε
+
+√3∥bS ∥2
+
+o
+
+. (4.8) 
+
+Then bS̸ = 0 , and the ideal representative in (4.7) satisfies ∥u − uqh∥L2 ≤ 2ε/ 3. With an additional function error of at most ε/ 3 from circuit implementation, the represented output satisfies (4.5) .Its normalized coefficient state in the finest-level local L2-orthonormal basis can be prepared with a success flag and constant success probability using expected 
+
+O
+
+
+
+dL 3 ∥bS ∥2
+
+∥uh∥L2
+
+log(2 + L/δ )
+
+
+
+(4.9) 
+
+queries. In particular, a bound in terms of the continuous data is 
+
+O
+
+
+
+dL 3 ∥f ∥L2
+
+∥u∥L2
+
+log 
+
+
+
+2 + L∥f ∥L2
+
+ε
+
+ 
+
+, L = log 2(1 /h ). (4.10) 
+
+For fixed ∥f ∥L2 /∥u∥L2 , this bound has no algebraic inverse-mesh factor and depends logarithmically on 1/ε , apart from the choice of mesh required for finite element accuracy. 
+
+25 Proof. Step 1: Continuous error from the inverse approximation. The discretization error and the restriction on ε imply 
+
+∥uh∥L2 ≥ ∥ u∥L2 − ∥ u − uh∥L2 ≥ ∥ u∥L2 − ε
+
+3 ≥ 56 ∥u∥L2 > 0.
+
+Consequently, bS̸ = 0. The orthonormal coefficient representation and ∥E∥ ≤ 1/√3 give 
+
+∥uh − uqh∥L2 = ∥E (A+ 
+
+> S
+
+− pδ(AS )) bS ∥2
+
+≤ δ
+
+√3 ∥bS ∥2 ≤ ε
+
+3 . (4.11) Adding the discretization error gives the ideal function error bound. 
+
+Step 2: Size of the successful branch. Using (4.2), we obtain 
+
+∥bS ∥2
+
+∥uh∥L2
+
+≤ ∥f ∥L2
+
+√3( ∥u∥L2 − ε/ 3) ≤ 6∥f ∥L2
+
+5√3∥u∥L2
+
+. (4.12) Moreover, ε/ 3 ≤ ∥ u∥L2 /6 ≤ ∥ uh∥L2 /5, so (4.11) implies 
+
+∥uqh∥L2 ≥ 45 ∥uh∥L2 , ∥uqh∥L2 ≥ ∥ u∥L2 − 2ε
+
+3 ≥ 23 ∥u∥L2 .
+
+The successful branch therefore has norm at least 
+
+√3∥uqh∥L2
+
+2L∥bS ∥2
+
+≥ 2√3∥uh∥L2
+
+5L∥bS ∥2
+
+.
+
+Thus the absolute accuracy requirement already ensures a sufficiently large branch; no inverse estimate involving h−1 is needed. 
+
+Step 3: Amplification cost. Amplitude amplification with a success test [15] uses expected 
+
+O
+
+
+
+L ∥bS ∥2
+
+∥uh∥L2
+
+
+
+calls to the response circuit and its inverse. Geometrically increasing amplification lengths give this expected order without knowing the success probability. Multiplying by (4.4) proves (4.9). Also, Πhf = Ahuh and (2.6) imply 
+
+∥f ∥L2 ≥ ∥ Πhf ∥L2 ≥ (c + 4 d)∥uh∥L2 > ε. 
+
+Consequently, (4.8) and (4.2) give 
+
+Lδ = L max 
+
+n
+
+1,
+
+√3∥bS ∥2
+
+ε
+
+o
+
+≤ L∥f ∥L2
+
+ε .
+
+Together with (4.12), this proves (4.10). 
+
+Step 4: Circuit implementation error. An operator error η in the response unitary perturbs the scaled successful branch by at most (2 L/ √3) ∥bS ∥2η. It suffices to choose 
+
+η ≤ ε
+
+2√3L∥bS ∥2
+
+, (4.13) which makes the corresponding function perturbation at most ε/ 3. Including both inverse and implementation errors, the implemented representative has norm at least 
+
+∥uh∥L2 − 2ε
+
+3 ≥ 35 ∥uh∥L2 , ∥u∥L2 − ε ≥ 12 ∥u∥L2 .
+
+26 Its total continuous error is at most ε, and its successful branch retains the size required in Step 3. Primitive errors within the response circuit are allocated by telescoping to satisfy (4.13). Amplitude amplification uses this implemented unitary and its circuit adjoint, together with reflections about the input and success subspaces, and preserves the direction of its successful branch. Here the state-preparation circuit includes OSb : the input reflection is about the all-zero state, and the success reflection acts on the encoding flags. Both are exact in the circuit model. The representative is defined by the scaled branch before amplification, as in (4.7). The precision requirements change the elementary gate cost but not the stated query bounds. The ratio ∥f ∥L2 /∥u∥L2 in (4.10) is part of the complexity estimate. For a fixed continuous prob-lem with u̸ = 0, this ratio is independent of h, so the mesh dependence is through L = log 2(1 /h ). It may nevertheless grow for a family of increasingly oscillatory right-hand sides. Multiplying f and 
+
+u by the same positive constant leaves this ratio unchanged. The condition ε ≤ ∥ u∥L2 /2 specifies the accuracy regime of the theorem; neither the inverse tolerance nor the adaptive amplification procedure requires the exact solution norm. Direct access to |bS ⟩ removes the cost of forming the preconditioned right-hand side. The conversion from multilevel coordinates to the original solution representation still incurs the ampli-fication factor in (4.9), now controlled by (4.12). If only |z⟩ is required, then ∥bS ∥2/∥z∥2 ≤ 12 dL ,so its normalized-state preparation requires no condition relating the requested accuracy to ∥u∥L2 .The explicit tensor mass factor 3 d−1 is absent from both constructions. Each query has the poly-nomial gate overhead stated in Theorem 3.1. At finite gate precision the represented function may lie in QL rather than exactly in Vh; its error is still measured in L2. Estimating its norm or reading out all nodal coefficients incurs additional costs. 
+
+4.2 Estimation of linear functionals 
+
+For a prescribed real-valued g ∈ L2(Ω), let 
+
+J(u) = ( g, u ), J(uh) = ( g, u h). (4.14) Define the load vector ( gh,d )j = ( g, ϕ (L) 
+
+> j
+
+) and the preconditioned test vector cS = ST gh,d . Then 
+
+J(uh) = gTh,d uh = cTS A+ 
+
+> S
+
+bS . (4.15) Following [12, Section 5.3.2], assume direct access to 
+
+OSc |0⟩ = |cS ⟩ = cS
+
+∥cS ∥2
+
+,
+
+with ∥cS ∥2 supplied. Construction of this oracle is outside the query model. As in (4.2), 
+
+∥cS ∥2 ≤ 1
+
+√3 ∥Πhg∥L2 ≤ 1
+
+√3 ∥g∥L2 .
+
+If either preconditioned vector is zero, J(uh) = 0 and no quantum estimation of the discrete functional is needed. Otherwise, we estimate (4.15) directly, without applying E or amplifying a solution branch. 27 Theorem 4.2 (Functional error and query complexity) . Let u ∈ H2(Ω) be the solution of (2.1) ,let g ∈ L2(Ω) , and assume the stated preconditioned input access. Given ε > 0, choose the mesh so that 
+
+3h2∥u∥H2 ∥g∥L2 ≤ ε
+
+3 . (4.16) 
+
+A direct matrix-element estimator returns bJ satisfying | bJ − J(u)| ≤ ε with probability at least 2/3,using 
+
+O
+
+
+
+dL 2h
+
+1 + L∥f ∥L2 ∥g∥L2
+
+ε
+
+i
+
+log 
+
+h
+
+2 + L max 
+
+n
+
+1, ∥f ∥L2 ∥g∥L2
+
+ε
+
+oi 
+
+(4.17) 
+
+queries to the multilevel encodings and the two input oracles. Equivalently, suppressing the loga-rithmic factor, the bound is 
+
+eO
+
+
+
+dL 2 + dL 3∥f ∥L2 ∥g∥L2
+
+ε
+
+
+
+, L = log 2(1 /h ). (4.18) 
+
+The second term dominates when ε ≤ L∥f ∥L2 ∥g∥L2 . No restriction relating ε to ∥u∥L2 is required. Proof. Step 1: Discretization and inverse errors. Lemma 2.1 and (4.16) give 
+
+|J(u) − J(uh)| ≤ ∥ g∥L2 ∥u − uh∥L2 ≤ 3h2∥u∥H2 ∥g∥L2 ≤ ε
+
+3 .
+
+If ∥bS ∥2∥cS ∥2 = 0, then J(uh) = 0, and returning bJ = 0 already satisfies the required accuracy. Otherwise, choose 
+
+δ = min 
+
+n
+
+1, ε
+
+6∥bS ∥2∥cS ∥2
+
+o
+
+, (4.19) and let Jδ = cTS pδ(AS )bS . By (4.3), 
+
+|J(uh) − Jδ| ≤ δ∥bS ∥2∥cS ∥2 ≤ ε/ 6. (4.20) 
+
+Step 2: Matrix-element estimation. Apply OSb , the inverse block encoding, and O† 
+
+> Sc
+
+on the multilevel register. With all inverse-encoding flags retained, the selected matrix element is 
+
+Jδ
+
+2L∥bS ∥2∥cS ∥2
+
+. (4.21) A Hadamard test followed by amplitude estimation [15] estimates its real part, including the sign. Additive accuracy ε/ (6 L∥bS ∥2∥cS ∥2) gives scalar readout error at most ε/ 3 with constant success probability, using 
+
+O
+
+
+
+1 + L∥bS ∥2∥cS ∥2
+
+ε
+
+
+
+calls to the inverse circuit and the input oracles. 
+
+Step 3: Implementation error and total cost. Reserve ε/ 6 for circuit implementation. Asufficient operator-error bound for the matrix-element circuit is 
+
+η ≤ min 
+
+n
+
+1, ε
+
+12 L∥bS ∥2∥cS ∥2
+
+o
+
+,
+
+since rescaling multiplies its matrix-element error by 2 L∥bS ∥2∥cS ∥2. Primitive errors, including those in amplitude estimation, are allocated over the circuit calls by telescoping. The four contri-butions satisfy 
+
+|J(u) − bJ| ≤ ε
+
+3 + ε
+
+6 + ε
+
+6 + ε
+
+3 = ε. 
+
+28 Multiplying the readout cost by (4.4) gives 
+
+O
+
+
+
+dL 2h
+
+1 + L∥bS ∥2∥cS ∥2
+
+ε
+
+i
+
+log(2 + L/δ )
+
+
+
+.
+
+To express this bound in terms of continuous data, use (4.2) and the corresponding estimate for 
+
+cS :
+
+∥bS ∥2∥cS ∥2 ≤ 13 ∥f ∥L2 ∥g∥L2 , 1
+
+δ ≤ max 
+
+n
+
+1, 2∥f ∥L2 ∥g∥L2
+
+ε
+
+o
+
+.
+
+Substitution proves (4.17), and suppressing its logarithmic factor yields (4.18). The exact solution enters the mesh condition through ∥u∥H2 , while the query bound depends on the continuous data norms ∥f ∥L2 and ∥g∥L2 . The inverse tolerance and estimation precision are chosen from the supplied norms of bS and cS ; no additional norm oracle for f , g, or u is assumed. For fixed data norms, the query bound contains neither 3 d−1 nor an algebraic inverse-mesh factor. The mesh enters through L = log 2(1 /h ), while the ε−1 readout cost remains explicit. This conclusion assumes direct access to both preconditioned input states; their construction is not free in a complete algorithm. The result applies to bounded L2 functionals. Point evaluation, boundary fluxes, and mesh-dependent test functions require separate bounds. Data norms, input preparation, and gate over-head may depend on dimension even though CFE = 3 is dimension independent. For solution-state preparation, (4.12) controls the amplification cost by ∥f ∥L2 /∥u∥L2 . Direct scalar estimation avoids this conversion and requires no restriction relating ε to the solution norm. 
+
+# 5 Numerical illustration 
+
+We illustrate the construction on Ω = (0 , 1) using 
+
+u(x) = sin( πx ) + 14 sin(2 πx ),f (x) = ( π2 + c) sin( πx ) + 14 (4 π2 + c) sin(2 πx ).
+
+(5.1) We use c = 1 for the main experiment. Here ∥u∥L2 = p17 /32, so the target accuracy used below satisfies ε ≤ ∥ u∥L2 /2. The two sine modes test the relative amplitudes and the overall scale of the represented solution. Load integrals are evaluated analytically, and continuous errors are computed by 16-point Gauss–Legendre quadrature on each cell. We first report classical discretization and conditioning results, then examine the quantum circuit on a fixed mesh. 
+
+5.1 Finite element accuracy and preconditioning 
+
+Table 1 reports the finite element error and matrix condition numbers for L = 2 , · · · , 7, with 
+
+h = 2 −L and N = 2 L − 1. The effective condition number of AS uses only its nonzero eigenvalues. The last column compares ∥B∥∥ Kh, 1∥, the normalization obtained by the plain product rule if each separate factor is encoded with its spectral norm, with the bound 12 L from Theorem 3.1. Figure 1 displays the error and conditioning trends in Table 1. The observed convergence approaches second order. Over these meshes, κ2(Kh, 1) increases from 5 .36 to 6028 .74, while κeff (AS )29 Tab. 1: Classical matrix and finite element results for (5.1) with c = 1. 
+
+L ∥u − uh∥L2 Rate κ2(Kh, 1) κeff (AS ) ∥B∥∥ Kh, 1∥/(12 L)2 5.214 × 10 −2 – 5.359 2.908 0.672 3 1.331 × 10 −2 1.970 23.009 3.949 1.938 4 3.345 × 10 −3 1.992 93.662 4.893 5.924 5 8.374 × 10 −4 1.998 376.284 5.701 19.044 6 2.094 × 10 −4 2.000 1506.776 6.337 63.555 7 5.236 × 10 −5 2.000 6028.743 6.861 217.964 
+
+increases from 2 .91 to 6 .86. The last column illustrates the normalization loss discussed in (3.1). The bound 12 L is conservative, so the separate-factor normalization can be smaller on the coarsest mesh; its growth under refinement is the relevant distinction. Additional matrix checks with c = 0 and c = 100 give effective condition numbers 6 .547 and 6 .495, respectively, at L = 7. All 18 tested pairs of c ∈ { 0, 1, 100 } and L ∈ { 2, · · · , 7} satisfy the spectral interval in (2.13). These one-dimensional checks illustrate the estimates and do not test their high-dimensional scaling. 4 8 16 32 64 128     
+
+> Mesh resolution 1/ h
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> L 2 error
+> Q1: ‖ u−uh‖L2
+> (h2) reference
+
+(a) Finite element convergence. 4 8 16 32 64 128    
+
+> Mesh resolution 1/ h
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> Condition number
+> Unpreconditioned: κ2(Kh, 1 )BPX: κeff (AS)
+
+(b) Matrix condition numbers. 
+
+Fig. 1: Finite element convergence and conditioning for (5.1) with c = 1. 
+
+5.2 Circuit simulation in UnitaryLab 
+
+The circuit experiment uses UnitaryLab 1.1.6 [16], Python 3.11.15, and the NumPy CPU backend with complex128 arithmetic. We fix L = 4 and c = 1. The nodal system has 15 unknowns, the multilevel system has 26 coordinates, and the finest-level L2-orthonormal representation has 32 coefficients. The multilevel register is padded to 32 dimensions. For numerical validation, this experiment explicitly includes a right-hand-side conversion before the inverse: it starts from |f L2 
+
+> h
+
+⟩
+
+and applies the encoding of ET , whose successful branch is bS /(αE ∥Πhf ∥L2 ). It then applies the inverse and the encoding of E. Both value-map encodings have normalization 1 /√3 and separate success flags. This extra input conversion tests the identity ET f L2 
+
+> h
+
+= bS ; it is not a step charged to the direct-input algorithm of Section 4. For this small reference experiment, the inverse is implemented using phase estimation [14, 30 Chapter 5] with m phase qubits for exp(2 πiAS /(12 L)). A phase-register value j represents λj =12 Lj/ 2m. A controlled rotation gives a success amplitude 
+
+rj =
+
+
+
+0, λj < (2 L)−1,
+
+(2 Lλ j )−1, λj ≥ (2 L)−1.
+
+Phase estimation is then uncomputed. Let Rm/(2 L) denote the inverse block selected by the zero phase register and the successful rotation flag. The entire response circuit uses m + 8 qubits. Its selected spatial branch is multiplied by the known scale 2 Lα 2 
+
+> E
+
+∥Πhf ∥L2 to obtain ELuqh = ERmbS .Thus the represented function agrees with that obtained from a directly supplied |bS ⟩ and the same inverse approximation. The tabulated qubit counts and joint success probabilities include the additional input conversion; they are not those of the direct-input circuit in (4.6). The exact solution norm is not used in the rescaling. The controlled propagators and unitary dilations of the value maps are supplied as dense matrix gates. The experiment therefore tests the inverse and L2 solution representation in a finite-dimensional oracle model. The local block-encoding circuits and QSVT inverse used in the complexity analysis are not implemented in this simulation. The classical finite element solution provides the reference for evaluating errors. Tab. 2: UnitaryLab response-circuit results at L = 4 and c = 1. Here δm = ∥Rm − A+ 
+
+> S
+
+∥, and the last column is the joint success probability before amplification.                                                              
+
+> mQubits δm∥uh−uqh∥L2∥u−uqh∥L2Success probability 614 1.500 ×10 −22.037 ×10 −22.281 ×10 −26.363 ×10 −4
+> 816 1.951 ×10 −33.830 ×10 −33.172 ×10 −36.797 ×10 −4
+> 10 18 1.735 ×10 −33.334 ×10 −33.061 ×10 −36.787 ×10 −4
+> 12 20 4.037 ×10 −45.990 ×10 −42.889 ×10 −36.739 ×10 −4
+
+Table 2 separates the circuit error from the total continuous error. At m = 12, these errors are 5.9900 × 10 −4 and 2 .8893 × 10 −3, respectively, while the finite element error is 3 .3451 × 10 −3. Since 
+
+u − uqh = ( u − uh) + ( uh − uqh), partial cancellation can make the total error smaller than the finite element error. For the target ε = 1 .2 × 10 −2, the measured discretization and circuit contributions are each below ε/ 3 for m ≥ 8. All four response vectors agree with an independent evaluation of the phase-estimation spectral filter to within 2 × 10 −14 in Euclidean norm. Figure 2 shows how increasing the phase-register size reduces the circuit contribution. At 
+
+m = 12, the pointwise errors are close to those of the finite element approximation. The total 
+
+L2 error is then dominated by spatial discretization; its position slightly below the finite element reference reflects the partial cancellation described above. To test direct functional estimation, take g(x) = sin( πx ) + 12 sin(2 πx ), so that J(u) = ( g, u ) = 9/16. Let gL2 
+
+> h
+
+be the orthonormal coefficients of Π hg. At m = 12, a separate 21-qubit Hadamard-test circuit evaluates ( gL2 
+
+> h
+
+)T ERmET f L2 
+
+> h
+
+= cTS RmbS , retaining all encoding flags. As in the solution experiment, it explicitly includes the input and test-vector conversions that are absorbed into the 31 0.0 0.2 0.4 0.6 0.8 1.0                              
+
+> x
+> 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5
+> Pointwise absolute error
+> ×10 −2
+> |u−uqh|, m= 6 |u−uqh|, m= 12 |u−uh|(a) Pointwise absolute errors. 6810 12
+> Number of phase qubits m
+> 10 −3
+> 10 −2
+> L 2 error
+> Circuit: ‖ uh−uqh‖L2
+> Total: ‖ u−uqh‖L2
+> Q1: ‖ u−uh‖L2(b) Continuous errors versus m.
+
+Fig. 2: UnitaryLab solution errors at L = 4 and c = 1. Panel (a) compares pointwise errors at 
+
+m = 6 and m = 12. Panel (b) shows the circuit and total continuous errors as the phase-register size m increases at fixed h = 1 /16. Dashed lines indicate the Q1 finite element errors; the horizontal reference in (b) is ∥u − uh∥L2 ≈ 3.3451 × 10 −3, which is independent of m.supplied oracles in Section 4. Rescaling its simulated expectation gives 
+
+bJ = 0 .5607326198 , | bJ − J(u)| = 1 .7674 × 10 −3.
+
+The corresponding finite element value is J(uh) = 0 .5602631232. The scalar is obtained directly from the response circuit, without first preparing the normalized solution state. Probabilities and expectations are evaluated from simulated statevectors; finite-shot sampling, amplitude amplifica-tion, and amplitude estimation are not included. These experiments verify the coefficient scaling and response formulas but do not establish the asymptotic query bounds numerically. 
+
+# 6 Comparison and concluding discussion 
+
+This article explains quantum BPX preconditioning for Q1 reaction–diffusion discretizations within the framework of [11, 12]. The construction starts from one-dimensional Gram factors, ex-tends them by tensor products, and uses isometric transfers to assemble the multilevel energy map. For Sℓ = ωℓPℓM −1/2 
+
+> ℓ
+
+, the nonzero spectral interval is [1 /L, 12 dL ] and the encoding normalization of AS is 12 dL , uniformly in c ≥ 0. The Poisson problem is obtained at c = 0, and each shifted system in a fractional rational approximation has the same reaction–diffusion structure. Normalizing the one-dimensional value maps before forming tensor products avoids the explicit factor 3 d−1. With the preconditioned right-hand side supplied directly, the inverse and preparation of the multilevel variable state have no algebraic inverse-mesh factor. For the solution state in the local L2-orthonormal basis, the map E introduces the amplification ratio ∥bS ∥2/∥uh∥L2 . For 0 < ε ≤ ∥ u∥L2 /2, this ratio is bounded by 6 ∥f ∥L2 /(5 √3∥u∥L2 ). The resulting bound (4.10) contains no algebraic inverse-mesh factor when ∥f ∥L2 /∥u∥L2 is fixed. Its data dependence is essential; increasing the magnitude of the solution alone does not improve the amplification ratio. With the preconditioned test state also supplied, direct estimation of a bounded L2 functional avoids 32 the solution conversion, requires no restriction on the accuracy relative to the solution norm, and satisfies (4.18). For comparison, a classical tensor sine solve with an assembled load vector takes O(dLN )arithmetic operations, where N = (2 L − 1) d, and returns all nodal coefficients. The quantum bounds count queries to supplied preconditioned-input oracles and matrix encodings, and produce either a normalized local L2-orthonormal coefficient state or a prescribed scalar estimate. The solution-state bound uses this representation of the same finite element function; further conversion to a state in the original nodal basis would require a separate cost analysis. Constructing these oracles, elementary gate costs, and classical readout must therefore be included when comparing complete algorithms. 
+
+# Acknowledgments 
+
+Y. Yang was supported by NSFC grant (No. 12571469), Scientific Research Innovation Capabil-ity Support Project for Young Faculty of China (No. SRICSPYF-BS2025132), the Project of Scien-tific Research Fund of the Hunan Provincial Science and Technology Department (No. 2024JJ1008), the 111 Project (No. D23017), Major Scientific and Technological Innovation Platform Project of Hunan Province (No. 2024JC1003), and Program for Science and Technology Innovative Research Team in Higher Educational Institutions of Hunan Province of China. Y. Yu was supported by NSFC grant (No. 12301561), the Key Project of Scientific Research Project of Hunan Provincial Department of Education (No. 24A0100), the Science and Technology Innovation Program of Hu-nan Province (No. 2025RC3150) and the general program of Hunan Provincial Natural Science Foundation (No. 2026JJ50003), and partially supported by NSFC grant No. 12341104. L. Zhang was supported by the Hunan Provincial Graduate Student Research and Innovation Project (No. CX20250933) and the Xiangtan University Graduate Student Research and Innovation Project (No. XDCX2025Y188). 
+
+# A Proof of Lemma 2.1 
+
+We track the constants in the interpolation and inverse estimates used in the standard finite element error argument; see [1, Sections 4.4–4.5]. Let Q be the L2(0 , 1) projection onto continuous piecewise linear functions with zero endpoint values on a uniform mesh of width h. With γ =1 + √12 /π , these estimates give 
+
+∥v − Qv ∥L2(0 ,1) ≤ hπ ∥v′∥L2(0 ,1) ,
+
+∥(Qv )′∥L2(0 ,1) ≤ γ∥v′∥L2(0 ,1) ,
+
+∥(v − Qv )′∥L2(0 ,1) ≤ γh π ∥v′′ ∥L2(0 ,1) .
+
+The first two inequalities hold for v ∈ H10 (0 , 1), and the third additionally requires v ∈ H2(0 , 1). The first bound also follows from the degree-one Ritz estimate in [13, Theorem 4] and the best-approximation property of Q. Indeed, for the nodal interpolant Iv , cellwise Poincar´ e inequalities 33 give ∥v − Iv ∥ ≤ (h/π )∥(v − Iv )′∥, ∥(v − Iv )′∥ ≤ (h/π )∥v′′ ∥, and ∥(Iv )′∥ ≤ ∥ v′∥. Combining these with QI = I, the contraction property of Q, and the inverse bound ∥w′
+
+> h
+
+∥ ≤ √12 h−1∥wh∥
+
+from [13, Remark 12] yields the stated bounds. Let Q(q) act as Q in coordinate q, so that Π h = Qdq=1 Q(q). This coordinatewise construction is the tensor-product projection described in [13, Section 6]. For each p, use 
+
+v − Πhv = ( I − Q(p))v + Q(p)
+
+I − Y 
+
+> q̸=p
+
+Q(q)
+
+v. 
+
+The preceding one-dimensional bounds and orthogonality of successive projection errors in the other coordinates imply 
+
+∥∂p(v − Πhv)∥L2 ≤ γh π
+
+
+
+∥∂pp v∥L2 +
+
+X  
+
+> q̸=p
+
+∥∂pq v∥2
+
+> L2
+
+1/2
+
+.
+
+Squaring and summing over p therefore gives 
+
+∥∇ (v − Πhv)∥L2 ≤√2γπ h∥D2v∥L2 , ∥D2v∥2 
+
+> L2
+
+:= 
+
+> d
+
+X
+
+> p,q =1
+
+∥∂pq v∥2 
+
+> L2
+
+.
+
+Let wh ∈ Vh be the Poisson Ritz projection of u. Galerkin orthogonality gives the same bound for ∥∇ (u − wh)∥L2 . For the dual solution −∆z = u−wh with zero boundary values on the cube, the sine expansion gives ∥D2z∥L2 = ∥u − wh∥L2 . The Aubin–Nitsche argument [1, Chapter 5], testing with z − Πhz and applying the approximation bound to both u and z, yields 
+
+∥u − wh∥L2 ≤ 2γ2
+
+π2 h2∥D2u∥L2 .
+
+To compare with the reaction–diffusion approximation, set eh = uh − wh. The discrete equations give 
+
+a(eh, v h) = c(u − wh, v h), vh ∈ Vh.
+
+For c > 0, testing with eh gives ∥eh∥L2 ≤ ∥ u−wh∥L2 ; for c = 0, eh = 0. Since ∥D2u∥L2 ≤ √2∥u∥H2 ,it follows that 
+
+∥u − uh∥L2 ≤ 4√2
+
+π2
+
+
+
+1 + 
+
+√12 
+
+π
+
+2
+
+h2∥u∥H2 < 3h2∥u∥H2
+
+for u̸ = 0, with the zero solution immediate. This proves the stated uniform constant. 
+
+# References 
+
+[1] S. C. Brenner and L. R. Scott. The Mathematical Theory of Finite Element Methods . Springer-Verlag, New York, third edition, 2008. [2] J. H. Bramble, J. E. Pasciak, and J. Xu. Parallel multilevel preconditioners. Math. Comp. , 55(191):1–22, 1990. [3] J. Xu. Iterative methods by space decomposition and subspace correction. SIAM Rev. , 34(4):581–613, 1992. [4] A. W. Harrow, A. Hassidim, and S. Lloyd. Quantum algorithm for linear systems of equations. Phys. Rev. Lett. , 103(15):150502, 2009. 
+
+34 [5] A. M. Childs, R. Kothari, and R. D. Somma. Quantum algorithm for systems of linear equations with exponentially improved dependence on precision. SIAM J. Comput. , 46(6):1920–1950, 2017. [6] A. Gily´ en, Y. Su, G. H. Low, and N. Wiebe. Quantum singular value transformation and beyond: expo-nential improvements for quantum matrix arithmetics. In Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing , pages 193–204. ACM, 2019. Full version: arXiv:1806.01838v1; theorem numbering follows the full version. [7] Y. Cao, A. Papageorgiou, I. Petras, J. Traub, and S. Kais. Quantum algorithm and circuit design solving the Poisson equation. New J. Phys. , 15(1):013021, 2013. [8] A. Montanaro and S. Pallister. Quantum algorithms and the finite element method. Phys. Rev. A ,93(3):032324, 2016. [9] B. D. Clader, B. C. Jacobs, and C. R. Sprouse. Preconditioned quantum linear system algorithm. Phys. Rev. Lett. , 110(25):250504, 2013. [10] Y. Tong, D. An, N. Wiebe, and L. Lin. Fast inversion, preconditioned quantum linear system solvers, fast Green’s-function computation, and fast evaluation of matrix functions. Phys. Rev. A , 104(3):032422, 2021. [11] M. Deiml and D. Peterseim. Quantum realization of the finite element method. Math. Comp. ,95(362):2637–2668, 2026. [12] S. Jin, N. Liu, C. Ma, and Y. Yu. Quantum preconditioning method for finite difference discretizations of the Poisson equation via Schr¨ odingerization, 2026. Revised manuscript, June 30, 2026. [13] E. Sande, C. Manni, and H. Speleers. Explicit error estimates for spline approximation of arbitrary smoothness in isogeometric analysis. Numer. Math. , 144(4):889–929, 2020. [14] M. A. Nielsen and I. L. Chuang. Quantum Computation and Quantum Information . Cambridge Uni-versity Press, Cambridge, 10th anniversary edition, 2010. [15] G. Brassard, P. Høyer, M. Mosca, and A. Tapp. Quantum amplitude amplification and estimation. In S. J. Lomonaco, Jr. and H. E. Brandt, editors, Quantum Computation and Information , volume 305 of 
+
+Contemporary Mathematics , pages 53–74. American Mathematical Society, Providence, RI, 2002. [16] UnitaryLab. UnitaryLab Simulator . Version 1.1.6. User manual: https://docs.unitarylab.com/en/ docs/unitarylab-simulator-user-manual/ .
+
+35

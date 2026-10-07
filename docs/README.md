@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-06</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-07</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 5 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 2 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>2</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>3</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-06 23:34:49 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-07 23:20:49 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>2026-10-06 日报精选 5 篇量子模拟与算法论文，其中 2 篇精读均聚焦结构化哈密顿量的高效块编码（8.0/10）。</p>
-<p>最值得关注的是《Efficient Block Encoding of Structured Hamiltonians by Separating Where and What》，它通过分离“位置”与“内容”提升块编码效率，另有黎曼流形上的量子模拟（7.0/10）可作延伸。</p>
-<p>普通读者可先从这篇块编码精读入手，理解其核心思路后再按兴趣浏览三篇速读。</p>
+<p>今日速读两篇量子计算预印本，聚焦量子预条件子与哈密顿量特征值变换。最值得关注的是面向反应扩散问题 Q1 有限元的量子 BPX 预条件子结构感知构造（7.0/10），以及用三对角小工具实现哈密顿量特征值变换（6.0/10）。建议普通读者先看第一篇了解量子线性求解器如何适配有限元结构，再顺带浏览第二篇的特征值变换思路。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -80,12 +78,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">2 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Efficient Block Encoding of Structured Hamiltonians by Separating Where and What">Efficient Block Encoding of Structured Hamiltonians by Separating Where and What</span></li><li><span class="dpr-home-dashboard-paper-title" title="Efficient Block Encoding of Structured Hamiltonians by Separating Where and What">Efficient Block Encoding of Structured Hamiltonians by Separating Where and What</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">quantum-algo <strong>2</strong></span></div>
+
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -93,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">3 篇</strong>
+    <strong class="dpr-home-dashboard-count">2 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Quantum Simulation on Riemannian Manifolds">Quantum Simulation on Riemannian Manifolds</span></li><li><span class="dpr-home-dashboard-paper-title" title="Quasiparticle quantum simulation of materials with the Bethe-Salpeter equation">Quasiparticle quantum simulation of materials with the Bethe-Salpeter equation</span></li><li><span class="dpr-home-dashboard-paper-title" title="Efficient Calculation of Equilibrium Correlation Functions">Efficient Calculation of Equilibrium Correlation Functions</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="A structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of reaction-diffusion problems">A structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of reaction-diffusion problems</span></li><li><span class="dpr-home-dashboard-paper-title" title="Hamiltonian Eigenvalue Transformation by Tridiagonal Gadgets">Hamiltonian Eigenvalue Transformation by Tridiagonal Gadgets</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">quantum-algo <strong>2</strong></span><span class="dpr-home-dashboard-tag">quantum-ode <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">quantum-algo <strong>2</strong></span></div>
 </section>
 </div>
 

@@ -1,0 +1,39 @@
+{
+  "label": "2026-10-07",
+  "date": "2026-10-07",
+  "generated_at": "2026-10-07T23:20:50",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202610/07/2610.06987v1-a-structure-aware-construction-of-quantum-bpx-preconditioners-for-q1-finite-element-discretizations-of-reaction-diffusion-problems",
+      "section": "quick",
+      "title_en": "A structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of reaction-diffusion problems",
+      "authors": "Yin Yang, Yue Yu, Long Zhang",
+      "date": "2026-10-04",
+      "pdf": "https://arxiv.org/pdf/2610.06987v1",
+      "score": "7.0",
+      "evidence": "面向反应扩散方程有限元离散的量子BPX预条件子，改善条件数",
+      "tldr": "针对Q1有限元离散的反应扩散方程，本文提出结构感知的量子BPX预处理子。方法用一维映射、张量积和保范层间传递显式构造预条件算子，并采用局部L²正交基作为输出表示。在可直接访问预条件右端项时，以O(dL³(||f||/||u||)log(2+L||f||/ε))查询复杂度制备误差≤ε的系数态。该结果对网格加密仅多对数依赖，并给出一维UnitaryLab验证。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "We present a structure-aware construction of quantum BPX preconditioners for Q1 finite element discretizations of constant-coefficient reaction--diffusion equations on the unit cube, including the Poisson equation. Building on existing quantum finite element and finite difference methods, we express the preconditioned operator through explicit one-dimensional maps, tensor products, and norm-preserving interlevel transfers. Symmetric preconditioning gives multilevel coefficients, and its favorable conditioning alone does not ensure efficient recovery of a state in the original finite element nodal basis. We instead use the local $L^2$-orthonormal basis underlying the construction as the output representation of the same finite element function. Its coefficient norm equals the continuous $L^2$ norm. Assuming direct access to the preconditioned right-hand side, we prepare this orthonormal coefficient state with a represented function error at most $\\varepsilon$. The expected query complexity is \\[ \\mathcal{O}\\!\\Big(dL^3\\frac{\\|f\\|_{L^2}}{\\|u\\|_{L^2}} \\log\\!\\Big(2+\\frac{L\\|f\\|_{L^2}}{\\varepsilon}\\Big)\\Big), \\] where $u$ is the exact solution, $f$ is the right-hand side, $d$ is the spatial dimension, and $L=\\log_2(1/h)$ for mesh width $h$. The bound holds for $0<\\varepsilon\\le\\|u\\|_{L^2}/2$ and depends only polylogarithmically on mesh refinement for fixed continuous data. We also analyze linear-functional estimation and illustrate the construction and continuous error bounds with a one-dimensional UnitaryLab experiment.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/07/2610.03295v1-hamiltonian-eigenvalue-transformation-by-tridiagonal-gadgets",
+      "section": "quick",
+      "title_en": "Hamiltonian Eigenvalue Transformation by Tridiagonal Gadgets",
+      "authors": "Arthur Braida, Joseph Cunningham, Jérémie Roland",
+      "date": "2026-10-02",
+      "pdf": "https://arxiv.org/pdf/2610.03295v1",
+      "score": "6.0",
+      "evidence": "通过辅助比特链实现局部哈密顿量多项式P(H)的矩阵函数变换",
+      "tldr": "模拟量子器件只能实现局部哈密顿量H，但多项式P(H)通常非局域而无法直接实现。本文提出三角对角gadget：在H上连接不同长度辅助量子比特链，利用链末端能量需往返导致的2m阶零点，构造解析且唯一的本征值，通过加权求和逐项合成任意P(H)。该方案仅增加常数局域性，用O(l^2+log(1/ε))辅助比特和能量尺度实现l次多项式，并用于滤波标记本征态与绝热优化非局域驱动。这为模拟器件实现非局域多项式变换提供通用构造。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "An analog device implements a local Hamiltonian H, but a polynomial P (H) is in general not local, so the device cannot implement it. We carry P (H), to any prescribed accuracy, as the action of a single time-independent local Hamiltonian on an explicitly described invariant subspace. Short chains of ancilla qubits are attached to H. A chain of 2m sites has a unique isolated eigenvalue that is an analytic function of the input vanishing to order exactly 2m, because the input must cross the chain and come back before it can shift the energy at the far end. Chains of different lengths therefore form a triangular family, and a weighted sum of them reproduces a prescribed polynomial term by term. Even chains give the even part and odd chains the odd part, so any polynomial is reached. We prove uniqueness, analyticity and coefficient bounds uniform in the chain length for inputs H of norm below any r < 1. Where the circuit model pays degree 2l in 2l sequential oracle calls, the result here is one Hamiltonian of locality two more than that of H, which pays the degree in O(l^2 + log2^(1/eps)) ancillas and in energy scale. As an application we filter a marked eigenstate of a local Hamiltonian. Composing a synthesised square along the Chebyshev doubling identity works, but its energy scale grows quasi-polynomially with the degree. Iterating instead the exact eigenvalue branch of the two-site chain k times gives a filter on k + 1 ancilla qubits whose error decays geometrically in k, at an energy scale polynomial in the inverse passband width and independent of k, the locality growing by one per stage. In adiabatic optimisation with a rank-one driver, the construction replaces that non-local driver, by a Hamiltonian with O(log n) ancillas and O(log n)- body terms, at an energy scale polynomial in n. Simulations including every ancilla reproduce the spectrum of the ideal algorithm.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
