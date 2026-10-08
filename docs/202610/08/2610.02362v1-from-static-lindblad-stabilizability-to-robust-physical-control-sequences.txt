@@ -1,0 +1,2160 @@
+Title: From Static Lindblad Stabilizability to Robust Physical Control Sequences
+
+URL Source: https://arxiv.org/pdf/2610.02362v1
+
+Published Time: Mon, 05 Oct 2026 00:07:36 GMT
+
+Number of Pages: 38
+
+Markdown Content:
+# From Static Lindblad Stabilizability to Robust Physical Control Sequences 
+
+Yibin Wang 1, ∗ and Ruifeng Liu 2, †
+
+> 1
+
+Graduate School of Mathematics, Nagoya University, Nagoya, 464-8601, Aichi, Japan. 
+
+> 2
+
+Ministry of Education Key Laboratory for Nonequilibrium Synthesis and Modulation of Condensed Matter, Shaanxi Province Key Laboratory of Quantum Information and Quantum Optoelectronic Devices, School of Physics, Xi’an Jiaotong University, Xi’an 710049, China. 
+
+Dissipative dynamics can stabilize a quantum target without providing a reliable sequence of finite control operations. We derive checkable conditions for implementing such stabilization with imperfect controls, with bounds on convergence, errors during operations, and physical cost. The analysis includes pulses, idle intervals, and all simultaneously acting background dynamics. Using a common Lyapunov measure of deviation from the target, we require a contraction bound that remains uniformly below one over the prescribed uncertainty set after accounting for implementation errors. If all allowed paths preserve the target subspace throughout each operation, repeated cycles converge to that subspace from every initial state, even when errors vary between cycles. Comparison with these certified target-preserving paths gives an explicit long-time error bound under bounded leakage. Two single-qubit counterexamples show why a stabilizing average or a stabilizing generator obtained by unitary conjugation does not ensure these path conditions. The certification approach also supports a finite-library search. For a specified four-level cascade model with finite pulses, calibration and timing errors, dephasing, and bounded pumping, this search yields a sequence with an explicit preparation-time bound. For every initial state, it guarantees trace distance at most 0 .1from the target at the end of preparation and throughout subsequent cycles. 
+
+I. INTRODUCTION 
+
+Reservoir engineering asks for dynamics that drive every initial state toward a prescribed quantum state or code space. Laser-controlled reservoir design was proposed as a way to select a motional master equation [1], and designed dissipation has been developed for steady-state quantum computation and correlated-state preparation [2]. Experi-ments have combined coherent gates with optical pumping to realize dissipative entangled-state preparation in trapped ions [3], and continuous drives with an engineered reservoir to autonomously stabilize a Bell state in superconducting circuits [4]. These developments make the passage from a generator-level design to an executable protocol a practical mathematical question. 
+
+A. Physical problem 
+
+For a time-independent master equation, the question is geometric: does the available cone contain a Gorini– Kossakowski–Lindblad–Sudarshan (GKLS) generator with the required invariant target and stable transverse dynam-ics? A laboratory asks which calibrated controls are applied, for how long, what acts during every transition, and how much time and control are required. The generator cone forgets the rate assigned to a ray, whether a sum is directly callable, and the path and cost of a conjugating pulse. We call one complete finite-duration hold, pulse, transition, dead interval, or cooldown a primitive ; its generator contains every simultaneous always-on term. A physical word is a finite chronological sequence of such primitives. Its intermediate action cannot generally cancel in the way a formal generator sum does. The target face consists of the density operators supported on the target subspace. A static Lyapunov certificate specifies a positive-definite metric and a decay margin for deviations from the target. A 
+
+target-compatible atomization expresses the certified generator as a finite positive sum of callable complete generators, each preserving the target. A word grammar specifies allowed finite chronological primitive templates and their parameter ranges. For a supplied template, the nominal synthesis uses ideal factors to approximate the static evolution. Each primitive also has a complete reference path , containing all simultaneous dynamics at its reference settings, and admissible actual paths over the uncertainty family. The reference paths therefore need not coincide with the ideal   
+
+> ∗yibinw0210@gmail.com
+> †ruifeng.liu@mail.xjtu.edu.cn arXiv:2610.02362v1 [quant-ph] 1 Oct 2026
+
+2factors. These data connect five levels of description: static Lyapunov certificate 
+
+⇓
+
+finite target-compatible atomization into callable operating points 
+
+⇓
+
+supplied word with a nominal synthesis 
+
+⇓
+
+complete reference and admissible actual paths for every primitive 
+
+⇓
+
+uniform actual contraction, within-cycle bounds, and resource bounds .
+
+Each arrow requires data beyond the preceding level. The actual monodromy is the transverse map of one complete uncertain cycle; a prefix is the propagator to an arbitrary time within that cycle. Common-target switching and dissipative feedback provide the nearest stabilization results [5, 6]. Table I compares their assumptions and conclusions with the complete-path problem. In particular, the state information and adjustable gain used by the noninvariant feedback construction distinguish it from the fixed open-loop words with unavoidable excitation considered in our obstructions. Generator decompositions yield sequential simulations when the constituent semigroups and arbitrary unitaries are already implementable [7]. Positive product formulas for open systems [8– 10], bounded Eulerian controls [11], soft-pulse Markovian models [12], and finite-dimensional Duhamel perturbation estimates [13] provide standard analytic ingredients. The estimate for leakage from the target is related to input-to-state practical stability [14], but its discrete cycle-and-prefix recursion is proved explicitly. Robust Lyapunov theory gives smooth stability characterizations for bounded time-varying parameter families [15]; the present finite input specifies one quadratic metric. Robustness and error certification in open-system control and simulation have also been studied through short-pulse dynamical decoupling [16], stability of local observables for rapidly mixing local Lindbladians [17], and structured Bloch-generator uncertainty [18].                                    
+
+> TABLE I. Related results and the additional guarantees for the complete-path control models considered here. Work Assumptions and guarantees Additional certification here Scaramuzza–Ticozzi [5] Common invariant target and stable convex com-bination: stabilization by sufficiently short finite-period switching, with bounds within periods. Uniform finite-pulse and idle-path bounds, including joint implementa-tion errors and physical durations. Liang–Grigoletto– Ticozzi [6] Target invariance and common descent: dwell bounds and exponential stabilization. State-dependent gains can relax invariance of the un-modulated generators. Fixed open-loop words, uniform over the declared hardware-error set. Szehr–Wolf [13] Unique stationary state and exponential reference convergence: finite-time and asymptotic bounds from channel or generator perturbation norms. Perturbation inputs from complete primitives; propagation through un-certain cycles and prefixes for target faces. Kraft et al. [19] Learned statistical uncertainty in Hamiltonian and Lindbladian parameters: observable-error bounds. Target preparation and physical execution-time guarantees throughout operation under a declared determin-istic uncertainty set.
+> B. Main results
+
+Two obstructions show why the middle interfaces are substantive. First, two directly available qubit generators have an average equal to amplitude damping toward a pure target, while the first positive hold under either generator makes that target full rank. No later finite-time Markovian factor can return the state to the pure target. Static global asymptotic stability therefore does not imply even stroboscopic stabilization, meaning stabilization at the chosen cycle boundaries. Second, a bit flip conjugates an excitation generator into target-stabilizing amplitude damping, but the corresponding bounded pulse moves the target to the orthogonal state. With switchable excitation the repeated protocol approaches a nonconstant periodic orbit; with unavoidable excitation it cannot return to the target even stroboscopically. Algebraic orbit access does not by itself specify a target-preserving physical path. For a supplied finite word grammar, the positive theorem gives a compiler : a construction of contraction, within-cycle, and resource bounds from the static certificate, nominal-synthesis bounds, and complete-path data. Robust 3means uniform over a declared compact uncertainty family. Its members may vary arbitrarily from one cycle to the next, with any correlations admitted by that family. All complete words begin and end at a reproducible cold boundary ,a fully specified controller state at which cycles concatenate. In one fixed Lyapunov metric, normalized-time Duhamel bounds convert complete generator and duration uncertainty into primitive block errors. A fully amplified product telescope combines these errors with a nominal-synthesis bound and the static decay. The resulting quantity qrob 
+
+bounds every actual monodromy; the condition qrob < 1 certifies uniform contraction. The same primitive envelopes produce a within-cycle bound Brob , hence all-time convergence and componentwise worst-case resources. The conclusion depends on the physical meaning of the uncertainty. In the structure-preserving class, every admis-sible GKLS path preserves the target face at every time. The exact theorem then gives all-time attraction to that face; for a rank-one face this is stabilization of a fixed pure state. A general small generator perturbation may leak from the face. For this leaky class, complete pathwise diamond-norm bounds relative to structure-preserving shadow paths produce cycle and prefix leakage estimates. Iteration gives a practical tube with an explicit asymptotic radius. Two analytically solvable three-level models provide explicit control words and resource bounds. A swap confined to the excited subspace turns one common-ground decay into the other without moving the ground target. Its four-primitive word gives uniform contraction under the declared relative gain errors in the two holds, both without dephasing and with known always-on dephasing. A distinct cascade system has an exact three-factor identity and, in its stated two-label control alphabet, a matching lower bound with sharp leading wall time 4 log(1 /ε ) as the target-error tolerance ε ↓ 0. The latter constant belongs to that alphabet and accounting convention and is not transferred to the common-ground word. A second construction uses a complete-path certificate directly as the acceptance test for a finite search. It can use the preceding Lyapunov bounds or a model-specific positive observable, such as the population outside a pure target. This permits a distinction between certifying a supplied word and selecting one from a declared library. The four-level example below uses the latter construction with a survival-probability certificate. The four-level model tests a different part of the construction. It combines an irreversible cascade with finite pulses whose amplitude and duration are uncertain, always-on dephasing, and bounded pumping out of the target. A four-coordinate exact adjoint reduction retains pulse-induced coherences and encloses the survival probability over the whole error box for every initial state. A search over 1650 parameterized words finds a five-command sequence that guarantees trace distance at most 0 .1 after a complete preparation cycle ending by time 14 .3107 and throughout subsequent cycles. All times use inverse nominal cascade-rate units. This is a sufficient execution-time bound for a stated hardware model. A periodic-grid comparison and proposals from ordinary numerical optimization use the same rational acceptance test. Section II defines target semantics, calibrated presentations, uncertainty families, and physical words. Section III gives the static certificate and the averaging obstruction. Section IV treats direct target-compatible switching. Sec-tion V proves the robust primitive-certified compiler and its leaky counterpart. Section VI gives the qutrit realizations and resource laws. Section VII gives the finite search, the four-level certificate, and its matched comparisons. Sec-tion VIII records finite-input, higher-rank, and modeling boundaries. Detailed proofs and finite-instance certification are collected in the appendices.  
+
+> II. CALIBRATED PRESENTATIONS AND TARGET SEMANTICS
+
+Let H = Cd and let Herm( H) be the real vector space of Hermitian operators. For an operator J, write 
+
+D[J]( ρ) = JρJ † − 12 {J†J, ρ }. (1) A GKLS generator has the form [20, 21] 
+
+L(ρ) = −i[H, ρ ] + ∑
+
+> a
+
+D[Va]( ρ). (2) Its exponential is a completely positive trace-preserving (CPTP) map. In a time-dependent segment, the Hamiltonian, jump operators, and any always-on terms in Eq. (2) are the complete dynamics at that operating point. 
+
+Definition 1 (Targets and attraction) Let P be an orthogonal projector of rank 1 ≤ r < d , set Q = I − P , and define 
+
+TP = {X ∈ Herm( H) : X = P XP },
+
+FP = {ρ ∈ T P : ρ ⪰ 0, tr ρ = 1 }. (3) 4
+
+The projector P is the target projector and FP is its target face. For r = 1 , the unique state in the face is the target state. The face is globally asymptotically stable (GAS) when it is invariant and every initial density operator approaches it in trace distance. 
+
+For r > 1, GAS means attraction to the whole face and does not by itself select one mixed state inside it. We use 
+
+dtr (ρ, FP ) = inf  
+
+> σ∈F P
+> 12
+
+∥ρ − σ∥1. (4) For channels, the half diamond distance is d⋄(Φ , Ψ) = 12 ∥Φ − Ψ∥⋄. Primitive leakage bounds below use the full superoperator diamond norm ∥ · ∥ ⋄; the factor 1 /2 is inserted only when a channel distance is explicitly denoted by d⋄. The quotient XP = Herm( H)/TP records motion transverse to the target. We identify it isometrically with the Hilbert–Schmidt orthogonal complement T ⊥ 
+
+> P
+
+by assigning [ X] the representative QX = X − P XP . Once TP is invariant, a generator induces a transverse matrix on a Hilbert–Schmidt orthonormal real Hermitian basis of T ⊥ 
+
+> P
+
+; a channel similarly induces a transverse map. Write z(ρ) for the coordinates of Qρ. Then ∥z(ρ)∥2 = ∥Qρ∥HS .
+
+Definition 2 (Calibrated physical presentation) A calibrated presentation is a finite collection of primitive labels and a finite directed graph of controller states. A label identifies one complete operating point: its generator or channel path, physical rate and amplitude range, admissible duration, concurrency rule, and cost vector. A graph vertex records every controller variable needed to repeat the experiment, including the laboratory frame, phase when relevant, actuator configuration, and environment/reset state. A directed edge records a complete transition path and its duration, always-on dynamics, calibration, and cost. A reverse edge is separate data. Algebraically equal superoperators remain different labels when their physical invocations differ. 
+
+The presentation also assigns each complete invocation or operating setting a physical signature : a discrete identi-fier for its prescribed command, concurrent dynamics, and transition direction when applicable. Every graph vertex records its physical signature. Two signatures are equal exactly when the presentation identifies their declared invo-cation data for switch counting. A signature covers the complete prescribed waveform and its admitted uncertainty family. The idle setting, denoted IDLE, and distinct directed pulse commands have separate signatures. A primitive call is one issued active label or one transition that the presentation declares countable as a call. A
+
+dwell is the time held at an operating point. Dead time is an interval in which a scheduled control is unavailable but complete dynamics still acts; cooldown is a required delay before another call. Always-on dynamics acts whether or not the nominal primitive is active. Wall time is physical elapsed time. The switch count is the number of changes between consecutive physical signatures, including entry to and return from a cyclic boundary. None of these quantities is inferred from a generator cone. When this cost is reported, the integrated control action sums the amplitude norm over the multiset Ectrl of control paths in the word: 
+
+Actrl = ∑
+
+> e∈E ctrl
+
+∫
+
+> e
+
+∥ue(s)∥ctrl ds, (5) where the presentation fixes the control-amplitude norm. Thus the two swap pulses in Sec. VI A both contribute to this quantity. The adjective complete is important throughout: a complete generator contains the commanded Hamiltonian, raw dissipation, simultaneous compensation, cross-talk, and every always-on term. A calibration relation ˜G = rG with 
+
+r > 0 is tied to one operating point and cannot be used to rescale an independent drift. 
+
+Definition 3 (Direct orbit atom) A direct orbit atom is a complete calibrated generator G supplied as one label. When orbit membership is used, the label comes with the algebraic identity G = Ad U G0 := U ◦ G0 ◦ U −1. Here G0 is the declared reference generator in the orbit model and U(ρ) = U ρU † is the channel of a declared unitary orbit element 
+
+U .
+
+The identity does not assert that U or U−1 is a free or physically available operation. 
+
+Definition 4 (Physical word and cold boundary) A physical word is a finite closed directed walk based at a declared cold boundary , a reproducible controller state at which periods may be concatenated. Its channel is the chronological product of the complete hold and edge channels along the walk. 
+
+A physical prefix is the channel accumulated from the cold boundary to any intermediate time in a word. Micro-motion is the within-period evolution seen through these prefixes but not through the full period map. 5The exposure parameter h labels the nominal synthesis and need not equal the physical cycle duration. 
+
+Definition 5 (Uncertain word family) Fix the Hilbert-space dimension d, target rank r, number of chronological primitives N , and a nonempty compact exposure domain H ⊂ (0 , ∞). An uncertain word family consists of the following data and conditions. 1. Reference and actual paths. For every h ∈ H, a finite word grammar supplies N complete reference paths and a set Ω( h) of complete actual paths with the same ordered primitive types. Scalar coordinates lie in closed bounded intervals. Normalized waveforms are bounded and equi-Lipschitz on a fixed finite partition, and are piecewise 
+
+W 1,∞ there. The joint family {(h, ω ) : h ∈ H, ω ∈ Ω( h)} is compact in the product of the Euclidean scalar topology and the uniform path topology. Each uncertainty coordinate is declared as an absolute physical width or as a relative width with respect to a nonzero reference value. 2. Physical path data. Each path specifies its physical duration, amplitude and slew bounds, dead time, cooldown, always-on dynamics, and every controller field at both endpoints. Every nontrivial segment has duration in a closed interval bounded away from zero. A zero-duration slot is allowed only when its system channel and every controller field are exactly unchanged. 3. Cycle duration and closure. The declared total cycle duration obeys 
+
+0 < T − ≤ Tcyc (h, ω ) ≤ T+ < ∞ (6) 
+
+throughout the joint family. Every actual word closes at the same cold boundary field by field. 
+
+The positive lower bound on cycle duration prevents infinitely many cycles from occurring in finite time (the non-Zeno property). The uncertainty may be fixed but unknown, reset to an independent value at each cycle, or chosen adversarially at each cycle; the theorems state explicitly which quantifier is used. All theorem bounds are expressed as absolute generator or channel norms in the stated units. If perturbed controller fields do not close at the declared boundary, they must be included as part of an enlarged dynamical state. A nominal reverse command alone does not prove closure: for planar rotations, R(−θ+ϵ−)R(θ+ϵ+) = 
+
+R(ϵ− + ϵ+). Four target semantics will recur. All-time invariance means every physical prefix maps FP into itself. Stroboscopic invariance asks only that the full period map preserve the face at the chosen cycle boundary. For a rank-one target, an attractive stroboscopic map may generate a nonconstant periodic orbit within a cycle. A practical tube is only a uniform upper bound on the distance to the target. These statements are not interchangeable. The same distinction appears in geometric control. Let G be the declared set of infinitesimal generators. Its Lie wedge W (G) is the smallest closed convex cone containing G and invariant under the adjoint conjugations Ad g X := 
+
+gXg −1 generated by its edge E(W ) = W ∩ (−W ). For an accessible right-invariant system, the cone of infinitesimal directions of the closed reachable semigroup is its tangent wedge. This tangent wedge is the Lie saturate, the smallest Lie wedge containing the control directions that is global in the chosen ambient group, meaning that it is realized as the tangent wedge of a closed semigroup there [22]. Without such a globality argument, a locally generated wedge need not be identified with the tangent wedge. In coherently controlled unital Markovian systems, iterative edge, adjoint-invariance, and convex-closure steps give an inner approximation to the global Lie wedge [23]. Let EH be the real space of directly available Hamiltonian commutators and let S be the compact set of declared dissipative orbit atoms. The static effective cone is 
+
+Weff = EH + cone( S). (7) Membership in this cone, attained finite support, an executable physical word, and a resource bound are four different statements. The next section first settles the static layer and then shows why it does not itself supply a word.   
+
+> III. STATIC CERTIFICATES AND THE STATIC-TO-DYNAMIC OBSTRUCTION A. What geometry forgets
+
+The first separation already occurs before target compatibility enters. 
+
+Theorem 6 (Wedge and cost separation) For finite-dimensional GKLS dynamics with the coherent-control set restricted to the identity operation, amplitudes in [0 , 1] , and exclusive sequential access, the following hold. 6
+
+1. Let D = D[|0⟩⟨ 1|] and let the sole maximum generator be γD, γ > 0. Every such presentation has the same wedge R≥0D, while the time needed to move |1⟩⟨ 1| within trace distance δ ∈ (0 , 1) of |0⟩⟨ 0| is log(1 /δ )/γ .2. Fix N ≥ 2 and T > 0, set d = N + 1 , and define Dj = D[|0⟩⟨ j|] and X⋆ = ∑Nj=1 Dj . A library with the N
+
+separate unit-rate labels and a library augmented by the unit-rate label X⋆ have the same wedge and the same untimed finite-product semigroup. Nevertheless, every separate-label word whose channel equals eT X ⋆ has the following bounds. A segment is a maximal positive-duration interval during which one label is active, and Nseg 
+
+counts these intervals: 
+
+Twall ≥ N T, Nseg ≥ N, N one -shot sw ≥ N − 1, (8) 
+
+and all bounds are attained. Cyclic repetition of a reduced separate-label word has at least N switches per period. The augmented presentation uses one call, wall time T , and no switch. 
+
+The proof is short and exposes the missing data. The first family has excited population e−γt . In the second, the 
+
+Dj commute and are linearly independent. If sj is the total exposure to label j, equality with eT X ⋆ forces sj = T by testing the input |j⟩⟨ j|. Exclusivity and the amplitude cap then give Eq. (8). Adding X⋆ changes neither the cone nor the untimed semigroup, but changes which sum is callable. The same test gives the approximate bound 
+
+Twall ≥ − N log( e−T + ε) (9) whenever the half diamond distance from eT X ⋆ is at most ε and e−T + ε < 1. If also ε < 1 − e−T , every label has positive exposure, so Nseg ≥ N and N one-shot sw ≥ N − 1 still hold.  
+
+> B. A finite certificate for a static generator
+
+We now state the static input used by the compilers. Let A = Ralg be the real algebraic numbers, and represent Hermiticity-preserving trace-annihilating maps in a fixed orthonormal Hermitian basis. Denote their real vector space by Gd.
+
+Definition 7 (Positive-gauge presentation) Such a presentation consists of a finite algebraic target, Hamiltonian-edge data, and algebraic GKLS generators La. It also contains compact basic semialgebraic sets Ka of unitaries, specified by finitely many simultaneous polynomial equalities and inequalities over A, and an algebraic linear functional 
+
+ϕ satisfying 
+
+ϕ(e) = 0 (e ∈ EH ), ϕ(g) ≥ μ > 0 (g ∈ S), (10) 
+
+where S = ⋃
+
+> a
+
+{Ad u La : u ∈ Ka}. With π : Gd → G d/E H , define s = dim span π(S).
+
+The gauge bounds conic coefficient mass. Compactness then closes the cone, and conic Carathéodory reduction gives the following result; the argument is given in Appendix A and is related to finite positive atomization in cubature theory [24]. 
+
+Proposition 8 (Closure and attained support) Every such presentation satisfies EH + cone( S) = EH + cone( S).Every L ∈ Weff has a same-generator representation 
+
+L = e +
+
+> m
+
+∑
+
+> j=1
+
+λj Ad uj Laj , e ∈ EH , λj > 0, m ≤ s. (11) If k fixed linear metadata coordinates are appended to each atom before support reduction, the same argument preserves their aggregate values together with the complete generator using at most s + k atoms. This lift does not preserve nonlinear resource costs without an additional certificate. Let Π P (X) = P XP . The no-leakage equation (I − ΠP )LΠP = 0 (12) makes TP invariant and defines a transverse matrix AL on XP .7
+
+Proposition 9 (Invariant-face stability) The face FP is invariant and GAS under etL if and only if Eq. (12) 
+
+holds and AL is Hurwitz, meaning that every eigenvalue has strictly negative real part. Equivalently, the leading Routh–Hurwitz determinants are positive; these are the standard polynomial stability determinants formed from the coefficients of the monic characteristic polynomial det( zI − AL) in descending powers of z.
+
+For a fixed dissipator with time-independent Hamiltonian control, invariance and attraction are likewise separate: leakage blocks must vanish, while attraction requires that the complementary subspace not remain invariant [25]. To control nonnormal transients we retain a strict Lyapunov metric. For M ≻ 0, define 
+
+∥x∥M = ( x†M x )1/2, ∥A∥M = ∥M 1/2AM −1/2∥2. (13) The basis of the transverse quotient is fixed once and for all, and a change of coordinates acts on M by congruence. Thus the induced norm is covariant, whereas a raw Euclidean norm need not be. For a quotient trajectory, write 
+
+x(t) = etA L x(0). If 
+
+m−I ≺ M ≺ m+I, AT
+
+> L
+
+M + M A L ⪯ − 2νM − q0I (14) with positive algebraic m−, m +, ν, q 0, then 
+
+∥etA L ∥M ≤ e−νt ,
+
+∥x(t)∥2 ≤ √m+/m − e−νt ∥x(0) ∥2,dtr (etL ρ, FP ) ≤ 2√d m +/m − e−νt .
+
+(15) The first inequality follows from d∥x(t)∥2 
+
+> M
+
+/dt ≤ − 2ν∥x(t)∥2 
+
+> M
+
+. The explicit metric and prefactor prevent a spectral gap from being mistaken for a uniform endpoint bound in nonnormal dynamics. 
+
+Theorem 10 (Finite exact static certificate) For a presentation satisfying Definition 7, the following are equiv-alent: 1. some L ∈ Weff makes FP invariant and GAS; 2. there are algebraic data satisfying Eqs. (11) –(14) , including the complete generator, its transverse matrix com-puted from the algebraic data, positive Routh–Hurwitz determinants, and a strict Lyapunov metric, with 1 ≤
+
+m ≤ s ≤ d4 − d2.
+
+The proof combines Proposition 8, Proposition 9, and transfer between real closed fields; see Appendix A. 
+
+Corollary 11 (Finite-input decidability) For the finite semialgebraic input of Theorem 10, existence of a stabi-lizing generator in Weff is decidable by real quantifier elimination. 
+
+Corollary 12 (Tangent-wedge interpretation) If the tangent wedge of the closed reachable semigroup is indepen-dently proved to equal Weff , the conditions of Theorem 10 are also equivalent to existence of a stabilizing generator in that tangent wedge. 
+
+The decision statement is not a complexity classification and does not decide unrestricted waveform or word syn-thesis. The tangent-wedge corollary does not supply its globality hypothesis.  
+
+> C. A static average need not yield a target-preserving word
+
+The certificate reconstructs one stabilizing sum. It says nothing yet about the target action of the summands. 
+
+Theorem 13 (Two-label qubit obstruction) There is a two-label compact positive-gauge direct presentation, with zero coherent edge and no reset or auxiliary interstitial operation, whose average generator has a finite certificate of Theorem 10 for a rank-one GAS target, while no nonempty finite positive-dwell word over its two labels fixes that target at a cycle boundary. 8Let J = |0⟩⟨ 1|. Write X and Y for the standard Pauli matrices in the ordered basis {| 0⟩, |1⟩} , and set D = D[J], 
+
+H(ρ) = −i[X/ 2, ρ ], and 
+
+L± = D ± H . (16) Their average is D, which is GAS to P0 = |0⟩⟨ 0|, but L±(P0) = ∓Y / 2. In Bloch coordinates define the purity defect 
+
+δ = 1 − (x2 + y2 + z2). Along either atom, ˙δ + δ = (1 − z)2. (17) The first positive dwell therefore sends P0 into the full-rank interior. Every subsequent finite-time GKLS propagator preserves strict positivity, so the word cannot return to the pure target. Appendix B gives the calculation and the strict-positivity lemma. The obstruction is not an error estimate and is not removed by arbitrarily fast but positive switching. Fast switching may keep the trajectory in a shrinking tube, but requiring the target to remain fixed at every physical time forces each used atom to pass an independent compatibility test. In cone language the example realizes the strict inclusion cone( S) ∩ ker NP ⊋ cone( S ∩ ker NP ), (18) where NP (G) = ( I − ΠP )GΠP . Supplying the average itself as a primitive, allowing a parallel compound label, adding a compensator, or permitting a noninvertible reset defines another presentation. This obstruction is minimal within zero-coherent-edge direct presentations: dimension one has no nontrivial target, and with a single positive atom L = λG , invariance of L forces invariance of G. This is not an absolute minimality statement once coherent compensation, parallel calls, or a direct averaged label is added.  
+
+> IV. TARGET-COMPATIBLE DIRECT SWITCHING
+
+The qubit obstruction identifies the missing interface: compatibility must be checked on the complete generators that are actually invoked. 
+
+Lemma 14 (GKLS target-face criterion) For a complete generator of the form in Eq. (2) , the face FP is invari-ant if and only if 
+
+QV aP = 0 for every a, Q
+
+(
+
+H − i
+
+2
+
+∑
+
+> a
+
+V † 
+
+> a
+
+Va
+
+)
+
+P = 0 . (19) The two conditions are jointly necessary. The positive QQ block generated by jump leakage cannot be canceled by a Hamiltonian. Once that block vanishes, the QP block gives the second equality. For a fixed dissipator and background Hamiltonian H0, a compensator must solve 
+
+QH cP = i
+
+2 Q
+
+(∑
+
+> a
+
+V † 
+
+> a
+
+Va
+
+)
+
+P − QH 0P. (20) This is a real-linear feasibility test. It becomes an execution statement only if the complete compensated generator is itself a calibrated, costed simultaneous label. A proof of Lemma 14 appears in Appendix B. 
+
+Definition 15 (Compatible direct realization) Let L be a statically certified generator. A target-compatible di-rect realization is a finite family {(Gj , ˜Gj , λ j , r j )}mj=1 such that 
+
+˜Gj = rj Gj , rj > 0, λj > 0,L =
+
+> m
+
+∑
+
+> j=1
+
+λj Gj , (I − ΠP )Gj ΠP = 0 . (21) 
+
+Here ˜Gj is the complete calibrated label used during the physical dwell, Gj = ˜Gj /r j , and Aj = ( Gj )⊥ is its induced transverse matrix. The calibrated transverse matrix is ˜Aj = rj Aj , and AL = ∑ 
+
+> j
+
+λj Aj .
+
+The coherent part of the static certificate must be absorbed into these complete labels or decomposed into additional costed, target-compatible labels. Cancellation of leakage in the sum is insufficient. 9
+
+Proposition 16 (Compatible finite support) Let EH,P = EH ∩ ker NP and let Stc be the full set of executable complete atoms that preserve FP . Suppose Stc is compact semialgebraic with algebraic defining data, an algebraic linear gauge ϕ annihilates EH,P and satisfies ϕ(G) ≥ μ > 0 on Stc , and 
+
+L ∈ EH,P + cone( Stc ).
+
+Then the cone is closed and L has finite compatible support of size at most 
+
+stc = dim span πtc (Stc ),
+
+where πtc is the quotient by EH,P . If L, the sets, the gauge, and the calibration constraints are defined over the real algebraic field, the support can be chosen algebraic. Proof. The positive-gauge argument in Appendix A applies with EH , S, π replaced by EH,P , S tc , π tc and quotient dimension stc = dim span πtc (Stc ). For algebraic input, apply its real-closed-field transfer step to the decomposition fiber including the stated algebraic calibration constraints. □
+
+The quotient dimension must be recomputed after restricting to compatible atoms. Any coherent remainder in 
+
+EH,P still requires its own calibrated, costed, target-compatible direct labels. Thus compatible attainment is an additional hypothesis, not a consequence of static attainment. For a cycle parameter h > 0, the first-order exclusive schedule uses 
+
+tj (h) = λj hrj
+
+, Bj = λj Aj , S1(h) = ehB m · · · ehB 1 . (22) Thus tj (h) ˜Aj = hλ j Aj for every dwell. For a permutation π = ( π1, . . . , π m) of {1, . . . , m }, a cut-open symmetric schedule uses 
+
+S2(h) = ehB π1 /2 · · · ehB πm−1 /2ehB πm 
+
+× ehB πm−1 /2 · · · ehB π1 /2. (23) Every coefficient is positive and each label receives total normalized exposure λj h. The cut at the cold boundary is part of the presentation; half arcs are not merged across periods without an explicit seam rule. Let ∥ · ∥ M be the induced norm of the static Lyapunov metric. For a chosen schedule order o ∈ { 1, 2}, suppose certified upper bounds satisfy 
+
+∥So(h) − ehA L ∥M ≤ Eo(h), ∥ehA L ∥M ≤ dν (h). (24) For example, if nonnegative norm bounds bj , c kj ≥ 0 satisfy B† 
+
+> j
+
+M B j ⪯ b2 
+
+> j
+
+M and [ Bk, B j ]†M [Bk, B j ] ⪯ c2 
+
+> kj
+
+M , then with β = ∑ 
+
+> j
+
+bj and C2 = ∑ 
+
+> j<k
+
+ckj ,
+
+E1(h) = h2
+
+2 ehβ C2, E2(h) = (hβ )3
+
+3 ehβ (25) are sufficient conservative bounds. If the transverse atoms commute pairwise, one may take ckj = 0, giving C2 = 0 and E1(h) = 0; the actual symmetric product also equals ehA L , although the generic bound E2(h) displayed above need not vanish. Related positive-coefficient and open-system product estimates are well established [8–10]. Let Eℓ and Dℓ denote the induced transverse maps of the active and interstitial channels, respectively. They remain in chronological order. If S = Ep · · · E1 is the active product and F = DpEp · · · D1E1 includes transition or dead maps, then 
+
+F = Rint S, Rint = Dp(Qp−1Dp−1Q−1
+
+> p−1
+
+) · · · × (Q1D1Q−11 ),
+
+(26) where Qℓ = Ep · · · Eℓ+1 and Qp = I. The active factors are exponentials, so these suffixes are invertible. Choose certified bounds 
+
+∥Dℓ − I∥M ≤ ∆ℓ, ∥Qℓ∥M , ∥Q−1 
+
+> ℓ
+
+∥M ≤ ehs ℓ (1 ≤ ℓ ≤ p).10 They yield the multiplicative enclosure 
+
+∥Rint ∥M ≤ κint (h) = 
+
+> p
+
+∏
+
+> ℓ=1
+
+(1 + e2hs ℓ ∆ℓ
+
+) . (27) The bound includes amplification by both the active suffix and its inverse. Moving the interstitial maps outside the word would discard these conjugations. Write Tcyc for the physical duration of one closed direct-label cycle. 
+
+Theorem 17 (Direct-label switching certificate) Take a finite static certificate and its Lyapunov metric M . As-sume a target-compatible direct realization, either the ordered first-order schedule ( o = 1 ) or a cut-open symmetric schedule ( o = 2 ), and target-compatible CPTP paths for every interstitial interval. Suppose every dwell and calibration constraint holds and a certified enclosure proves 
+
+q(h) = κint (h)(dν (h) + Eo(h)) < 1. (28) 
+
+Then the repeated direct-label cycle leaves FP invariant at every physical time and is GAS to that face. At cycle boundaries, 
+
+∥x(nT cyc )∥M ≤ q(h)n∥x(0) ∥M . (29) 
+
+If every induced transverse within-cycle prefix has M -norm at most B, the same bound at a physical time nT cyc + s
+
+acquires the factor B.
+
+Every hypothesis is checkable on a fixed finite realization. The proof is the ordered factorization above followed by Lyapunov contraction and quotient iteration; details are given in Appendix C. The theorem is conditional on the direct labels. Section V derives both actual contraction and the prefix bound when an atom must instead be realized by uncertain finite-duration physical paths. If τj is the minimum permitted dwell for label j, the first-order dwell lower endpoint is 
+
+hdwell min ,1 = max 
+
+> j
+
+rj τj
+
+λj
+
+, (30) whereas a noncentral atom in Eq. (23) obeys the stronger factor-two requirement. A sufficient stability interval is useful only when the maximum of all dwell and interstitial lower bounds lies strictly below its calibration and stability upper endpoint. An empty sufficient interval rejects that realization or enclosure; it is not a no-go without an independent necessary obstruction.  
+
+> V. ROBUST COMPILATION FROM PRIMITIVE PHYSICAL PATHS
+
+An orbit identity describes a relation in operator space, not the controller path that realizes it. Bounded Eulerian control replaces impulsive group jumps by continuous paths [11]; in soft-pulse Markovian models, the control Hamil-tonian and dissipation act simultaneously during the pulse [12]. The complete paths are therefore part of the input to the physical-word theorem.  
+
+> A. Orbit access and physical paths
+
+Definition 18 (Path-compatible word) A physical word is path-compatible with FP when every complete hold, pulse, transition, dead interval, and cooldown path maps FP into itself at every intermediate time, every concatenation is valid in the declared Markovian or reset model, and the final controller state equals the initial cold state field by field. The word channel contains every such path in chronological order. 
+
+For a CPTP map Φ( ρ) = ∑ 
+
+> a
+
+KaρK †
+
+> a
+
+,Φ( FP ) ⊆ F P ⇐⇒ QK aP = 0 for every a. (31) For a bounded piecewise-regular time-dependent GKLS path, invariance for every target-face state injected at every phase is equivalent, almost everywhere, to the time-dependent form of Eq. (19). A unitary path therefore preserves the target face exactly when 
+
+U (s) ∈ Stab( P ) = {U : U P U † = P } for every s, (32) or, equivalently, QH (s)P = 0 almost everywhere. The proofs are given in Appendix B. 11 
+
+Theorem 19 (Orbit-to-word obstruction) There is a qubit presentation containing an available excitation gen-erator and bounded transverse pulses for which target-stabilizing amplitude damping is a unitary-orbit atom and has a finite-cost stroboscopic realization, but no nonempty physical word preserves the pure target at all times. If excitation is unavoidably present during every bounded segment and no noninvertible reset is available, no finite word returns exactly to the target even stroboscopically. 
+
+Set 
+
+D↑ = D[|1⟩⟨ 0|], D↓ = D[|0⟩⟨ 1|], (33) write Pj = |j⟩⟨ j|, and let X (ρ) = XρX . Then X D↑X = D↓. If D↑ is off during pulses generated by H± = ±ΩX/ 2, two half turns of duration π/ Ω give 
+
+X etD ↑ X = etD ↓ , t > 0. (34) During the first pulse, however, 
+
+dtr (U (s)P0U (s)†, P 0) = 
+
+∣∣∣∣sin Ωs
+
+2
+
+∣∣∣∣ , (35) which reaches one. If γD ↑, γ > 0, is always on, the first nonzero segment makes the state strictly positive, and finite-time GKLS propagators preserve strict positivity. Appendix B proves both statements. The period t + 2 π/ Ωand finite call count show that the obstruction is target compatibility, not cost divergence.  
+
+> B. Uncertain primitive paths and block enclosures
+
+Fix a family from Definition 5 and the transverse basis and metric M from the static certificate. The exact structure-preserving class consists of the paths for which, almost everywhere, 
+
+QV a(t)P = 0 , Q
+
+(
+
+H(t) − i
+
+2
+
+∑
+
+> a
+
+V † 
+
+> a
+
+(t)Va(t)
+
+)
+
+P = 0 . (36) Every actual and reference prefix then induces a transverse map. For primitive k, let χk,ω : [0 , 1] → [0 , τ k,ω ] and ̂
+
+χ k : [0 , 1] → [0 ,̂τ k] be absolutely continuous, nondecreasing clocks satisfying 
+
+χk,ω (0) = 0 , χk,ω (1) = τk,ω ,̂
+
+χ k(0) = 0 ,̂ χ k(1) = ̂τ k.
+
+They place complete paths of different physical duration on the same normalized local time u ∈ [0 , 1]. For a zero-duration identity slot, the clock and normalized generator are identically zero, the normalized propagator is the identity, and every controller field is unchanged, as in Definition 5. For positive-duration paths, let Atr  
+
+> k,ω
+
+and ̂ Atr  
+
+> k
+
+be the complete transverse generators and set 
+
+Gk,ω (u) = ˙ χk,ω (u)Atr  
+
+> k,ω
+
+(χk,ω (u)) ,̂
+
+Gk(u) = ˙̂χ k(u)̂Atr  
+
+> k
+
+(̂χ k(u)) . (37) Thus amplitude, waveform, and duration error all enter the generator difference on one interval. The matrix logarith-mic norm associated with Eq. (13) is 
+
+μM (G) = 12 λmax 
+
+[
+
+M −1/2(G†M + M G )M −1/2]
+
+. (38) 
+
+Lemma 20 (Primitive-path enclosure) Let Φk,ω and ̂ Φk be the normalized propagators of Gk,ω and ̂ Gk, with endpoints Ck,ω = Φ k,ω (1 , 0) and Rk =̂ Φk(1 , 0) . Suppose integrable functions satisfy, uniformly in h ∈ H and 
+
+ω ∈ Ω( h),
+
+μM (Gk,ω ) ≤ αk, μM (̂Gk) ≤̂α k, ∥Gk,ω −̂ Gk∥M ≤ ek. (39) 12 
+
+Define 
+
+ck = exp 
+
+∫ 10
+
+αk(v) dv, rk = exp 
+
+∫ 10̂ α k(v) dv, pk(u) = exp 
+
+∫ u
+
+> 0
+
+αk(v) dv, δk =
+
+∫ 10
+
+exp 
+
+(∫ 1
+
+> u
+
+αk(v)dv 
+
+)
+
+ek(u) × exp 
+
+(∫ u
+
+> 0
+
+̂ α k(v)dv 
+
+)
+
+du. 
+
+(40) 
+
+Then 
+
+∥Ck,ω − Rk∥M ≤ δk, ∥Ck,ω ∥M ≤ ck, ∥Rk∥M ≤ rk, (41) 
+
+and every actual partial block obeys ∥Φk,ω (u, 0) ∥M ≤ pk(u).
+
+The variation-of-constants identity 
+
+Ck,ω − Rk =
+
+∫ 10
+
+Φk,ω (1 , u )( Gk,ω (u) −̂ Gk(u)) ̂ Φk(u, 0) du (42) and the logarithmic-norm propagator bounds prove the lemma. In particular, always-on dynamics during a pulse and dynamics during dead time are inside the integrand rather than added after an endpoint calculation. This is the time-local chronological propagation used for finite-dimensional master equations [26]. The nominal approximation must likewise have a finite derivation. Let W1, . . . , W N be ideal splitting, commutator, or conjugation factors. If a stated finite product estimate gives 
+
+∥WN · · · W1 − ehA L ∥M ≤ Esplit (h), (43) and finite block calculations give ∥Rk − Wk∥M ≤ ak, ∥Rk∥M ≤ rk, and ∥Wk∥M ≤ wk, define 
+
+Esyn (h) = Esplit (h) + 
+
+> N
+
+∑
+
+> k=1
+
+(∏
+
+> ℓ>k
+
+rℓ
+
+)
+
+ak
+
+(∏
+
+> ℓ<k
+
+wℓ
+
+)
+
+. (44) The product telescope proves ∥RN · · · R1 − ehA L ∥M ≤ Esyn (h). Thus Esyn is a finite enclosure assembled from the displayed factor bounds. 
+
+Lemma 21 (Amplified word and prefix bounds) For chronological products Sh,ω = CN,ω · · · C1,ω and R(h) = 
+
+RN · · · R1, set 
+
+Ehw (h) = 
+
+> N
+
+∑
+
+> k=1
+
+(∏
+
+> ℓ>k
+
+cℓ
+
+)
+
+δk
+
+(∏
+
+> ℓ<k
+
+rℓ
+
+)
+
+,Brob (h) = max 
+
+{
+
+1, sup 
+
+> k,u
+
+pk(u) ∏
+
+> ℓ<k
+
+cℓ
+
+}
+
+.
+
+(45) 
+
+Then ∥Sh,ω − R(h)∥M ≤ Ehw (h), and every actual within-cycle prefix has induced M -norm at most Brob (h).
+
+The exact identity 
+
+CN · · · C1 − RN · · · R1 =
+
+> N
+
+∑
+
+> k=1
+
+CN · · · Ck+1 × (Ck − Rk)Rk−1 · · · R1 (46) proves the first assertion; direct multiplication of the completed blocks and one partial block proves the second. Both left and right amplification are essential for nonnormal words. 
+
+C. Exact and leaky robust compilation 
+
+Choose finite constants Kin , K out > 0 such that 
+
+∥z(ρ)∥M ≤ Kin dtr (ρ, FP ), dtr (ρ, FP ) ≤ Kout ∥z(ρ)∥M . (47) Their certified values depend on the fixed quotient basis and metric. 13 
+
+Theorem 22 (Primitive-certified compiler) Let a finite uncertain physical-word family satisfy Eq. (36) and ro-bust cold closure. Suppose the same metric M satisfies 
+
+A†
+
+> L
+
+M + M A L ⪯ − 2νM, ν > 0, (48) 
+
+and suppose Eqs. (39) , (44) , and (45) are finite uniform enclosures. Define 
+
+qrob (h) = e−νh + Esyn (h) + Ehw (h). (49) 
+
+For every h ∈ H and ω ∈ Ω( h), the actual monodromy satisfies 
+
+S† 
+
+> h,ω
+
+M S h,ω ⪯ qrob (h)2M. (50) 
+
+If, uniformly on H,
+
+q∗ := sup 
+
+> h∈H
+
+qrob (h) ≤ 1 − γ < 1, B∗ := sup 
+
+> h∈H
+
+Brob (h) < ∞, (51) 
+
+then the conclusion holds for every cycle-varying sequence (hn, ω n). With tn the beginning of cycle n and t ∈ [tn, t n+1 ),
+
+dtr (ρ(t), FP ) ≤ Kout B∗qn 
+
+> ∗
+
+Kin dtr (ρ(0) , FP ). (52) 
+
+Thus FP is all-time invariant and GAS. When r = 1 , its unique pure state is all-time GAS; when r > 1, the conclusion is attraction to the face. Proof. Equation (48) gives ∥ehA L ∥M ≤ e−νh . The triangle inequality, the derived nominal bound, and Lemma 21 give ∥Sh,ω ∥M ≤ qrob (h), which is equivalent to Eq. (50). Iterating the cycle-varying maps gives ∥zn∥M ≤ qn 
+
+> ∗
+
+∥z0∥M .The derived prefix bound and Eq. (47) give Eq. (52). Path compatibility proves invariance. The non-Zeno bound (6) gives tn ≥ nT − → ∞ , so the cycle-indexed decay is also convergence as physical time tends to infinity. □
+
+For a higher-rank face, selecting a unique mixed state requires a separate intraface contraction certificate. If only the cycle maps fix that state, the result is stroboscopic selection; all-time fixed-state selection additionally requires every prefix to fix it. This distinction is independent of the transverse contraction above. Exact invariance is not open under unrestricted GKLS perturbations, as the qubit counterexample with arbitrarily small positive jump rate in Eq. (B5) shows. The following theorem treats such uncertainty through a practical tube. For each leaky actual primitive, choose a complete structure-preserving shadow path with the same primitive type and normalized clock. Suppose their complete normalized GKLS generators obey 
+
+∥G k,ω (u) − ˜Gk,ω (u)∥⋄ ≤ e⋄
+
+> k
+
+(u). (53) Let Ck,h,ω and ˜Ck,h,ω be the actual and shadow endpoint channels of block k, let Sh,ω and ˜Sh,ω be the corresponding cycle channels, and let Pk,u h,ω and ˜Pk,u h,ω be their chronological prefixes through local time u of block k. Define the full-diamond distances 
+
+ϵ⋄ 
+
+> k
+
+= sup 
+
+> h,ω
+
+∥C k,h,ω − ˜Ck,h,ω ∥⋄,ϵ⋄ 
+
+> cyc
+
+= sup 
+
+> h,ω
+
+∥S h,ω − ˜Sh,ω ∥⋄,ϵ⋄ 
+
+> pre
+
+= sup 
+
+> h,ω,k,u
+
+∥P k,u h,ω − ˜Pk,u h,ω ∥⋄,
+
+(54) where each ω ranges over Ω( h). CPTP propagators have diamond norm one, so Duhamel’s identity and a channel telescope give 
+
+ϵ⋄ 
+
+> k
+
+≤
+
+∫ 10
+
+e⋄
+
+> k
+
+(u) du, ϵ⋄ 
+
+> cyc
+
+≤
+
+> N
+
+∑
+
+> k=1
+
+ϵ⋄
+
+> k
+
+,ϵ⋄ 
+
+> pre
+
+≤ sup 
+
+> k,u
+
+(∑
+
+> ℓ<k
+
+ϵ⋄ 
+
+> ℓ
+
++
+
+∫ u
+
+> 0
+
+e⋄
+
+> k
+
+(v) dv 
+
+)
+
+.
+
+(55) Define the norm-conversion constant 
+
+κ1M = sup 
+
+> X=X†
+> ∥X∥1≤1
+
+∥z(X)∥M , ηM 
+
+> cyc
+
+= κ1M ϵ⋄
+
+> cyc
+
+, ηM 
+
+> pre
+
+= κ1M ϵ⋄
+
+> pre
+
+. (56) 14 
+
+Theorem 23 (Primitive-certified practical tube) Assume the shadow words satisfy Theorem 22 with q∗ < 1
+
+and B∗, and the actual paths satisfy Eqs. (53) –(56) uniformly, including under cycle-varying uncertainty. Put d0 =
+
+dtr (ρ(0) , FP ). For every t ∈ [tn, t n+1 ),
+
+dtr (ρ(t), FP ) ≤ Kout 
+
+[
+
+B∗
+
+(
+
+qn 
+
+> ∗
+
+Kin d0 + ηM
+
+> cyc
+
+1 − qn
+
+> ∗
+
+1 − q∗
+
+)
+
++ ηM
+
+> pre
+
+]
+
+. (57) 
+
+The corresponding asymptotic upper radius is 
+
+R∞ = Kout 
+
+[ B∗ηM
+
+> cyc
+
+1 − q∗
+
++ ηM
+
+> pre
+
+]
+
+. (58) The actual leaky path need not induce a map on the transverse quotient. The proof instead compares its state after each primitive with the shadow state. At cycle boundaries, put yn = ∥z(ρ(tn)) ∥M . The comparison gives 
+
+yn+1 ≤ q∗yn + ηM
+
+> cyc
+
+; at an intermediate phase it gives ∥z(ρ(t)) ∥M ≤ B∗yn + ηM
+
+> pre
+
+. Summing the geometric series proves the theorem. Positive cycle leakage yields only a practical tube. When ηM 
+
+> cyc
+
+= 0 but ηM 
+
+> pre
+
+> 0, convergence is certified at cycle boundaries, with asymptotic intracycle error bounded by Kout ηM
+
+> pre
+
+. A nonzero asymptotic excursion from FP
+
+requires a separate positive lower bound. 
+
+D. Timing and resource guarantees 
+
+For a word family parameterized by h, collect all primitive constraints in 
+
+hmin = max {hdwell min , h dead min , h pulse min , h cooldown min , h calibration min }. (59) A uniform certificate requires a nonempty calibrated domain on which Eq. (51) holds. A fixed positive hardware error or overhead can make h ↓ 0 infeasible: if lim inf h↓0 Ehw (h) ≥ δ0 > 0, then for all sufficiently small h, qrob (h) ≥
+
+e−νh + δ0/2 > 1. For the resource account, set time zero at the first certified cold boundary after initialization. Let Keff = Kout B∗Kin 
+
+and let d0 be the target distance at that boundary or a valid upper bound on it. In the exact branch, the smallest nonnegative cycle count certified for tolerance ε ≥ 0 is 
+
+N ex  
+
+> ε
+
+=
+
+
+
+0, Keff d0 ≤ ε, 
+
+1, Keff d0 > ε and q∗ = 0 ,⌈ log( Keff d0/ε )
+
+− log q∗
+
+⌉
+
+, Keff d0 > ε > 0, 0 < q ∗ < 1,
+
++∞, ε = 0 < K eff d0, 0 < q ∗ < 1.
+
+(60) For the leaky branch, define 
+
+D0 = Kout (B∗Kin d0 + ηM
+
+> pre
+
+), Dn = R∞ + qn 
+
+> ∗
+
+(D0 − R∞). (61) If ε > R ∞, the certified count is zero when D0 ≤ ε, one when D0 > ε and q∗ = 0, and, when D0 > ε and 0 < q ∗ < 1, 
+
+N leak  
+
+> ε
+
+=
+
+⌈ log[( D0 − R∞)/(ε − R∞)] 
+
+− log q∗
+
+⌉
+
+. (62) For ε < R ∞, this upper bound does not certify eventual all-time attainment of the requested tolerance. At ε = R∞,the certified count is zero if D0 ≤ R∞, one if D0 > R ∞ and q∗ = 0, and infinite if D0 > R ∞ and 0 < q ∗ < 1. These cases include ε = R∞ = 0, with q0 
+
+> ∗
+
+= 1 also when q∗ = 0. Let T∗ and C∗ 
+
+> cyc
+
+be certified finite uniform upper envelopes for cycle duration and the componentwise cost vector over the same joint uncertainty family. Continuous duration and cost coordinates on the compact family attain such worst-case values. Initialization has its own time and resource costs. Any state-changing finalization requires a separate certificate; its costs are included when it is part of the specified task. For either finite cycle-count branch, 
+
+Twall ≤ Tinit + NεT∗ + Tfinal , C(ε) ⪯ Cinit + NεC∗ 
+
+> cyc
+
++ Cfinal . (63) The integer ceiling is evaluated with the worst-case q∗ and leakage radius, not with nominal values. Logical-orbit, raw, pulse, transition, reset, dead, cooldown, and switch counts are componentwise accounts and may overlap; an aggregate primitive count records each physical call once. With Hc(t) = ∑ 
+
+> α
+
+uα(t)Hα in the declared Hamiltonian basis, the integrated control action uses ∥u(t)∥ctrl = ∑ 
+
+> α
+
+|uα(t)| in Eq. (5). It depends on this normalization and is not thermodynamic work. 15 
+
+Remark 24 (Finite-input scope) The theorem compiles a supplied finite grammar with proved nominal and path enclosures. It does not search unrestricted waveforms or globally optimize a word. If qrob ≥ 1, the sufficient comparison is inconclusive; it does not prove that the actual word is unstable.  
+
+> VI. QUTRIT REALIZATIONS AND RESOURCE LAWS
+
+The two models in this section share a three-level Hilbert space and a pure ground target. Their control algebras and operational roles are different. The common-ground model tests a nontrivial physical orbit lift and its actual monodromy. The cascade ladder supplies a special three-factor identity and a matching resource lower bound in a direct two-label grammar.  
+
+> A. A common-ground physical word
+
+In the ordered basis {| 0⟩, |1⟩, |2⟩} , set 
+
+A = D[|0⟩⟨ 1|], C = D[|0⟩⟨ 2|], Pj = |j⟩⟨ j| (0 ≤ j ≤ 2) . (64) The generators commute, each fixes P0, and A + C is GAS to P0; either one alone leaves an undamped excited mode. If both are direct labels, their commutativity makes the two-decay cycle equal to the averaged evolution. We now assume that only the raw decay A is available. Let 
+
+S12 = P0 + |1⟩⟨ 2| + |2⟩⟨ 1|. (65) A bounded unitary path with endpoint channel S12 (ρ) = S12 ρS † 
+
+> 12
+
+exchanges the two excited levels. Since the path preserves span {| 0⟩} and fixes the density operator P0, it lies in Stab( P0) at every time. The closed chronological word is 
+
+A −→ S12 −→ A −→ S−112 . (66) The controller starts in the laboratory frame with an idle actuator and no relevant oscillator phase. The first hold ends in the laboratory frame; the forward pulse moves to the swapped frame, where the second hold ends. The return pulse restores the laboratory frame and idle actuator. Both triangular commands vanish at their endpoints. The environment remains time-local Markovian and requires no reset, so every controller field returns to its cold-boundary value. Write D01 for the complete physical signature of a raw A-hold and IDLE for the declared cold signature. In the signature sequence, S12 and S−112 label the separately calibrated forward and return edges. The sequence is IDLE → D01 → S12 → D01 → S−112 → IDLE . (67) The common-ground calibration interval h ∈ (1 /2, 2) applies to each of the two damping holds. We bind it to h = 1. Each swap edge separately has fixed duration one, so at this operating point all four segments last one unit. Each raw damping envelope is the triangular function 
+
+a(s) = 
+
+{
+
+8 log(5 /4) s, 0 ≤ s ≤ 1/2,
+
+8 log(5 /4)(1 − s), 1/2 ≤ s ≤ 1, (68) with total dissipative exposure α = 2 log(5 /4). The forward and return pulse Hamiltonians are, respectively, 
+
+H+(s) = −u(s)S12 , H−(s) = + u(s)S12 , (69) with the triangular envelope 
+
+u(s) = 
+
+{
+
+2πs, 0 ≤ s ≤ 1/2,
+
+2π(1 − s), 1/2 ≤ s ≤ 1, (70) with action π/ 2, peak amplitude π, and finite slew 2 π. The endpoint unitaries are 
+
+U+(1) = iS 12 , U−(1) = −iS 12 , U−(1) U+(1) = I. (71) 16 Their channels coincide because the swap is involutory, but the two directed controller edges are separately calibrated. Neither path is treated as an instantaneous frame change. To state the robust family, let Z = D[P0], λ = 2 log(4 /3), and choose λao ∈ { 0, λ }. For independent gain multipliers 
+
+m1, m 3, the four complete paths in their local controller frames are 
+
+L1(s) = m1a(s)A + λao Z, L2(s) = −i[H+(s), · ] + λao Z,
+
+L3(s) = m3a(s)A + λao Z, L4(s) = −i[H−(s), · ] + λao Z. (72) Thus the always-on term acts inside both holds and both pulses. The declared uncertainty set is (m1, m 3) ∈ [19 /20 , 21 /20] 2. (73) It is a relative ℓ∞ radius ρ = 1 /20 in these two gain coordinates only; the pulse and timing coordinates have zero width in this witness. The two gains may vary independently between holds and cycles. For j < k , define the normalized Hermitian coherences 
+
+Xjk = |j⟩⟨ k| + |k⟩⟨ j|√2 , Yjk = −i(|j⟩⟨ k| − | k⟩⟨ j|)
+
+√2 . (74) 
+
+Theorem 25 (Common-ground reference word) At m1 = m3 = 1 , the word in Eq. (66) , with the complete paths in Eq. (72) , is a closed path-compatible realization of the two common-ground decay directions at h = 1 . In the transverse basis 
+
+(P1, P 2, X 01 , Y 01 , X 02 , Y 02 , X 12 , Y 12 )
+
+and metric M = I8, its monodromy without dephasing is 
+
+Sn = diag 
+
+( 16 25 , 16 25 , 45 , 45 , 45 , 45 , 16 25 , 16 25 
+
+)
+
+, (75) 
+
+so qn = 4 /5. If the known dephasing rate is λ = 2 log(4 /3) throughout all four segments, the reference monodromy is 
+
+Sao = diag 
+
+( 16 25 , 16 25 , 81 320 , 81 320 , 81 320 , 81 320 , 16 25 , 16 25 
+
+)
+
+, (76) 
+
+and qao = 16 /25 .Proof. The decay envelopes commute with themselves along each hold, and the pulse Hamiltonian commutes with itself along each swap path, so the integrated endpoints follow by direct evaluation of Eqs. (68) and (70). The swap fixes P0 and interchanges the two excited indices. The second raw hold is executed at the swapped controller vertex, giving the other decay direction without target motion. Applying the four complete channels to the eight displayed basis elements gives Eqs. (75) and (76). Their largest absolute diagonal entries give the stated induced norms. The detailed basis calculation is in Appendix D. □
+
+Proposition 26 (Common-ground robust radius) For every pair in Eq. (73) , independently chosen in every cycle, the primitive-certified bounds at h = 1 and M = I8, with the static Lyapunov triples in Appendix D, satisfy 
+
+Esyn = 0 , δ1, δ 3 < 3200 , Ehw < 3100 , Brob = 1 . (77) 
+
+Let Sact  
+
+> n
+
+denote the actual monodromy selected in cycle n. Consequently 
+
+¯q =
+
+{
+
+83 /100 , λao = 0 ,
+
+67 /100 , λao = λ, (Sact  
+
+> n
+
+)†Sact  
+
+> n
+
+⪯ ¯q2I8. (78) 
+
+The uniform contraction slacks are 17 /100 and 33 /100 . With Kin = 2 and Kout = 3 /2, every physical time in cycle 
+
+n obeys 
+
+dtr (ρ(t), P 0) ≤ 3 ¯ q ndtr (ρ(0) , P 0). (79) 17 The analytic primitive enclosure in Appendix D proves Eq. (77) uniformly on the gain box. The always-on example also separates a sufficient comparison from the actual word. Define the no-dephasing reference norm qid := ∥Sn∥2 and the induced-norm comparison error Eword := ∥Sao − Sn∥2. Direct evaluation gives 
+
+qid = 45 , Eword = 35 64 , qid + Eword = 431 320 > 1, (80) while the direct reference contraction is 16 /25 and the robust bound is 67 /100. Thus this particular comparison is inconclusive about stability. The prefix constant must be recomputed after the physical lift. Let Bword denote the sharp all-prefix induced norm of the physical word. For the Hilbert–Schmidt metric M = I8 used in the resource calculation, every partial swap is orthogonal and every damping or dephasing prefix is a contraction. Hence the sharp all-prefix value is one. For example, at the midpoint of the first swap the damped Y12 mode becomes 45 Y12 7 −→ ± 45√2 (P2 − P1),
+
+∥∥∥∥
+
+45√2 (P2 − P1)
+
+∥∥∥∥
+
+> 22
+
+= 16 25 . (81) Together with the trace/quotient conversion constants, this gives 
+
+Bword = Brob = 1 , Kin = 2 , Kout = 32 , Keff = 3 . (82) Appendix D lists the quotient action and induced norm of every partial segment. 
+
+Proposition 27 (Prefix amplification) In the displayed quotient basis, let 
+
+M⋆ = diag(4 , 1, 1, 1, 1, 1, 1, 1) .
+
+This is a strict Lyapunov metric for A + C. With the damping exposures above, the direct two-label cycle generated by 
+
+A and C has sharp all-prefix bound one in M⋆, whereas the physical word in Eq. (66) has sharp all-prefix bound two. The latter value remains two in the always-on dephasing model. Proof. The Lyapunov identity and the matching all-prefix upper and lower bounds are proved in Appendix D. □
+
+This proposition deliberately uses a different metric. Its prefix constant does not enter Eq. (82) or the resource totals below. Table II gives the closed-cycle resource account. A raw call has scalar cost one and each pulse/transition edge has scalar cost two; per-switch wall-time and scalar costs are zero. Pulse and transition counts refer to the same two directed edges and are not added a second time to the aggregate primitive count. Initialization, finalization, and the closed seam are identities with zero cost. The Markovian model is time-local across all four segments, so no bath reset is required. The fixed background dephasing has no additional call or scalar charge in the declared dephasing presentation; this accounting convention is not a statement about thermodynamic work. These counts use the joint worst-case gain and contraction envelopes before taking the integer ceiling. At zero uncertainty the contractions return to 4 /5 and 16 /25, and the corresponding certified minimum counts are 36 and 18 cycles. The word is certified at h = 1, strictly inside the declared calibration interval; no h-dependent contraction formula is asserted. 
+
+Proposition 28 (Larger gain box) No uniform strict contraction holds for the same word on (m1, m 3) ∈ [0 , 2] 2.At m1 = m3 = 0 , the word without dephasing is the identity channel. With Z present, excited populations still contain a unit transverse mode. 
+
+This physical GKLS example shows that the positive radius 1 /20 is nonvacuous but presentation-relative; it is not a claim of maximal robustness.  
+
+> B. A cascade ladder with a sharp presentation-relative law
+
+Now set 
+
+Aℓ = D[|0⟩⟨ 1|], Bℓ = D[|1⟩⟨ 2|], Lℓ = Aℓ + Bℓ. (83) Unlike the common-ground pair, these generators do not commute. Their commutator Cℓ = [ Aℓ, B ℓ] obeys 
+
+Cℓ(X) = X22 (P0 − P1), [Aℓ, C ℓ] = −Cℓ, [Bℓ, C ℓ] = Cℓ. (84) The ladder admits a strict static certificate, given in Proposition 41 of Appendix D. 18 
+
+TABLE II. Worst-case resources for the common-ground word at d0 = 1 and ε = 10 −3. The no-dephasing and dephasing columns use q∗ = 83 /100 and 67 /100. Logical, raw, pulse, and transition calls are overlapping componentwise accounts; aggregate calls count each primitive once. quantity worst case per cycle no dephasing dephasing cycles 1 43 20 wall time 4 172 80 aggregate primitive calls 4 172 80 logical orbit calls 2 86 40 raw dissipator calls 2 86 40 pulse calls 2 86 40 transition calls 2 86 40 reset calls 0 0 0dead calls 0 0 0cooldown calls 0 0 0physical-signature switches 5 215 100 scalar cost 6 258 120 integrated control action π 43 π 20 π
+
+raw dissipative exposure ≤ (21 /10) α ≤ (903 /10) α ≤ 42 α
+
+always-on exposure 0 or 4 λ 0 80 λ
+
+Theorem 29 (Exact ladder factorization) For every T > 0, define 
+
+x(T ) = log T
+
+1 − e−T , y(T ) = T − x(T ) = log eT − 1
+
+T . (85) 
+
+Then 0 < x (T ), y (T ) < T and 
+
+eT (Aℓ+Bℓ) = ey(T )Aℓ eT B ℓ ex(T )Aℓ . (86) 
+
+No word in the two primitive semigroups with positive factor durations and fewer than three factor pieces equals the left-hand side. Proof. The ideal population coefficient from level two to level one is T e −T . The right-hand side gives e−y (1 − e−T ), which agrees by Eq. (85). The total exposure to each generator is T , giving the same factors e−T / 2 on the 01 and 02 coherences and e−T on the 12 coherences. Conversely, the 01 and 02 coherences force both total exposures to be T .A two-factor word then gives either e−T (1 − e−T ) or 1 − e−T for that population coefficient, and 
+
+e−T (1 − e−T ) < T e −T < 1 − e−T .
+
+This proves both claims on the full matrix-unit basis. □
+
+The zero error at finite positive durations in Eq. (86) excludes a positive dwell error floor for this model. The physical grammar for the resource statement has exclusive unit-amplitude access to Aℓ and Bℓ, minimum active-arc dwell h > 0, and an identity dead interval of duration σ > 0 at each label change. One Aℓ arc and one Bℓ
+
+arc, each of duration T , form a period 
+
+P(T ) = 2 T + 2 σ. (87) The observation phase lies y(T ) into the Aℓ arc, so cutting the period there yields the three factors in Eq. (86). The dwell constraint applies to the uncut Aℓ arc of duration T , not to its two factor pieces. State injection and observation occur only after the periodic controller has been initialized, and the resource clock begins at this strobe. Initialization and pre-running are excluded from both sides of the comparison; a cold-start comparison is a different cost model. For this post-initialization clock, the factorizing schedule has the fixed cost vector (Twall , X A, X B , N arc , N factor , N sw , A max , B sw , T pulse )= (2 T + 2 σ, T, T, 2, 3, 2, 1, σ −1, 0) . (88) 19 Here Twall is elapsed period time; XA and XB are cumulative generator exposures; Narc counts maximal active arcs on the period circle; Nfactor counts the pieces after cutting at the observation strobe; and Nsw counts label changes, including the cyclic seam. The remaining entries are the amplitude cap Amax , the interface transition-rate parameter 
+
+Bsw = 1 /σ (not a Fourier bandwidth), and the Hamiltonian-pulse time Tpulse . Thus Nfactor = 3 although there are only two physical arcs. There is no Hamiltonian pulse, so Eq. (5) gives Actrl = 0. For a channel Φ, define the worst-case target error 
+
+Ewc (Φ) = sup 
+
+> ρ
+
+12 ∥Φ( ρ) − P0∥1, (89) where the supremum is over qutrit density operators. For a physical evolution Φ t, write Ewc (t) = Ewc (Φ t). 
+
+Proposition 30 (Ladder convergence) Every primitive and dead interval fixes P0. For the factorizing schedule, the target error at integer periods is at most 2e−kT / 2 for every integer k ≥ 0, and for every wall time t ≥ 0 it satisfies 
+
+Ewc (t) ≤ 2eT / 2 exp 
+
+[
+
+− T
+
+2P(T ) t
+
+]
+
+. (90) 
+
+Target error does not rise within a period. 
+
+The physical channel has nonzero micromotion relative to etL ℓ even though its target error is nonincreasing. 
+
+Theorem 31 (Ladder resource law) Consider the two-label grammar with exclusive unit-amplitude access to Aℓ
+
+and Bℓ, minimum active-arc dwell h > 0, and an identity dead interval of duration σ > 0 at each label change. State injection and the resource clock begin at the declared observation strobe after controller initialization; initialization and pre-running costs are excluded. For any measurable periodic protocol in this grammar, let XA(t) and XB (t) be its cumulative exposures and let Ewc (t) be the worst-case trace-distance error from P0. Then, for every t ≥ 0,
+
+Ewc (t) ≥ 12 exp 
+
+[
+
+− 12 min {XA(t), X B (t)}
+
+]
+
+. (91) 
+
+If a completed period has error at most ε < 1/2, then, with sε = 2 log[1 /(2 ε)] ,
+
+Twall ≥ 2 max {h, s ε} + 2 σ, XA + XB ≥ 2sε, Narc ≥ 2, Nsw ≥ 2. (92) 
+
+The identity in Theorem 29, with ̂
+
+Tε = max 
+
+{
+
+h, 
+
+⌈
+
+2 log 2
+
+ε
+
+⌉} 
+
+(93) 
+
+achieves error at most ε with wall time at most 2̂Tε + 2 σ and with two active arcs and two cyclic switches. For fixed 
+
+h and σ, the upper and lower wall-time bounds have the common leading term 
+
+4 log(1 /ε ) (94) 
+
+and differ by at most 8 log 2 + 2 .
+
+Corollary 32 (Periodic exponent obstruction) Let an admitted periodic protocol have period P, per-period ex-posures sA, s B , and nsw dead switches. If constants K > 0 and Γ > 0 satisfy Ewc (nP) ≤ Ke −ΓnP for every integer 
+
+n ≥ 1, then 
+
+Γ ≤ min {sA, s B }
+
+2P ≤ P − nsw σ
+
+4P . (95) 
+
+The factorizing schedule has sA = sB = T and nsw = 2 and attains both bounds. Proof. After n periods, Eq. (91) and the assumed envelope give 12 e−n min {sA,s B }/2 ≤ Ewc (nP) ≤ Ke −ΓnP .
+
+Taking logarithms, dividing by n, and letting n → ∞ proves the first inequality. Exclusivity, the unit-amplitude cap, and the dead intervals give sA + sB ≤ P − nsw σ, which proves the second. For the factorizing schedule, P = 2 T + 2 σ;the upper envelope above and the coherence witness in Appendix D give the common sharp exponent T / (2 P). □
+
+Equation (91) follows by applying the protocol to ( |0⟩ + |1⟩)/√2 and ( |0⟩ + |2⟩)/√2: the corresponding target coherences decay as e−XA/2 and e−XB /2. Exclusivity converts the two necessary exposures into wall time, and the finite factorization supplies the matching upper construction. Appendix D records the full finite-time and rounded-phase calculations. 20 
+
+Remark 33 (Scope of the ladder resource law) The coefficient four is sharp for the stated grammar and post-initialization clock; cold-start preparation is outside this cost model. A target-stabilizer conjugation of Aℓ cannot produce Bℓ, because it preserves the jump range inside span {| 0⟩} whereas Bℓ has range span {| 1⟩} . Transferring Eq. (94) to a hardware presentation requires independent preservation of the exposure witnesses, endpoint identity or actual monodromy, cold accounting, and the same admissible comparator class.   
+
+> VII. SEARCHING A FINITE HARDWARE LIBRARY A. Acceptance and refinement in a finite library
+
+A complete path certificate can also serve as the acceptance test in a search over executable words. Switched dissipative stabilization and robust open-system performance already have substantial theory [5, 18]. The question here is narrower: which words in a specified hardware library have a verified guarantee for their full uncertainty set, including the physical pulses and intervening idle dynamics? Fix a finite operation alphabet and a maximal word length. For each word, use a compact parameter domain whose coordinates enforce all exact target and controller identities. The uncertainty set covers every admitted joint error, including correlations between operations. The system model includes every quantum degree of freedom retained between calls. Each nonempty cycle has duration between fixed positive finite bounds. These choices specify the domain on which a search result is meaningful. 
+
+Proposition 34 (A finite acceptance test) Suppose a complete-path calculation proves, for a nonnegative state functional V and every admitted state and uncertainty, 
+
+V (Sρ) ≤ qV (ρ) + η, V (Pρ) ≤ BV (ρ) + b, dtr (ρ, FP ) ≤ ψ(V (ρ)) , (96) 
+
+where 0 ≤ q < 1, B, η, b ≥ 0, ψ is increasing, and P ranges over every physical prefix. Let V (ρ0) ≤ Y , and put 
+
+z∞ = η
+
+1 − q , zN = qN Y + (1 − qN )z∞. (97) 
+
+An integer N ≥ 0 satisfying 
+
+ψ(B max {zN , z ∞} + b) ≤ ε (98) 
+
+certifies the tolerance at all subsequent times under continued execution. If one cycle takes at most T , that boundary is reached by time N T after initialization. Proof. Iteration of the first inequality gives V (ρn) ≤ zn. For 0 ≤ q < 1, the sequence zn lies monotonically between 
+
+Y and z∞, so its supremum for n ≥ N is max {zN , z ∞}. Apply the prefix bound and the monotonicity of ψ. Summing the bounded cycle durations proves the time statement. The convention q0 = 1 also covers q = 0. □
+
+Remark 35 (Initialization and finalization costs) The bound N T counts execution after initialization. Initial-ization and any separately certified finalization have their own time and resource costs. 
+
+The norm certificates of Section V instantiate this test. A positive observable can be more efficient in a model with a pure target. Taking V (ρ) = tr( Qρ ) gives 
+
+V (ρ) ≤ dtr (ρ, FP ) ≤ √V (ρ). (99) For the upper inequality, purify ρ and project its purification onto P on the system factor. The normalized projected vector has overlap √1 − V (ρ) with the original vector. Their trace distance is √V (ρ), and partial trace cannot increase it. The lower inequality follows from measuring {P, Q }. The case V = 1 uses the universal upper bound one. Thus Eq. (98) becomes a scalar rational inequality when a survival certificate is available. A discrete search branch fixes the word template and any integer choices, such as N . On each branch, fix nested finite subdivisions of its parameter boxes whose maximal diameter tends to zero, and index increasing arithmetic accuracy by m ∈ N. A refinement is fair if, until a certificate is found, it eventually evaluates every triple consisting of a represented branch, a box at a finite subdivision depth, and a finite accuracy level. Each evaluation encloses all required inequalities on that box. A box and its descendants may be discarded when a valid enclosure excludes the required certificate throughout the box. 21                  
+
+> TABLE III. Finite-library search using Proposition 34, with the input and refinement assumptions stated in the text. Stage Required data or operation Specify Fix the finite library and compact parameter boxes above, target, tolerance, and resource convention. Supply valid enclosures for the chosen state functional. Enclose Bound every cycle and prefix to obtain q, B, η, b, Y, ψ in Eq. (96) and an upper cycle time T.Test For an integer N, retain a word and its parameter values or box when Eq. (98) holds uniformly; report N T plus any specified initialization or finalization costs. Refine Fairly interleave parameter subdivision, arithmetic accuracy, and integer choices of Nunder Proposition 36. Report Return accepted certificates and resource bounds. Exclude a box only if a valid enclosure proves failure of a required certificate inequality throughout it; otherwise mark it unresolved.
+
+Proposition 36 (Scope of refinement) On each discrete branch, suppose exact identities have been parameterized and the remaining conditions are finitely many continuous inequalities fj (x) ≤ 0, 1 ≤ j ≤ J, on finitely many compact coordinate boxes. Suppose computable interval enclosures converge uniformly under subdivision and increasing arithmetic accuracy. A fair refinement finds a certificate in finite time if a represented point x∗ on some branch satisfies 
+
+fj (x∗) ≤ − σ for every 1 ≤ j ≤ J and some σ > 0.Proof. If fj (x∗) ≤ − σ for every j and σ > 0, continuity gives a relative neighborhood on which fj ≤ − σ/ 2. Asufficiently fine box containing x∗ lies in that neighborhood. At sufficiently high accuracy, the computed upper endpoint for each fj lies less than σ/ 4 above its true supremum on that box. All these upper bounds are negative. Fair refinement eventually reaches such a box and accuracy level, and a valid exclusion cannot discard a box containing the strictly feasible point. □
+
+The refinement guarantee applies to strictly feasible certificates in the represented domain; boundary solutions may remain unresolved. Searching over the integer N keeps the time objective continuous on each continuous subproblem. Once a certified execution-time upper bound U is known and each cycle lasts at least T− > 0, a better certificate has 
+
+N ≤ ⌊ U/T −⌋. Exhaustive comparison in a finite library minimizes its certified execution-time upper bound. Failure of a sufficient bound, such as q ≥ 1, does not by itself exclude physical stabilization. The refinement proposition guarantees eventual discovery under its assumptions; it does not bound the computation time.  
+
+> B. An irreversible four-level network with uncertain finite pulses
+
+Consider orthonormal levels |0⟩, . . . , |3⟩ and target P0. Define 
+
+A = D[|0⟩⟨ 1|] + D[|1⟩⟨ 2|], H23 = |2⟩⟨ 3| + |3⟩⟨ 2|, Z =
+
+> 3
+
+∑
+
+> j=0
+
+D[Pj ]. (100) Let g be the dimensionless cascade gain, a the dimensionless pulse gain, and κ the dephasing rate. A hold A(t)applies gA + κZ. The pulses P (θ) and M (θ) apply −i[+4 aH 23 , ·] + κZ and −i[−4aH 23 , ·] + κZ, respectively, for their uncertain finite durations. The nominal hold duration is t and the nominal pulse duration is θ/ 4; an uncertain multiplier changes each actual command duration. Every command is followed by a fixed dead interval with the same dephasing. Commands obey t ∈ [0 .3, 6] and θ ∈ [0 .6, 2]. Table IV specifies the numerical error ranges and background rates. These dimensionless parameters define a theoretical hardware instance, with time measured in inverse nominal cascade rate. The amplitude bounds are finite, and the control model is piecewise constant with no additional slew-rate constraint. The cascade is off during pulses; dephasing is always on. All gains and durations are constant within a segment and may have arbitrary correlations across segments and cycles. The full Cartesian error box is certified. In the actual model, a further jump λ(s)D[|1⟩⟨ 0|] acts throughout every path, with the bound in Table IV. Removing this term gives the shadow model. There are no auxiliary degrees of freedom or resets. Commands are issued in a fixed laboratory basis and return the actuator to idle after each call; the sequence counter closes after a complete word. No exact inverse of an inaccurate quantum pulse is required for this classical controller closure. 22                           
+
+> TABLE IV. Certified operation of the five-command four-level word in Eq. (104). Times are in inverse nominal cascade-rate units; the model is a theoretical hardware instance. Quantity Admitted values or conclusion Command errors Cascade gain g∈[0 .95 ,1.05], pulse gain a∈[0 .98 ,1.02], and command-duration multipliers in [0 .98 ,1.02]. The cascade gain is shared by its two jumps within each hold. Background and timing Dephasing κ= 0 .01 throughout; pumping 0 ≤λ(s)≤10 −5throughout; a fixed dead interval 0 .05 after each command. The cascade is off during pulses. Shadow certificate The adjoint survival bound has factor below 0 .009260. Appendix F gives a simpler outward bound 47 /5000 sufficient for the same preparation guarantee. Actual guarantee For every initial density operator, a complete preparation cycle ends by T= 14 .3107 with dtr (ρ(t), P 0)≤0.1 at that time and throughout subsequent cycles.
+
+The cascade and finite pulse do not commute. A hold retains the dark state P3, whereas a pulse retains P1.Nevertheless, the complete word 
+
+A(3) −→ P (157 /100) −→ A(5) (101) has a strict survival certificate. An effect is a Hermitian operator 0 ⪯ E ⪯ I whose expectation gives a measurement probability. For a shadow cycle channel S, the survival effect E = S∗(Q) satisfies tr( Eρ ) = tr( QSρ), the probability remaining outside the target after the cycle. Starting from Q, the shadow adjoint dynamics closes on a four-dimensional real space of Hermitian operators, retaining the 2–3 coherence created by the pulse. Appendix F derives that reduction and the interval bounds. For every shadow realization, 
+
+S∗(Q) ⪯ 225 Q, T ≤ 174207 20000 = 8 .71035 . (102) Every shadow prefix has nonincreasing survival probability. CPTP Duhamel propagation bounds the pumping con-tribution to a whole cycle or prefix by η = 10 −5T in that probability. Consequently Proposition 34, with q = 2 /25, 
+
+B = 1, b = η, Y = 1, and ψ(v) = √v, certifies for every initial density operator under continued cycling 
+
+dtr (ρ(t), P 0) ≤ 0.1 for all t ≥ t2, t2 ≤ 17 .4207 . (103) This bound includes target coherences and nonzero pulse, timing, dephasing, and pumping effects. A finite search over the four word templates AP A , AP AP , AP AM , and AP AP A , hold grid {2, 3, 4, 5, 6}, and pulse-angle grid {1.5, 1.57 , 1.65 } evaluates 1650 parameterized words with the same rational checker. The smallest certified time in that finite library belongs to 
+
+A(3) , P (157 /100) , A (6) , P (157 /100) , A (4) . (104) Table IV gives its certificate and all-time guarantee. The interval calculation evaluates two algebraically equivalent pulse formulas and intersects their valid enclosures. This retains useful cancellation near a swap without changing the physical dynamics. A fixed-periodic comparator repeats AP with one common hold and angle. On hold grid {1.50 , 1.55 , . . . , 6.00 } and angle grid {1.45 , 1.47 , . . . , 1.69 }, both scheduler phases and every preparation prefix of one through twelve commands are checked. The best certified prefix is AP AP AP A , with hold 3 .4 and angle 1 .55. The all-time continuation certificate starts at its actual scheduler phase; Appendix F 2 derives its acceptance inequality. The same error set, dead intervals, and primitive interval formulas apply. The periodic comparator additionally bounds each fixed physical word by grouping adjacent commands into contiguous blocks and multiplying their certified survival factors. It uses the smallest of these products and the directly enclosed whole-word factor, with the command order and durations fixed. Applying this refinement to all 1650 library words improves 24 survival bounds but changes no accepted cycle count or preparation time. Thus the five-command word improves the reported guarantee by about 7 .1% relative to that finite-grid comparator. Numerical optimization of the same certificate objective gives a five-command proposal with a smaller certified time bound, accepted by the same rational checker (Table V). Neither search establishes a continuous-parameter global optimum. 23              
+
+> TABLE V. Certified preparation-time upper bounds for the same four-level hardware, uncertainty set, and tolerance 0 .1. Operation continues after preparation. Each row uses the search domain stated in the text. Search Selected preparation and continuation Time bound 1650-word finite library AP AP A , repeated after preparation 14 .3107 Declared periodic AP grid AP AP AP A preparation; matching-phase P AP A
+> blocks thereafter 15 .40775 Numerical proposal search Five-command AP AP A 14 .024998
+
+Finally, for every available actual path, ˙ p ≥ − (21 /20) p with p = tr( Qρ ), since pumping adds a nonnegative term and only the first cascade jump removes population from Q. For an initial state with p = 1, any protocol reaching trace distance ε < 1 therefore needs 
+
+Tphysical ≥ 20 21 log 1
+
+ε . (105) This hardware lower bound is much smaller than the constructed time and does not establish near optimality.  
+
+> VIII. FINITE-INPUT AND MARKOVIAN SCOPE
+
+The compiler is finite-dimensional and its quantitative output remains tied to the supplied presentation. The following examples identify distinct mathematical limits of that input class. 
+
+a. Finite support does not control timing. For the common-ground family 
+
+Lδ = D[|0⟩⟨ 1|] + δD[|0⟩⟨ 2|], δ = 2 −n, n ∈ N, (106) the dimension and support size remain fixed while the two direct weights are (1 , δ ). With unit rates and a common minimum dwell τ , the first-order schedule must satisfy 
+
+hdwell min = τ /δ. (107) Thus finite Carathéodory support supplies neither a uniform positive lower bound on weights nor a dimension-only dwell guarantee. Optimizing the achieved margin min j λj /(rj τj ) requires its own compactness and calibration hy-potheses and still omits interstitial dynamics and the stability upper endpoint. 
+
+b. A higher-rank target face. Let 
+
+P = P0 + P1, AΛ = D[|0⟩⟨ 2|], BΛ = D[|1⟩⟨ 2|]. (108) Both generators preserve FP and have the same transverse action, although [ AΛ, B Λ]( P2) = P1 − P0. A swap within the target subspace conjugates one jump into the other along a face-preserving path. The transverse certificate proves attraction to FP ; it cannot select a unique mixed state because every state in the face is stationary under a single decay from level two. A unique target would require a separate contraction certificate for motion within the face. 
+
+Remark 37 (Finite-instance and Markovian scope) For a fixed finite support, graph, word order, closed-form path library, and algebraic or rational enclosures, the compiler’s equalities, positivity conditions, timing inequalities, and integer cycle counts reduce to finite symbolic calculations that certify supplied data. Real quantifier elimination also decides a separately supplied finite first-order formula over the real algebraic numbers. These facts do not de-cide unbounded word length, unrestricted waveforms, generic matrix-exponential identities, or global minimum cost. Numerical search supplies candidates; failure to find a certificate establishes neither its nonexistence nor physical infeasibility without a necessary analytic obstruction. The physical-word theorem requires the declared system-channel factorization. If system–environment memory sur-vives a cut, the segment maps need not compose as CPTP channels and the theorem does not apply. Such dynamics requires a model that accounts for the surviving memory.  
+
+> IX. CONCLUSION
+
+A stabilizing Lindblad generator and an executable stabilization protocol are different mathematical objects. The generator belongs to a cone; the protocol is a timed, ordered path through calibrated operating points. The two 24 qubit obstructions isolate two independent losses of information: convex averaging can hide target leakage of every primitive, and a perfect orbit identity can hide a pulse path that moves the target or adds irreversible noise. The robust primitive-certified compiler bounds the physical cycle without replacing it by an effective generator. It combines static decay in one fixed Lyapunov metric, a finite nominal-word derivation, and normalized-clock Duhamel bounds for complete uncertain primitives. The amplified word telescope controls actual-monodromy contraction and within-cycle prefixes. Uniform slack gives all-time target-face attraction under cycle-varying uncertainty, with worst-case duration and componentwise resource bounds. Rank-one targets yield fixed-state stabilization; selecting one mixed state in a higher-rank face requires an additional intraface certificate. General generator perturbations need not preserve the target face. The leaky theorem therefore compares complete actual paths with structure-preserving shadow paths. Primitive diamond-norm bounds produce cycle and prefix leakage, an explicit practical tube, and the tolerance at which the certificate ceases to guarantee all-time accuracy. The common-ground qutrit realizes the fixed-metric construction with bounded directed pulses and uncertain decay gains. The separate cascade qutrit gives matching wall-time bounds with leading term 4 log(1 /ε ) in its two-label grammar. These examples connect the generator-level criterion to calibrated control paths and their execution costs. The finite-search extension uses these certificates to select executable words from a specified hardware library. The four-level cascade retains irreversible transfer, uncertain finite pulses, timing errors, and continuous background dynamics. Its survival-effect calculation certifies trace distance at most 0 .1 for arbitrary initial states after a complete preparation cycle ending by time 14 .3107 and throughout subsequent cycles. This direct observable calculation and the static-metric construction are two ways of supplying the acceptance test. The search finds strictly feasible certificates under its stated refinement assumptions and ranks certified execution-time bounds within its declared domain. Physical optimality and the computational cost of a general search require separate results. 
+
+> DATA AVAILABILITY
+
+The numerical data, exact certificates, and source code supporting the computational results will be deposited in a public repository before publication. Pending deposit, these materials are available from the authors upon reasonable request. 
+
+> ACKNOWLEDGMENTS
+
+Generative AI tools, including OpenAI ChatGPT and Codex, supported code development and verification, and manuscript formatting and revision. The author is responsible for scientific claims, computations, and citations.  
+
+> Appendix A: Static certificate proofs and necessity examples 1. Positive-gauge attainment
+
+To prove Proposition 8, let 
+
+Lk = ek + ∑
+
+> j
+
+λkj gkj −→ L, ek ∈ EH , gkj ∈ S, λkj ≥ 0. (A1) Apply the quotient map π and conic Carathéodory elimination to each ordinary finite sum. At most s = dim span π(S)nonzero atoms remain. The gauge gives 
+
+μ ∑
+
+> j
+
+λkj ≤ ∑
+
+> j
+
+λkj ϕ(gkj ) = ϕ(Lk), (A2) so the total coefficient mass is bounded. Pad the reduced sums with zero coefficients. Compactness of S and the coefficient interval gives a convergent subsequence. After zero limiting coefficients are discarded, 
+
+π(L) = 
+
+> m
+
+∑
+
+> j=1
+
+λj π(gj ), m ≤ s. (A3) The remainder L − ∑ 
+
+> j
+
+λj gj lies in EH , which proves both closure and the same-L representation. 25 If L and the presentation are algebraic, the fiber of all such decompositions is a nonempty semialgebraic set over A.Transfer between real closed fields gives an algebraic point in the same fiber [27, Theorem 2.80]. If L is transcendental, real attainment still holds but an algebraic same-generator representation need not. 
+
+Example 38 (A nonclosed conical hull) The compact semialgebraic set 
+
+S0 = {(−1, 0, 0) } ∪ { (1 , t, t 2) : 0 ≤ t ≤ 1} (A4) 
+
+has a nonclosed cone. Indeed, n(1 , 1/n, 1/n 2) + n(−1, 0, 0) = (0 , 1, 1/n ) belongs to cone( S0) and converges to (0 , 1, 0) .In any conic representation with third coordinate zero, every active curved atom has t = 0 , which also makes the second coordinate zero. Thus (0 , 1, 0) /∈ cone( S0). The positive gauge excludes precisely this escape of coefficient mass.  
+
+> 2. Quotient stability and the conditioned bound
+
+Equation (12) makes TP invariant, hence etL induces etA L on XP . If AL is Hurwitz, every quotient class tends exponentially to zero, so every state approaches FP . Conversely, density operators span Herm( H) by real linear combinations. Attraction of every density operator therefore forces etA L to vanish on a spanning set, which excludes every eigenvalue with nonnegative real part. This proves Proposition 9; the Routh–Hurwitz criterion supplies the corresponding polynomial form. For V (x) = xTM x , Eq. (14) implies ˙V ≤ − 2νV . Comparison with the two metric bounds gives 
+
+∥x(t)∥2 ≤ √m+/m − e−νt ∥x(0) ∥2. (A5) Let Qρ = ρ−P ρP be the Hilbert–Schmidt orthogonal representative of the quotient class. Positivity and normalization give 
+
+dtr (ρ, FP ) ≤ ∥ Qρ∥1 ≤ √d ∥Qρ∥HS , ∥Qρ(0) ∥HS ≤ 2. (A6) Combining Eqs. (A5) and (A6) proves Eq. (15). No-leakage and transverse stability are independent. For a qubit, adding an upward jump to downward amplitude damping can leave a deleted-coordinate block Hurwitz while P0 leaks. Conversely, a generator can preserve the target face while leaving a transverse mode undamped. Both parts of Proposition 9 are therefore necessary. A spectral abscissa alone also omits the endpoint prefactor. The linear algebra family 
+
+AK =
+
+(
+
+−1 K
+
+0 −1
+
+)
+
+, K > 0, (A7) has spectral abscissa −1 for every K, but eAK = e−1( 1 K  
+
+> 01
+
+), whose Euclidean norm is unbounded as K → ∞ . This is a finite-time linear-algebra counterexample, not by itself a GKLS realization. The retained common Lyapunov metric avoids transferring a spectral statement into a uniform endpoint bound.  
+
+> 3. Algebraic equivalence and decision scope
+
+Sufficiency in Theorem 10 follows immediately from algebraic reconstruction of L, no leakage, positive Routh– Hurwitz data, and the strict Lyapunov inequality. For necessity, start with a real stabilizing L. Positive-gauge attainment gives a real support of size at most s, and quotient stability gives strict Routh–Hurwitz inequalities. All orbit equations, generator equalities, block equalities, strict signs, and matrix inequalities form one finite existential semialgebraic sentence over A. Real-closed-field transfer supplies algebraic values for the witnesses. An algebraic Hurwitz matrix has an algebraic positive-definite solution of 
+
+AT
+
+> L
+
+M + M A L = −I. (A8) Strictness permits algebraic choices of m−, m +, ν , and q0. This completes the necessity proof. Quantifier elimination decides the same finite sentence [27, Theorem 2.77 and Algorithm 11.14]. Compactness and the universal gauge condition can themselves be stated over the reals, but no running-time or witness-size classification is implied. The support cap is presentation-relative. The commuting common-ground sum needs two atoms in a library containing only its two branches but one call in a library that directly supplies their sum. Likewise, support reduction preserves the complete generator and its quotient data, but it does not preserve nonlinear resource costs unless the required metadata are included as additional linear coordinates before reduction. 26  
+
+> Appendix B: Target compatibility and qubit obstructions 1. Face-invariance criteria
+
+We first prove Lemma 14. For a target-supported positive operator ρ = P ρP , the QQ block of the GKLS derivative is 
+
+QL(ρ)Q = ∑
+
+> a
+
+(QV aP )ρ(QV aP )†. (B1) Every term is positive semidefinite. If the target face is invariant for all target-supported states, the sum vanishes for all such ρ, and hence QV aP = 0 for every a. Under these conditions the QP block becomes 
+
+QL(ρ)P = −iQ 
+
+(
+
+H − i
+
+2 R
+
+)
+
+P ρP, R = ∑
+
+> a
+
+V † 
+
+> a
+
+Va. (B2) Its vanishing for every target-supported ρ is equivalent to the second condition in Eq. (19). The adjoint P Q block then vanishes as well. Conversely, the two conditions make both transverse blocks zero and leave the derivative in TP ,proving invariance. For a CPTP map Φ( ρ) = ∑ 
+
+> a
+
+KaρK †
+
+> a
+
+, the corresponding calculation is 
+
+QΦ( ρ)Q = ∑
+
+> a
+
+(QK aP )ρ(QK aP )†. (B3) This proves Eq. (31). For a bounded piecewise-regular time-dependent GKLS equation, applying the infinitesimal calculation at every injection phase proves necessity almost everywhere; integrating a generator that satisfies the conditions proves sufficiency. This strong necessity statement quantifies over every target-face state and every phase. It need not hold for a single trajectory after a noninvertible earlier segment has collapsed the reachable target set. With no jumps, Eq. (19) reduces to QH (s)P = 0 and its adjoint. The Schrödinger equation then preserves both 
+
+P H and QH, so U (s) ∈ Stab( P ). Differentiation proves the converse. This establishes Eq. (32). The complete generator need not split into separately target-preserving Hamiltonian and dissipative parts. For example, with 
+
+V = |0⟩(⟨0| + ⟨1|), H = Y / 2, (B4) the two cross-block contributions cancel in the second condition of Eq. (19), although [ H, P 0]̸ = 0. By contrast, positive jump leakage in Eq. (B1) admits no Hamiltonian cancellation. This is why compensation is solved for the complete simultaneous operating point. Exact target invariance is fragile under general GKLS perturbations. For the qubit target P0, let 
+
+Vϵ = √ϵ |1⟩⟨ 0|, ϵ > 0. (B5) Then QV ϵP0̸ = 0, and the solution of ˙ ρ = D[Vϵ]( ρ) from P0 has excited population 1 −e−ϵt . The rate can be arbitrarily small while the target face fails to be invariant for every t > 0. Hence exact invariance is not open in an unrestricted generator-norm ball, which motivates the separate shadow-path conclusion of Theorem 23.  
+
+> 2. Strict positivity under finite Markovian propagation
+
+Lemma 39 (Interior preservation) Let Φ be the finite-time propagator of a bounded finite-dimensional GKLS equation. If ρ ≻ 0, then Φ( ρ) ≻ 0.Proof. The fundamental solution of the linear master equation is invertible as a linear map, and the GKLS theorem makes it CPTP. Write Φ( X) = ∑ 
+
+> a
+
+KaXK †
+
+> a
+
+. If Φ( I) had a nonzero kernel vector v, then 0 = ⟨v|Φ( I)|v⟩ = ∑
+
+> a
+
+∥K†
+
+> a
+
+v∥2
+
+would imply K†
+
+> a
+
+v = 0 for all a. Every matrix in the range of Φ would then annihilate v on the right, contradicting linear invertibility. Hence Φ( I) ≻ 0. Since ρ ⪰ cI for some c > 0, complete positivity gives Φ( ρ) ⪰ cΦ( I) ≻ 0. □27  
+
+> 3. The stable-average qubit
+
+Use the Bloch convention ρ = ( I + xX + yY + zZ )/2, with P0 at (0 , 0, 1). Under either generator in Eq. (16), the Hamiltonian part is a rotation and drops out of the derivative of x2 + y2 + z2. The damping part gives 
+
+ddt (x2 + y2 + z2) = −x2 − y2 + 2 z(1 − z), (B6) which is equivalent to Eq. (17). Its integrating-factor form is 
+
+δ(t) = e−t
+
+[
+
+δ(0) + 
+
+∫ t
+
+> 0
+
+es[1 − z(s)] 2 ds 
+
+]
+
+. (B7) Starting at P0, the transverse Hamiltonian gives a nonzero y derivative. If z remained identically one on any interval, the Bloch equations would contradict that derivative. The integrand in Eq. (B7) is therefore positive on a subinterval of every positive dwell, and δ(t) > 0 for every t > 0. A qubit state has δ > 0 if and only if the state is in the full-rank interior. Lemma 39 prevents all later finite GKLS factors from returning it to P0, proving Theorem 13. The average ( L+ + L−)/2 = D has transverse matrix AD = diag( −1, −1/2, −1/2) and characteristic polynomial 
+
+z3 + 2 z2 + 54 z + 14 . (B8) Its three leading Routh–Hurwitz determinants are respectively 2, 9 /4, and 9 /16. Here K2 = √m+/m − is the Euclidean conditioning factor of the Lyapunov metric and Ktr = 2 √d K 2 is the resulting uniform trace-distance prefactor. One rational static certificate is 
+
+M = I3, ν = 14 , m− = 12 , m+ = 2 , q0 = 14 , K2 = 2 , Ktr = 4 √2. (B9) The presentation uses weights 1 /2, 1/2, zero coherent edge, and the gauge ϕ = − Tr superop , for which ϕ(L±) = 2. Thus the two-atom set is compact and satisfies the positive-gauge condition. These data show that the counterexample is not caused by failure of the static certificate. It instead shows that target-compatible sums need not admit support on the target-compatible part of the primitive cone.  
+
+> 4. The orbit-to-word qubit
+
+Conjugation by X interchanges |1⟩⟨ 0| and |0⟩⟨ 1|, which proves Eq. (34). During a pulse, U (s) = e−is ΩX/ 2 and 
+
+U (s)|0⟩ = cos(Ω s/ 2) |0⟩ − i sin(Ω s/ 2) |1⟩. (B10) The trace distance between two pure states is the square root of one minus their squared overlap, giving Eq. (35). Both pulse directions and D↑ have a nonzero derivative at P0. The first nonzero segment of any nonempty word therefore leaves the target, proving the all-time part of Theorem 19. For the always-on strengthening, let 
+
+Ku = γD ↑ − i[uX/ 2, · ], γ > 0 (B11) with bounded u. Direct expansion from P0 gives det ρ(s) = γs + O(s2) > 0 (B12) for all sufficiently small s > 0. Lemma 39 propagates strict positivity through every later bounded finite segment. The conclusion depends on positive unavoidable excitation, finite Markovian segments, and the absence of a noninvertible reset. Switchable excitation, an ideal zero-duration pulse, or a reset changes the presentation and is not covered by this branch. 28  
+
+> Appendix C: Primitive-path, product, timing, and resource bounds 1. Primitive-path and nominal-product enclosures
+
+Let Φ( u, v ) and ̂ Φ( u, v ) be the propagators of G and ̂ G on normalized local time. Differentiating Φ(1 , u )̂Φ( u, 0) gives 
+
+ddu 
+
+[Φ(1 , u )̂Φ( u, 0) ] = Φ(1 , u )( ̂ G(u) − G(u)) ̂ Φ( u, 0) . (C1) Integration proves Eq. (42). The definition of the logarithmic norm implies 
+
+∥Φ( v, u )∥M ≤ exp 
+
+(∫ vu
+
+μM (G(s)) ds 
+
+)
+
+, (C2) because the derivative of ∥Φ( s, u )x∥2 
+
+> M
+
+is bounded by twice the logarithmic norm. Applying Eq. (C2) on both sides of G −̂ G proves every assertion of Lemma 20. The normalized clocks are essential: their derivatives multiply the physical generators, so duration calibration is part of the same difference as waveform and amplitude error. For the nominal-product enclosure, the exact factor telescope is 
+
+RN · · · R1 − WN · · · W1 =
+
+> N
+
+∑
+
+> k=1
+
+RN · · · Rk+1 × (Rk − Wk)Wk−1 · · · W1. (C3) The stated bounds on Rk − Wk, the left reference factors, and the right ideal factors yield Eq. (44). A second application with Ck − Rk gives Eq. (46) and the full amplification in Eq. (45). The direct-label estimates in Sec. IV are one finite source of Esplit . Use the transverse atoms Bj , the nonnegative norm budgets bj , c kj ≥ 0, and β, C 2 defined before Eq. (25). Exchanging the exact exponential with the ordered product one factor at a time gives the first-order bound in that equation. Pairing the equal first-order terms on the two symmetric tails of Eq. (23) gives the symmetric bound in Eq. (25). These are induced-M estimates; trace- or diamond-norm product estimates do not acquire unit conversion constants automatically. For finite rational upper bounds, if x ≥ 0 and x < p + 2, then 
+
+Up(x) = 
+
+> p
+
+∑
+
+> k=0
+
+xk
+
+k! + xp+1 
+
+(p + 1)! 11 − x/ (p + 2) (C4) satisfies ex ≤ Up(x). For y > 0, 
+
+e−y < V p(y) = 
+
+( p∑
+
+> k=0
+
+yk
+
+k!
+
+)−1
+
+. (C5) The omitted tails are bounded by a geometric series. These functions turn the displayed sufficient product bounds into finite rational inequalities.  
+
+> 2. Ordered interstitial maps and monodromy iteration
+
+Let E1, . . . , E p be the induced transverse maps of the chronological active factors, and let Dℓ be the induced transverse map of the interstitial channel following Eℓ. With Qℓ = Ep · · · Eℓ+1 , repeated insertion of QℓQ−1 
+
+> ℓ
+
+gives Eq. (26). If ∥Dℓ − I∥M ≤ ∆ℓ and the active suffix and inverse suffix have norms at most ehs ℓ , submultiplicativity gives Eq. (27). The suffix conjugations cannot be removed without an additional commutation argument. The following elementary lemma is useful when a period map is known directly. It is an iteration statement, whereas Theorem 22 derives its hypotheses from primitive paths. 
+
+Lemma 40 (Certified-monodromy iteration) Let a sequence of path-compatible cold cycles have transverse mon-odromies Sn satisfying S†
+
+> n
+
+M S n ⪯ q2M with 0 ≤ q < 1, and suppose every within-cycle prefix has induced M -norm at most B. Then, for every t ∈ [tn, t n+1 ),
+
+dtr (ρ(t), FP ) ≤ Kout Bq nKin dtr (ρ(0) , FP ). (C6) 29 
+
+Proof. In Proposition 34, set V (ρ) = ∥z(ρ)∥M , ψ(v) = Kout v, Y = Kin dtr (ρ(0) , FP ), and η = b = 0. Equation (47) supplies the distance conversion and initial bound. Path compatibility makes every cycle and prefix act on the quotient; their bounds in the common metric give Eq. (96) with the same q, B for every admitted cycle. Thus z∞ = 0 and 
+
+zn = qnY give the claimed bound for every admitted cycle sequence, including cycle-varying and correlated choices. The convention q0 = 1 also covers q = 0. □
+
+Several elementary examples explain why the common metric and product bounds are necessary. Let Eij = eieT
+
+> j
+
+be the 2 × 2 matrix units in the standard basis e1, e 2 of R2. First, set 
+
+G1 = −I + KE 12 , G2 = −I − KE 21 , K > 0. (C7) Their average AL = ( G1 + G2)/2 satisfies AT 
+
+> L
+
++ AL = −2I, but at K = 10 the unit-exposure word obeys 
+
+∥∥∥eG2/2eG1/2
+
+∥∥∥2
+
+> 9. (C8) Indeed, its action on the second basis vector has norm e−1√601 > 9. A static Hurwitz margin therefore does not control a coarse finite word without commutator, path, and amplification bounds. Second, the abstract matrices 
+
+A =
+
+(
+
+1/2 10 1/2
+
+)
+
+, B =
+
+(
+
+1/2 01 1/2
+
+)
+
+(C9) each have spectral radius 1 /2, whereas ρ(BA ) = (3+2 √2) /4 > 1. This is a linear-algebra counterexample to pointwise spectral-radius reasoning, not a finite-time invertible GKLS realization. The physical GKLS leakage example (B5) and the qutrit gain-box obstruction in Proposition 28 supply the corresponding open-system boundaries.  
+
+> 3. Timing domains and resource branches
+
+For the first-order direct schedule, requiring tj = λj h/r j ≥ τj gives Eq. (30). In the cut-open symmetric schedule the central label appears once with full exposure, whereas the remaining labels appear in two half arcs, so 
+
+hdwell min ,2 = max 
+
+{ rπm τπm
+
+λπm
+
+, max 
+
+> k<m
+
+2rπk τπk
+
+λπk
+
+}
+
+. (C10) Fixed-duration transitions still contribute to the physical cycle and actual monodromy. Pulse amplitude, slew, cooldown, and calibration constraints may add further positive lower endpoints; their maximum is Eq. (59). For the direct schedule, one sufficient open interval h− < h < h + follows if there are 0 < θ < 1 and an interstitial bound κ+ such that 
+
+κ+dν (h−) ≤ 1 − θ, κ+Eo(h+) < θ. (C11) Monotonicity of the chosen bounds then proves contraction throughout the interval. A pointwise exact calculation instead certifies only the selected word. Finite support alone supplies no uniform lower endpoint: in Eq. (106), 
+
+hmin = τ /δ .In the exact robust branch, Eq. (52) reduces the tolerance calculation to Keff d0qN 
+
+> ∗
+
+≤ ε. Its four elementary cases give Eq. (60). In the leaky branch, Eq. (57) equals R∞ + qn 
+
+> ∗
+
+(D0 − R∞) after substituting Eqs. (58) and (61). Solving this scalar inequality gives Eq. (62) for ε > R ∞. At ε = R∞, the sign of D0 − R∞ and whether q∗ = 0 give the boundary cases stated there. For a cold closed cycle, componentwise resources compose as 
+
+C(N ) = Cinit + N C cyc + Cfinal . (C12) For N ≥ 1 repetitions of a cut-open body with a separate seam, 
+
+C(N ) = Cinit + N C body + ( N − 1) Cseam + Cfinal . (C13) For N = 0, no body or seam is executed; the cost consists only of any initialization and finalization that are actually performed. Switches are counted on the complete physical-signature sequence; algebraic cancellation of ideal endpoints does not remove a physical edge. Fixed per-cycle overhead also changes the fast-switching limit. If 
+
+Tcyc (h) = τ0 + ah + o(h), q(h) = 1 − νh + o(h), and τ0 > 0, then 
+
+Tcyc (h)
+
+− log q(h) = τ0
+
+νh + aν + o(1 /h ), (C14) so the coefficient diverges as h ↓ 0. 30  
+
+> 4. Stroboscopic and intraface limits
+
+For a rank-one target, suppose the period map fixes P and contracts boundary deviations. At a fixed within-cycle phase s, continuity of the prefix gives 
+
+ρ(nT cyc + s) −→ ρ⋆(s) = Ψ( s, 0) P. (C15) This orbit is constant exactly when every prefix fixes P .For a higher-rank face, suppose the cycle maps preserve FP and their transverse coordinates converge to zero for every admitted cycle sequence. Fix a selected state σ⋆ ∈ F P . For the state ρn after n cycles, put zn = z(ρn) and 
+
+Yn = P ρ nP − tr( P ρ n)σ⋆.
+
+This trace-zero operator is defined even when tr( P ρ n) = 0. Let yFn be its coordinates in a fixed real Hermitian basis of {Y ∈ T P : tr Y = 0 }. An additional intraface certificate consists of a fixed positive-definite metric MF on this coordinate space and constants 0 ≤ qF < 1 and 0 ≤ g < ∞ such that 
+
+∥yFn+1 ∥MF ≤ qF ∥yFn ∥MF + g∥zn∥M (C16) holds for every density-operator input and every admitted cycle map, with the same metric and constants. Since 
+
+zn → 0, iteration gives yFn → 0. The identity 
+
+ρn − σ⋆ = Yn + Qρn − tr( Qρn )σ⋆
+
+then proves convergence to σ⋆ at cycle boundaries. All-time selection further requires every physical prefix to fix σ⋆
+
+and uniform bounds for the induced intraface prefixes. The practical radius in Eq. (58) is an upper bound and need not be attained. For a rank-one target state P , a two-sided fixed-point estimate requires a cycle channel Φ and a constant 0 ≤ q < 1 satisfying the stronger global contraction 
+
+dtr (Φ( ρ), Φ( τ )) ≤ q d tr (ρ, τ ) for all states ρ, τ. (C17) If σ = Φ( σ) and η = dtr (Φ( P ), P ), then 
+
+η
+
+1 + q ≤ dtr (σ, P ) ≤ η
+
+1 − q . (C18) This separate assumption is not part of the primitive-certified tube theorem. 
+
+> Appendix D: Qutrit calculations
+
+For convenience, recall the normalized Hermitian coherences 
+
+Xjk = |j⟩⟨ k| + |k⟩⟨ j|√2 , Yjk = −i(|j⟩⟨ k| − | k⟩⟨ j|)
+
+√2 . (D1) Together with the three populations they form an orthonormal Hermitian basis.  
+
+> 1. Common-ground word
+
+For a decay exposure α, the quotient action of eαA from Eq. (64) is diagonal on the basis used in Theorem 25: diag 
+
+(
+
+e−α, 1, e −α/ 2, e −α/ 2, 1, 1, e −α/ 2, e −α/ 2)
+
+. (D2) The excited-state swap exchanges P1 with P2, exchanges the 01 and 02 coherence pairs, and rotates the 12 pair orthogonally. Conjugating the second raw decay by the swap therefore supplies the missing common-ground branch. With α = 2 log(5 /4), one has e−α = 16 /25 and e−α/ 2 = 4 /5. Multiplication gives Eq. (75). 31 The dephasing D[P0] commutes with the excited-subspace swap. At rate 2 log(4 /3) it leaves populations and the 12 coherence unchanged and gives each ground–excited coherence the survival factor 3 /4 per unit-duration segment. Across four segments this contributes (3 /4) 4 = 81 /256; multiplying by the damping factor 4 /5 gives 81 /320 in Eq. (76). These diagonal actions also provide the two static Lyapunov certificates used by the robust instance. In the transverse basis of Theorem 25, set 
+
+Gcg = diag (−1, −1, − 12 , − 12 , − 12 , − 12 , −1, −1) . (D3) For the no-dephasing branch take 
+
+An 
+
+> L
+
+= αG cg , M = I8, νn = α
+
+2 . (D4) For the always-on branch define 
+
+Zq = diag (0, 0, − 12 , − 12 , − 12 , − 12 , 0, 0) ,Aao  
+
+> L
+
+= αG cg + 4 λZ q , νao = α. (D5) Since (4 /3) 4 > 5/4, one has 4 λ > α . Thus, for b ∈ { n, ao },(AbL)† + AbL ⪯ − 2νbI8, e−νn = 45 , e−νao = 16 25 . (D6) The two reference words are exactly eAn 
+
+> L
+
+and eAao  
+
+> L
+
+, respectively, so their nominal synthesis error is zero. The triangular integrals are 
+
+∫ 10
+
+a(s) ds = 2 log(5 /4) ,
+
+∫ 10
+
+u(s) ds = π
+
+2 . (D7) The first has peak 4 log(5 /4) and absolute slope at most 8 log(5 /4); the second has peak π and absolute slope at most 2π. Self-commutation along each path makes the endpoint depend only on these integrals. The swap Hamiltonian is block diagonal with respect to span {| 0⟩} ⊕ span {| 1⟩, |2⟩} , so Eq. (32) holds throughout the pulse. We next prove the uniform gain enclosure. Put ρ = 1 /20 and 
+
+x = eρα = (25 /16) 1/20 < 131 128 . (D8) The last inequality is the integer comparison 16 · 131 20 > 25 · 128 20 . For either damping hold, the largest induced-2 endpoint difference over m ∈ [1 − ρ, 1 + ρ] occurs in a population coordinate and satisfies 
+
+δD = 16 25 (x − 1) < 3200 . (D9) Here the physical and reference clocks coincide and their normalized complete generators differ by ( m − 1) a(s)Atr .Substitution in Eq. (42) evaluates to the displayed diagonal endpoint difference because these generators commute along the path. The coherence difference is smaller. Both directed pulses are exact in this uncertainty family, so 
+
+δ2 = δ4 = 0. Every reference and actual block, including the known dephasing, is a Hilbert–Schmidt contraction; hence ck = rk = 1 and every partial factor has norm at most one. The fully amplified telescope therefore gives 
+
+Ehw = δ1 + δ3 < 3100 , Brob = 1 . (D10) At h = 1 the reference word exactly equals the corresponding commuting target semigroup, so Esyn = 0. Combining Eqs. (75), (76), and (D10) yields 45 + 3100 = 83 100 , 16 25 + 3100 = 67 100 , (D11) with the strict slacks stated in Proposition 26. Setting ρ = 0 makes δD = 0 and recovers the two reference contractions. To track every partial segment, put ℓ = log(5 /4) and, for local segment time 0 ≤ τ ≤ 1, define 
+
+β(τ ) = 
+
+{
+
+4ℓτ 2, 0 ≤ τ ≤ 1/2,
+
+2ℓ − 4ℓ(1 − τ )2, 1/2 ≤ τ ≤ 1,ϑ(τ ) = 
+
+{
+
+πτ 2, 0 ≤ τ ≤ 1/2,π/ 2 − π(1 − τ )2, 1/2 ≤ τ ≤ 1,dτ = e−β(τ )/2.
+
+(D12) 32 Thus χ := d1 = 4 /5. The partial raw-decay map has quotient matrix 
+
+Dτ = diag( d2 
+
+> τ
+
+, 1, d τ , d τ , 1, 1, d τ , d τ ). (D13) Let Rθ be the quotient action of conjugation by Uθ = eiθS 12 , and write c = cos θ and s = sin θ. Its action on the population and excited-coherence block is 
+
+Rθ (P1) = c2P1 + s2P2 + √2csY 12 ,Rθ (P2) = s2P1 + c2P2 − √2csY 12 ,Rθ (X12 ) = X12 ,Rθ (Y12 ) = sin(2 θ)
+
+√2 (P2 − P1) + cos(2 θ)Y12 ,
+
+(D14) and on the ground-coherence block it is 
+
+Rθ (X01 ) = c2X01 − csY 01 + s2X02 + csY 02 ,Rθ (Y01 ) = csX 01 + c2Y01 − csX 02 + s2Y02 ,Rθ (X02 ) = s2X01 + csY 01 + c2X02 − csY 02 ,Rθ (Y02 ) = −csX 01 + s2Y01 + csX 02 + c2Y02 .
+
+(D15) These equations display an orthogonal matrix in the normalized Hilbert–Schmidt basis. With J = Rπ/ 2 = R−π/ 2, the four noiseless prefix families are 
+
+F1(τ ) = Dτ , F2(τ ) = Rϑ(τ )D1, F3(τ ) = Dτ JD 1, F4(τ ) = R−ϑ(τ )D1JD 1. (D16) The return edge has a separate controller label and follows the opposite unitary path. Its endpoint channel equals that of the forward edge because the swap is involutory. Direct block multiplication gives 
+
+∥F1(τ )∥2→2 = ∥F2(τ )∥2→2 = 1 , ∥F3(τ )∥2→2 = dτ , ∥F4(τ )∥2→2 = χ. (D17) For instance, the population block of F3 is 
+
+( 0 d2 
+
+> τ
+> χ20
+
+)
+
+; each paired ground-coherence block is ( 0 dτ 
+
+> χ0
+
+); and the 12 block has magnitude dτ χ. Orthogonality of the leftmost factor in F4 reduces its norm to that of D1JD 1. At the half swap, 
+
+Rπ/ 4
+
+( 45 Y12 
+
+)
+
+= 45√2 (P2 − P1),
+
+which has squared norm 16 /25, as stated in Eq. (81). Equations (D16)–(D17) therefore prove the sharp value Bword = 1 for M = I8.For the always-on model, the accumulated dephasing over physical time t is 
+
+Zt = diag (1, 1, (3 /4) t, (3 /4) t, (3 /4) t, (3 /4) t, 1, 1) . (D18) It commutes with Dτ and Rθ . During segment j at local time τ , the prefix is ˜Fj (τ ) = Zj−1+ τ Fj (τ ), and another block calculation gives 
+
+∥ ˜F1∥2→2 = ∥ ˜F2∥2→2 = 1 , ∥ ˜F3∥2→2 = d2 
+
+> τ
+
+, ∥ ˜F4∥2→2 = χ2. (D19) At τ = 1, F4(1) = Sn and ˜F4(1) = Sao , so these families also recover both complete monodromies in Theorem 25. The norm-conversion constants are analytic. If Rρ is the Hilbert–Schmidt-orthogonal transverse reconstruction and ∆ = ρ − P0 = Rρ − tr( Rρ)P0, then 
+
+∥Rρ∥2 ≤ ∥ ∆∥1 = 2 dtr (ρ, P 0), dtr (ρ, P 0) ≤ 32 ∥Rρ∥2.
+
+The first inequality uses nonexpansiveness of orthogonal projection; the second follows from ∥∆∥2 ≤ √3∥Rρ∥2 and 
+
+∥∆∥1 ≤ √3∥∆∥2. Equivalently, for M = I8 the certificate inequalities are saturated: K2in I − 4M ⪰ 0 at Kin = 2 and 
+
+K2out M − 94 I ⪰ 0 at Kout = 3 /2. Together with Bword = 1 these give Keff = 3, proving all constants in Eq. (82). 33 For the distinct metric in Proposition 27, the quotient matrix Gcg in Eq. (D3) satisfies 
+
+GT
+
+> cg
+
+M⋆ + M⋆Gcg = diag (−8, −2, −1, −1, −1, −1, −2, −2) ≺ 0.
+
+Partial A and C decays are diagonal contractions in M⋆, so the direct cycle has sharp prefix bound one. Every quotient prefix of the physical word is a product of Hilbert–Schmidt contractions and is therefore a Hilbert–Schmidt contraction. Since the condition number of M⋆ is four, its induced M⋆-norm is at most two. The prefix ending at the forward swap sends the unchanged input P2 to P1, and 
+
+∥P1∥M⋆
+
+∥P2∥M⋆
+
+= 2 .
+
+This proves sharpness. The population witness is untouched by the always-on dephasing, which itself is a Hilbert– Schmidt contraction. These anisotropic metric constants are not used in the common-ground resource calculation. The signature sequence in Eq. (67) has five switches. Each of its two directed edges contributes to both the pulse and transition coordinates and only once to the aggregate primitive count. Applying Eq. (60) with Keff = 3 gives 
+
+⌈ log(3000) 
+
+− log(83 /100) 
+
+⌉
+
+= 43 ,
+
+⌈ log(3000) 
+
+− log(67 /100) 
+
+⌉
+
+= 20 ,
+
+⌈ log(3000) 
+
+− log(4 /5) 
+
+⌉
+
+= 36 ,
+
+⌈ log(3000) 
+
+− log(16 /25) 
+
+⌉
+
+= 18 .
+
+(D20) The integer immediately below each displayed value fails the corresponding scalar inequality. Multiplying the robust counts by four primitive calls, five switches, scalar cost six, and control action π gives every discrete entry in Table II. The gain-box maximum raw exposure per cycle is 2(21 /20) α = (21 /10) α, hence the totals are (903 /10) α and 42 α.Known dephasing acts for four unit intervals per cycle, giving total exposure 80 λ in the twenty-cycle branch. The obstruction on the larger gain box is established in Proposition 28.  
+
+> 2. Static and algebraic data for the cascade ladder
+
+Proposition 41 (Cascade static certificate) The ladder has the positive-gauge data 
+
+KA = KB = {I3}, EH = {0},ϕ(Aℓ) = ϕ(Bℓ) = μ = 3 ,s = m = 2 , λA = λB = 1 .
+
+There is no leakage from P0. Write Ltr  
+
+> ℓ
+
+for the matrix induced by Lℓ on the transverse quotient. In the transverse basis of Theorem 25, A⋆ := Ltr  
+
+> ℓ
+
+is 
+
+A⋆ =
+
+(
+
+−1 10 −1
+
+)
+
+⊕
+
+(
+
+− 12 I4
+
+)
+
+⊕ (−I2). (D21) 
+
+It admits the strict Lyapunov data 
+
+M =
+
+(
+
+1/2 1 /41/4 3 /4
+
+)
+
+⊕ I4 ⊕ 12 I2,m− = 14 , m+ = 2 , ν = 116 , q0 = 14 ,
+
+(D22) 
+
+with 
+
+AT 
+
+> ⋆
+
+M + M A ⋆ = −I8.
+
+The associated norm-conversion constants are 
+
+K2 := √m+/m − = 2 √2, Ktr := 2 √3 K2 = 4 √6.34 
+
+Proof. For Lℓ = Aℓ + Bℓ, direct action gives 
+
+Lℓ(P1) = P0 − P1, Lℓ(P2) = P1 − P2,
+
+multiplies each of X01 , Y 01 , X 02 , Y 02 by −1/2, and multiplies X12 , Y 12 by −1. Thus P0 is fixed, there is no leakage from the target, and the quotient matrix is Eq. (D21). Its characteristic polynomial is ( z + 1) 4(z + 1 /2) 4. Direct multiplication with Eq. (D22) gives 
+
+AT 
+
+> ⋆
+
+M + M A ⋆ = −I8,
+
+−(AT 
+
+> ⋆
+
+M + M A ⋆ + 2 νM ) − q0I8 = 34 I8 − 18 M ≻ 0,
+
+which verifies the stated Lyapunov margin. The two orbit sets are singletons, EH = 0, the weights are one, and minus the real superoperator trace gives ϕ(Aℓ) = ϕ(Bℓ) = 3. Finally, K2 = √m+/m − = 2 √2 and Ktr = 2 √3 K2 = 4 √6. □
+
+For a system operator X, direct action gives [Aℓ, B ℓ]( X) = X22 (P0 − P1), ∥[Aℓ, B ℓ]∥⋄ = 2 . (D23) The amplified map extracts the 22 block and tensors it with P0 − P1; its trace norm is at most twice the input trace norm, and a state supported on level two attains the bound. 
+
+3. Factorization, convergence, and rounded phase 
+
+Under etL ℓ , the populations satisfy 
+
+p2(t) = e−tp2(0) , p1(t) = e−t[p1(0) + tp 2(0)] . (D24) The factorization and minimum factor count are proved in Theorem 29 by matching these population coefficients and the coherence factors. Positivity gives ∥[ρ01 (0) , ρ 02 (0)] ∥2 ≤ 1/2. Combining this with Eq. (D24) yields 
+
+dtr (etL ℓ ρ, P 0) ≤ e−t(1 + t) + 12 e−t/ 2 < 2e−t/ 2. (D25) The factorization proves the bound at the strobes. CPTP contractivity between strobes and ⌊t/ P(T )⌋ ≥ t/ P(T ) − 1give Eq. (90). The initial state ( |0⟩ + |1⟩)/√2 gives a lower stroboscopic decay e−kT / 2/2, so the displayed wall-time exponent is sharp for this schedule. 
+
+Proposition 42 (Rational observation phase) Choose ̂y ∈ Q ∩ (0 , T ), set ̂x = T −̂y and ∆ y =̂y − y(T ), and define ̂ ΦT = êyA ℓ eT B ℓ êxA ℓ . Then 
+
+d⋄
+
+(̂ 
+
+ΦT , e T (Aℓ+Bℓ))
+
+= T e −T |e−∆y − 1| ≤ T e −T e|∆y ||∆y |. (D26) 
+
+Writing 
+
+r̂y = e−̂y (1 − e−T ), K̂y,T = 32 + 2r̂y
+
+e T e −T ,
+
+the rounded period map remains GAS and obeys 
+
+Ewc (̂ ΦkT ) ≤ K̂y,T e−kT / 2. (D27) 
+
+At arbitrary wall time its physical evolution satisfies 
+
+Ewc (̂Φt) ≤ K̂y,T eT / 2 exp 
+
+[
+
+− T t 
+
+2P(T )
+
+]
+
+. (D28) 
+
+The period, exposures, target, active-arc and switch counts, and exponent are unchanged, but the endpoint equals the ideal channel only when ∆y = 0 .Proof. Only the level-2 to level-1 coefficient changes, and Eq. (D23) gives Eq. (D26). The population quotient has block 
+
+( e−T r̂y 
+
+> 0e−T
+
+)
+
+. Its powers, the coherence estimate used in Eq. (D25), and ke −kT / 2 ≤ 2/(eT ) prove Eq. (D27). Contractivity within each period and ⌊t/ P(T )⌋ ≥ t/ P(T ) − 1 give Eq. (D28). □35  
+
+> 4. Exposure lower bound
+
+For any admitted ladder protocol, direct inspection of the master equation gives 
+
+ρ01 (t) = e−XA(t)/2ρ01 (0) , ρ02 (t) = e−XB (t)/2ρ02 (0) . (D29) Applying the two target-coherence witnesses stated in the main text proves Eq. (91). If the error is below ε, each exposure must exceed 2 log[1 /(2 ε)]. Exclusivity makes active wall time at least their sum; a completed two-label period has at least two arcs and two dead transitions. This proves Eq. (92) and, with the finite upper construction, the sharp leading coefficient. 
+
+> Appendix E: Finite-instance certification
+
+The finite examples use exact rational and real algebraic arithmetic, together with certified rational enclosures for logarithms and exponentials. Equality, ordering, matrix products, characteristic polynomials, principal minors, and Routh–Hurwitz determinants are finite operations on the algebraic data. The following checks connect those calculations to the stated results. 
+
+Static data. For a supplied certificate, validate the target projector, coherent basis, compact semialgebraic orbit descriptions, quotient-span dimension, and positive gauge. Reconstruct every orbit atom and the complete generator, including its positive weights and coherent remainder, in Eq. (11). Construct Π P and check that the no-leakage block in Eq. (12) vanishes. Construct the declared orthonormal quotient basis and AL, then recompute its characteristic polynomial and Routh–Hurwitz determinants. Sylvester criteria verify the metric bounds and strict Lyapunov residual in Eq. (14). Every norm-conversion constant used in the physical bounds is also recomputed. 
+
+Physical words and resources. For a fixed word and compact uncertainty box, each hold and directed edge resolves to a complete generator or channel path with its duration and calibration domain. The exact branch checks the GKLS or Kraus target-face conditions; the leaky branch checks complete-generator diamond bounds relative to structure-preserving shadow paths. Normalized-clock logarithmic-norm and generator-difference bounds include duration error. The finite splitting, commutator, conjugation, and physical-lift derivation of Esyn and the fully amplified chronological telescope then give qrob and Brob .Fieldwise cold-boundary closure and the full physical-signature sequence determine concatenation and switch counts. Dwell, pulse, dead-time, cooldown, amplitude, slew, exclusivity, and calibration inequalities constrain the domain. The componentwise costs use all exact and leaky cycle-count branches, including zero cycles, zero contraction, zero tolerance, and the practical-tube floor. The qutrit paths belong to two closed-form libraries: a piecewise-linear decay ramp whose generator commutes with itself, and a piecewise-linear Hamiltonian half turn inside the target stabilizer. Their endpoints follow from Eq. (D7); the cascade phase has the fixed logarithmic expressions in Eq. (85). These reductions avoid a decision procedure for the general real exponential field. The numerical checks cover the qubit identities, qutrit certificates, physical words and prefixes, cycle counts, cascade factorization, rounded phase, and resources, using valid and deliberately violated inputs. They verify supplied data. Existence for the fixed semialgebraic presentation is a separate quantifier-elimination result; arbitrary-dimension and all-protocol statements rely on analytic proofs. Remark 37 gives the finite-input and unsuccessful-search boundaries. Reproduction commands and software requirements appear in the numerical companion’s README.md . 
+
+> Appendix F: Complete-path certification for the four-level network 1. Cycle and prefix certificates
+
+Consider the four-dimensional real space of Hermitian operators supported on the excited subspace with the form 
+
+E = e1P1 + e2P2 + e3P3 + if |2⟩⟨ 3| − if |3⟩⟨ 2|. (F1) Here e1, e 2, e 3, f are real coordinates. The operator Q = P1 + P2 + P3 belongs to this space, and every shadow adjoint command preserves the space. Starting from Q, these adjoints produce effects of the displayed form. For a hold of actual duration τ , let x = gτ , d = κτ , and ξ = e−x. The generator equations are ˙ e1 = −ge 1, ˙ e2 = ge 1 − ge 2, ˙ e3 = 0, and ˙f = −(g/ 2 + κ)f . Integration gives (e1, e 2, e 3, f ) 7 → (ξe 1, xξe 1 + ξe 2, e 3, e −x/ 2−df ). (F2) 36 In particular, the transfer from level two to level one is retained. For a pulse with gain a, let α = ±4aτ be its actual signed angle, d = κτ , z = ( e2 − e3)/2, and m = ( e2 + e3)/2. The pair ( z, f ) obeys ˙ z = 2 uf and ˙f = −2uz − κf , where u is the signed physical amplitude. Set r = √4α2 − d2/4and s = sin( r)/r . The present domain has r > 0. Then 
+
+z′ = e−d/ 2 [(cos r + ds/ 2) z + 2 αsf ] , (F3) 
+
+f ′ = e−d/ 2 [−2αsz + (cos r − ds/ 2) f ] , (F4) 
+
+e′ 
+
+> 1
+
+= e1, e′ 
+
+> 2
+
+= m + z′, e′ 
+
+> 3
+
+= m − z′. (F5) The simultaneous dephasing term is part of this solution. A dead interval multiplies f by e−1/2000 and leaves the diagonal coordinates fixed. To obtain S∗(Q), apply these adjoints in reverse chronological order to (1 , 1, 1, 0). For Eq. (101), outward interval evaluation over the whole gain and timing box gives the following rationally rounded bounds: 0 ≤ e1 ≤ 0.000583 , e2 ≤ 0.063540 , e3 ≤ 0.058531 , |f | ≤ 0.015861 . (F6) All decimal endpoints in this display are terminating rationals rounded outwards. The maximal eigenvalue of the 2 × 2 excited block is nondecreasing in both diagonal entries and in |f |. Substituting their upper endpoints gives a value below 0 .077094 < 2/25. The remaining eigenvalue is e1. Therefore S∗(Q) ⪯ (2 /25) Q. Taking its trace against any density operator proves the survival bound without a diagonal-state assumption. The interval calculation can be reproduced with integer endpoints at scale 2 80 . Addition, multiplication, division, and square root are rounded outwards using integer arithmetic. For the exponential, range reduction to |x| ≤ 1permits degree-32 Taylor expansion with remainder at most 3 /33!, followed by squaring. For sine and cosine at scalar arguments |x| ≤ 8, Taylor degrees 81 and 80 have remainders at most 8 82 /82! and 8 81 /81!. An interval argument is treated by the addition formulas around its dyadic midpoint, using sin δ ∈ [−r0, r 0] and cos δ ∈ [1 − r20 /2, 1] for |δ| ≤ r0 ≤ 1. All arguments in the displayed hardware box obey these range restrictions. This supplies a finite calculation with retained truncation and rounding errors. Numerical matrix exponentials provide a separate implementation check of the four-coordinate formulas. For longer words, cancellation can be retained by expanding the pulse map before interval evaluation. If A =
+
+e−d/ 2(cos r + ds/ 2), C = 2 αse −d/ 2, and D = e−d/ 2(cos r − ds/ 2), the equivalent formulas are 
+
+e′ 
+
+> 2
+
+= (1 + A)e2/2 + (1 − A)e3/2 + Cf, (F7) 
+
+e′ 
+
+> 3
+
+= (1 − A)e2/2 + (1 + A)e3/2 − Cf, (F8) 
+
+f ′ = −Ce 2/2 + Ce 3/2 + Df. (F9) The coordinatewise intersection of this enclosure with Eq. (F5) still contains the exact effect. With this evaluation, Eq. (104) has 
+
+e1 < 0.000005543 , e2 < 0.007295 , e3 < 0.005336 , |f | < 0.002777 . (F10) Their spectral upper bound is below 0 .009262 < 47 /5000. Its duration bound is T = 143107 /10000. With η = T / 10 5,one cycle and its later prefixes obey p(t) ≤ 47 /5000 + 2 η = 0 .009686214 < 0.01; the limiting scalar radius is smaller. This proves its stated one-cycle preparation guarantee. For the actual pumping perturbation, ∥λD[|1⟩⟨ 0|]∥⋄ ≤ 2λ. CPTP Duhamel propagation therefore bounds the trace norm of the actual–shadow state difference through duration T by 2 λmax T . This difference is traceless Hermitian, so a projector expectation changes by at most λmax T . The cycle recursion is thus pn+1 ≤ (2 /25) pn + η. Within a cycle, ˙p = −gρ 11 + λρ 00 ≤ λmax on a hold and ˙ p = λρ 00 ≤ λmax otherwise. Every actual prefix obeys p(t) ≤ pn + η.With T = 174207 /20000, η = T / 10 5, and q = 2 /25, 
+
+q2 + (1 − q2) η
+
+1 − q + η < 0.006582 < 0.01 . (F11) The limiting value η/ (1 − q) is smaller than the two-cycle boundary bound. Equation (99) therefore proves Eq. (103) at all subsequent phases while the control continues. This is a practical tube in the actual pumping model; the shadow model itself is all-time target preserving.  
+
+> 2. Preparation followed by the matching periodic tail
+
+For the periodic comparison, the preparation prefix may end halfway through an AP period. The continuing controller must therefore start its next command at the actual scheduler phase. Let βpre bound the shadow survival 37 effect of the entire preparation prefix, and let Tpre bound its physical duration, including each dead interval. The preceding Duhamel estimate gives, for every initial state, 
+
+ppre ≤ βpre + λmax Tpre . (F12) Choose a two-period tail, either AP AP or P AP A , that begins at the resulting phase. A uniform shadow factor 
+
+βtail < 1 and duration bound Ttail give 
+
+ηtail = λmax Ttail , rtail = ηtail 
+
+1 − βtail 
+
+, pn+1 ≤ βtail pn + ηtail . (F13) Hence each later tail boundary has survival probability at most max {ppre , r tail }. The within-tail differential inequality ˙p ≤ λmax then proves the sufficient all-time criterion max {βpre + λmax Tpre , r tail } + ηtail ≤ ε2. (F14) All bounds are uniform over the declared joint error set. They can be applied to successive tails even when errors change or are correlated across tails. For the reported periodic-grid winner, the common hold is 3 .4 and the pulse angle is 1 .55. The preparation word 
+
+AP AP AP A has Tpre = 15 .40775; its next command is P , so the continuing blocks are P AP A with Ttail = 7 .9265. The same outward primitive calculation gives 
+
+βpre < 0.009664 , βtail < 0.183943 . (F15) These displayed terminating decimals are rational upper bounds. Taking λmax = 10 −5, the preparation term exceeds 
+
+rtail , and the left-hand side of Eq. (F14) is bounded by 0 .0098973425 < 0.01. Equation (99) proves the claimed trace-distance tolerance throughout subsequent operation. For each finite word in the periodic search, the checker also considers every contiguous block partition. If the blocks have uniform shadow inequalities S∗ 
+
+> i
+
+(Q) ⪯ βiQ, positivity of their adjoints gives (Sm · · · S 1)∗(Q) ⪯
+
+( m∏
+
+> i=1
+
+βi
+
+)
+
+Q. (F16) The minimum of these products and the directly enclosed whole-word factor remains valid, including under correlated admitted errors. The companion archive retains the exact rational factors, enumeration domains, and matched comparisons. 
+
+[1] J. F. Poyatos, J. I. Cirac, and P. Zoller, Quantum reservoir engineering with laser cooled trapped ions, Physical Review Letters 77 , 4728 (1996), arXiv:atom-ph/9603002. [2] F. Verstraete, M. M. Wolf, and J. I. Cirac, Quantum computation and quantum-state engineering driven by dissipation, Nature Physics 5, 633 (2009), arXiv:0803.1447 [quant-ph]. [3] J. T. Barreiro, M. Müller, P. Schindler, D. Nigg, T. Monz, M. Chwalla, M. Hennrich, C. F. Roos, P. Zoller, and R. Blatt, An open-system quantum simulator with trapped ions, Nature 470 , 486 (2011), arXiv:1104.1146 [quant-ph]. [4] S. Shankar, M. Hatridge, Z. Leghtas, K. M. Sliwa, A. Narla, U. Vool, S. M. Girvin, L. Frunzio, M. Mirrahimi, and M. H. Devoret, Autonomously stabilized entanglement between two superconducting quantum bits, Nature 504 , 419 (2013), arXiv:1307.4349 [quant-ph]. [5] P. Scaramuzza and F. Ticozzi, Switching quantum dynamics for fast stabilization, Physical Review A 91 , 062314 (2015), arXiv:1502.07262 [quant-ph]. [6] W. Liang, T. Grigoletto, and F. Ticozzi, Dissipative feedback switching for quantum stabilization, Automatica 165 , 111659 (2024), arXiv:2209.11709. [7] R. Sweke, I. Sinayskiy, D. Bernard, and F. Petruccione, Universal simulation of Markovian open quantum systems, Physical Review A 91 , 062308 (2015), arXiv:1503.05028 [quant-ph]. [8] M. Kliesch, T. Barthel, C. Gogolin, M. J. Kastoryano, and J. Eisert, Dissipative quantum Church–Turing theorem, Physical Review Letters 107 , 120501 (2011), arXiv:1105.3986 [quant-ph]. [9] A. M. Childs and T. Li, Efficient simulation of sparse Markovian quantum dynamics, Quantum Information and Compu-tation 17 , 901 (2017), arXiv:1611.05543 [quant-ph]. [10] A. Iserles and K. Kropielnicka, An elementary approach to splittings of unbounded operators, Computers & Mathematics with Applications 176 , 29 (2024), arXiv:2401.06635 [math.FA]. 38 
+
+[11] L. Viola and E. Knill, Robust dynamical decoupling of quantum systems with bounded controls, Physical Review Letters 
+
+90 , 037901 (2003), arXiv:quant-ph/0208056. [12] L. P. Pryadko and G. Quiroz, Soft-pulse dynamical decoupling with Markovian decoherence, Physical Review A 80 , 042317 (2009), arXiv:0907.1315. [13] O. Szehr and M. M. Wolf, Perturbation bounds for quantum Markov processes and their fixed points, Journal of Mathe-matical Physics 54 , 032203 (2013), arXiv:1210.1171 [math-ph]. [14] E. D. Sontag and Y. Wang, On characterizations of the input-to-state stability property, Systems & Control Letters 24 ,351 (1995). [15] Y. Lin, E. D. Sontag, and Y. Wang, A smooth converse Lyapunov theorem for robust stability, SIAM Journal on Control and Optimization 34 , 124 (1996). [16] Z. R. Gong and W. Yao, Protecting dissipative quantum state preparation via dynamical decoupling, Physical Review A 
+
+87 , 032314 (2013), arXiv:1303.2756 [quant-ph]. [17] T. S. Cubitt, A. Lucia, S. Michalakis, and D. Pérez-García, Stability of local quantum dissipative systems, Communications in Mathematical Physics 337 , 1275 (2015), arXiv:1303.4744 [quant-ph]. [18] S. G. Schirmer, F. C. Langbein, C. A. Weidner, and E. A. Jonckheere, Robust control performance for open quantum systems, IEEE Transactions on Automatic Control 67 , 6012 (2022), arXiv:2008.13691 [math.OC]. [19] T. Kraft, M. K. Joshi, W. T. Lam, T. Olsacher, F. Kranzl, J. Franke, L. K. Joshi, R. Blatt, A. Smerzi, D. S. França, B. Vermersch, B. Kraus, C. F. Roos, and P. Zoller, Bounded-error quantum simulation via Hamiltonian and Lindbladian learning, Physical Review X 16 , 031037 (2026), arXiv:2511.23392 [quant-ph]. [20] V. Gorini, A. Kossakowski, and E. C. G. Sudarshan, Completely positive dynamical semigroups of N-level systems, Journal of Mathematical Physics 17 , 821 (1976). [21] G. Lindblad, On the generators of quantum dynamical semigroups, Communications in Mathematical Physics 48 , 119 (1976). [22] G. Dirr, U. Helmke, I. Kurniawan, and T. Schulte-Herbrüggen, Lie-semigroup structures for reachability and control of open quantum systems: Kossakowski–Lindblad generators form Lie wedge to Markovian channels, Reports on Mathematical Physics 64 , 93 (2009), arXiv:0811.3906 [quant-ph]. [23] C. O’Meara, G. Dirr, and T. Schulte-Herbrüggen, Illustrating the geometry of coherently controlled unital open quantum systems, IEEE Transactions on Automatic Control 57 , 2050 (2012), arXiv:1103.2703 [quant-ph]. [24] C. Bayer and J. Teichmann, The proof of Tchakaloff’s theorem, Proceedings of the American Mathematical Society 134 ,3035 (2006), arXiv:math/0502473 [math.NA]. [25] F. Ticozzi, R. Lucchese, P. Cappellaro, and L. Viola, Hamiltonian control of quantum dynamical semigroups: Stabilization and convergence speed, IEEE Transactions on Automatic Control 57 , 1931 (2012), arXiv:1101.2452 [quant-ph]. [26] D. Chruściński and A. Kossakowski, Non-Markovian quantum dynamics: Local versus nonlocal, Physical Review Letters 
+
+104 , 070406 (2010), arXiv:0912.1259 [quant-ph]. [27] S. Basu, R. Pollack, and M.-F. Roy, Algorithms in Real Algebraic Geometry , 2nd ed., Algorithms and Computation in Mathematics, Vol. 10 (Springer, Berlin, Heidelberg, 2006).

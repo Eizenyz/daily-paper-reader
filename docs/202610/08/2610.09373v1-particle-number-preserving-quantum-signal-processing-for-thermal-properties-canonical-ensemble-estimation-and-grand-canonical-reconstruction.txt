@@ -1,0 +1,3004 @@
+Title: Particle-Number-Preserving Quantum Signal Processing for Thermal Properties: Canonical-Ensemble Estimation and Grand-Canonical Reconstruction
+
+URL Source: https://arxiv.org/pdf/2610.09373v1
+
+Published Time: Thu, 08 Oct 2026 00:37:10 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+Particle-Number-Preserving Quantum Signal Processing for Thermal Properties: Canonical-Ensemble Estimation and Grand-Canonical Reconstruction 
+
+Taehee Ko, 1, ∗ Sungbin Lim, 2, 3, † and Sangkook Choi 1, ‡
+
+> 1
+
+School of Computational Sciences, Korea Institute for Advanced Study, Seoul, Republic of Korea 
+
+> 2
+
+Department of Statistics, Korea University, Seoul, Republic of Korea 
+
+> 3
+
+National Research Council of Science & Technology, MSIT, Republic of Korea 
+
+We develop an end-to-end framework for estimating canonical thermal properties of particle-number-conserving second-quantized Hamiltonians using quantum simulations. The framework in-tegrates initial state preparation with mixed Dicke states, particle-number-preserving Trotterized simulation, and generalized quantum signal processing to estimate canonical partition functions and observables. Building on this canonical scheme, we introduce a grand-canonical reconstruction scheme in which the same quantum measurement data can be reused for arbitrary chemical po-tentials through classical reweighting, thereby avoiding repeated quantum circuit executions as the chemical potential is varied. We prove the existence of system-size-independent temperature regimes in which both the canonical and reconstructed grand-canonical schemes have lower asymptotic time complexity than classical Lanczos methods, up to polynomial factors, for physically relevant Hamil-tonians. We numerically validate our theoretical results for the two-dimensional Hubbard model in both weak- and intermediate-coupling regimes. 
+
+I. INTRODUCTION 
+
+Particle-number conservation is a fundamental symmetry of various quantum many-body Hamil-tonians, including those describing molecular systems [1–6], ultracold atoms [7, 8], and lattice elec-tronic systems such as twisted bilayer graphene [9]. When the particle number is fixed, the canonical ensemble provides the standard framework for calculating thermal properties: the partition function and observables are evaluated within the selected fixed-particle-number subspace. Classical canon-ical methods have been developed [10–13], among which Lanczos-based approaches [12] provide rigorous complexity guarantees under general parameter regimes. However, their computational cost scales linearly with the dimension of the selected sector in general, which grows exponentially with system size. In contrast to classical algorithms, a rigorous quantum framework for estimating canonical ther-mal properties within a fixed-particle-number sector has not yet been established. For example, sev-eral algorithms have been introduced within the framework of Lindbladians [4, 14–17], but the few designed for fermionic systems are not directly applicable to estimating canonical thermal proper-ties. In particular, the Lindbladian constructions in [15, 17] do not preserve particle-number symme-try. Although a number-preserving Lindbladian was proposed in [4], their theoretical guarantees are restricted to estimating ground-state properties of Hartree-Fock models. In addition to these Lind-bladian algorithms, algorithms based on quantum singular value transformation (QSVT) or linear combinations of unitaries (LCU) enable the estimation of grand-canonical thermal properties [18– 23]. These approaches require a block encoding restricted to a fixed-particle-number sector, which    
+
+> ∗kthmomo@kias.re.kr
+> †sungbin@korea.ac.kr
+> ‡sangkookchoi@kias.re.kr arXiv:2610.09373v1 [quant-ph] 7 Oct 2026
+
+2has been established only recently [24]. As an LCU-based approach with a Hamiltonian-simulation input model, [25] utilizes fixed-number initialization, but without particle-number-preserving Trot-ter circuits. Moreover, existing grand-canonical approaches generally retain complexity dependence on parameters such as the chemical potential and interaction strengths. These observations raise two central questions of this work: 
+
+• Can we construct an end-to-end quantum framework for estimating canonical-ensemble prop-erties within a selected particle-number sector? 
+
+• Can such a framework be extended to estimating grand-canonical thermal properties and provide an asymptotic speedup over classical Lanczos-based methods for general model pa-rameters at constant temperatures? In this work, we answer both questions in the affirmative by proposing an end-to-end quantum algorithm for estimating canonical thermal properties of the second-quantized model (1). Building on this algorithm, we further develop a grand-canonical reconstruction scheme that reuses the same sector-resolved quantum data across arbitrary chemical potentials. As a result, for physically relevant models, we identify system-size-independent constant-temperature regimes in which the proposed quantum algorithms asymptotically outperform classical methods based on the Lanczos algorithm. For the grand-canonical ensemble, the recent work [26] establishes the efficiency of a classical algorithm based on sampling trees in the high-temperature regime. However, for the 2D Hubbard model considered in Section IV B, we numerically find that the corresponding rigorous temperature thresholds lie far above physically relevant regimes, as summarized in Table II. Our contributions are summarized as follows: 1. We propose a quantum algorithm for the canonical ensemble (Algorithm 1) that unifies several independent quantum computing techniques (Definition 1 and Proposition 1 the GQSP circuit in Fig. 1). The required gate complexity per circuit sample scales polynomial. Our approach guarantees an exponentially improved scaling of the number of Trotter steps compared with that obtained from a textbook analysis [27, 28], as discussed in Section III A. Moreover, our analysis finds that the Trotterized Hamiltonian simulation in our algorithm is defined with a normalization factor corresponding to the fixed-particle subspace not the full Hilbert space. This is consistent with the case of block encodings [24]. In addition, canonical-ensemble gate and circuit-sampling complexity bounds are independent of the chemical potential μ
+
+(Theorem 1). 2. We introduce a grand-canonical reconstruction scheme (Algorithm 2) that converts canonical-sector estimates into grand-canonical partition functions and observables through classical reweighting. The advantage of our grand-canonical scheme is that it does not require re-execution of the quantum circuit for each trial value of μ. Therefore, it is particularly ap-pealing for practitioners who need to determine an appropriate chemical potential through an extensive scanning procedure, as discussed in [5]. Moreover, quantum circuit and circuit-sampling complexities for the grand-canonical scheme are independent of μ, indeed being comparable to the canonical scheme corresponding to a fixed-particle subspace (Corollary 1). 3. For physically relevant Hamiltonians whose spectral norm scales linearly with system size, we prove the existence of system-size-independent temperature thresholds above which our canonical and grand-canonical algorithms have lower asymptotic time complexity than clas-sical methods based on the Lanczos algorithm [12, 29, 30] (Observation 1). We numerically validate this scaling comparison for a two-dimensional Hubbard model in Section IV B. Al-though a classical algorithm based on sampling trees has recently been established [31], the 3parameter regimes in which its theoretical guarantee becomes practically relevant remain unclear at the numerical level. We therefore use the Lanczos method as the main classical baseline for comparison with our schemes.  
+
+> II. RELATED WORK
+
+While a plenty of frameworks for many-body systems in classical algorithms are there (e.g. see [10, 11, 13, 32–34] and references therein), generally-applicable rigorous guarantees of time complexity for interacting fermionic systems are observed very scarcely. To our knowledge, the Lanczos method with stochastic trace estimation or its variants [29, 35] and randomized sampling algorithms by Tong and his colleagues [26, 31] are only the cases. The latter results are applicable for the grand canonical ensemble and shows a polynomial-time guarantee for some parameter regimes, while the former needs an exponential time scaling linearly with the Hilbert space dimension or a fixed particle subspace without restrictions on coupling strength or temperature applicable for both canonical and grand canonical ensembles. Similar to the Lanczos approach, our framework provides both canonical and grand-canonical schemes. However, the complexity of our quantum algorithms varies with the inverse temperature, whereas the computational cost of the Lanczos algorithm scales with the dimension of the full Hilbert space or the selected particle-number sector, regardless of temperature. Accordingly, there exist constant-temperature regimes in which our algorithms are more efficient than the Lanczos method in terms of time complexity up to polynomial factors, as shown in Observation 1. Previous quantum algorithms based on LCU or QSP techniques usually rely on access to a block-encoding of the Hamiltonian [18–23, 36]. However, these results do not directly produce an algorithm for the estimation of canonical thermal properties, as they did not develop an ex-plicit circuit construction of a block encoding for a fixed-particle subspace. It is similar for other previous results that use different input models, including a walk operator [37], Pauli sampling [38], and a Trotter formula [39]. Although not demonstrated in [24], combining its fixed-sector block encoding with QSVT techniques [18] and initializing it with the proposed state (Definition 1) should yield a canonical scheme. Similar to our approach (Algorithm 1), fixed-sector initialization is also employed in the LCU-based method of [25]. However, their construction does not incor-porate number-preserving Trotter circuits and, moreover, can incur at least quadratically higher circuit-sampling complexity than ours, reflecting a common drawback of incoherent LCU methods [19, 37, 38] compared with coherent QSP implementations [18, 36]. Some of the aforementioned algorithms are able to produce thermal properties for the grand canonical ensemble with rigorous guarantees. Especially for the general case where the strength of coupling interaction can be arbitrary, Lanczos approach [29, 35], a randomized classical algorithm [26], and some of QSP and LCU approaches mentioned above can be compared to our approaches (Algorithms 2 and 3). For Algorithm 3, its complexity is comparable to QSP approaches without amplitude amplifications, which is consistent with previous results [18, 36]. Meanwhile, Algorithm 2 achieves chemical-potential-independent circuit complexity and circuit sampling complexity corre-sponding to a fixed particle number. That is, the Trotter circuits in our construction (Algorithm 2) do not involve the number operator like the methods mentioned above, thereby yielding a reduction of circuit complexity for Hamiltonian simulation. While the quantum Lindbladian algorithms in [15, 17] enable the estimation of grand-canonical properties, their results focus on extreme coupling-strength regimes. 4
+
+III. MAIN RESULT 
+
+We consider the second-quantized Hamiltonians for a system of L spin orbitals (or spatial modes), 
+
+H = X
+
+> i,j
+
+hi,j c† 
+
+> i
+
+cj + 12
+
+X
+
+> i,j,u,v
+
+gi,j,u,v c† 
+
+> i
+
+c† 
+
+> j
+
+cucv , (1) where hji = h∗ 
+
+> ij
+
+and gvuji = g∗ 
+
+> ijuv
+
+. For a fixed particle-number sector s, the canonical density operator is 
+
+ρL,s (β) = e−βH (L,s )
+
+tr  e−βH (L,s ) . (2) The two target quantities are the thermal expectation value and the canonical partition function, 
+
+⟨O⟩β,s := tr( ρL,s (β)O) , (3) 
+
+ZL,s (β) := tr 
+
+
+
+e−βH (L,s )
+
+. (4) Here, H(L, s ) denotes the restriction of the full many-body Hamiltonian to the s-particle sector. The sector label s takes one of two forms depending on the symmetries of the target system: 
+
+s = k denotes the total particle-number sector, while s = ( k, k ′) denotes the spin-resolved sector with k spin-up and k′ spin-down particles when the corresponding number operators independently commute with the Hamiltonian. As is often the case in practice, we focus on observables O that can be expressed as linear combinations of a polynomial number of Pauli operators, that is, 
+
+O =
+
+> O(poly( L))
+
+X
+
+> a=1
+
+caPa, ca = O(1) , Pa : Pauli operator . (5) We define the problem as the following. 
+
+Problem 1. Given a Hamiltonian H in (1) and an inverse temperature β ≥ 0, let ϵ ∈ (0 , 1) be a target precision, and let η ∈ (0 , 1) be a failure probability. For a fixed particle number sector s, let 
+
+H(L, s ) denote the restriction of H to the subspace corresponding to the s-particle sector. Let O be an observable. Define ZL,s (β) := tr  e−βH (L,s ). The goal is to obtain bZ and bo such that 
+
+bZ − ZL,s (β) ≤ ϵZ L,s (β), (6) 
+
+|bo − ⟨ O⟩β,s | ≤ ϵ, (7) 
+
+with probability at least 1 − η.
+
+This choice of error metrics follows the standard conventions for estimating thermal properties [22, 38]. Our main result is summarized as follows, 
+
+Theorem 1. Assume a normalization factor λL,s > 0 such that H(L,s ) 
+
+> λL,s 2
+
+≤ 1 − δ for some 
+
+δ ∈ (0 , 1) , where ∥·∥ 2 denotes the spectral norm of a matrix. Using the first-order Trotter formula with a GQSP circuit in Fig. 1, Problem 1 can be solved with the following: 5
+
+• 2L (for the s = k sector) or 4L (for the s = ( k, k ′) sector) qubits for the initial state prepa-ration 
+
+• L (for the s = k sector) or 2L (for the s = ( k, k ′) sector) system qubits, and a single ancilla qubit for the GQSP 
+
+• r = Ω 
+
+
+
+Λ2 
+
+> H(L,s )
+
+max 
+
+h 1 
+
+> λL,s δ
+
+, β
+
+> log(1+ ϵ)
+
+i 
+
+Trotter steps per Hamiltonian simulation 
+
+• O  rL 4  ln   1
+
+> ϵ
+
+ + βλ L,s 
+
+ 1
+
+> δ
+
+ gate complexity 
+
+• O
+
+
+
+C dseβλ L,s  
+
+> ZL,s (β)ϵ2
+
+log 1
+
+> η
+
+
+
+circuit sampling complexity, where 
+
+C =
+
+
+
+1 for estimating ZL,s (β)
+
+PO(poly( L))  
+
+> a=1
+
+|ca|
+
+2
+
+for estimating ⟨O⟩β,s 
+
+.
+
+Here, the factor ΛH(L,s ) is defined in (93) The proof of the theorem is shown in Section VII C. In Theorem 1, we assume a normalization factor λL,s and we can find a conservative factor by using the Gershigorin’s theorem. For a tighter factor, one may utilize semi-definite programming (SDP) relaxations [40, 41]. 
+
+A. Algorithm overview 
+
+We provide an overview of our numerical schemes for canonical and grand-canonical thermal property estimations below. We fix a particle-number sector s and let Π s be its projector. We define ds = tr(Π s) be the dimension of fixed-particle subspace. For s = k, the known sector dimension is ds =  Lk
+
+; for a spin-resolved sector s = ( k, k ′), it is ds =  Lk
+
+  Lk′
+
+.
+
+1. Canonical scheme 
+
+a. Prepare the mixed Dicke state as the initial state We initialize the system in the mixed Dicke state ωL,s = Π s/d s defined in Definition 1. This state is the maximally mixed state corresponding to the sector s. To encode this state into a quantum circuit, we prepare a purification of ωL,s as detailed in Proposition 1. 
+
+b. Construct a block encoding of the exponential matrix function using a Trotterized GQSP 
+
+With the initial state ωL,s , we construct a circuit using the GQSP [42, Theorem 6], which approx-imately block-encode e− βH  
+
+> 2
+
+up to a subnormalization factor. The circuit involves a single ancilla qubit with Hamiltonian-simulation input model, as depicted in Fig. 1. We choose a normalization factor, λL,s , such that H(L,s ) 
+
+> λL,s 2
+
+< 1. This normalization factor is introduced when compiling the Hamiltonian simulation using a Trotter circuit, which is reasonable due to the choice of our initial state (Lemma 5). To block-encode e− βH  
+
+> 2
+
+, we find a subnormalization factor by finding a corresponding Fourier-series approximation (Lemma 4) and evaluating the absolute sum of Fourier coefficients as in Lemma 5. Then, the canonical thermal properties in Problem 1 are formulated 6as the probability of observing state |0⟩ in the ancilla qubit and the usual observable measurement conditioned on that event as follows, 
+
+P (0) = tr  f (eiH )†ωL,s f (eiH ) ≈ e−βλ L,s tr  e−βH (L,s )
+
+ds
+
+, (8) 
+
+⟨O⟩ = tr  f (eiH )†ωL,s f (eiH )O
+
+P (0) ≈ tr  e−βH (L,s )O
+
+tr  e−βH (L,s ) . (9) Meanwhile, standard Trotter circuits generally do not preserve the number symmetry and the above estimates may involve biases from outside the target sector s. To address this, we construct number-symmetry-preserving Trotter circuits by extending the unitary coupled cluster ansatz used in variational quantum algorithms [43] to both symmetric and antisymmetric forms. We specify the corresponding Trotter-circuit blocks (Example 1). Notably, any finite product of these blocks also commutes with the number operator N . Equivalently, the finite Trotter product can be viewed as an exact evolution under an effective Hamiltonian eH. As proved in Lemma 2, [ eH, N ] = 0, so the Trotter error is controlled within the target sector s.
+
+c. Estimate the partition function and observables To perform the task in Problem 1, we follow standard approaches based on the Monte Carlo sampling as outlined in Algorithm 1. Here we briefly describe the procedure. We execute the circuit Nshots times. Let Aj = 1 if shot j returns the GQSP ancilla in |0⟩ and let Aj = 0 otherwise, and let N0 = PNshots  
+
+> j=1
+
+Aj be the number of successful shots. We consider the sample mean estimator, bPs(0) = N0/N shots . This unbiased estimate approximates the partition function, 
+
+ZL,s (β) ≈ dseβλ L,s bPs(0) = dseβλ L,s N0
+
+Nshots 
+
+. (10) For simplicity, we consider the case that O is a Pauli operator. To estimate ⟨O⟩β,s in Problem 1, we measure both the ancilla qubit and the system register. Then, we perform post-processing on measurements such that for the measurements where |0⟩ is observed in the ancilla qubit, we collect the estimates of observable O. Let M0 be the number of such occurrences and oj denote the estimated observable in shot j. Then, we obtain a good approximation of the observable from the sample mean, 
+
+⟨O⟩β,s ≈ 1
+
+M0
+
+> M0
+
+X
+
+> j=1
+
+oj . (11) If O is a sum of Pauli operators, we repeat this procedure for the Pauli operators respectively. 
+
+d. Scaling of the number of Trotter steps The overall estimation error is governed by the approximation relation f (ei eH ) ≈ e− β  
+
+> 2eH
+
+≈ e− β  
+
+> 2H
+
+. The first approximation is determined by the degree of the Fourier-series approximation. The second approximation error is controlled by the number of Trotter steps; for the first-order formula with r steps and simulation time τ , we have 
+
+eH − H 2
+
+≤ Λ2 
+
+> H τr
+
+(Lemma 1). By using Weyl’s inequality, achieving precision ϵ (Problem 1) requires a polynomial number of Trotter steps: 
+
+r = Ω 
+
+
+
+Λ2 
+
+> H
+
+max 
+
+ 1
+
+λL,s δ , β
+
+log(1 + ϵ)
+
+ 
+
+. (12) 7However, if one applies a standard approach [28, Appendix C] to the problem considered, an exponential scaling of the number of Trotter steps is required. As this approach is based on the repetitive use of triangle inequalities [27, eq (4.63)], it requires a precision-dependent number of Trotter steps. Thus, O(( ϵP (0)) − 1 
+
+> p
+
+) Trotter steps are needed due to the relative-error convention in Problem 1, and the probability P (0) scales exponentially with β and the subspace spectral norm estimate λL,s . In contrast, the number of Trotter steps obtained from our approach in (12) is independent of P (0), as detailed in (94).  
+
+> 2. Grand-canonical reconstruction
+
+Building on the canonical scheme (Algorithm 1), we develop a grand-canonical scheme (Algo-rithm 2). Let S be the set of particle sectors and let ns be the particle number in sector s, namely 
+
+ns = k for s = k and ns = k + k′ for s = ( k, k ′). We denote MO,s (β) = tr  e−βH (L,s )O. We first estimate the canonical thermal properties ZL,s (β) and MO,s (β) in every relevant sector, which are obtained via Algorithm 1 from measurement data. Then, we exploit the following classical-reweighting representations of the grand partition function and grand-canonical observable: 
+
+ZL(β, μ ) = X
+
+> s∈S
+
+eβμn s ZL,s (β), (13) and 
+
+⟨O⟩GC  
+
+> β,μ
+
+:= 
+
+P 
+
+> s∈S
+
+eβμn s MO,s (β)
+
+ZL(β, μ )=
+
+P 
+
+> s∈S
+
+eβμn s ZL,s (β)⟨O⟩β,s 
+
+P 
+
+> s∈S
+
+eβμn s ZL,s (β) .
+
+(14) Therefore, for any trial value of μ, we are able to estimate these grand-canonical properties by reusing the canonical thermal properties ZL,s (β) and MO,s (β) obtained from the canonical scheme in Algorithm 1. This approach contrasts with previous quantum algorithms, including Lindbladian algorithms [15, 17], QSVT, and LCU approaches [18–23], which require changing the input H − μN 
+
+depending on μ and re-executing a corresponding quantum circuit to obtain new measurement data.                    
+
+> |0⟩R0•R1•·· RD−1•RDR′
+> 1·· R′
+> D
+> ωeiH eiH ·· eiH e−iH e−iH ·· e−iH
+
+FIG. 1: GQSP circuit for canonical thermal estimation [42], formed by single-qubit rotations Rk
+
+and controlled Hamiltonian simulations, denoted as e±iH . D denotes the degree of the Laurent polynomial. The rotation angles correspond to the circuit that proportionally block encodes 
+
+e− β  
+
+> 2H
+
+. The system register is initialized in the mixed Dicke state ωL,s (Definition 1). The controlled time-evolution blocks are implemented using the number-symmetry-preserving Trotter circuits (Example 1). The probability of observing the ancilla qubit in the |0⟩ state is proportional to the partition function. Conditioned on this event, the target-register measurement yields a sample for the thermal observable. 8
+
+B. Circuit components for the canonical scheme 
+
+In the present work, we consider the JW transformation of the model (1), where we let 
+
+cj = 12
+
+> j−1
+
+Y
+
+> ℓ=1
+
+Zℓ
+
+!
+
+(Xj + iY j ), c† 
+
+> j
+
+= 12
+
+> j−1
+
+Y
+
+> ℓ=1
+
+Zℓ
+
+!
+
+(Xj − iY j ). (15) Under the JW transformation, the computational basis of the qubit register is identified with the fermionic occupation-number basis. In particular, 
+
+|x1x2 · · · xL⟩ ←→ 
+
+
+
+c†
+
+> 1
+
+x1 
+
+c†
+
+> 2
+
+x2
+
+· · · 
+
+
+
+c†
+
+> L
+
+xL
+
+|vac ⟩ , |vac ⟩ = |0⟩⊗L , (16) up to a possible sign depending on the convention for the ordering of the creation operators. Here 
+
+xi ∈ { 0, 1} denotes the occupation of the i-th fermionic mode. Consequently, the Hamming weight wt( x) := 
+
+> L
+
+X
+
+> i=1
+
+xi (17) is equal to the total particle number of the corresponding Fock-basis state. We denote the particle number operator by nj := c† 
+
+> j
+
+cj . For i < j , define the JW string by Zi:j := Qj−1 
+
+> ℓ=i+1
+
+Zℓ, where an empty product is understood to be the identity. We define mixed Dicke states as initial states. These states are normalized projectors onto fixed-particle subspaces. 
+
+Definition 1. For a system modeled with L total fermionic modes (e.g., spin-orbitals), we define the mixed Dicke state for a total particle number k by 
+
+ωL,k := 1
+
+ Lk
+
+ X
+
+> x∈{ 0,1}L
+> wt( x)= k
+
+|x⟩ ⟨ x| . (18) 
+
+For systems of spin- 12 fermions mapped over L spatial modes (e.g., spatial orbitals or lattice sites), where the numbers of spin-up and spin-down particles are independently conserved, we define the mixed Dicke state containing k spin-up particles and k′ spin-down particles by 
+
+ωL, (k,k ′) := 1
+
+ Lk
+
+  Lk′
+
+ X 
+
+> x,y ∈{ 0,1}L
+> wt( x)= k, wt( y)= k′
+
+|x, y ⟩ ⟨ x, y | . (19) In other words, ωL,k is the maximally mixed state in the k-particle sector, whereas ωL, (k,k ′) is the maximally mixed state in the sector containing k spin-up particles and k′ spin-down particles. These states can be prepared efficiently by first constructing a pure Dicke state with ancilla qubits and then tracing out the ancilla register. Preparing the pure Dicke state requires only a linear circuit depth [44]. 
+
+Proposition 1 (Initial state preparation) . Preparing ωL,k requires 2L qubits, O(kL ) gates, and 
+
+O(L) circuit depth. For ωL, (k,k ′), 4L qubits and the same scaling of gate count and circuit depth are required. 9
+
+Proof. We prepare the purified state: 
+
+Lk
+
+− 12 X
+
+> x∈{ 0,1}L
+> wt( x)= k
+
+|x⟩ | x⟩ , (20) which can be achieved by preparing a pure Dicke state [44] in the first L-qubit register and applying CNOT gates controlled on the first register and targeted to a second L-qubit register. Tracing out the second register yields the desired mixed Dicke state. The overall circuit complexity is similar to the complexity established in [44]. A similar scaling of circuit complexity is required for preparing the state ωL, (k,k ′).We turn to Trotter circuit constructions to replace the Hamiltonian simulation block in the circuit in Fig. 1. As mentioned earlier, we consider circuits that preserve the particle-number symmetry of the second-quantized model in (1). We summarize the relevant cases below. 
+
+Example 1 (Number-symmetry-preserving Trotter circuit construction) .
+
+(i) 1 -body terms. 
+
+For i̸ = j, the JW transformed 1-body term is hij c† 
+
+> i
+
+cj + h∗ 
+
+> ij
+
+c† 
+
+> j
+
+ci = 12 Zi:j
+
+ Re( hij )P (R)  
+
+> ij
+
+−
+
+Im( hij )P (I) 
+
+> ij
+
+, where P (R)  
+
+> ij
+
+:= XiXj + YiYj and P (I)  
+
+> ij
+
+:= XiYj − YiXj . Because the Pauli strings within each Pij mutually commute and the grouped generator preserves particle number, they are exponentiated together to form the Trotter blocks, 
+
+U (ij )R (τ ) := exp 
+
+
+
+−iτ Re( hij )2 Zi:j P (R) 
+
+> ij
+
+
+
+, U (ij )I (τ ) := exp 
+
+
+
+iτ Im( hij )2 Zi:j P (I) 
+
+> ij
+
+
+
+. (21) 
+
+For the diagonal case ( i = j), hii ∈ R and the term reduces to hii ni = hii  
+
+> 2
+
+(I − Zi). Up to a global phase, its Trotter block is 
+
+U (ii )(τ ) = exp 
+
+
+
+iτ hii 
+
+2 Zi
+
+
+
+. (22) (ii) 2 -body terms. 
+
+The JW representation of H(2)  
+
+> pquv
+
+:= gpquv c†
+
+> p
+
+c† 
+
+> q
+
+cucv + h.c. depends on the index equality pattern. We consider the three non-zero cases as follows. 
+
+(a) Four pairwise distinct indices ( v < u < q < p ). Let Zvuqp :=   Q u−1 
+
+> a=v+1
+
+Za
+
+  Q p−1 
+
+> b=q+1
+
+Zb
+
+. The term becomes H(2)  
+
+> pquv
+
+= 18 Zvuqp 
+
+ Re( gpquv )P (R) 
+
+> vuqp
+
++Im( gpquv )P (I) 
+
+> vuqp
+
+, where the 8-term Pauli sums are grouped as: 
+
+P (R)  
+
+> vuqp
+
+:= − Xv XuXq Xp + Xv XuYq Yp − Xv YuXq Yp − Xv YuYq Xp
+
+− Yv XuXq Yp − Yv XuYq Xp + Yv YuXq Xp − Yv YuYq Yp, (23) 
+
+P (I)  
+
+> vuqp
+
+:= − Xv XuYq Xp − Yv XuYq Yp − Xv YuYq Yp − Xv XuXq Yp
+
++ Yv XuXq Xp + Xv YuXq Xp + Yv YuYq Xp + Yv YuXq Yp. (24) 10 
+
+As shown in Lemma 2, the strings within each operator mutually commute. The corresponding grouped number-preserving blocks are 
+
+U (pquv )R (τ ) := exp 
+
+
+
+−iτ Re( gpquv )8 Zvuqp P (R) 
+
+> vuqp
+
+
+
+, U (pquv )I (τ ) := exp 
+
+
+
+−iτ Im( gpquv )8 Zvuqp P (I) 
+
+> vuqp
+
+
+
+.
+
+(25) (b) One coincidence ( p = u, with q < v ). The term simplifies via c†
+
+> p
+
+c† 
+
+> q
+
+cpcv = −npc† 
+
+> q
+
+cv to H(2)  
+
+> pqpv
+
+= − 14 (I − Zp)Zq:v
+
+ Re( gpqpv )P (R)  
+
+> qv
+
++Im( gpqpv )P (I) 
+
+> qv
+
+. The Trotter blocks are 
+
+U (pqpv )R (τ ) := exp 
+
+
+
+iτ Re( gpqpv )4 (I − Zp)Zq:v P (R) 
+
+> qv
+
+
+
+, U (pqpv )I (τ ) := exp 
+
+
+
+iτ Im( gpqpv )4 (I − Zp)Zq:v P (I) 
+
+> qv
+
+
+
+.
+
+(26) (c) Two coincidences ( p = u, q = v, p ̸ = q). The term reduces to c†
+
+> p
+
+c† 
+
+> q
+
+cpcq = −npnq , giving H(2)  
+
+> pqpq
+
+= −2 Re( gpqpq )npnq . Since npnq = 
+
+> 14
+
+(I − Zp)( I − Zq ), the Trotter block is 
+
+U (pq )(τ ) := exp 
+
+
+
+iτ Re( gpqpq )2 (I − Zp)( I − Zq )
+
+
+
+. (27) We remark that a Trotter circuit for eiHτ constructed using any ordering of these blocks is applicable in Fig. 1, as each individual block preserves the total particle number. 
+
+C. Numerical schemes for canonical and grand-canonical ensemble properties 
+
+The circuit constructions described above, combined with the GQSP in Fig. 1, enable the es-timation of canonical ensemble properties as outlined in Algorithm 1. To estimate the canonical partition function, we use the extension of the relation (8) with an associated effective Hamiltonian 
+
+eH,
+
+P (0) = tr 
+
+
+
+f (ei eH )†ωL,s f (ei eH )
+
+
+
+≈ 1
+
+ds
+
+tr 
+
+
+
+e−β eH(L,s )
+
+
+
+eβλ L,s . (28) We note that the Hamiltonian simulation is projected onto the target particle subspace, since [ eH, N ] = 0 due to the construction in Example 1 and ωL,s is the initial state chosen as a mixed Dicke state (Definition 1). We notice that the normalization factor chosen for the implementation of GQSP is an upper bound of the spectral norm of the sub-Hamiltonian corresponding to the particle subspace, λL,s , which is probably smaller than in the case of the full Hilbert space. When |0⟩ is measured in the ancilla qubit, we estimate an observable corresponding to the target sector by noticing the following relation similar to (9), tr 
+
+ f (ei eH )†ωL, (k,k ′)f (ei eH )tr 
+
+
+
+f (ei eH )†ωL, (k,k ′)f (ei eH )
+
+ O
+
+ ≈ tr 
+
+ e−β eH(L, (k,k ′)) 
+
+tr 
+
+
+
+e−β eH(L, (k,k ′)) 
+
+ O
+
+. (29) 11 
+
+Algorithm 1: Quantum estimation of canonical ensemble properties 
+
+Data: System size L, sector s ∈ { k, (k, k ′)}, inverse temperature β, precision ϵ > 0, normalization factor λL,s (where ∥H(L, s )/λ L,S ∥ ≤ 1 − δ), the number of shots 
+
+Nshots (circuit sampling complexity in Theorem 1), and observable O
+
+Result: Approximations of the partition function bZL,s (β) and the thermal expectation value boL,s of the observable O
+
+1. Construct the GQSP circuit (Fig. 1, Proposition 1, and Example 1). 2. Partition Function Estimate: Execute the circuit Nshots times. Let N0 be the number of ancilla |0⟩ outcomes. Estimate bZL,s (β) = dseβλ L,s N0 
+
+> Nshots
+
+, where ds is the sector dimension (  Lk
+
+ or  Lk
+
+  Lk′
+
+). 3. Observable Estimate: Conditioned on the M0 occurrences among Nshots , where the ancilla is |0⟩, measure O on the system register to obtain outcomes {oj }M0
+
+> j=1
+
+. Estimate 
+
+boL,s = 1
+
+> M0
+
+PM0 
+
+> j=1
+
+oj .We extend Algorithm 1 to the grand canonical ensemble as in Algorithm 2. The key idea is to apply Algorithm 1 as a subroutine across all sectors with a fixed number of particles, aggregate the estimates of canonical ensemble properties, and use those estimates to evaluate grand canonical ensemble properties via the following identities, tr 
+
+
+
+e−β(H−μN )O
+
+
+
+= X
+
+> k,k ′
+
+eβμ (k+k′) tr 
+
+
+
+e−βH (L, (k,k ′))  tr 
+
+
+
+e−βH (L, (k,k ′)) O
+
+
+
+tr  e−βH (L, (k,k ′))  ,
+
+tr 
+
+
+
+e−β(H−μN )
+
+= X
+
+> k,k ′
+
+eβμ (k+k′) tr 
+
+
+
+e−βH (L, (k,k ′)) 
+
+. (30) Notice that, except for the scalar weight eβμ (k+k′), all quantities in the identities are defined by canonical ensemble properties, which correspond to the outputs of Algorithm 1. Thus, once the out-puts are obtained from quantum computations, classical postprocessing based on (30) is performed to estimate grand canonical properties. Algorithm 2 is guaranteed to achieve a similar goal as in Problem 1 for the grand canonical ensemble, provided that its subroutine, Algorithm 1, does so as well (e.g. relative error for the partition function estimation and additive error for the thermal average estimation). Formally, we state this observation as follows. 
+
+Corollary 1. Suppose that the canonical partition functions are estimated to relative error ϵ and the corresponding canonical thermal averages are estimated to additive error ϵ∥O∥2, uniformly over all particle-number sectors in Algorithm 2. Then, for any ϵ ∈ (0 , 1) , the resulting grand-canonical partition function is estimated to relative error ϵ, and the grand-canonical thermal average is es-timated to additive error ϵ(3 −ϵ)1−ϵ ∥O∥2 = O (ϵ∥O∥2). Subsequently, the gate complexity and circuit sampling complexity of Algorithm 2 are determined by the corresponding maximums of them in Theorem 1 over all particle sectors s.Proof. For s ∈ S , we let ns denote the particle number for sector s, and let 
+
+ZL,s (β) := tr 
+
+
+
+e−βH (L,s )
+
+, o L,s := tr  e−βH (L,s )O
+
+ZL,s (β) , w L,s := eβμn s ZL,s (β). (31) 12 By (30), the exact grand-canonical thermal average and partition function are represented by 
+
+oGC  
+
+> L
+
+=
+
+P 
+
+> s∈S
+
+wL,s oL,s 
+
+P 
+
+> s∈S
+
+wL,s 
+
+, ZL(β, μ ) = X
+
+> s∈S
+
+wL,s . (32) Let bwL,s := eβμn s bZL,s (β) and bZL(β, μ ) := P 
+
+> s∈S
+
+bwL,s . By the assumption, bZL,s (β) − ZL,s (β) ≤
+
+ϵZ L,s (β), which implies |wL,s − bwL,s | ≤ ϵw L,s . It follows bZL(β, μ ) − Z L(β, μ ) ≤ ϵZL(β, μ ) by the triangle inequality. This proves the first statement. We note that bZL(β, μ ) ≥ (1 − ϵ)ZL(β, μ ). For the thermal average estimation, we observe that 
+
+boGC  
+
+> L
+
+− oGC  
+
+> L
+
+≤
+
+P 
+
+> s
+
+bwL,s (boL,s − oL,s )
+
+bZL(β, μ ) +
+
+P 
+
+> s
+
+bwL,s oL,s 
+
+bZL(β, μ ) −
+
+P 
+
+> s
+
+wL,s oL,s 
+
+ZL(β, μ ) . (33) The first term satisfies 
+
+P 
+
+> s
+
+bwL,s (boL,s − oL,s )
+
+bZL(β, μ ) ≤ X
+
+> s
+
+bwL,s 
+
+bZL(β, μ ) |boL,s − oL,s | ≤ X
+
+> s
+
+bwL,s 
+
+bZL(β, μ ) · ϵ∥O∥2 = ϵ∥O∥2. (34) For the second term, since |oL,s | ≤ ∥ O∥2, we obtain 
+
+P 
+
+> s
+
+bwL,s oL,s 
+
+bZL(β, μ ) −
+
+P 
+
+> s
+
+wL,s oL,s 
+
+ZL(β, μ ) (35) 
+
+≤ 1
+
+bZL(β, μ )
+
+X
+
+> s
+
+| bwL,s − wL,s || oL,s | +
+
+bZL(β, μ ) − Z L(β, μ )
+
+bZL(β, μ )ZL(β, μ )
+
+X
+
+> s
+
+wL,s oL,s (36) 
+
+≤ ϵZL(β, μ )
+
+bZL(β, μ ) ∥O∥2 + ϵZL(β, μ )
+
+bZL(β, μ ) ∥O∥2 (37) 
+
+≤ 2ϵ
+
+1 − ϵ ∥O∥2. (38) Therefore, boGC  
+
+> L
+
+− oGC  
+
+> L
+
+≤
+
+
+
+ϵ + 2ϵ
+
+> 1−ϵ
+
+
+
+∥O∥2 = ϵ(3 −ϵ)1−ϵ ∥O∥2, which proves the second statement. 13 
+
+Algorithm 2: Quantum estimation of grand-canonical ensemble properties 
+
+Data: System size L, inverse temperature β, target precision ϵ > 0, chemical potential μ,Hamiltonian H, number operator N , and observable O
+
+Result: Approximations of the grand-canonical partition function 
+
+bZL(β, μ ) ≈ tr  e−β(H−μN ) and thermal expectation value boGC  
+
+> L
+
+≈ tr (e−β(H−μN )O)
+
+> tr
+
+(e−β(H−μN ))
+
+/* Let S be the set of sectors (either {0, . . . , L } or {0, . . . , L }2) and let ns
+
+denote the particle number for sector s ∈ S (i.e., k or k + k′). */ 
+
+1. for s ∈ S do 
+
+Use Algorithm 1 to estimate the sector partition function bZL,s (β) and the sector thermal expectation value boL,s .
+
+end 
+
+2. Partition Function Estimate: Compute the grand-canonical partition function via 
+
+bZL(β, μ ) = P 
+
+> s∈S
+
+eβμn s bZL,s (β), which is based on (30). 3. Observable Estimate: Compute the grand-canonical expectation value of O via 
+
+boGC  
+
+> L
+
+= 1
+
+> bZL(β,μ )
+
+P 
+
+> s∈S
+
+eβμn s bZL,s (β)boL,s , which is based on (30). 
+
+Remark 1. For comparison, one may consider a standard approach that applies the Trotter for-mula directly for H − μN defined in the full Hilbert space, similar to the QSVT-based Gibbs state preparation without amplitude amplification [18, 39]. As summarized in Algorithm 3, since this approach incorporates the chemical potential into the Hamiltonian simulation, its complexity (e.g. circuit sampling complexity and gate complexity) depends on the chemical potential. Thus, in prac-tical situations where one requires to search a proper value of chemical potential, Algorithm 3 must re-execute the quantum circuit for every trial value of μ. In contrast, Algorithm 2 avoids this bot-tleneck since the chemical potential is incorporated in a classical postprocessing as discussed above. This offers a significant reduction of quantum computational resources. Additionally, the circuit sampling and gate complexities of Algorithm 2 are independent of μ, unlike Algorithm 3.   
+
+> IV. DISCUSSION A. Comparison to a classical baseline
+
+As mentioned earlier, we consider the Lanczos method with a stochastic trace estimator as a classical baseline to compare with our schemes. In particular, we choose a vanilla version, specif-ically the method with a symmetric formulation [30] rather the original approach [45], as such a formulation is more technically and numerically superior in the task of matrix function trace esti-mation [46]. While many variants have been developed (e.g. see [29, 35] and references therein), the computational cost would not significantly differ as it is dictated by the cost of matrix-vector multiplications. Let us denote a target Hilbert space dimension by d. For the case of grand canonical ensemble, 
+
+d = 4 L, and for the canonical ensemble (Algorithm 1), d = ds. The computational cost of the Lanczos approach is determined by the product of three factors: O
+
+ log dϵ2 log 1
+
+> η
+
+
+
+Rademacher vectors multiplied with the positive-definite matrix e− β  
+
+> 2H
+
+[47, Theorem 7.1] (the Hutchinson’s estimator), the degree of a Chebyshev polynomial approximation to the exponential function O  β∥H∥2 + log 1
+
+> ϵ
+
+
+
+[19], and O(poly( L)d) the computational cost of matrix-vector multiplication. For the last factor, 14 it is because the second quantized model (1) forms a O(L4)-sparse matrix. Therefore, without polynomial prefactors, the computational cost of Lanczos approach scales as eO(d). In the following observation, we show that our schemes (Algorithms 1 and 2) achieve eO(dγ ) with 
+
+γ < 1 in constant-temperature regimes. This exponent γ generally depends on the factor of the spectral norm of a target Hamiltonian divided by the system size L. This implies that for typical physical models where ∥H∥2 = O(L), there exists a regime of constant temperature where γ < 1and γ is independent of the system size in the thermodynamic limit ( L → ∞ ). To this end, we define a figure of merit as follows, 
+
+γ(L, β ) := log d Q(L, β ). (39) Here Q(L, β ) accounts for a quantum circuit sampling complexity estimated with respect to system size L and fixed β, without polynomial prefactors and constant computational overheads (e.g. circuit complexity, the factor 1 
+
+> ϵ2
+
+in the circuit sampling complexity, and the factor involving failure probability log 1 
+
+> η
+
+). The three cases are Q(s)1 for a canonical calculation in fixed particle-number sector s (Algorithm 1), Q1 for a grand-canonical calculation reconstructed from the canonical sectors (Algorithm 2), and Q2 for a direct grand-canonical calculation of H − μN (Algorithm 3), 
+
+Q(s)1 = dseβλ L,s 
+
+tr  e−βH (L,s ) =⇒ γ(s)1 (L, β ) = log ds Q(s)1 ,Q1 = max  
+
+> s
+
+Q(s)1 =⇒ γ1(L, β ) = log 4L (Q1),Q2 = 4Leβλ (H−μN )
+
+tr  e−β(H−μN ) =⇒ γ2(L, β ) = log 4L (Q2).
+
+(40) The reason that the base differs in γ(s)1 and γ1 is that they correspond to canonical and grand-canonical ensemble estimation, for which the cost of Lanczos method scales as eO(ds) and eO(4 L). Intuitively, when β = 0, γ(s)1 = γ1 = γ2 = 0 and in these cases, the circuit sampling complexity of Algorithms 1 to 3 becomes O(1), which is consistent. If β tends to ∞, the γ’s do so. That is, we are able to find regimes of constant temperature, where the values of γ is strictly less than 1. However, we note that for Algorithms 1 and 2, their complexity is independent of μ according to Theorem 1, while Algorithm 3 is not. This difference is reflected in their performance. Specifically, we make the following two observations. 
+
+Observation 1. For a fixed system size L, there exist positive thresholds β(s)1 (L), β 1(L) and β2(L)
+
+for (40) such that 
+
+γ(s)1 (L, β ) < 0.99 , ∀β ∈ [0 , β (s)1 ), β(s)1 (L) = 0.99 log ds
+
+2λL,s 
+
+γ1(L, β ) < 0.99 , ∀β ∈ [0 , β 1), β1(L) = min 
+
+> s
+
+0.99 L log 4 2λL,s 
+
+γ2(L, β ) < 0.99 , ∀β ∈ [0 , β 2), β2(L) = 0.99 L log 4 2λL
+
+,
+
+where λL,s and λL are defined in Algorithms 1 and 3. Consequently, for any class of Hamiltonians satisfying 
+
+∥H(L)∥2 ≤ CL, (41) 15 
+
+where H(L) denotes the Hamiltonian with system size L, any ds satisfying inf L log ds 
+
+> L
+
+> 0, any cs ∈
+
+(0 , log ds 
+
+> L
+
+] and a fixed μ, there exist system-size-independent thresholds β1 ≥ 0.99 log 4 2(1+ ϵ)C , β2 ≥ 0.99 log 4 2(1+ ϵ)Cμ
+
+and β(s)1 ≥ 0.99 cs 
+
+> 2(1+ δ′)C
+
+such that a constant Cμ depends on μ and C, and 
+
+sup 
+
+> L
+
+γ(s)1 (L, β ) < 0.99 , ∀β ∈ [0 , β (s)1 ),
+
+sup 
+
+> L
+
+γ1(L, β ) < 0.99 , ∀β ∈ [0 , β 1),
+
+sup 
+
+> L
+
+γ2(L, β ) < 0.99 , ∀β ∈ [0 , β 2).
+
+Proof. The proof is straightforward by Jensen’s inequality. We notice that tr  e−β(H(L,s )) 
+
+ds
+
+≥ exp 
+
+
+
+−β tr( H(L, s )) 
+
+ds
+
+
+
+, (42) and it follows 
+
+γ(s)1 (L, β ) ≤ β
+
+log ds
+
+
+
+λL,s + tr( H(L, s )) 
+
+ds
+
+
+
+=⇒ γ(s)1 (L, β ) ≤ 2βλ L,s 
+
+log ds
+
+, (43) since tr( H(L,s ))  
+
+> ds
+
+≤ ∥ H(L, s )∥2 ≤ λL,s . This implies the threshold in the statement for γ(s)1 (L, β ). Similarly using Jensen’s inequality, we can prove the first statement. For the second statement, we use the first result and the assumption on the Hamiltonian class. Especially for Algorithm 3, we prove the statement by noticing that ∥(H − μN )( L)∥2 ≤ (C + 2 μ)L. This completes the proof. In Observation 1, we apply our quantum algorithms (Algorithms 1 to 3) to sectors satisfying inf L log ds 
+
+> L
+
+> 0, whose dimensions grow exponentially with L, while polynomial-size sectors can be treated classically using the Lanczos algorithm. 
+
+B. Numerical result 
+
+In this section, we present numerical results to validate Observation 1 with the 2D next-nearest-neighbor Hubbard model 
+
+H = −t X
+
+> ⟨i,j ⟩,σ
+
+
+
+c† 
+
+> iσ
+
+cjσ + h.c. 
+
+
+
+− t′ X
+
+> ⟨⟨ i,j ⟩⟩ ,σ
+
+
+
+c† 
+
+> iσ
+
+cjσ + h.c. 
+
+
+
++ U X
+
+> i
+
+ni↑ni↓ − μ X
+
+> i,σ
+
+niσ . (44) Since there are O(L) operators, the spectral norm of this model scales linearly with L for fixed t, t ′, μ 
+
+and U , and the assumption in Observation 1 is satisfied. We consider the geometry L = Lx × Ly
+
+with Lx = 2 and Ly = 2 , 4, 6, 8 with periodic boundary condition. In the numerical results, we set t = 1 and t′ = −0.2, corresponds to a parameter setting in the non-particle-hole symmetric case [32]. We consider two cases: U = 4 (weak-coupling regime) and U = 8 (intermediate-coupling regime). 16 For our numerical results, we estimate γ1(L, β ) and γ2(L, β ) by using a Lanczos method with the Hutchinson estimator. First, we collect the spectra of submatrices of the full Hamiltonian matrix by applying the method to the fixed-particle subspaces in a blockwise manner. Using these computed spectra, we estimate γ1(L, β ) and γ2(L, β ) by introducing a spectral shift. Accordingly, given the estimated minimum and maximum eigenvalues, denoted as eλmin and eλmax , we apply the following shifts, 
+
+H(L, (k, k ′)) −→ H(L, (k, k ′)) −
+
+eλmin ,L, (k,k ′) + eλmax ,L, (k,k ′)
+
+2 (45) 
+
+H −→ H − eλmin + eλmax 
+
+2 . (46) Applying these shifts reduces the normalization factors required when compiling the Hamiltonian simulation via Trotter circuits in the GQSP in Fig. 1, thereby reducing the circuit sampling com-plexity. Thus, we can modify the quantities in (40) as follows, 
+
+γ1(L, β ) = max 
+
+> k,k ′
+
+1
+
+L log 4 
+
+
+
+log 
+
+ Lk
+
+ Lk′
+
+ 
+
+− βeλmin ,L, (k,k ′) − log tr 
+
+
+
+e−β(H(L, (k,k ′))) 
+
+(47) 
+
+γ2(L, β ) = 1
+
+L log 4 
+
+
+
+L − βeλmin (H − μN ) − log tr 
+
+
+
+e−β(H−μN ) 
+
+. (48) Notice that the error involved in eλmax does not affect the sample complexity but the circuit com-plexity, such as gate complexity, as seen in Theorem 1 and Theorem 2. In our simulations, we define approximations of the extreme eigenvalues, eλmin = (1 + ϵmin )λmin and eλmax = (1 + ϵmax )λmax . For the results in Fig. 3, Fig. 6, and Fig. 2, we set ϵmin = 0 .005 and ϵmax = 0 .007 as λmin < 0 and 
+
+λmax > 0 in the results. We set the dimension of Krylov subspace to be 40 for large fixed-particle subspaces and use 30 Rademacher vectors as the number of random samples. For small subspaces, we use the exact eigensolver. Once the spectrum of the Hamiltonian has been obtained, we compute an approximation of the chemical potential μ for a given density n by using the Brent’s Method in the scipy.optimize. Fig. 2 plots the values of γ1(L, β ), which converge to constants below approximately 0 .9 at temperatures T = 0 .05 , 0.1, and 0 .5. In contrast, at the lowest temperature ( T = 0 .01), the value exceeds 1. Together with Observation 1, these observations suggest that Algorithm 2 can outperform the classical Lanczos method for estimating grand-canonical thermal properties at tem-peratures down to somewhere between T = 0 .05 and T = 0 .01. As mentioned earlier, a key advantage of Algorithm 2 is that its performance, as characterized by γ1(L, β ), is independent of the chemical potential and hence of the electron density. For comparison, under the same parameter settings as in Fig. 2, we evaluate Algorithm 3 by estimating γ2(L, β ) in (40) for electron densities 
+
+n = 0 .875 , 0.9, 0.925 , 0.95 , 0.975 , and 1. In Fig. 3 and Fig. 6, for a fixed temperature, we observe that γ2(L, β ) generally increases as the electron density increases from 0 .875 to 1. At the lowest temperature ( T = 0 .01), γ2(L, β ) > 1 in all cases, whereas at the highest temperature ( T = 0 .5), it remains below 1. At the intermediate temperatures ( T = 0 .05 and 0 .1), whether γ2(L, β ) re-mains below 1 depends on the electron density, in contrast to the density-independent behavior of Algorithm 2 observed in Fig. 2. We also examine how the relative error of the ground state energy affects the circuit sampling complexity of Algorithm 2. Using the same spectral data from our previous results, we perform simulations with ϵmin values of 0 .001, 0 .003, 0 .005, 0 .007, and 0 .01. Based on (47), we expect the value of γ1(L, β ) to scale linearly with the relative error and the inverse temperature. Indeed, Fig. 5 17 and Fig. 4 confirm this expectation. For example, Fig. 4 shows that at the highest temperature (T = 0 .5), a relative error of up to 0 .1% has an almost negligible effect on γ1(L, β ) as the value remains less than 0 .8 for all cases. At intermediate temperatures, it is observed that γ1(L, β ) does not exceed 0 .9 ( T = 0 .1) and 0 .95 ( T = 0 .05). However, the results at the lowest temperature (T = 0 .01) imply that to outperform the classical baseline, the relative error of the ground state energy must be sufficiently small. In the case of weak-coupling regime ( U = 4) in Fig. 5, we clearly see worse scaling results than the intermediate-coupling case ( U = 8), which aligns consistently with the observations in Fig. 2. 2x2 2x4 2x6 2x8                          
+
+> Lattice Size ( L)
+> 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3
+> 1(L, )
+> U= 4 t,t′=0.2 t,t= 1
+> 1(T=0.01)
+> 1(T=0.05)
+> 1(T=0.1)
+> 1(T=0.5)
+> Linear time ( y= 1 )2x2 2x4 2x6 2x8
+> Lattice Size ( L)
+> 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3
+> 1(L, )
+> U= 8 t,t′=0.2 t,t= 1
+> 1(T=0.01)
+> 1(T=0.05)
+> 1(T=0.1)
+> 1(T=0.5)
+> Linear time ( y= 1 )
+
+FIG. 2: Simulation results evaluating the figure of merit γ1(L, β ) for the proposed grand-canonical scheme (Algorithm 2). The figure of merit γ1 is plotted as a function of system size ( L) across different temperatures ( T ∈ { 0.01 , 0.05 , 0.1, 0.5}). (Left panel) Results for the weak-coupling regime ( U = 4). (Right panel) Results for the intermediate-coupling regime ( U = 8). 
+
+V. DATA AVAILABILITY 
+
+The research data supporting this manuscript are not publicly available at the time of submission. We intend to make the relevant data available at a later stage. Requests for further information or data may be directed to the authors. 
+
+VI. ACKNOWLEDGEMENTS 
+
+This research was supported by the Korea Institute of Science and Technology Informa-tion(KISTI) (P25012). We used resources of the Center for Advanced Computation at Korea Institute for Advanced Study and the National Energy Research Scientific Computing Center (NERSC), a U.S. Department of Energy Office of Science User Facility operated under Contract No. DE-AC02-05CH11231. SC was supported by a KIAS Indi- vidual Grant (No. CG090601) at Korea Institute for Advanced Study and by Quantum Simulator Develop- ment Project for Materials Innovation through the Na- tional Research Foundation of Korea (NRF) funded by the Korean government (Ministry of Science and ICT (MSIT)) (No. NRF-2023M3K5A1094813). TK was sup- ported by a KIAS Individual Grant (No. CG096001) and by Institute of Information & Communications Technology Planning & Evaluation (IITP) grant funded by the Korea government (MSIT) (No. 2022-0-01026). 18 2x2 2x4 2x6 2x8 
+
+Lattice Size ( L)
+
+0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 
+
+> 2(L, )
+
+U = 4 t, t′ = 0.2 t, t = 1 , n = 0.875      
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )
+
+2x2 2x4 2x6 2x8 
+
+Lattice Size ( L)
+
+0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 
+
+> 2(L, )
+
+U = 4 t, t′ = 0.2 t, t = 1 , n = 0.9      
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )
+
+2x2 2x4 2x6 2x8 
+
+Lattice Size ( L)
+
+0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 
+
+> 2(L, )
+
+U = 4 t, t′ = 0.2 t, t = 1 , n = 0.925      
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )
+
+2x2 2x4 2x6 2x8 
+
+Lattice Size ( L)
+
+0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 
+
+> 2(L, )
+
+U = 4 t, t′ = 0.2 t, t = 1 , n = 0.95      
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )
+
+2x2 2x4 2x6 2x8 
+
+Lattice Size ( L)
+
+0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 
+
+> 2(L, )
+
+U = 4 t, t′ = 0.2 t, t = 1 , n = 0.975      
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )
+
+2x2 2x4 2x6 2x8 
+
+Lattice Size ( L)
+
+0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 
+
+> 2(L, )
+
+U = 4 t, t′ = 0.2 t, t = 1 , n = 1      
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )
+
+FIG. 3: Simulation results evaluating the figure of merit γ2(L, β ) for the conventional grand-canonical approach (Algorithm 3) in the weak-coupling regime ( U = 4). The figure of merit 
+
+γ2 is plotted as a function of system size ( L) across different temperatures (T ∈ { 0.01 , 0.05 , 0.1, 0.5}). Results are obtained for electron densities 
+
+n = 0 .875 , 0.9, 0.925 , 0.95 , 0.975, and 1 .0, respectively. 
+
+VII. METHOD A. Conventional grand-canonical scheme 
+
+Beyond (1), we consider the usual class of quantum Hamiltonians of the form 
+
+H =
+
+mX
+
+ℓ=1 
+
+aℓPℓ, (49) 19 2x2 2x4 2x6 2x8 
+
+Lattice Size ( L)
+
+> 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4
+> 1(L, )
+
+Fixed T = 0.01 , Fixed err max = 0.7%     
+
+> err_min: 0.1% err_min: 0.3% err_min: 0.5% err_min: 0.7% err_min: 1.0% Linear time ( y= 1 )2x2 2x4 2x6 2x8
+
+Lattice Size ( L)
+
+> 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00
+> 1(L, )
+
+Fixed T = 0.05 , Fixed err max = 0.7%     
+
+> err_min: 0.1% err_min: 0.3% err_min: 0.5% err_min: 0.7% err_min: 1.0% Linear time ( y= 1 )2x2 2x4 2x6 2x8
+
+Lattice Size ( L)
+
+> 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00
+> 1(L, )
+
+Fixed T = 0.1 , Fixed err max = 0.7%     
+
+> err_min: 0.1% err_min: 0.3% err_min: 0.5% err_min: 0.7% err_min: 1.0% Linear time ( y= 1 )2x2 2x4 2x6 2x8
+
+Lattice Size ( L)
+
+> 0.5 0.6 0.7 0.8 0.9 1.0
+> 1(L, )
+
+Fixed T = 0.5 , Fixed err max = 0.7%  
+
+> err_min: 0.1% err_min: 0.3% err_min: 0.5% err_min: 0.7% err_min: 1.0% Linear time ( y= 1 )
+
+FIG. 4: Simulation results illustrating the impact of the ground state energy relative error ( ϵmin )on the figure of merit γ1(L, β ) for the proposed grand-canonical scheme in the intermediate-coupling regime ( U = 8). The figure of merit γ1 is plotted as a function of system size ( L) for varying relative errors ϵmin ∈ { 0.001 , 0.003 , 0.005 , 0.007 , 0.01 }. Results are obtained for different temperatures T = 0 .01 , 0.05 , 0.1, 0.5. where m = O(poly( L)), aℓ = O(1), and Pℓ denotes an L-qubit Pauli operator. For this model, a numerical scheme for estimating grand-canonical thermal properties is summarized in Algorithm 3. The following theorem establishes the overall complexity of the algorithm. 
+
+Theorem 2. Assume a normalization factor λL such that H−μN λL ≤ 1 − δ for some δ ∈ (0 , 1) .Using the first-order Trotter formula with a GQSP circuit in Fig. 1, estimating the partition function 
+
+tr  e−β(H−μN ) to a relative error ϵ and Gibbs-state property tr 
+
+
+
+e−β(H−μN )
+
+tr (e−β(H−μN )) O
+
+
+
+to an additive error ϵ∥O∥2 with failure probability η for the Hamiltonian in (49) requires 
+
+• 2L qubits for the initial state preparation 
+
+• L system qubits and a single ancilla qubit for the GQSP 
+
+• r = Ω 
+
+
+
+Λ2
+
+H max 
+
+h 1
+
+λLδ , β
+
+log(1+ ϵ)
+
+i 
+
+• O  rpoly (L)  ln   1
+
+ϵ
+
+ + βλ L
+
+ 1
+
+δ
+
+ gate complexity 
+
+• O
+
+ 2Leβλ L
+
+tr( e−β(H−μN ))ϵ2 log 1
+
+η
+
+
+
+sample complexity 20 
+
+Notation Description 
+
+L System size (total number of spin orbitals, or total number of spatial modes/lattice sites) 
+
+s Particle number sector ( s = k for total particles, s = ( k, k ′) for spin-resolved) 
+
+k, k ′ Number of total/spin-up particles ( k) and spin-down particles ( k′)
+
+ds Dimension of the Hilbert space for sector s (e.g.,  Lk
+
+ or  Lk
+
+  Lk′
+
+)
+
+H Full second-quantized many-body Hamiltonian 
+
+H(L, s ) Restriction of the Hamiltonian H to the s-particle sector 
+
+eH Effective Hamiltonian generated by the Trotter formula 
+
+N Total particle number operator 
+
+c† 
+
+> i
+
+, c i Fermionic creation and annihilation operators on mode iXi, Y i, Z i Pauli matrices acting on the i-th qubit 
+
+β Inverse temperature 
+
+μ Chemical potential 
+
+ZL,s (β) Canonical partition function for the s-particle sector 
+
+ZL(β, μ ) Grand-canonical partition function 
+
+O Target observable to be measured 
+
+bZ, bo Algorithmic estimates of the partition function and observable expectation 
+
+ωL,s Mixed Dicke state (maximally mixed state representing the sector s)
+
+ϵ Target precision (relative for partition functions, additive for observables) 
+
+η Target failure probability for the overall estimation 
+
+δ Spectral normalization margin 
+
+λL,s Normalization factor satisfying ∥H(L, s )/λ L,s ∥2 ≤ 1 − δr Number of Trotter steps 
+
+Nshots Circuit sampling complexity (total number of circuit measurements) 
+
+γ Figure of merit exponent defining the scaling of circuit sampling complexity 
+
+TABLE I: Summary of key mathematical notations and parameters used throughout this work. The proof follows immediately from that of Theorem 1, given in Section VII C. We note that for the second-quantized model (1), the polynomial factor in gate complexity reduces to L4. In addition, under JW transformation using 2 L qubits, the qubit number L appearing in this theorem is replaced by 2 L, so that the full Hilbert-space dimension 2 L becomes 4 L.21 
+
+Algorithm 3: Quantum estimation of grand-canonical ensemble properties (direct method) 
+
+Data: System size L, inverse temperature β, precision ϵ > 0, chemical potential μ,normalization factor λL > 0 (where ∥(H − μN )/λ L∥ ≤ 1 − δ), and observable O
+
+Result: Approximations of the grand-canonical partition function bZL(β, μ ) and the thermal expectation value boGC  
+
+> L
+
+of O
+
+1. Construct the GQSP circuit (Fig. 1) using Trotter circuits for e±i(H−μN )/λ L and initial state ω = I/ 2L (ω = I/ 4L for a spin- 12 fermionic system with L spatial modes). 2. Partition Function Estimate: Execute the circuit for Nshots shots. Let N0 be the number of ancilla |0⟩ outcomes. Estimate bZL(β, μ ) = 2 Leβλ L N0
+
+> Nshots
+
+( bZL(β, μ ) = 4 Leβλ L N0 
+
+> Nshots
+
+for the spinful case). 3. Observable Estimate: Execute the circuit for Nshots shots. Conditioned on the M0
+
+occurrences where the ancilla is |0⟩, measure O on the system register to obtain outcomes 
+
+{oj }M0
+
+> j=1
+
+. Estimate boGC  
+
+> L
+
+= 1
+
+> M0
+
+PM0 
+
+> j=1
+
+oj .
+
+B. Lemmas for proving the main theorem 
+
+To estimate the number of Trotter steps in Theorem 1, we use the result [48, Lemma 1]. Let 
+
+H = PΓ 
+
+> γ=1
+
+Hj be a target Hamiltonian composed of Γ time-independent terms. For a discrete time step ∆ τ = τ /r , the first-order Trotter formula is S1(∆ τ ) := QΓ 
+
+> γ=1
+
+e−iH γ ∆τ = e−i eH(∆ τ )∆ τ , where 
+
+eH(∆ τ ) denotes the corresponding effective Hamiltonian. For convenience, we write eH = eH(∆ τ ). To exploit the result [48, Lemma 1] for our purposes, we restate it as follows. 
+
+Lemma 1. If r ≥ 4τ ΛH , then eH − H 2
+
+≤ Λ2 
+
+> H
+
+∆τ , where ΛH := PΓ 
+
+> γ=1
+
+∥Hγ ∥2.Proof. Based on the result [48, Lemma 1], the first-order Trotter formula satisfies that amax = 1, Υ = 1, and ∥Ej+1 ∥2 ≤ α(j)comm  
+
+> j2
+
+, where α(j)comm = PΓ  
+
+> γ1,...,γ j=1
+
+[Hγ1 , [Hγ2 , . . . , H γj ]] 2, the j-th folded nested commutator. Using ∥[A, B ]∥2 ≤ 2∥A∥2∥B∥2, we have 
+
+α(j)comm ≤
+
+> Γ
+
+X 
+
+> γ1,...,γ j=1
+
+2j−1
+
+> j
+
+Y
+
+> i=1
+
+∥Hγi ∥2 = 2 j−1ΛjH , (50) and thus 
+
+∥Ej+1 ∥2 ≤ α(j)comm 
+
+j2 = 12( j + 1) 2 (2Λ H )j+1 . (51) Then, eH − H 2 ≤ ΛH
+
+P∞   
+
+> j=1 (2Λ H∆τ)j
+> (j+1) 2
+
+. If 4Λ H ∆τ < 1, using ( j + 1) −2 ≤ 1/4 for j ≥ 1 gives 
+
+eH − H 2
+
+≤ Λ2 
+
+> H
+
+∆τ
+
+2(1 − 2Λ H ∆τ ) ≤ Λ2 
+
+> H
+
+∆τ. (52) 22 
+
+Lemma 2. The first-order Trotter formula composed of circuits in Example 1 preserves the number symmetry and so does the corresponding effective Hamiltonian to the Hamiltonian simulation eiHτ .Proof. The case of 2-body terms in Example 1 is the only non-trivial case. In this case, Trotter circuit blocks defined by H(2)  
+
+> pquv
+
+are divided into two parts by considering the real and imaginary parts of the coefficient. The case of imaginary part is shown in [43, Appendix]. Using the same idea, we verify the case of real part under the JW transformation, Re {hij }(c† 
+
+> i
+
+cj + c† 
+
+> j
+
+ci) = Re {hij }
+
+2
+
+> j−1
+
+O
+
+> k=i+1
+
+Zk
+
+!
+
+(XiXj + YiYj ) (53) Re {gpquv }(c†
+
+> p
+
+c† 
+
+> q
+
+cucv + c† 
+
+> v
+
+c†
+
+> u
+
+cq cp) = Re {gpquv }
+
+8
+
+
+
+> u−1
+
+O
+
+> a=v+1
+
+Zap−1O
+
+> b=q+1
+
+Zb
+
+  Pvuqp 
+
+, (54) where the sum of the Pauli strings Pvuqp is 
+
+Pvuqp = − Xv XuXq Xp + Xv XuYq Yp − Xv YuXq Yp − Xv YuYq Xp
+
+− Yv XuXq Yp − Yv XuYq Xp + Yv YuXq Xp − Yv YuYq Yp. (55) The commutativity between any of the operators is equivalent to the commutativity of the strings containing X and Y operators only. As in [43], we consider two arbitrary strings of X and Y
+
+operators of length 2 n, PA = N2ni=1 σai and PB = N2ni=1 σbi , acting on the same set of qubits. The commutator is then given by, [PA, P B ] = 
+
+> 2n
+
+O
+
+> i=1
+
+(σai σbi ) −
+
+> 2n
+
+O
+
+> i=1
+
+(σbi σai ) (56) where the product σai σbi satisfies 
+
+σai σbi =
+
+
+
+1 if a = biZ i if a = x, b = y
+
+−iZ i if a = y, b = x. (57) Then, we obtain [PA, P B ] = 
+
+h
+
+i(nAy −cy −cx)(−i)(nBy −cy −cx) − (−i)(nAy −cy −cx)i(nBy −cy −cx)i
+
+P (58) = P · i(nAy +nBy −2cy −2cx) 
+
+1 − (−1) nAy −nBy
+
+
+
+, (59) where P is the string of Pauli matrices obtained from the multiplication, and nAx and nAy are the numbers of X and Y operators in string A, respectively. nBx and nBy are defined analogously. cx
+
+is the number of times σai = σbi = x; cy is defined accordingly. Noticing that nAy and nBy are both even, we can deduce that [ PA, P B ] = 0. Now we prove that an effective Hamiltonian constructed from a Trotter formula composed of circuits in Example 1 preserves the number symmetry. As in Lemma 1, we consider the form of Hamiltonian H = P 
+
+> γ
+
+Hγ . Using the number-symmetry-preserving representations in Example 1, 23 we suppose that [ Hγ , N ] = 0 for all γ. We claim that for the effective Hamiltonian eH corresponding to the given Trotter formula, [ eH, N ] = 0. By the BCH formula, eH can be expressed as a convergent infinite sum of nested commutators of the local terms Hγ for sufficiently small ∆ τ . Thus, it suffices to show that every nested commutator of any length ℓ formed by the local terms Hγ , which we denote as Cℓ, [ Cℓ, N ] = 0. We prove this by induction. For the trivial case ℓ = 1, C1 is simply a single local term Hγ , and by definition, [C1, N ] = [ Hγ , N ] = 0 .
+
+Suppose that any nested commutator of length up to ℓ commutes with N . Any nested commutator of length ℓ+1, denoted Cℓ+1 , can be written as the commutator of two smaller nested commutators, say Cp and Cq , such that Cℓ+1 = [ Cp, C q ] where p, q ≤ ℓ and p + q = ℓ + 1. By the hypothesis, [Cp, N ] = 0 and [ Cq , N ] = 0. Using the Jacobi identity, we obtain [Cp, [Cq , N ]] + [ Cq , [N, C p]] + [ N, C ℓ+1 ] = 0 = ⇒ [N, C ℓ+1 ] = 0 .
+
+By induction, this completes the proof. 
+
+Lemma 3 (Bernstein inequality) . Let X1, X 2, . . . , X n be independent random variables. Suppose that |Xi − E[Xi]| ≤ M almost surely for all i. Then, for the sum S = Pni=1 Xi and any ϵ > 0,
+
+P(|S − E[S]| ≥ ϵ) ≤ 2 exp 
+
+
+
+− ϵ2
+
+2V ar (S) + 23 M ϵ 
+
+
+
+. (60) We apply a result in [49] as the following lemma. 
+
+Lemma 4. For δ, ϵ ∈ (0 , 1) with δ = O(1) and β ≥ 0, there exists c ∈ C2M +1 such that 
+
+max  
+
+> |x|≤ (1 −δ)π
+> 2
+
+e−βx −
+
+> M
+
+X
+
+> m=−M
+
+cmeimx ≤ ϵ, (61) 
+
+where 
+
+M = O
+
+
+
+β + log 1
+
+ϵ
+
+
+
+, ∥c∥1 ≤ e βπ  
+
+> 2
+
+. (62) 
+
+Subsequently, it follows 
+
+max 
+
+> |x|≤ π
+> M
+
+X
+
+> m=−M
+
+cmeimx ≤ e βπ  
+
+> 2
+
+. (63) 
+
+Moreover, the Fourier coefficient c can be efficiently calculated on a classical computer in time 
+
+poly( β, log 1 
+
+> ϵ
+
+).Proof. By using the Taylor series of e−βx and the Stirling’s approximation, we have max 
+
+> |x|≤ 1
+> K
+
+X
+
+> j=0
+
+aj xj − e−βx ≤ ϵ
+
+4 , K = O
+
+
+
+β + log 1
+
+ϵ
+
+
+
+, ∥a∥1 ≤ eβ . (64) 24 Next, using [49, Lemma 37], we obtain a Fourier-series approximation such that with coefficient 
+
+c ∈ C2M +1 ,max 
+
+> |x|≤ 1−δ
+> M
+
+X
+
+> m=−M
+
+cme iπm   
+
+> 2x
+
+− e−βx ≤ ϵ, M = 2 
+
+
+
+log 
+
+ 4∥a∥1
+
+ϵ
+
+ 1
+
+δ
+
+
+
+, (65) and 
+
+∥c∥1 ≤ ∥ a∥1 ≤ eβ . (66) By replacing β with βπ  
+
+> 2
+
+and x with 2xπ in the above, we prove the statement. Furthermore, since the classical time spent finding the coefficient c is poly( K, M, log 1 
+
+> ϵ
+
+) by [49, Lemma 37], we verify the time complexity as stated. Using Lemma 4, we evaluate the circuit sampling complexity of our approach. To this end, we require the following lemma. 
+
+Lemma 5. Let |ψ⟩ = PSℓ=1 aℓ |λiℓ ⟩ where |λiℓ ⟩’s are eigenstates of H corresponding to the eigen-values λiℓ ’s. Assume a normalization factor λS such that max ℓ∈[S] 
+
+> λiℓ
+> λS
+
+≤ 1 − δ. Then, for β ≥ 0
+
+and a relative error ϵ0 = O(1) , there exists a Laurent polynomial p β
+
+> 2
+
+satisfying 
+
+p β 
+
+> 21
+
+= O
+
+
+
+e βλ S
+
+> 2
+
+
+
+, (67) 
+
+such that the ancilla success probability of the GQSP circuit in Fig. 1, after rescaling by p β 
+
+> 21
+
+,approximates ⟨ψ| e−βH |ψ⟩ within relative error ϵ0.Proof. By Lemma 4, we take a p β
+
+> 2
+
+(eix ) such that p β
+
+> 2
+
+(eix ) is real in x by averaging with its conjugation and max |x|≤ π(1 −δ)2
+
+p β
+
+> 2
+
+ eix  − e− βλ Sπ x ≤ ϵ. We define P (eix ) = p β
+
+> 2
+
+(eix )  
+
+> pβ
+> 21
+
+, where p β 
+
+> 21
+
+denotes the 
+
+ℓ1-norm of Fourier coefficients of p β
+
+> 2
+
+(x). Note that 
+
+p β 
+
+> 21
+
+≤ e βλ S 
+
+> 2
+
+, (68) and 
+
+p β
+
+> 2
+
+(eix )2 − e− 2βλ Sπ x (69) 
+
+≤ 2e− βλ Sπ x p β
+
+> 2
+
+ eix  − e− βλ Sπ x + p β
+
+> 2
+
+ eix  − e− βλ Sπ x 2
+
+(70) 
+
+≤ 2e βλ S 
+
+> 2(1 −δ)
+
+ϵ + ϵ2, |x| ≤ π(1 − δ)2 (71) 
+
+≤ 3e βλ S 
+
+> 2(1 −δ)
+
+ϵ, ϵ ∈ (0 , 1) , (72) by squaring the identity, p β
+
+> 2
+
+(x) = p β
+
+> 2
+
+(x) − e− βλ Sπ x + e− βλ Sπ x, and using the triangle inequality. 25 Since max |x|≤ π |P (x)| ≤ 1, [42, Corollary 5, Theorem 6] yields a circuit construction such that for some θ, ϕ ∈ R2D+1 and λ ∈ R,
+
+P (U ) ∗∗ ∗
+
+
+
+=
+
+> D
+
+Y
+
+> m=1
+
+ R(θD+m, ϕ D+m, λ )CU † DY
+
+> m=1
+
+(R(θm, ϕ m, λ )CU ) R(θ0, ϕ 0, λ ). (73) Here we set 
+
+U = ei π 
+
+> 2
+> HλS
+
+. (74) Note that the probability of ancilla state to be 0 is ⟨ψ| P (U )2 |ψ⟩. By classically multiplying this probability by p β
+
+> 2
+> 21
+
+, we can estimate ⟨ψ| p β
+
+> 2
+
+(U )2 |ψ⟩. Using the error bound derived earlier, we then obtain 
+
+⟨ψ| p β
+
+> 2
+
+(U )2 |ψ⟩ − ⟨ ψ| e−βH |ψ⟩
+
+=
+
+> S
+
+X
+
+> ℓ=1
+
+|aℓ|2p β
+
+> 2
+
+
+
+ei πλ iℓ
+
+> 2λS
+
+2
+
+−
+
+> S
+
+X
+
+> ℓ=1
+
+|aℓ|2e−βλ iℓ
+
+≤
+
+> S
+
+X
+
+> ℓ=1
+
+|aℓ|2 p β
+
+> 2
+
+
+
+ei πλ iℓ
+
+> 2λS
+
+2
+
+− e−βλ iℓ
+
+≤
+
+> S
+
+X
+
+> ℓ=1
+
+|aℓ|2 
+
+3e βλ S 
+
+> 2(1 −δ)
+
+ϵ
+
+
+
+= 3 e βλ S 
+
+> 2(1 −δ)
+
+ϵ ≤ 3e βλ S 
+
+> 2
+
+ϵ. (75) By taking ϵ = min { 12 , ⟨ψ|e−βH |ψ⟩ 
+
+> 3eβλ S
+> 2
+
+ϵ0}, we estimate the desired quantity to relative error ϵ0.Using this lemma, we derive the required query complexity and circuit sampling complexity as follows. 
+
+Corollary 2. Assume a normalization factor λL,s such that H(L,s ) 
+
+> λL,s
+
+≤ 1 − δ for some δ ∈ (0 , 1) .Further assume access to the ideal input models, ei πH  
+
+> 2λL,s
+
+and e−i πH  
+
+> 2λL,s
+
+. Estimating the canonical partition function, ZL,s (β) = tr  e−βH (L,s ), to relative error ϵ with failure probability at most η
+
+using the GQSP circuit in Fig. 1 requires 
+
+• O   1
+
+> δ
+
+ ln   1
+
+> ϵ
+
+ + βλ L,s 
+
+ query complexity to ei πH  
+
+> 2λL,s
+
+and e−i πH  
+
+> 2λL,s
+
+per circuit sample 
+
+• O
+
+ dseβλ L,s  
+
+> ZL,s (β)ϵ2
+
+log 1
+
+> η
+
+
+
+circuit sampling complexity where ds is the dimension of the symmetry sector ( ds =  Lk
+
+ or  Lk
+
+  Lk′
+
+). Proof. Let ωL,s = 1 
+
+> ds
+
+Πs from Definition 1 be the initial maximally mixed state within this sector. Let Zpoly ,s = tr 
+
+
+
+Πsp β
+
+> 2
+
+
+
+ei πH 
+
+> 2λL,s
+
+2
+
+be the polynomial approximation of the canonical partition function. 26 To estimate the partition function to a relative error ϵ, we require the polynomial approxima-tion to satisfy |Zpoly ,s − ZL,s (β)| ≤ ϵ 
+
+> 3
+
+ZL,s (β). Following the proof technique for Lemma 5, this approximation error is bounded by 
+
+|Zpoly ,s − ZL,s (β)| ≤ ds · 3e βλ L,s  
+
+> 2
+
+ϵpoly , (76) where ϵpoly is the error bound from Lemma 4 without the normalization factor λL,s . Thus, we choose ϵpoly such that 
+
+ϵpoly = ϵZ L,s (β)9dse βλ L,s 
+
+> 2
+
+. (77) By Lemma 4, achieving this ϵpoly requires a Laurent polynomial of degree scaling as 
+
+O
+
+ 1
+
+δ
+
+
+
+βλ L,s + ln 1
+
+ϵpoly 
+
+ 
+
+= O
+
+ 1
+
+δ
+
+
+
+ln 1
+
+ϵ + βλ L,s + ln ds
+
+ZL,s (β)
+
+ 
+
+. (78) Similar to the proof of Observation 1, Jensen’s inequality yields the stated query complexity. When executing the GQSP circuit on ωL,s , the probability of measuring the ancilla state as |0⟩
+
+is 
+
+P poly  
+
+> s
+
+(0) = tr 
+
+
+
+ωL,s P
+
+
+
+ei πH 
+
+> 2λL,s
+
+2
+
+= Zpoly ,s 
+
+ds p β
+
+> 2
+> 21
+
+. (79) We estimate this probability using the sample mean estimator bP poly  
+
+> s
+
+(0) = N|0⟩ 
+
+> Nshots
+
+, where E[ bP poly  
+
+> s
+
+(0)] = 
+
+P poly  
+
+> s
+
+(0). By the properties of a binomial distribution, the variance is bounded by V ar ( ˆP poly  
+
+> s
+
+(0)) ≤
+
+P poly  
+
+> s
+
+(0). To ensure that our estimate eZpoly ,s satisfies eZpoly ,s − Zpoly ,s ≤ ϵ 
+
+> 3
+
+ZL,s (β), we must estimate P poly  
+
+> s
+
+(0) to an additive error of ϵP = ϵZ L,s (β)3ds p β
+
+> 2
+> 21
+
+. By Lemma 3 and assuming ϵ ≤ 1, achieving this precision with failure probability at most η requires a number of samples bounded by 
+
+Nshots = O
+
+ P poly  
+
+> s
+
+(0) 
+
+ϵ2
+
+> P
+
+log 1
+
+η
+
+
+
+= O
+
+
+
+Zpoly ,s · ds p β
+
+> 2
+> 21
+
+ϵ2ZL,s (β)2 log 1
+
+η
+
+ . (80) Since Zpoly ,s ≤ ZL,s (β)  1 + ϵ
+
+> 3
+
+ = O(ZL,s (β)) and p β
+
+> 2
+> 21
+
+= O(eβλ L,s ), we achieve 
+
+Nshots = O
+
+ dseβλ L,s 
+
+ZL,s (β)ϵ2 log 1
+
+η
+
+
+
+. (81) Finally, using the triangle inequality, we obtain 
+
+eZpoly ,s − ZL,s (β) ≤ eZpoly ,s − Zpoly ,s + |Zpoly ,s − ZL,s (β)|≤ ϵ
+
+3 ZL,s (β) + ϵ
+
+3 ZL,s (β) ≤ ϵZ L,s (β). (82) This completes the proof. 27 Finally, the following two lemmas will be used for the task of estimating observables in Problem 1. 
+
+Lemma 6. For any observable O, the following inequality holds 
+
+|tr( Oeρ) − tr( Oρ )| ≤ 2β∥O∥2 eH − H 2
+
+, (83) 
+
+where ρ = e−βH   
+
+> tr( e−βH )
+
+and eρ = e−β fH
+
+> tr
+
+(e−β fH ) .Proof. We define a one-parameter family of Hamiltonians Hτ = H +τ E with corresponding thermal states, 
+
+ρτ = e−βH τ
+
+tr( e−βH τ ) , for τ ∈ [0 , 1] . (84) Let us denote E = eH − H. Differentiating ρτ with respect to τ using the Duhamel formula yields 
+
+dρ τ
+
+dτ = −β
+
+Z 10
+
+ρ1−uτ
+
+ E − tr( ρτ E)Iρuτ du. (85) By using the Schatten H¨ older inequality, we obtain that for any A,
+
+ρ1−uτ Aρ uτ 1 ≤ ρ1−uτ 11−u
+
+∥Aρ uτ ∥ 1
+
+> u
+
+≤ ρ1−uτ 11−u
+
+∥A∥2∥ρuτ ∥ 1
+
+> u
+
+. (86) Since ρτ is a density matrix, ∥ρpτ ∥1/p = (tr( ρτ )) p = 1. Then, the inequality simplifies to 
+
+ρ1−uτ Aρ uτ 1 ≤ ∥ A∥2. (87) Setting A = E − Tr( ρτ E)I, we bound its spectral norm as 
+
+∥E − tr( ρτ E)I∥2 ≤ 2∥E∥2, (88) by noticing |tr( ρτ E)| ≤ ∥ E∥2 and using the triangle inequality. Substituting this back into the integral gives 
+
+dρ τ
+
+dτ 1
+
+≤ 2β∥E∥2, (89) and we obtain 
+
+∥eρ − ρ∥1 =
+
+Z 10
+
+dρ τ
+
+dτ dτ 
+
+> 1
+
+≤ 2β eH − H 2
+
+. (90) Finally, we arrive at 
+
+|tr( Oeρ) − tr( Oρ )| ≤ ∥ O∥2∥eρ − ρ∥1 ≤ 2β∥O∥2 eH − H 2, (91) which completes the proof. As a standard approach, we estimate an observable of the form (5) by measuring each Pauli operator. This results in the following sampling complexity. 28 
+
+Lemma 7. Given access to state ρ, for an observable in (5) , an estimate bo satisfying |bo − tr( Oρ )| ≤ 
+
+ϵ with probability at least 1 − η can be obtained using O
+
+ (P 
+
+> a|ca|
+
+)2 
+
+> ϵ2
+
+log 1
+
+> η
+
+
+
+circuit sampling com-plexity. Proof. Suppose we measure each Pa independently using Na samples of ρ, and let bPa denote the corresponding sample mean. We define bo = P 
+
+> a
+
+ca bPa. Since each measurement outcome lies in 
+
+{− 1, 1}, applying Hoeffding’s inequality to the independent measurement outcomes yields 
+
+P (|bo − tr( Oρ )| ≥ ϵ) ≤ 2 exp 
+
+− ϵ2
+
+2 P
+
+> a
+> |ca|2
+> Na
+
+ .
+
+We prove the statement by choosing Na ∝ | ca| yields P 
+
+> a
+> |ca|2
+> Na
+
+= (P 
+
+> a|ca|
+
+)2 
+
+> N
+
+, where N = P 
+
+> a
+
+Na, the total sampling complexity. 
+
+C. The proofs of Theorem 1 and Theorem 2 
+
+Proof of Theorem 1. In Algorithm 1, we replace the ideal Hamiltonian simulation in Fig. 1 with the first-order Trotter circuit composed of Pauli exponentials from Example 1. Since we set a s-sector mixed Dicke state in Definition 1 as the initial state, we can consider the corresponding effective Hamiltonian eH(L, s ) to the Trotter formula. By imposing the error condition 
+
+eH(L, s ) − H(L, s ) 2
+
+≤ min 
+
+ δλ L,s 
+
+2 , log(1 + ϵ)
+
+β
+
+
+
+, (92) and applying Lemma 1, we obtain Ω 
+
+
+
+Λ2 
+
+> H(L,s )
+
+max 
+
+h 1 
+
+> λL,s δ
+
+, β
+
+> log(1+ ϵ)
+
+i 
+
+Trotter steps as stated in Theorem 1. Here Λ H(L,s ) is derived from the definition of Λ H in Lemma 1 as we consider H(L, s )not H. That is, H(L, s ) = Π sHΠs = P 
+
+> γ
+
+ΠsHγ Πs, and we define ΛH(L,s ) := X
+
+> γ
+
+∥ΠsHγ Πs∥. (93) With the above Trotter step number, the gate complexity is determined by multiplying the total query complexity of Hamiltonian simulations in Corollary 2 and O(L4) gate complexity for each Trotter step for the model (1). Furthermore, we verify that this Trotter step number guarantees the desired precision for the partition function and observable estimation. Let eH(L, s ) denote the restriction of eH to the particle sector s. Let bZpoly ,s = tr Πsp β
+
+> 2
+
+
+
+ei π fH
+
+> 2λL,s
+
+2!
+
+be the polynomial approximation of the partition function that incorporates the Trotter error. We 29 observe that 
+
+bZpoly ,s − ZL,s (β) ≤ bZpoly ,s − tr 
+
+
+
+e−β eH(L,s )
+
++ tr 
+
+
+
+e−β eH(L,s )
+
+− tr 
+
+
+
+e−βH (L,s )
+
+≤ ϵ tr 
+
+
+
+e−β eH(L,s )
+
++
+
+> ds
+
+X
+
+> j=1
+
+
+
+e−β(λj +ϵj ) − e−βλ j
+
+
+
+≤ ϵ tr 
+
+
+
+e−βH (L,s )
+
++ (1 + ϵ)
+
+> ds
+
+X
+
+> j=1
+
+
+
+e−β(λj +ϵj ) − e−βλ j
+
+
+
+≤ ϵ tr 
+
+
+
+e−βH (L,s )
+
++ (1 + ϵ)
+
+> ds
+
+X
+
+> j=1
+
+e−βλ j e−βϵ j − 1
+
+≤ (ϵ + ϵ(1 + ϵ)) ZL,s (β) = (2 ϵ + ϵ2)ZL,s (β). (94) The third inequality follows from the triangle inequality, and the final inequality holds by Weyl’s inequality and the numeric identity |eax − 1| ≤ ϵ for |x| ≤ log(1+ ϵ) 
+
+> a
+
+, guaranteed by our condition on the eigenvalue perturbations ϵj from (92). Recalling that bZL,s (β) in Algorithm 1 is the statistical estimate of bZpoly ,s obtained from measure-ment data, we apply the technique for circuit sampling complexity from Corollary 2. Specifically, estimating this quantity requires O
+
+ dseβλ L,s  
+
+> bZpoly ,s ϵ2
+
+log 1
+
+> η
+
+
+
+samples. Since bZpoly ,s approximates ZL,s (β)to within a relative error of O(ϵ), we obtain the desired sampling complexity O
+
+ dseβλ L,s  
+
+> ZL,s (β)ϵ2
+
+log 1
+
+> η
+
+
+
+.Now we prove the statement regarding the estimation of canonical thermal averages. By Corol-lary 2, the success probability of measuring the ancilla in |0⟩ to prepare the approximate Gibbs state eρ scales as Θ 
+
+ ZL,s (β)
+
+> dseβλ L,s
+
+
+
+. In other words, we obtain an output of eρ with Θ 
+
+ dseβλ L,s 
+
+> ZL,s (β)
+
+
+
+circuit samplings. Consequently, estimating the expectation value of an observable O via sample means in Algorithm 1 requires O
+
+
+
+(P 
+
+> a
+
+|c|a)2 dseβλ L,s  
+
+> ZL,s (β)ϵ2
+
+log 1
+
+> η
+
+
+
+samples to reach an additive precision ϵ, ac-cording to Lemma 7. The error bound on the observable expectation immediately follows from the condition (92) evaluated via Lemma 6. 
+
+Proof of Theorem 2. The proof follows straightforwardly from the arguments above by replacing the restricted initial state with the maximally-mixed state over the full Hilbert space, ρ = I 
+
+> 2L
+
+, and utilizing an arbitrary first-order Trotter circuit. 
+
+D. Further numerical tests 
+
+Following standard conventions [32], in the Hamiltonian (44), we set t = 1 as the unit of energy and take t′ = −0.2 as in our numerical results in Section IV B. We consider two interaction regimes: 
+
+U = 4 (weak-coupling) and U = 8 (intermediate-coupling). The geometry is an Lx × Ly torus with 
+
+Lx = 2 and Ly ∈ { 2, 4, 6, 8} under periodic boundary conditions. The sampling theorem in [26, Supplemental Material, Theorem 4.11] applies when 
+
+βJ ≤ 150 Rd 2ov 
+
+, (95) 30 where R is the maximum Majorana support size, dov is the maximum number of Hamiltonian terms whose Majorana supports overlap with that of a given term, and J is the maximum magnitude of a Majorana-string coefficient. We emphasize that (95) is a sufficient condition for the particular classical sampling algorithm of [26], rather than a classical-hardness threshold. Expressing the spin-orbital operators in terms of Majoranas, 
+
+ciσ = γiσ, 1 + iγ iσ, 2
+
+2 ,
+
+the hopping terms give 2-Majorana strings, whereas the on-site interaction contains a 4-Majorana string. Therefore, R = 4. We next determine dov directly from overlaps of Majorana supports. Below, dquartic , dquadratic , and dhopping denote the maximum overlap degrees of an on-site quartic Majorana term, an on-site quadratic Majorana term, and a hopping Majorana term, respectively, so that dov = max {dquartic , , d quadratic , , d hopping }.Let z = z1 + z2 denote the number of distinct nearest- and next-nearest-neighbor sites connected to a given spatial site. An on-site quartic Majorana string overlaps with itself, the two on-site quadratic strings, and the 4 z hopping Majorana strings incident on that site. Hence, 
+
+dquartic ≤ 3 + 4 z. (96) An on-site quadratic string overlaps with itself, the on-site quartic string, and 2 z hopping strings involving the same spin, yielding 
+
+dquadratic ≤ 2 + 2 z. (97) Finally, a hopping Majorana string overlaps with the corresponding on-site quadratic and quar-tic strings at its two endpoints and with the hopping strings sharing either of its two Majorana operators, giving 
+
+dhopping ≤ 2z + 3 . (98) Thus, the on-site quartic string determines the maximum overlap degree. For our model (44) with 2 × Ly geometries ( Ly = 4 , 6, 8), periodic boundary conditions with duplicate bonds removed give 
+
+z1 = 3 and z2 = 2, and hence 
+
+dov ≤ 3 + 4(3 + 2) = 23 . (99) After combining the quadratic terms originating from the interaction and chemical potential, the maximum Majorana-string coefficient is 
+
+J = max 
+
+ |t|
+
+2 , |t′|
+
+2 , U
+
+4 , μ
+
+2 − U
+
+4
+
+
+
+. (100) For t = 1, t′ = −0.2, and the chemical potentials reported in Table II, which satisfy 0 < μ < U ,this gives 
+
+J =
+
+(
+
+1, U = 4 ,
+
+2, U = 8 . (101) Using R = 4 and the uniform value dov = 23, Eq. (95) therefore gives 
+
+T = β−1 ≥ 50 Rd 2ov J = 105800 J, (102) 31 corresponding to 
+
+T ≥ 105800 (U = 4) , T ≥ 211600 (U = 8) . (103) Again, these values characterize a rigorous sufficient temperature regime for the algorithm in [26] and do not imply classical hardness below these temperatures. Table II summarizes these temper-ature thresholds with chemical potentials computed in each interaction regime. TABLE II: Values of the chemical potential μ for varying particle densities n and temperatures T ,alongside the theoretical temperature lower bounds T = 1 
+
+> β
+
+for the sampling algorithm in [26]. 
+
+n T
+
+Chemical potential μ
+
+Geometry 
+
+U = 4 (J = 1) U = 8 (J = 2) 2 × 4 2 × 6 2 × 8 2 × 4 2 × 6 2 × 80.875 0.01 0.7348 0 .8664 0 .7764 1 .4751 1 .4213 1 .4368 0.05 0.7272 0 .8700 0 .7951 1 .4939 1 .4175 1 .4499 0.1 0.7385 0 .8929 0 .8221 1 .5186 1 .4324 1 .4642 0.5 0.9859 0 .9781 0 .9785 1 .5770 1 .5573 1 .5618 0.90.01 0.7482 0 .8715 0 .9160 1 .4810 1 .4345 1 .5921 0.05 0.7658 0 .8987 0 .8868 1 .5213 1 .4671 1 .5785 0.1 0.8018 0 .9443 0 .9114 1 .5695 1 .5137 1 .5767 0.5 1.1459 1 .1338 1 .1327 1 .7714 1 .7614 1 .7656 0.925 0.01 0.7572 0 .8759 0 .9277 1 .4870 1 .4585 1 .5970 0.05 0.8018 0 .9272 0 .9415 1 .5499 1 .5184 1 .6179 0.1 0.8654 0 .9982 0 .9924 1 .6235 1 .5956 1 .6619 0.5 1.3204 1 .3001 1 .2980 1 .9924 1 .9927 1 .9963 0.95 0.01 0.7652 0 .8807 0 .9379 1 .4938 1 .4743 1 .6011 0.05 0.8384 0 .9592 0 .9901 1 .5823 1 .5689 1 .6500 0.1 0.9344 1 .0607 1 .0735 1 .6860 1 .6815 1 .7402 0.5 1.5127 1 .4787 1 .4761 2 .2666 2 .2771 2 .2801 0.975 0.01 0.7749 0 .8874 0 .9495 1 .5029 1 .4866 1 .6060 0.05 0.8859 1 .0038 1 .0466 1 .6274 1 .6251 1 .6896 0.1 1.0270 1 .1493 1 .1754 1 .7745 1 .7869 1 .8375 0.5 1.7233 1 .6694 1 .6673 2 .6772 2 .6974 2 .6995 10.01 1.5385 1 .1671 1 .2101 5 .9802 2 .9838 2 .1328 0.05 1.8725 1 .8406 1 .7852 3 .0724 3 .1609 3 .0281 0.1 1.9082 1 .8433 1 .8020 3 .9015 3 .9231 3 .9129 0.5 1.9439 1 .8672 1 .8671 3 .9666 3 .9846 3 .9780 
+
+Lower bound ( T ≥) 105 , 800 211 , 600 
+
+[1] Hayley R Petras, Sai Kumar Ramadugu, Fionn D Malone, and James J Shepherd. Using density matrix quantum monte carlo for calculating exact-on-average energies for ab initio hamiltonians in a finite basis set. Journal of chemical theory and computation , 16(2):1029–1038, 2020. [2] Gaurav Harsha, Thomas M Henderson, and Gustavo E Scuseria. Wave function methods for canonical ensemble thermal averages in correlated many-fermion systems. The Journal of Chemical Physics ,153(12), 2020. 32 2x2 2x4 2x6 2x8 
+
+> Lattice Size ( L)
+> 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5
+> 1(L, )
+
+Fixed T = 0.01 , Fixed err max = 0.7%     
+
+> err_min: 0.1% err_min: 0.3% err_min: 0.5% err_min: 0.7% err_min: 1.0% Linear time ( y= 1 )2x2 2x4 2x6 2x8
+> Lattice Size ( L)
+> 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00
+> 1(L, )
+
+Fixed T = 0.05 , Fixed err max = 0.7%     
+
+> err_min: 0.1% err_min: 0.3% err_min: 0.5% err_min: 0.7% err_min: 1.0% Linear time ( y= 1 )2x2 2x4 2x6 2x8
+> Lattice Size ( L)
+> 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00
+> 1(L, )
+
+Fixed T = 0.1 , Fixed err max = 0.7%     
+
+> err_min: 0.1% err_min: 0.3% err_min: 0.5% err_min: 0.7% err_min: 1.0% Linear time ( y= 1 )2x2 2x4 2x6 2x8
+> Lattice Size ( L)
+> 0.6 0.7 0.8 0.9 1.0
+> 1(L, )
+
+Fixed T = 0.5 , Fixed err max = 0.7%  
+
+> err_min: 0.1% err_min: 0.3% err_min: 0.5% err_min: 0.7% err_min: 1.0% Linear time ( y= 1 )
+
+FIG. 5: Simulation results illustrating the impact of the ground state energy relative error ( ϵmin )on the figure of merit γ1(L, β ) for the proposed grand-canonical scheme in the weak-coupling regime ( U = 4). The figure of merit γ1 is plotted as a function of system size ( L) for varying relative errors ϵmin ∈ { 0.001 , 0.003 , 0.005 , 0.007 , 0.01 }. Results are obtained for different temperatures T = 0 .01 , 0.05 , 0.1, 0.5. 
+
+[3] Yuan Liu, Minsik Cho, and Brenda Rubenstein. Ab initio finite temperature auxiliary field quantum monte carlo. Journal of Chemical Theory and Computation , 14(9):4722–4732, 2018. [4] Hao-En Li, Yongtao Zhan, and Lin Lin. Dissipative ground state preparation in ab initio electronic structure theory. npj Quantum Information , 11(1):183, 2025. [5] Tong Shen, Yuan Liu, Yang Yu, and Brenda M Rubenstein. Finite temperature auxiliary field quantum monte carlo in the canonical ensemble. The Journal of Chemical Physics , 153(20), 2020. [6] Igor O Sokolov, Panagiotis Kl Barkoutsos, Lukas Moeller, Philippe Suchsland, Guglielmo Mazzola, and Ivano Tavernelli. Microcanonical and finite-temperature ab initio molecular dynamics simulations on quantum computers. Physical Review Research , 3(1):013125, 2021. [7] Valentin Kasper, Florian Hebenstreit, Fred Jendrzejewski, Markus K Oberthaler, and J¨ urgen Berges. Implementing quantum electrodynamics with ultracold atomic systems. New journal of physics ,19(2):023030, 2017. [8] Lushuai Cao, V Bolsinger, Simeon I Mistakidis, GM Koutentakis, Sven Kr¨ onke, JM Schurer, and Peter Schmelcher. A unified ab initio approach to the correlated quantum dynamics of ultracold fermionic and bosonic mixtures. The Journal of chemical physics , 147(4), 2017. [9] Fang Xie, Aditya Cowsik, Zhi-Da Song, Biao Lian, B Andrei Bernevig, and Nicolas Regnault. Twisted bilayer graphene. vi. an exact diagonalization study at nonzero integer filling. Physical Review B ,103(20):205416, 2021. [10] Tong Shen, Hatem Barghathi, Jiangyong Yu, Adrian Del Maestro, and Brenda M Rubenstein. Stable recursive auxiliary field quantum monte carlo algorithm in the canonical ensemble: Applications to thermometry and the hubbard model. Physical Review E , 107(5):055302, 2023. 33 2x2 2x4 2x6 2x8 
+
+Lattice Size ( L)
+
+> 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3
+> 2(L, )
+
+U = 8 t, t′ = 0.2 t, t = 1 , n = 0.875         
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )2x2 2x4 2x6 2x8
+
+Lattice Size ( L)
+
+> 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3
+> 2(L, )
+
+U = 8 t, t′ = 0.2 t, t = 1 , n = 0.9         
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )2x2 2x4 2x6 2x8
+
+Lattice Size ( L)
+
+> 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3
+> 2(L, )
+
+U = 8 t, t′ = 0.2 t, t = 1 , n = 0.925         
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )2x2 2x4 2x6 2x8
+
+Lattice Size ( L)
+
+> 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3
+> 2(L, )
+
+U = 8 t, t′ = 0.2 t, t = 1 , n = 0.95         
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )2x2 2x4 2x6 2x8
+
+Lattice Size ( L)
+
+> 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3
+> 2(L, )
+
+U = 8 t, t′ = 0.2 t, t = 1 , n = 0.975         
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )2x2 2x4 2x6 2x8
+
+Lattice Size ( L)
+
+> 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3
+> 2(L, )
+
+U = 8 t, t′ = 0.2 t, t = 1 , n = 1      
+
+> 2(T=0.01)
+> 2(T=0.05)
+> 2(T=0.1)
+> 2(T=0.5)
+> Linear time ( y= 1 )
+
+FIG. 6: Simulation results evaluating the figure of merit γ2(L, β ) for the conventional grand-canonical approach (Algorithm 3) in the intermediate-coupling regime ( U = 8). The figure of merit γ2 is plotted as a function of system size ( L) across different temperatures (T ∈ { 0.01 , 0.05 , 0.1, 0.5}). Results are obtained for electron densities 
+
+n = 0 .875 , 0.9, 0.925 , 0.95 , 0.975, and 1 .0, respectively. 
+
+[11] Alberto Nocera and Gonzalo Alvarez. Symmetry-conserving purification of quantum states within the density matrix renormalization group. Physical Review B , 93(4):045137, 2016. [12] P Prelovˇ sek and J Bonˇ ca. Ground state and finite temperature lanczos methods. Strongly correlated systems: Numerical methods , pages 1–30, 2013. [13] Thomas Barthel. Matrix product purifications for canonical ensembles and quantum number distribu-tions. Physical Review B , 94(11):115157, 2016. [14] Cambyse Rouz´ e, Daniel Stilck Fran¸ ca, and ´Alvaro M Alhambra. Optimal quantum algorithm for gibbs state preparation. Physical Review Letters , 136(6):060601, 2026. [15] ˇStˇ ep´ an ˇSm´ ıd, Richard Meister, Mario Berta, and Roberto Bondesan. Polynomial-time quantum gibbs sampling for the weak and strong coupling regime of the fermi-hubbard model at any temperature. 34 
+
+Nature Communications , 16(1):10736, 2025. [16] Chi-Fang Chen, Michael J Kastoryano, Fernando GSL Brand˜ ao, and Andr´ as Gily´ en. Quantum thermal state preparation. arXiv preprint arXiv:2303.18224 , 2023. [17] Yu Tong and Yongtao Zhan. Fast mixing of weakly interacting fermionic systems at any temperature. 
+
+PRX Quantum , 6(3):030301, 2025. [18] Andr´ as Gily´ en, Yuan Su, Guang Hao Low, and Nathan Wiebe. Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics. In Proceedings of the 51st annual ACM SIGACT symposium on theory of computing , pages 193–204, 2019. [19] Allan Tosta, Thais de Lima Silva, Giancarlo Camilo, and Leandro Aolita. Randomized semi-quantum matrix processing. npj Quantum Information , 10(1):93, 2024. [20] Yasushi Yoneta. Optimal statistical ensembles for quantum thermal state preparation within the quantum singular value transformation framework. arXiv preprint arXiv:2505.06216 , 2025. [21] Zoe Holmes, Gopikrishnan Muraleedharan, Rolando D Somma, Yigit Subasi, and Burak S ¸ahino˘ glu. Quantum algorithms from fluctuation theorems: Thermal-state preparation. Quantum , 6:825, 2022. [22] Sergey Bravyi, Anirban Chowdhury, David Gosset, and Pawel Wocjan. Quantum hamiltonian com-plexity in thermal equilibrium. Nature Physics , 18(11):1367–1370, 2022. [23] Luuk Coopmans, Yuta Kikuchi, and Marcello Benedetti. Predicting gibbs-state expectation values with pure thermal shadows. PRX Quantum , 4(1):010305, 2023. [24] Diyi Liu, Shuchen Zhu, Guang Hao Low, Lin Lin, and Chao Yang. Block encoding with low gate count for second-quantized hamiltonians. arXiv preprint arXiv:2510.08644 , 2025. [25] Matthew L Goh and B´ alint Koczor. Direct estimation of the density of states for fermionic systems. 
+
+Physical Review Research , 8(1):013250, 2026. [26] Akshar Ramkumar, Yiyi Cai, Yu Tong, and Jiaqing Jiang. High-temperature fermionic gibbs states are mixtures of gaussian states. Phys. Rev. Lett. , 137:020601, Jul 2026. [27] Michael A Nielsen and Isaac L Chuang. Quantum computation and quantum information . Cambridge university press, 2010. [28] Yulong Dong, Lin Lin, and Yu Tong. Ground-state preparation and energy estimation on early fault-tolerant quantum computers via quantum eigenvalue transformation of unitary matrices. PRX quan-tum , 3(4):040305, 2022. [29] Tyler Chen and Eric Hallman. Krylov-aware stochastic trace estimation. SIAM Journal on Matrix Analysis and Applications , 44(3):1218–1244, 2023. [30] Markus Aichhorn, Maria Daghofer, Hans Gerd Evertz, and Wolfgang Von der Linden. Low-temperature lanczos method for strongly correlated systems. Physical Review B , 67(16):161103, 2003. [31] Hongrui Chen, Cambyse Rouz´ e, Jielun Chen, Jiaqing Jiang, Samuel O Scalet, Yongtao Zhan, Gar-net Kin Chan, Lexing Ying, and Yu Tong. Convergence of the cumulant expansion and polynomial-time algorithm for weakly interacting fermions. arXiv preprint arXiv:2512.12010 , 2025. [32] James PF LeBlanc, Andrey E Antipov, Federico Becca, Ireneusz W Bulik, Garnet Kin-Lic Chan, Chia-Min Chung, Youjin Deng, Michel Ferrero, Thomas M Henderson, Carlos A Jim´ enez-Hoyos, et al. Solutions of the two-dimensional hubbard model: Benchmarks and results from a wide range of nu-merical algorithms. Physical Review X , 5(4):041041, 2015. [33] Emanuel Gull, Andrew J Millis, Alexander I Lichtenstein, Alexey N Rubtsov, Matthias Troyer, and Philipp Werner. Continuous-time monte carlo methods for quantum impurity models. Reviews of modern physics , 83(2):349–404, 2011. [34] Anders W Sandvik. Computational studies of quantum spin systems. In AIP Conference Proceedings ,volume 1297, pages 135–338. American Institute of Physics, 2010. [35] Ethan N Epperly, Joel A Tropp, and Robert J Webber. Xtrace: Making the most of every sample in stochastic trace estimation. SIAM Journal on Matrix Analysis and Applications , 45(1):1–23, 2024. [36] Thais de Lima Silva, Lucas Borges, and Leandro Aolita. Partition function estimation with a quantum coin toss. arXiv e-prints , pages arXiv–2411, 2024. [37] Anirban N Chowdhury, Rolando D Somma, and Yi˘ git Suba¸ sı. Computing partition functions in the one-clean-qubit model. Physical Review A , 103(3):032422, 2021. [38] Samson Wang, Sam McArdle, and Mario Berta. Qubit-efficient randomized quantum algorithms for linear algebra. PRX quantum , 5(2):020324, 2024. 35 
+
+[39] Shantanav Chakraborty, Soumyabrata Hazra, Tongyang Li, Changpeng Shao, Xinzhao Wang, and Yuxin Zhang. Quantum singular value transformation without block encodings: Near-optimal com-plexity with minimal ancilla. arXiv preprint arXiv:2504.02385 , 2025. [40] Tillmann Baumgratz and Martin B Plenio. Lower bounds for ground states of condensed matter systems. New Journal of Physics , 14(2):023027, 2012. [41] David A Mazziotti. Large-scale semidefinite programming for many-electron quantum mechanics. 
+
+Physical review letters , 106(8):083001, 2011. [42] Danial Motlagh and Nathan Wiebe. Generalized quantum signal processing. PRX Quantum ,5(2):020368, 2024. [43] Jonathan Romero, Ryan Babbush, Jarrod R McClean, Cornelius Hempel, Peter J Love, and Al´ an Aspuru-Guzik. Strategies for quantum computing molecular energies using the unitary coupled cluster ansatz. Quantum Science and Technology , 4(1):014008, 2019. [44] Andreas B¨ artschi and Stephan Eidenbenz. Deterministic preparation of dicke states. In International Symposium on Fundamentals of Computation Theory , pages 126–139. Springer, 2019. [45] J. Jakliˇ c and P. Prelovˇ sek. Lanczos method for the calculation of finite-temperature quantities in correlated systems. Phys. Rev. B , 49:5065(R)–5068(R), Feb 1994. [46] Taehee Ko, Xiantao Li, and Chunhao Wang. Ground-state energy and related properties estimation in quantum chemistry with linear dependence on the number of atoms. In 2024 IEEE International Conference on Quantum Computing and Engineering (QCE) , volume 1, pages 669–680. IEEE, 2024. [47] Haim Avron and Sivan Toledo. Randomized algorithms for estimating the trace of an implicit symmetric positive semi-definite matrix. Journal of the ACM (JACM) , 58(2):1–34, 2011. [48] James D Watson and Jacob Watkins. Exponentially reduced circuit depths using trotter error mitiga-tion. PRX quantum , 6(3):030325, 2025. [49] Joran Van Apeldoorn, Andr´ as Gily´ en, Sander Gribling, and Ronald de Wolf. Quantum sdp-solvers: Better upper and lower bounds. In 2017 IEEE 58th Annual Symposium on Foundations of Computer Science (FOCS) , pages 403–414. IEEE, 2017.

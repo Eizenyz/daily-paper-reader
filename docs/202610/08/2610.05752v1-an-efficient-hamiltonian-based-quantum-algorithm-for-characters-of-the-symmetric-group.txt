@@ -1,0 +1,3837 @@
+Title: An efficient Hamiltonian-based quantum algorithm for characters of the symmetric group
+
+URL Source: https://arxiv.org/pdf/2610.05752v1
+
+Published Time: Tue, 06 Oct 2026 02:17:01 GMT
+
+Number of Pages: 54
+
+Markdown Content:
+# An efficient Hamiltonian-based quantum algorithm for characters of the symmetric group 
+
+Dikshant Rathore 1 and Leo Zhou 21Mani L. Bhaumik Institute for Theoretical Physics, Department of Physics and Astronomy, University of California, Los Angeles, CA 90095, USA 
+
+> 2
+
+Electrical & Computer Engineering Department, University of California, Los Angeles, CA 90095, USA 
+
+October 4, 2026 
+
+Abstract 
+
+Consider a quantum state vector proportional to any given column of the character table of the symmetric group ( Sn), corresponding to a superposition over the irreps weighted by the character values. It was recently argued that sampling from this state is classically hard under reasonable complexity-theoretic assumptions, while there exists an efficient quantum algorithm for preparing this character state using the quantum Fourier transform (QFT) over Sn [1]. We give an alternative, simpler algorithm to prepare this character state with a sequence of Hamil-tonian evolutions, as well as an efficient implementation with reconfigurable qubits that uses only nearest-neighbor gates in 1D. The gate complexity, accounting for Hamiltonian simulation errors, depends on the choice of the column: For fixed target state error, the estimated suf-ficient total gate count ranges from as few as O(n) gates for the n-cycle column, to eO(n1.75 )gates near the conjecturally classically hard parameter regime, to provably eO(n2.5) gates in the worst case. In contrast, the QFT subroutine in the prior approach uses eO(n3) gates. Our gate count estimates come from leading-order state-dependent Trotter error analysis, and the proven worst-case bound relies on a QSVT-based Hamiltonian simulation method; numerical bench-marks of the Trotter-based protocol suggest that the estimates are conservative. Furthermore, we generalize our protocol to give an explicit algorithm for the quantum character transform (QCT) over Sn using eO(n2.5) gates and O(n) qubits. An application to entanglement entropy of symmetric orbifold conformal field theories is also discussed. 
+
+1arXiv:2610.05752v1 [quant-ph] 5 Oct 2026 Contents 
+
+1 Introduction 3
+
+1.1 Background and prior work 41.2 Summary of main results 61.3 Paper organization 8
+
+2 Symmetric group character states 9
+
+2.1 The symmetric group and its characters 92.2 Character column states and the quantum character transform 10 2.3 The fermionic encoding 10 
+
+3 Character State Preparation 12 
+
+3.1 The transfer mechanism 12 3.2 The ladder property 13 3.3 The Hamiltonian-based CSP algorithm 14 
+
+4 Hamiltonian simulation for Hs 14 
+
+4.1 Implementation via Trotter decomposition 15 4.1.1 Nearest-neighbor form of Hs using reconfigurable qubits 15 4.1.2 Trotter error analysis 17 4.1.3 State-dependent Trotter error for uniform cycles 18 4.1.4 Numerical simulations 20 4.2 Implementation via quantum singular value transformation 23 
+
+5 Quantum Character Transform 26 
+
+5.1 QSVT-based implementation and resource estimate 28 5.2 Application: character row state and defect entropy from the inverse QCT 32 
+
+6 Classical computational complexity 32 
+
+6.1 Conditions for quantum advantage 32 6.2 Uniform cycles are classically tractable 33 6.3 Almost-uniform cycles 35 
+
+7 Discussion and Outlook 38 A Proof of the eigenvalue condition 40 B Trotter error: commutator calculations 44 
+
+B.1 Commutator norms 44 B.2 Bond counting 44 
+
+C Leading-order state-dependent Trotter error for uniform cycle partitions 44 
+
+C.1 Telescoped state-dependent bound 45 C.2 Multinomial structure of |ρr⟩ 47 C.3 Same-chain and cross-chain terms 47 C.4 Gate count from state-dependent Trotter error 51 21 Introduction 
+
+Symmetry plays a central role in the description and simulation of quantum many-body systems. It allows us to resolve the Hilbert space of a system into its irreducible symmetry sectors. For a symmetry group G, its characters are the fundamental quantities that connect these sectors to the action of its group elements. Here we focus on the symmetric group Sn consisting of the n! permutations of n objects. Its conjugacy classes, labeled by cycle types, classify permutations up to relabeling. Its irreducible representations (irreps), labeled by Young diagrams, describe the possible symmetry sectors of the system. The normalized character table can be viewed as a Fourier transform between conjugacy classes and irreducible representations within the space of class functions. In many-body physics, Sn governs the exchange of identical particles, with its irreps organizing the spin and spatial symmetry sectors of quantum gases. It also appears in replica methods, where 
+
+Sn permutes the replicas introduced to study disordered systems and many-body entanglement [2,3]. Moreover, the characters of Sn determine the Slater-basis amplitudes of Laughlin states in the fractional quantum Hall effect [4]. A concrete setting where characters of Sn have a physical interpretation is in the two-dimensional symmetric orbifold conformal field theories (CFTs). A symmetric orbifold CFT is formed from n
+
+identical copies of a conformal field theory by gauging the Sn symmetry that permutes them [5]. The gauged theory has a generalized symmetry realized by topological line operators (defects) labeled by irreducible representations of Sn [6, 7]. The action of these defects on twist operators is determined by the characters of Sn. Recent work has shown that the entanglement entropy in the presence of these defects can be computed directly from these characters [8]. In particular, for a defect labeled by λ placed at the entangling surface, the defect-dependent contribution to the entropy is ∆Sλ = − X
+
+> ν⊢n
+
+[χλ(ν)] 2
+
+zν
+
+ln 
+
+
+
+[χλ(ν)] 2
+
+, zν = n!
+
+|Cν | , (1.1) where Cν is the conjugacy class of cycle type ν, which is specified as a partition of n (denoted as 
+
+ν ⊢ n). By character orthogonality, the weights χλ(ν)2/z ν form a probability distribution over cycle types and are precisely the squared entries of a row of the normalized character table. Characters of 
+
+Sn also determine expectation values of worldsheet observables in the α-states of Hurwitz theory [9]. Despite their broad role, characters of Sn are computationally difficult. Given an irreducible representation λ and a conjugacy class ν, exactly evaluating the corresponding character χλ(ν) is at least #P-hard in the worst case [10,11]. Even the simpler task of deciding whether the character is nonnegative is PP-complete [12]. Quantum computers offer a different form of access to the character table. Rather than eval-uating individual entries, one can consider a quantum state whose amplitudes encode an entire column of the character table. For a cycle type ν = (1 m1 . . . n mn ) ⊢ n, where ms is the number of cycles of length s (so that P 
+
+> s
+
+sm s = n), the normalized column is the character column state 
+
+|χν ⟩ := 1
+
+√zν
+
+X
+
+> λ⊢n
+
+χλ(ν) |λ⟩ , zν = X
+
+> λ⊢n
+
+[χλ(ν)] 2 =
+
+> n
+
+Y
+
+> s=1
+
+sms ms! , (1.2) and measuring it returns an irreducible representation λ with probability 
+
+Pν (λ) = |⟨ λ|χν ⟩| 2 = [χλ(ν)] 2
+
+zν
+
+. (1.3) 3We call the task of preparing |χν ⟩ for a given cycle type character state preparation (CSP). Charac-ter orthogonality makes the states |χν ⟩ an orthonormal basis, so preparing all columns coherently defines a unitary, QCT Sn : |ν⟩ 7 −→ | χν ⟩ , (1.4) called the quantum character transform (QCT) over Sn by Bastidas et al. [13]. The QCT can be used for symmetry-adapted state preparation and phase estimation, in which a many-body state is projected onto the irreducible representations of its symmetry group. While CSP prepares 
+
+|χν ⟩ for one specified cycle type ν, the QCT performs this preparation coherently on an arbitrary superposition of cycle types. Bravyi et al. [1] showed that CSP can be implemented using the quantum Fourier transform over 
+
+Sn. They also identified suitable character-sampling problems as candidates for quantum advantage (e.g., sampling from |χν ⟩ when ν contains Θ( √n/ log n) cycles), conditional on an average-case hard-ness conjecture and the noncollapse of the polynomial hierarchy. The best currently known imple-mentation of the quantum Fourier transform over Sn requires eO(n3) gates and eO(n3/2) qubits [14]. Bastidas et al. [13] introduced the QCT as a primitive for symmetry-adapted quantum algorithms and gave implementations for S2 and S3, but no scalable circuit for the QCT over general Sn was provided. In this work, we bypass the quantum Fourier transform by giving a more direct Hamiltonian-based algorithm for CSP (Theorem 1.1), and extend it coherently to realize the full QCT. Using QSVT for the Hamiltonian simulation subroutine, our algorithm uses eO(n5/2) gates and O(n)qubits both for CSP in the worst case (Theorem 1.3) and for the full QCT (Theorem 1.4). To our knowledge, our eO(n5/2) is the first explicit polynomial gate bound for the QCT over general Sn.As an application, we show that inverse QCT can be used to efficiently estimate the entanglement entropy (1.1) in symmetric orbifold CFTs to within O(√n) additive error. We also propose an efficient Trotter-based implementation that is particularly suitable for re-configurable qubits in 1D or 2D geometry (e.g., neutral atom arrays [15]). The proposed im-plementation leverages the fast fermionic permutation protocol with reconfigurable qubits from Maskara et al. [16], which makes the Hamiltonian simulation gates nearest-neighbor. For exam-ple, the required fermionic permutation can be implemented as a 2D reflection with O(n) gates. At the Θ( √n/ log n)-cycle regime proposed as a candidate for quantum advantage in character sampling [1], our leading-order state-dependent Trotter error analysis for uniform cycles ν = ( sm)suggests that |χν ⟩ can be prepared with eO(n7/4/δ ) gates, where δ is the target state error (The-orem 1.2). As a complementary result, we give a classical algorithm to sample from Pν (λ) that is efficient when ν = ( sm) is exactly uniform, but becomes inefficient under perturbations from uniformity (Theorem 1.5). Our numerical simulations of the Trotterized CSP circuit up to n = 48 suggest that the true gate count needed for a fixed state error changes modestly when a uniform cycle type is perturbed, and the analytical bounds overestimate the count for many cycle types by various powers of n. Hence, we believe this Trotter-based implementation of CSP is a promising candidate to realize near-term quantum advantage with reconfigurable qubits. 
+
+1.1 Background and prior work 
+
+Spin-chain encoding of Sn characters. Crichigno and Prakash [11] showed that the characters of Sn appear as amplitudes of states in the XX Heisenberg spin chain. Under the Jordan-Wigner transformation, the chain of 2 n sites becomes 2 n fermionic modes, and a Young diagram λ ⊢ n
+
+is encoded as the Fock state |λ⟩ with n occupied modes determined by its shape. For each cycle 4length s, the current operator 
+
+Js =
+
+> 2n−s
+
+X
+
+> i=1
+
+a†
+
+> i+s
+
+ai (1.5) hops a fermion by s sites. For a cycle type ν = ( ν1, . . . , ν ℓ), they showed that 
+
+Jν1 Jν2 · · · Jνℓ |1n0n⟩ = X
+
+> λ⊢n
+
+χλ(ν) |λ⟩ = √zν |χν ⟩ . (1.6) This is the Murnaghan-Nakayama rule in fermionic form: each hop by s sites adds a border strip of length s to the Young diagram, with the sign supplied by fermionic statistics. The identity reduces CSP to applying a prescribed sequence of current operators to a product state. The current operators are not unitary, however, so they cannot be applied directly as gates. Nevertheless, as we show later in Theorem 1.1, their normalized action can be implemented by Hamiltonian evolution. 
+
+Classical and quantum algorithms for CSP. Bravyi et al. [1] provided both a classical and a quantum algorithm for realizing the state |χν ⟩ based on the above encoding. The classical algorithm represents each current Js as a matrix product operator of bond dimension s + 2 and applies the 
+
+ℓ currents in (1.6) one at a time. The resulting matrix product state (MPS) for |χν ⟩ has bond dimension at most D ≤ Qℓj=1 (νj + 2) ≤ (n + 2) ℓ, so any character χλ(ν) can be read off exactly in time O(n ℓ D 3) = nO(ℓ). This is polynomial for a bounded number of cycles and quasipolynomial for ℓ = O(log n), the typical number of cycles of a random permutation, but exponential in the worst case. Their quantum algorithm efficiently prepares |χν ⟩ for any ν but, unlike their classical MPS algorithm, does not enable evaluation of individual χλ(ν). This CSP algorithm works by first preparing a uniform superposition over the conjugacy class Cν , then applying the quantum Fourier transform over Sn [17], and finally uncomputing the representation-matrix registers. The algorithm runs in poly( n) time, but no explicit upper bound is known on the exponent; in any case, the QFT subroutine uses eO(n3) gates and eO(n3/2) qubits according to the best known implementation [14]. 
+
+Character sampling as a candidate for quantum advantage. Bravyi et al. also studied the classical complexity of sampling from the character distribution Pν (λ) = |⟨ λ|χν ⟩| 2. A distribution over a finite set Ω is called granular if every probability is an integer multiple of γ/ |Ω| for some 
+
+γ ≥ 1. Since the characters are integers and λ ⊢ n, Pν (λ) of Eq. (1.3) is granular over the 
+
+p(n) = exp( πp2n/ 3 − O(log n)) partitions of n whenever zν ≤ p(n), with granularity parameter 
+
+γ = p(n)/z ν . Bravyi et al. prove that this granularity condition holds for cycle types satisfying 
+
+ℓ(ν) ≤ A
+
+√n
+
+log n , (1.7) where ℓ(ν) is the number of cycles and A ≈ πp2/3 is a universal positive constant. For such cycle types, a classical sampler with ℓ1 error ε can be converted into a BPP NP algorithm that computes Pν (λ) exactly for at least a 1 − 20 ε fraction of partitions λ. Classical hardness of sampling would, therefore, follow if the exact computation of Pν (λ) were hard on average over 
+
+λ, together with the assumption that the polynomial hierarchy does not collapse. This average-case hardness remains conjectural. Their result, therefore, identifies cycle types with O(√n/ log n)cycles as a candidate regime for quantum advantage. For the dual problem, in which one fixes λ and samples g ∈ Sn with probability [ χλ(g)] 2/n !, granularity holds automatically with γ = 1. Bravyi et al. regard this direction as less promising for quantum advantage, because their MPS algorithm evaluates the character in quasipolynomial time 5(a)       
+
+> 2n
+> · · · · · · |0⟩a
+> e−iH ν1t1
+> iX e−iH ν2t2
+> iX e−iH νℓtℓ
+> iX |0⟩a
+> |1n0n⟩|χν⟩
+
+(b) Trotter: e−iH st ≈ P †
+
+> s
+
+ Q  
+
+> bonds
+
+e−iτ h Ms
+
+Ps  
+
+> · · · · · · · · · · · · · · ·
+> PsP†
+> s
+> e−iτ h
+> e−iτ h
+> Ms
+> a
+> 2n
+> 
+
+(c) QSVT: block encoding of Hs    
+
+> · · · · · · · · · · · ·
+> ...
+> · · · |i, β ⟩VV†
+> aσa
+> 2nσ1
+> σ2
+> σ2n
+
+Figure 1 : (a) Our CSP circuit: ℓ(ν) exactly timed Hamiltonian evolutions by Hνk in (1.8), each followed by an iX gate on the ancilla. (b) One Trotterized transfer on reconfigurable qubits: after the regrouping Ps, the 2 n − s bond terms are nearest-neighbor, and the ancilla is swapped along the chain so that each bond gate acts on three adjacent qubits. (c) Block encoding of Hs: V puts the register |i, β ⟩ in uniform superposition over the Pauli-string labels, and site k receives the Pauli 
+
+σk ∈ { I, X, Y, Z } the register selects: X or Y at i and i + s, Z in between, I elsewhere. on all but a vanishing fraction of uniformly random permutations, which makes the average-case hardness conjecture less likely to hold for this problem. 
+
+1.2 Summary of main results 
+
+As shown in Eq. (1.6), CSP can be reduced to applying the current operators Jνi , one for each cycle of ν, to the reference state |1n0n⟩. However, the current operators are not unitary. To implement the transfer mechanism |ϕ⟩ → Js |ϕ⟩, we add a single ancilla qubit in |0⟩a and evolve with the Hamiltonian 
+
+Hs = |1⟩⟨ 0|a ⊗ Js + |0⟩⟨ 1|a ⊗ J† 
+
+> s
+
+. (1.8) On the states that the algorithm visits, J† 
+
+> s
+
+Js has a known integer eigenvalue, so e−iH st is an exact two-level Rabi rotation between |0⟩a ⊗ | ϕ⟩ and |1⟩a ⊗ Js |ϕ⟩. This leads to a Hamiltonian-based algorithm for preparing |χν ⟩:
+
+Theorem 1.1 (Character state preparation) . Given a cycle type ν = ( ν1, . . . , ν ℓ) ⊢ n, with entries obeying ν1 ≥ ν2 ≥ . . . ≥ νℓ. Let rj = |{ k ≤ j : νk = νj }| and tj = π/ (2 √νj rj ). Then 
+
+|0⟩a ⊗ | χν ⟩ = ( iX a ⊗ 1)e−it ℓHνℓ · · · (iX a ⊗ 1)e−it 2Hν2 (iX a ⊗ 1)e−it 1Hν1
+
+  |0⟩a ⊗ | 1n0n⟩  . (1.9) The CSP circuit is shown in Figure 1(a). The proof of the above theorem is in Section 3. The algorithm needs 2 n + 1 qubits and ℓ evolutions with known times, and its cost is that of simulating e−iH st. We give two implementations of this simulation, visualized in Figure 1(b) and (c) respectively. The first is based on Trotter decomposition. 
+
+Trotter with reconfigurable qubits. Reordering the 2 n modes by their residue modulo s
+
+makes every hop nearest-neighbor on one of s chains. In the reordered basis, Hs is a sum of 2 n − s
+
+local bond terms, each coupling two adjacent sites to the ancilla, and one first-order Trotter step costs O(n) gates. The reordering is a fermionic permutation Ps, which can cost Θ( n2) swap gates on a fixed one-dimensional layout. We show in Lemma 4.1 that Ps is precisely the two-dimensional 6reflection of Maskara et al. [16]. Their reconfigurable-qubit protocol implements this structured fermionic permutation with O(n) Clifford gates in constant depth, using O(n) auxiliary qubits, mid-circuit measurement, and classical feedforward. The operator-norm Trotter bound then gives 
+
+O(n4 log 2 n/δ ) gates for any cycle type at state error δ (Section 4.1.2). This bound is loose, because it maximizes the commutator error over all states while the algorithm visits only a small family of them. For uniform cycle types, we evaluate the leading-order error on those states directly. 
+
+Theorem 1.2 (Informal: leading-order state-dependent Trotter bound for CSP) . For a uniform cycle type ν = ( sm) with n = sm , allocating 
+
+O
+
+ nδ
+
+
+
+m3/2 + m2
+
+s3/2
+
+ 
+
+(1.10) 
+
+gates makes the leading 1/M contribution to the first-order Trotter error at most δ on the states visited by the algorithm. At m = Θ( √n/ log n), the cycle count of the Bravyi et al. granularity regime (1.7) , this is eO(n7/4/δ ).
+
+For details, see Section 4.1.3 and Appendix C. Eq. (1.10) is a state-dependent bound on the sufficient gate count to make the leading-order Trotter error small. Based on numerical simulations up to n = 48, we believe the bound to be a loose overestimate on the actual gate count required (see Section 4.1.4). 
+
+QSVT-based implementation. In the second implementation, we write Hs as a sum of 4(2 n−s)Pauli strings. Each string connects sites i and i + s with a product of Z, and acts as X or Y on the endpoints in addition to the ancilla. A register of O(log n) qubits in uniform superposition over the string labels selects which string is applied, at a cost of O(n log n) gates (Proposition 4.2). This block-encodes Hs with normalization 2 n − s, and we apply the quantum singular value transforma-tion (QSVT) [18] to simulate each transfer with a number of queries that grows only logarithmically in 1 /δ .
+
+Theorem 1.3 (QSVT-based CSP; also Theorem 4.3) . For every cycle type ν ⊢ n and desired state error δ, CSP can be implemented with 
+
+O
+
+
+
+n5/2 log n + n2 log n log nδ
+
+
+
+= eO(n5/2) (1.11) 
+
+one- and two-qubit gates and 2n + O(log n) qubits, where the simplified eO(n5/2) form assumes fixed or inverse-polynomial δ.
+
+The quantum character transform. To implement the QCT (1.4), we run our QSVT-based CSP coherently controlled by a superposition of cycle types, |ν⟩ | 1n0n⟩ → | ν⟩ | χν ⟩, and then erase the cycle types to get |0⟩ | χν ⟩ in order to maintain coherence in the output superposition of the character states. The erasure can be done in concert with the CSP subroutine: After the transfers at length s, the system is an eigenvector of Ns = JsJ† 
+
+> s
+
+/s with eigenvalue ms, so the |ν⟩ register can be erased by a sequence of phase estimation on Ns. Simulating Ns directly costs eO(n3) gates, because its block encoding has normalization (2 n − s)2/s . We avoid this by observing that Hs has eigenvalues of magnitude at most √n on the states the algorithm visits, and amplifying them with uniform singular value amplification [18] before squaring. All in all, the gate count sufficient for implementing QCT is similar to the QSVT-based implementation of CSP above. 
+
+Theorem 1.4 (Quantum character transform; also Theorem 5.1) . On the input subspace of valid cycle-type labels with clean work registers, QCT Sn can be implemented using eO(n5/2 log δ−1) gates and O(n) qubits with operator-norm error δ.
+
+7The extra register for encoding cycle types |ν⟩ needs at most Pns=1 O(log( n/s )) = O(n) qubits [see Eq. (5.4)], and thus the qubit count remains O(n). 
+
+Classically tractable cycle types. We are interested in the potential of our efficient CSP/QCT algorithms for realizing quantum advantage by sampling from |χν ⟩. The Bravyi et al. argument for quantum advantage requires cycle types ν in the regime (1.7), which ensures granularity but not average-case hardness. We show that the number of cycles alone does not determine classical hardness due to the following classical algorithm: 
+
+Theorem 1.5 (Classical samplers; see Theorems 6.1 and 6.2) . For uniform cycles ν = ( sm), the distribution Pν of (1.3) can be sampled exactly by a classical algorithm in expected time eO(n2),and each probability Pν (λ) can be computed exactly in polynomial time. For almost-uniform cycles 
+
+ν = ( sm, r 1, . . . , r b), an exact rejection sampler runs in expected time n4b+O(1) , and each probability can be computed in time n2b+O(1) .
+
+The uniform-cycle sampler is built from the s-quotient of λ: the sizes of its s components are drawn from a multinomial distribution, and each component from the Plancherel measure by Robinson-Schensted insertion of a random permutation. Uniform cycles with Θ( √n/ log n)cycles lie inside the regime (1.7) and are nevertheless classically tractable, as are perturbations of them with a constant number of exceptional cycles. Any superpolynomial quantum advantage in this neighborhood must therefore come from a number of exceptional cycles that grows with 
+
+n. We do not have a state-dependent Trotter bound for such cycle types; nevertheless, numerical benchmarking up to n = 48 suggests that the required Trotter steps change only modestly with the number of exceptional cycles (see Figure 6). 
+
+Application: entanglement entropy in CFTs. Applying the inverse QCT to an irreducible representation |λ⟩ and measuring returns a cycle type ν with probability Pλ(ν) = [ χλ(ν)] 2/z ν ,which is the weight appearing in the defect entropy (1.1). Section 5.2 shows that samples of ν can be used to estimate ∆ Sλ with additive error at most ln p(n) ∼ O(√n), where p(n) is the number of partitions of integer n. On the other hand, numerical evaluations of ∆ Sλ for all possible λ up to n = 30 suggest that typical values of |∆Sλ| exceed ln p(n) at large n, and the growth of its magnitude is consistent with Θ( n) (see Figure 8). This suggests that for a generic λ, our quantum algorithm gives an efficient estimator of ∆ Sλ with relative error that vanishes with n.
+
+1.3 Paper organization 
+
+Section 2 reviews the symmetric group, its character table, and the fermionic encoding. Section 3 describes how CSP can be realized with Hamiltonian evolutions, based on a transfer mechanism and a ladder property of Js. Section 4 implements the Hamiltonian evolutions e−iH st in two ways: (1) using Trotter decomposition on reconfigurable qubits, with operator-norm and state-dependent error bounds, as well as numerical benchmarks, and (2) using block-encoding and QSVT, which give the best-known provable worst-case bound. Section 5 gives a generalization of our algorithm to implement the QCT, complete with QSVT-based implementation and resource estimate, in addition to a concrete application to the defect entropy of symmetric orbifold CFTs. Section 6 contains the classical samplers for uniform and almost-uniform cycles. Detailed proofs of the ladder property and of the state-dependent Trotter bounds are in the appendices. 82 Symmetric group character states 
+
+This section collects the background for the rest of the paper. We recall the symmetric group and its character table, define the character column states and the quantum character transform precisely, and describe the fermionic encoding of the character table on which our algorithm is built. 
+
+2.1 The symmetric group and its characters 
+
+The symmetric group Sn is the group of permutations of n objects, and |Sn| = n!. Every permu-tation decomposes into disjoint cycles, and its cycle lengths in nonincreasing order form its cycle type . For example, (1 3 5)(2)(4) ∈ S5 has cycle type (3 , 1, 1) = (3 , 12). In general, a cycle type ν is a partition of n, a nonincreasing sequence of positive integers that sum to n:
+
+ν = ( ν1 ≥ ν2 ≥ · · · ≥ νℓ) ,
+
+> ℓ
+
+X
+
+> j=1
+
+νj = n , (2.1) written ν ⊢ n. We write ℓ(ν) for the number of cycles (or parts). When several cycles share a length, we record multiplicities and write 
+
+ν = ( nmn · · · 2m2 1m1 ) ,
+
+> n
+
+X
+
+> s=1
+
+s m s = n , (2.2) where ms is the number of cycles of length s. In this notation the cycle type (3 , 2) is (3 121), and the partitions of 4 are (4), (3 , 1), (2 2), (2 , 12), and (1 4). The conjugacy class of g ∈ Sn is C(g) = {hgh −1 : h ∈ Sn}. Conjugating by h relabels the objects on which g acts, which changes the contents of the cycles of g but not their lengths, and any two permutations with the same cycle type are related by such a relabeling. The conjugacy classes of Sn are therefore in bijection with the partitions of n, and we write Cν for the class of cycle type ν.Partitions of n also label the irreducible representations of Sn. For n = 3, the three partitions correspond to the trivial representation (3), the standard representation (2 , 1), and the sign rep-resentation (1 3). In this work, we do not need the representations themselves, only their traces. Writing ρλ(g) for the matrix representing g in the irrep λ, the character of g in that irrep is 
+
+χλ(g) = tr ρλ(g) . (2.3) Traces are invariant under conjugation, so the character depends on g only through its cycle type, and we write χλ(ν). The characters of Sn are integers. Since partitions of n index both the conjugacy classes and the irreps, the characters assemble into a square table. For n = 3, (1 3) (2 , 1) (3) 
+
+χ(3) 1 1 1
+
+χ(2 ,1) 2 0 −1
+
+χ(1 3) 1 −1 1with rows labeled by irreps and columns by cycle types. The first column records the dimensions 
+
+dλ = χλ(1 n) of the irreps. 9Distinct columns of the table are orthogonal, and the norm of a column is set by the size of the corresponding conjugacy class, 
+
+X
+
+> λ⊢n
+
+χλ(ν) χλ(μ) = δνμ zν , zν =
+
+> n
+
+Y
+
+> s=1
+
+sms ms! = n!
+
+|Cν | , (2.4) where zν is the order of the centralizer of any element of Cν . The three columns of the table above have squared norms 6, 2, and 3. 
+
+2.2 Character column states and the quantum character transform 
+
+Setting μ = ν in (2.4) shows that the column of the character table labeled by ν has squared norm 
+
+zν . Normalizing it gives the character column state |χν ⟩ of Eq. (1.2), 
+
+|χν ⟩ = 1
+
+√zν
+
+X
+
+> λ⊢n
+
+χλ(ν) |λ⟩ , (2.5) where |λ⟩ is a computational basis state labeled by the irrep λ. Measuring |χν ⟩ in this basis returns 
+
+λ with probability 
+
+Pν (λ) = [χλ(ν)] 2
+
+zν
+
+. (2.6) Although [ χλ(ν)] 2 is a nonnegative integer, Ikenmeyer et al. proved that the function ( λ, ν ) 7 →
+
+[χλ(ν)] 2 is not in #P unless the polynomial hierarchy collapses to its second level [12]. This rules out a counting interpretation of the probabilities (2.6), but not a quantum algorithm that samples from them without computing them. For a finite group G with conjugacy classes C and irreps Γ, the quantum character transform of Bastidas et al. [13] is QCT G = X
+
+> C
+
+X
+
+> Γ
+
+s
+
+|C||G| χΓ(C) |Γ⟩⟨ C| . (2.7) Character orthogonality makes its columns orthonormal, so it is unitary. For G = Sn the prefactor is p|Cν |/n ! = 1 /√zν by (2.4), and QCT Sn : |ν⟩ 7 −→ | χν ⟩ . (2.8) Character state preparation for a fixed ν produces one column of this unitary. Implementing the preparation coherently over all cycle types gives the full transform. 
+
+2.3 The fermionic encoding 
+
+Characters of Sn can be read off as amplitudes of a state on an open XX spin chain. This encoding was discovered by Crichigno and Prakash [11], and we follow its presentation in Bravyi et al. [1]. The chain has 2 n sites. Under the Jordan–Wigner transformation its states are those of 2 n
+
+fermionic modes with operators ai, a † 
+
+> i
+
+obeying 
+
+{ai, a † 
+
+> j
+
+} = δij , {ai, a j } = {a† 
+
+> i
+
+, a † 
+
+> j
+
+} = 0 , (2.9) and we write ˆ ni = a† 
+
+> i
+
+ai. Everything below takes place in the sector of n particles, the space of 2n-bit strings of Hamming weight n.10 110 10 0 10
+
+λ = (3 , 1)        
+
+> 12345678
+
+= |1 1 0 1 0 0 1 0 ⟩
+
+supp( λ) = {1, 2, 4, 7}
+
+Figure 2 : The encoding (2.10) for λ = (3 , 1) at n = 4. The boundary of the Young diagram inside the 4 × 4 box is traced from the bottom left corner to the top right corner. Each step up is recorded as a 1 and each step to the right as a 0, giving a bit string of length 2 n and Hamming weight n.The ones sit at the modes λj + n − j + 1, here {1, 2, 4, 7} after padding λ to (3 , 1, 0, 0). The empty partition gives |seed ⟩ = |1n0n⟩.A partition λ ⊢ n is encoded as the Fock state |λ⟩ with occupied modes supp( λ) = {λj + n − j + 1 : j = 1 , . . . , n } , (2.10) where λ has been padded with zeros to n parts. The parts are nonincreasing while n − j + 1 strictly decreases, so the n values in (2.10) are distinct and lie in {1, . . . , 2n}. Equivalently, the bit string is the boundary path of the Young diagram of λ inside an n × n box, with a step up recorded as 1 and a step to the right as 0, as in Figure 2. The empty partition gives the seed state 
+
+|seed ⟩ = |∅⟩ = |1n0n⟩ , (2.11) with modes 1 , . . . , n occupied and modes n + 1 , . . . , 2n empty. The operator that moves between these states is the current operator 
+
+Js := 
+
+> 2n−s
+
+X
+
+> i=1
+
+a†
+
+> i+s
+
+ai , s = 1 , . . . , n , (2.12) whose Hermitian part J1 + J† 
+
+> 1
+
+is the Hamiltonian of the open XX chain. 1 The current operators are not unitary, and on the open chain a current does not commute with its adjoint, [Js, J † 
+
+> s
+
+]̸ = 0 . (2.13) Currents of different lengths do commute, [Js, J s′ ] = 0 , (2.14) so for a cycle type ν = ( ν1, . . . , ν ℓ) the product Jν := Jν1 Jν2 · · · Jνℓ does not depend on the order of the factors. Applying Jν to the seed produces an entire column of the character table, 
+
+Jν |seed ⟩ = X
+
+> λ⊢n
+
+χλ(ν) |λ⟩ , (2.15)      
+
+> 1The name follows [11], where the generating function exp   P
+> ktkJk/k is identified as a vertex operator.
+
+11 which is the identity (1.6) of the introduction. It is the fermionic form of the Murnaghan-Nakayama rule [11]; Bravyi et al. derive it from the Frobenius character formula, in which χλ(ν) is the coefficient of a monomial in a product of power sums times a Vandermonde determinant. Comparing with (2.5) and (2.4), 
+
+|χν ⟩ = Jν |seed ⟩√zν
+
+, Jν |seed ⟩ 2 = zν , (2.16) so preparing |χν ⟩ amounts to applying Jν to the seed and normalizing. Consider n = 3 as an illustrative example. The seed state is |seed ⟩ = |111000 ⟩ and the three partitions encode as |(3) ⟩ = |110001 ⟩, |(2 , 1) ⟩ = |101010 ⟩, and |(1 3)⟩ = |011100 ⟩. The three cycle types give J(3) = J3, J(2 ,1) = J2J1, and J(1 3) = J31 , and 
+
+J3 |seed ⟩ = |(3) ⟩ − | (2 , 1) ⟩ + |(1 3)⟩ ,J2J1 |seed ⟩ = |(3) ⟩ − | (1 3)⟩ ,J31 |seed ⟩ = |(3) ⟩ + 2 |(2 , 1) ⟩ + |(1 3)⟩ , (2.17) reproducing the three columns of the character table shown in Section 2.1. 
+
+# 3 Character State Preparation 
+
+By Eq. (2.16), preparing the character column state |χν ⟩ amounts to applying Jν to the seed state |seed ⟩ = |1n0n⟩ and normalizing. The current operators are not unitary, so Jν cannot be applied directly as a quantum gate, and Jν |seed ⟩ does not have unit norm. Instead, we realize the normalized map |seed ⟩ 7 → | χν ⟩ by unitary evolution on the system together with a single ancilla qubit, “depositing” the current operators Jν1 , . . . , J νℓ on the state one cycle length at a time in nonincreasing order of length. Each deposit is a single exact rotation driven by 
+
+Hs = |1⟩ ⟨ 0|a ⊗ Js + |0⟩ ⟨ 1|a ⊗ J† 
+
+> s
+
+, (3.1) in an effective two-level system, with the evolution time chosen so that the transfer is complete. The algorithm uses 2 n system qubits and one ancilla and prepares |χν ⟩ deterministically, without post-selection. 
+
+3.1 The transfer mechanism 
+
+We start by describing the key building block: a transfer mechanism that takes |ϕ⟩ → Js |ϕ⟩ / ∥Js |ϕ⟩∥ ,which Hs implements via an effective two-level rotation. 
+
+Lemma 3.1 (Transfer mechanism) . Let A be any operator and suppose |ϕ⟩ is an eigenvector of 
+
+A†A with eigenvalue ζ > 0, i.e., 
+
+A†A |ϕ⟩ = ζ |ϕ⟩ , (3.2) 
+
+Set H = |1⟩ ⟨ 0|a ⊗ A + |0⟩ ⟨ 1|a ⊗ A† and t∗ = π/ (2 √ζ), then 
+
+(iX a ⊗ 1)e−it ∗H |0⟩a ⊗ | ϕ⟩ = |0⟩a ⊗ A |ϕ⟩√ζ . (3.3) 
+
+Proof. Write |v⟩ := A |ϕ⟩ /√ζ which is a normalized state. On the two-dimensional subspace spanned by |0⟩a |ϕ⟩ and |1⟩a |v⟩, the Hamiltonian acts as √ζX : it sends |0⟩a |ϕ⟩ 7 → √ζ |1⟩a |v⟩ due 12 to (3.2), and |1⟩a |v⟩ 7 → √ζ |0⟩a |ϕ⟩ because A† |v⟩ = A†A |ϕ⟩ /√ζ = √ζ |ϕ⟩. The evolution stays in this subspace, and thus 
+
+e−itH |0⟩a |ϕ⟩ = cos( tpζ) |0⟩a |ϕ⟩ − i sin( tpζ) |1⟩a |v⟩ . (3.4) At the time 
+
+t∗ = π
+
+2√ζ (3.5) the rotation is at its half-period, and the transfer is exact, e−it ∗H |0⟩a |ϕ⟩ = −i |1⟩a |v⟩. Applying 
+
+iX a to the ancilla removes the phase and returns it to |0⟩a, so the transfer unitary 
+
+W := ( iX a ⊗ 1) e−it ∗H (3.6) acts as W |0⟩a |ϕ⟩ = |0⟩a |v⟩, as claimed. Observe that under the action of the transfer unitary (3.6), the ancilla begins and ends in |0⟩a,and the system is left in the normalized image of |ϕ⟩ under A. The only input this mechanism needs is the eigenvalue ζ, which sets the evolution time (3.5). 
+
+3.2 The ladder property 
+
+The transfer mechanism needs the input state to be an eigenvector of A†A. With A = Js, this requirement is supplied by the following structure of the current operators. Fix a cycle length s, and suppose the currents of every length greater than s have already been deposited, producing a normalized state |Φ>s ⟩ ∝ Q  
+
+> i:νi>s
+
+Jνi |seed ⟩. Let us denote the states obtained by depositing j further copies of Js as 
+
+|Φs,j ⟩ := J js |Φ>s ⟩
+
+ps j j! , j = 0 , 1, . . . , m s . (3.7) In Appendix A, we prove that the above state is normalized, as well as the following proposition: 
+
+Proposition 3.2 (Ladder property) . For every 1 ≤ j ≤ ms, the state |Φs,j −1⟩ is an eigenvector of 
+
+J† 
+
+> s
+
+Js with eigenvalue sj ,
+
+J† 
+
+> s
+
+Js |Φs,j −1⟩ = sj |Φs,j −1⟩ . (3.8) 
+
+Equivalently, Js and J† 
+
+> s
+
+act as raising and lowering operators on these states, 
+
+Js |Φs,j −1⟩ = psj |Φs,j ⟩ , J† 
+
+> s
+
+|Φs,j ⟩ = psj |Φs,j −1⟩ . (3.9) The eigenvalue sj is exactly the input that the transfer mechanism needs. Write ts,j for the evolution time of the j-th transfer at cycle length s, that is, the deposit of the j-th copy of Js. At this transfer, the singular value is √sj , so by (3.5) 
+
+ts,j = π
+
+2√sj . (3.10) To prove Proposition 3.2, a key quantity is the following commutator of the current operator: [J† 
+
+> s
+
+, J s] = 
+
+> s
+
+X
+
+> j=1
+
+ˆnj −
+
+> 2n
+
+X
+
+> j=2 n−s+1
+
+ˆnj . (3.11) 13 This equals s on any state whose lowest s modes are occupied and whose highest s modes are empty. Every state |Φs,j −1⟩ that the algorithm encounters has this form. Immediately before a length-s transfer, the total length of hops from the already-deposited currents is at most n − s,since the present transfer still contributes s and all cycle lengths must sum to n. Appendix A shows that this bound keeps the lowest s modes occupied and the highest s modes empty. Given this, J†
+
+> s
+
+lowers each |Φs,j ⟩ and the eigenvalue (3.8) follows by induction on j.
+
+3.3 The Hamiltonian-based CSP algorithm 
+
+We are now ready to prove Theorem 1.1, since the transfer mechanism and the ladder property combine directly into an algorithm for character state preparation. As visualized in Figure 1(a), our Hamiltonian-based CSP algorithm uses 2 n system qubits and a single ancilla, initialized in |0⟩a ⊗ | seed ⟩. For any given conjugacy class ν = ( nmn · · · 2m2 1m1 ), we process the cycle lengths in decreasing order s = n, n − 1, . . . , 2, 1. For each cycle length s with multiplicity ms ≥ 1, we apply the ms transfer unitaries 
+
+Ws, 1, W s, 2, . . . , W s,m s , where Ws,j := ( iX a ⊗ 1) e−it s,j Hs , (3.12) with Hs from (3.1) and ts,j = π/ (2 √sj ) as in (3.10). Theorem 1.1 is the claim that this procedure produces the desired state, as 
+
+> 1
+
+Y
+
+> s=n
+
+(Ws,m s · · · Ws, 2Ws, 1) |0⟩a |seed ⟩ = ( W1,m 1 · · · W1,1) · · · (Wn,m n · · · Wn, 1) |0⟩a |seed ⟩
+
+= |0⟩a |χν ⟩ , (3.13) where the products with ms = 0 are treated as the identity. To see Eq. (3.13), we note that before Ws,j is applied, the system is in |Φs,j −1⟩, which by Propo-sition 3.2 is an eigenvector of J† 
+
+> s
+
+Js with eigenvalue sj . By the transfer mechanism in Lemma 3.1, taken with A = Js and ζ = sj , we have Ws,j 
+
+  |0⟩a |Φs,j −1⟩  = |0⟩a |Φs,j ⟩. Applying the ms transfers in turn advances the system from |Φ>s ⟩ to |Φs,m s ⟩, depositing ms copies of Js, and moving to the next value of s deposits the currents of the next length. After all ℓ = P 
+
+> s
+
+ms transfers the system holds Jν |seed ⟩ /∥Jν |seed ⟩ ∥ = |χν ⟩, with the ancilla returned to |0⟩a.The normalization is supplied by the algorithm itself. Each transfer Ws,j divides by the singular value √sj , so the full sequence divides Jν |seed ⟩ by 
+
+> n
+
+Y
+
+> s=1
+> ms
+
+Y
+
+> j=1
+
+psj =
+
+> n
+
+Y
+
+> s=1
+
+psms ms! = √zν = ∥Jν |seed ⟩ ∥ , (3.14) which is the normalization in (2.16). 
+
+# 4 Hamiltonian simulation for Hs
+
+The CSP algorithm requires implementing the time evolution e−it s,j Hs for each transfer, with Hs as in (3.1). This section gives the two implementations in Theorems 1.2 and 1.3 of Section 1.2. We first describe a Trotter decomposition suitable for reconfigurable-qubit hardware such as neutral atom ar-rays, where reordering the fermions makes every term of Hs nearest-neighbor (Section 4.1.1), bound its error in operator norm (Section 4.1.2) and on the states our algorithm visits (Section 4.1.3), and benchmark with numerical simulations (Section 4.1.4). Then, we give a QSVT-based implementa-tion (Section 4.2), which gives a complete bound with logarithmic error dependence. 14 1 2 3 4 5 6 7 8 9 10 
+
+2n = 10, hop length s = 3           
+
+> μ= 1 14710
+> μ= 2 258
+> μ= 3 369
+
+Figure 3 : Chain decomposition (4.1) of the current operator Js, shown for 2 n = 10 and s = 3. On the full chain Js hops each mode to the one s sites to its right. Grouping modes by residue class modulo s splits Js into s independent chains J(μ) 
+
+> s
+
+, here the residue classes {1, 4, 7, 10 }, {2, 5, 8}
+
+and {3, 6, 9}, each a nearest-neighbor hopping chain of length Lμ ≈ 2n/s . The figure shows the decomposition at the level of mode couplings. In the physical ordering, each bond still carries a Jordan–Wigner string over the intervening modes, which the permutation Ps in (4.2) removes. 
+
+4.1 Implementation via Trotter decomposition 
+
+4.1.1 Nearest-neighbor form of Hs using reconfigurable qubits Chain decomposition. Each term a†
+
+> i+s
+
+ai in Js connects sites that whose indices are the same modulo s. The operator, therefore, decomposes into s independent chains (Figure 3), 
+
+Js =
+
+> s
+
+X
+
+> μ=1
+
+J(μ) 
+
+> s
+
+, J(μ) 
+
+> s
+
+:= 
+
+> Lμ−2
+
+X
+
+> r=0
+
+a† 
+
+> μ+( r+1) s
+
+aμ+rs , (4.1) where Lμ = ⌊(2 n − μ)/s ⌋ + 1 ≈ 2n/s is the length of chain μ. The chains act on disjoint mode sets, so [ J(μ) 
+
+> s
+
+, (J(μ′) 
+
+> s
+
+)†] = 0 for μ̸ = μ′.In the physical mode ordering, each bond a†
+
+> μ+( r+1) s
+
+aμ+rs carries a Jordan–Wigner string of length s − 1 over the intervening modes, which belong to other chains. The fermionic permutation 
+
+Ps introduced later in (4.2) reorders the modes so that each chain is contiguous, and in that basis the string cancels and J(μ) 
+
+> s
+
+becomes a nearest-neighbor hopping operator. Each term of Hs then acts on two adjacent site qubits and the ancilla, see (4.6) below. 
+
+Fermionic permutation. To make the chains of (4.1) local, we reorder the modes by residue class modulo s. Let Ps be the fermionic permutation that groups them, 
+
+Ps : (1 , 1+ s, 1+2 s, . . . ; 2, 2+ s, . . . ; . . . ; s, 2s, 3s, . . . ) , (4.2) 15 so that after Ps each chain occupies a contiguous block of modes. Writing H′ 
+
+> s
+
+= ( 1a ⊗ Ps) Hs (1a ⊗
+
+P † 
+
+> s
+
+), 
+
+e−itH s = ( 1a ⊗ P † 
+
+> s
+
+) e−itH ′ 
+
+> s
+
+(1a ⊗ Ps) . (4.3) Under the Jordan-Wigner encoding, Ps is not a product of local gates, since reordering the modes re-arranges the Jordan-Wigner strings, and on a fixed one-dimensional layout it costs Θ( n2) fermionic swaps. We instead use the reconfigurable-qubit construction of Maskara et al. [16] described in Section 1.1. For a general fermionic permutation of 2 n modes, their construction uses O(n log n)Clifford gates in depth O(log n). The permutation Ps is cheaper because it has more structure. Lemma 4.1 below shows that grouping the 2 n modes by residue modulo s is the 2D reflection 
+
+of [16] on a (2 n/s ) × s grid, or such a reflection, with at most s modes deleted when s ∤ 2n. Their Corollary 2 and Theorem 3 compile this reflection into O(n) CNOT gates in depth O(1), using 
+
+O(n) ancillas, mid-circuit measurement, and classical feedforward. 
+
+Lemma 4.1. Let s ≤ 2n and write 2n = Ls + t with 0 ≤ t < s . If t = 0 , the permutation Ps is the 2D reflection m0(r, c ) = rL c + c 7 → m1(r, c ) = cL r + r on the Lr × Lc grid with (Lr, L c) = ( L, s ).If t > 0, Ps is this reflection on the (L+1) × s grid with s − t modes deleted. Proof. Index the modes 0 , . . . , 2n − 1 and write each as i = κs + ρ with ρ = i mod s and κ = ⌊i/s ⌋.The permutation Ps orders modes by residue ρ, and within a residue class by κ. Suppose first 
+
+t = 0, so L = 2 n/s and each residue class has exactly L modes. The modes with residue less than 
+
+ρ fill the first ρL output positions, and mode κs + ρ is the κ-th within its class, so 
+
+Ps(i) = ρL + κ . (4.4) Setting r = κ, c = ρ, Lr = L, Lc = s, we have m0(r, c ) = κs + ρ = i, and the reflection sends this to m1(r, c ) = ρL + κ, which matches (4.4). Hence, Ps is the stated reflection. If t > 0, residue class 
+
+ρ has ⌊(2 n − 1 − ρ)/s ⌋ + 1 modes, which equals L + 1 for ρ < t and L for ρ ≥ t. Thus, Ps is the reflection on the full ( L+1) × s grid with the s − t absent modes, one from each residue class ρ ≥ t,deleted. For a uniform cycle type ν = ( sm) every transfer uses the same permutation Ps, which commutes with the ancilla correction iX a, so the intermediate permutations cancel and only one permutation at the start and one at the end remain, 
+
+Ws,m · · · Ws, 1 = ( 1a ⊗ P † 
+
+> s
+
+) (iX a ⊗ 1) e−it s,m H′
+
+> s
+
+ · · · (iX a ⊗ 1) e−it s, 1H′
+
+> s
+
+ (1a ⊗ Ps) . (4.5) For a general cycle type, one permutation Ps′ P † 
+
+> s
+
+is needed at each change of cycle length, so there are at most ℓ(ν) + 1 permutations in total. 
+
+Bond terms. In the permuted basis, H′ 
+
+> s
+
+is a sum of nearest-neighbor bond terms, each coupling two adjacent site qubits ( q, q + 1) to the ancilla a,
+
+hq,a = σ+ 
+
+> a
+
+⊗ σ+
+
+> q+1
+
+σ− 
+
+> q
+
++ σ− 
+
+> a
+
+⊗ σ−
+
+> q+1
+
+σ+ 
+
+> q
+
+, (4.6) with σ+ = |1⟩⟨ 0| and σ− = |0⟩⟨ 1|. In the ordering (ancilla a, site q, site q+1), each hq,a acts as X
+
+on the two-dimensional subspace span {| 010 ⟩, |101 ⟩} and as zero on its complement. The ancilla is shared by every bond. On a one-dimensional layout, it is moved next to the bond being rotated at a cost of O(1) swaps per bond, so that each bond rotation acts on three adjacent qubits, as drawn in Figure 1(b). 16 aqq + 1 
+
+X V (θ) X
+
+Figure 4 : Circuit for a single bond rotation e−iθh q,a = T † 
+
+> q,a
+
+V (θ) Tq,a on the ancilla a and two site qubits q, q +1. The compression Tq,a of (4.7) maps the active subspace onto span {| 000 ⟩, |010 ⟩} ,where V (θ) performs the rotation (4.8), after which T † 
+
+> q,a
+
+uncomputes. The bond rotation e−iθh q,a is implemented by conjugating a single controlled rotation. Define 
+
+Tq,a := CNOT q→a CNOT q→(q+1) Xq, (4.7) which maps |010 ⟩ 7 → | 000 ⟩ and |101 ⟩ 7 → | 010 ⟩, collapsing the active subspace onto span {| 000 ⟩, |010 ⟩} .Let V (θ) rotate on this pair, 
+
+V (θ) : |000 ⟩ 7 → cos θ |000 ⟩ − i sin θ |010 ⟩ ,
+
+|010 ⟩ 7 → cos θ |010 ⟩ − i sin θ |000 ⟩ , (4.8) while acting as identity on the rest of the states. Then 
+
+e−iθh q,a = T † 
+
+> q,a
+
+V (θ) Tq,a , (4.9) as verified by tracking |010 ⟩ and |101 ⟩ through the conjugation (Figure 4). Each bond rotation is a constant number of one- and two-qubit gates. 
+
+Trotter decomposition. All bond terms share the ancilla, so two bonds that do not share a site qubit do not commute (Appendix B.1). We, therefore, use the first-order Lie-Trotter formula. Dividing the evolution time ts,j into M steps of size τ = ts,j /M ,
+
+e−it s,j H′ 
+
+> s
+
+≈
+
+ Y
+
+> (q,q +1)
+
+e−iτ h q,a 
+
+
+
+> M
+
+, (4.10) with the approximation error analyzed in Sections 4.1.2 and 4.1.3. Each step applies one rotation per bond, and the s chains have P
+
+> μ
+
+(Lμ − 1) = 2 n − s bonds in total, so a Trotter step costs O(n)gates. 
+
+4.1.2 Trotter error analysis 
+
+We first bound the error of the first-order Trotter decomposition (4.10) in operator norm. For a single transfer at length s, the evolution e−it s,j H′ 
+
+> s
+
+is approximated by M applications of the bond product S(τ ) = Q 
+
+> (q,q +1)
+
+e−iτ h q,a with τ = ts,j /M . The first-order Trotter bound [19] gives 
+
+S(τ )M − e−it s,j H′ 
+
+> s
+
+≤ t2
+
+> s,j
+
+2M
+
+X
+
+> w<w ′
+
+[hw, h w′ ] = t2
+
+> s,j
+
+2M C(s, n ) , (4.11) where C(s, n ) := P 
+
+> w<w ′
+
+∥[hw, h w′ ]∥ is the sum of bond commutator norms. 17 Two bond terms commute if and only if they lie in the same chain and share a site qubit. Every other pair, including bonds in different chains, fails to commute through the shared ancilla, with commutator norm 1 (Appendix B.1). The shared ancilla, therefore, couples almost all of the  2n−s
+
+> 2
+
+
+
+bond pairs, and subtracting the 2 n − 2s same-chain adjacent pairs that do commute gives 
+
+C(s, n ) = 
+
+2n − s
+
+2
+
+
+
+− (2 n − 2s) = Θ( n2) . (4.12) This value depends only on s and n, not on the rest of the cycle type. Combining (4.11) and (4.12), the j-th transfer at length s is simulated to error εs,j using 
+
+Ms,j = t2 
+
+> s,j
+
+C(s, n )2εs,j 
+
+= Θ 
+
+ n2
+
+s j ε s,j 
+
+
+
+(4.13) Trotter steps, each costing O(n) gates. Summing over all transfers of the CSP algorithm, we split the total error budget δ uniformly, assigning εs,j = δ/ℓ to each of the ℓ = P 
+
+> s
+
+ms transfers. Using t2 
+
+> s,j
+
+= π2/(4 sj ), the total Trotter step count is 
+
+Mtot = X
+
+> sms
+
+X
+
+> j=1
+
+Ms,j = ℓ
+
+2δ
+
+X
+
+> s
+
+C(s, n )
+
+> ms
+
+X
+
+> j=1
+
+t2 
+
+> s,j
+
+= π2 ℓ
+
+8δ
+
+X
+
+> s
+
+C(s, n ) Hms
+
+s , (4.14) where Hm = Pmj=1 1/j is the m-th harmonic number. Since C(s, n ) = Θ( n2) uniformly in s, and 
+
+P 
+
+> s
+
+Hms /s ≤   P  
+
+> s
+
+1/s  max s Hms = O(log 2 n), with ℓ ≤ n,
+
+Mtot = O
+
+ n3 log 2 nδ
+
+
+
+. (4.15) Each Trotter step costs O(n) gates, so the operator-norm bound gives a total gate count of 
+
+O(n4 log 2 n/δ ) for any cycle type. This bound is loose for two reasons. First, C(s, n ) is an operator norm over the whole Hilbert space, while the error actually incurred is the norm of the same commutator sum acting on the particular state the algorithm passes through, which lies in the n-particle sector. Second, C(s, n )bounds each commutator separately and discards the cancellation between them. On the algo-rithm’s states, the non-commuting terms partially interfere, so the true error falls well below the sum of the individual norms. Section 4.1.3 exploits the first point for uniform cycle types, where the states the algorithm visits can be characterized exactly. Section 4.2 avoids the Trotter error altogether. 
+
+4.1.3 State-dependent Trotter error for uniform cycles 
+
+Consider a uniform cycle type ν = ( sm) with n = ms . The operator-norm bound of Section 4.1.2 maximizes the Trotter error over every input state, while the algorithm only passes through the ladder states |Φs,r ⟩ in Eq. (3.7). On these states, the commutator sum is much smaller, and for uniform cycles it can be evaluated exactly. Write |ρr⟩ = |Φs,r ⟩ for the normalized state after r transfers, and define A by writing the first-order Trotter commutator sum as P 
+
+> w<w ′
+
+[hw, h w′ ] = Za ⊗ A (Appendix C). At the k-th transfer, let Γr := ∥A | ρr⟩∥ , ∆k := max {Γk−1, Γk} . (4.16) 18 The leading state-dependent error is 
+
+εSD  
+
+> k, lead
+
+≤ t2
+
+> k
+
+2Mk
+
+∆k . (4.17) Appendix C evaluates Γ r by separating commutators between different chains from commutators within the same chain. It proves Γ2 
+
+> r
+
+= r(s2 − 1) 3 + s
+
+> r
+
+X
+
+> d=0
+
+rd
+
+  1
+
+s
+
+d 
+
+1 − 1
+
+s
+
+r−d
+
+F (d) , (4.18) where F (d) is a one-chain norm defined in Eq. (C.51). The appendix also proves 
+
+F (d) ≤ d2. (4.19) This gives Γ2 
+
+> r
+
+≤ r(s2 − 1) 3 + r
+
+
+
+1 − 1
+
+s
+
+
+
++ r2
+
+s , (4.20) and therefore Γr = O
+
+
+
+s√r + r
+
+√s
+
+
+
+. (4.21) Using tk = π/ (2 √ks ), Eq. (4.17) becomes 
+
+εSD  
+
+> k, lead
+
+= O
+
+ 1
+
+Mk
+
+ 1
+
+√k + 1
+
+s3/2
+
+ 
+
+. (4.22) The first term comes from commutators between different chains. The second comes from commu-tators within the same chain. Assigning leading error δ/m to each transfer and summing over all m transfers gives 
+
+Mtot = O
+
+ 1
+
+δ
+
+
+
+m3/2 + m2
+
+s3/2
+
+ 
+
+(4.23) Trotter steps. Each step contains s(2 m − 1) = 2 n − s = O(n) bond evolutions. The leading-order gate count is therefore 
+
+GSD lead (sm) = O
+
+ nδ
+
+
+
+m3/2 + m2
+
+s3/2
+
+ 
+
+. (4.24) This bound gives two regimes, with one conditional improvement: 
+
+• If m = O(s3), the same-chain term does not change the scaling, and 
+
+GSD lead (sm) = O nm 3/2
+
+δ
+
+!
+
+. (4.25) It is strictly lower order when m = o(s3) and s grows. 
+
+• If m ≫ s3, the same-chain term cannot be dropped using the proved bound F (d) ≤ d2. The resulting bound is 
+
+GSD lead (sm) = O
+
+ nm 2
+
+δs 3/2
+
+
+
+. (4.26) 19 • If F (d) = O(d), which we have not proved, the same-chain contribution is O(r) rather than 
+
+O(r + r2/s ), and GSD lead (sm) = O(nm 3/2/δ ) for every uniform cycle type. At the cycle count m = Θ( √n/ log n) of the granularity regime (1.7), the cycle length is s =
+
+n/m = Θ( √n log n), so m = O(s3) and the first regime applies, 
+
+GSD lead = O n m 3/2
+
+δ
+
+!
+
+= O n7/4
+
+δ log 3/2 n
+
+!
+
+, (4.27) which is the estimate claimed in Theorem 1.2. We remark that these results control only the leading 1 /M k contribution to the state-dependent Trotter error. The higher-order remainder has not yet been bounded. For fixed s and δ, with m = n/s , the bound on the total number of Trotter steps in (4.23) (which is G/n ) grows as n2, and can be improved to n1.5 assuming F (d) = O(d). In contrast, numerical simulations up to n = 30 suggest that n1.2 Trotter steps are sufficient (see Figure 5 of Section 4.1.4), indicating that even these state-dependent bounds might be conservative overestimates. 
+
+4.1.4 Numerical simulations 
+
+We simulate the complete Trotterized CSP circuit exactly, and compare the number of Trotter steps it needs with the bounds of Section 4.1.2 and 4.1.3. 
+
+Setup. For a cycle type ν ⊢ n, we apply the transfers in the order of Section 3.3 and Trotterize every transfer with the same number M of first-order steps (4.10). We find the smallest M∗ for which the final state |ψM ⟩ satisfies min  
+
+> φ
+
+∥ | 0a⟩ | χν ⟩ − eiφ |ψM ⟩ ∥ = p2 − 2 |(⟨0a| ⟨ χν |) |ψM ⟩| ≤ 10 −2 , (4.28) and plot the total number of Trotter steps Mtot = ℓ(ν) M∗.
+
+To scale up our numerical simulations to larger n, we take advantage of the fact that the Trotterized dynamics does not use the full  2nn
+
+-dimensional Fock space. Instead, we work in the eigenspaces of the displacement operator bD of Appendix A. Let Fk be the eigenspace of bD with eigenvalue k. Its basis states |p1 < · · · < p n⟩ with P
+
+> r
+
+(pr −
+
+r) = k are labeled by the partitions ( pn − n, . . . , p 1 − 1) of k, so dim Fk = p(k) for k ≤ n. By Eq. (A.2), Js maps FD into FD+s, and the same holds for each of its bond terms separately. Hence 
+
+Hs, and every bond rotation in the Trotter product (4.10), leaves the subspace 
+
+|0⟩a ⊗ F D ⊕ | 1⟩a ⊗ F D+s (4.29) invariant. A transfer at length s that starts at displacement D therefore acts on a space of dimension 
+
+p(D) + p(D + s), which is at most 2 p(48) ≈ 3 × 10 5 in our runs. At finite M , part of the amplitude remains in |0⟩a ⊗ F D at the end of the transfer, and the ancilla flip moves it to |1⟩a ⊗ F D. The remaining transfers have total length n − D − s, and each one changes the displacement by at most its length, so this component ends in Fk with k ≤ n − s.Since |χν ⟩ ∈ F n by Lemma A.1, this component is orthogonal to the target and does not contribute to ⟨χν |ψM ⟩. We therefore discard it without renormalizing the retained vector, so that each transfer begins in a single eigenspace |0⟩a ⊗ F D. In this basis, each bond rotation acts with the Jordan-Wigner sign of the corresponding hop. As a check, we compare with a brute-force simulation in the full Fock space for n = 4 and n = 5. The target states and the overlaps ⟨χν |ψM ⟩
+
+agree to 10 −15 .20 8 10 15 20 25 30                        
+
+> total system size n
+> 10 2
+> 10 3
+> total Trotter steps  Mtot  = ℓ(ν) M *
+> Fixed short cycle lengths
+> (1 n) ( p= 1.24) (2 n/2 ) ( p= 1.20) (3 n/3 ) ( p= 1.21) (4 n/4 ) ( p= 1.23)
+> 810 15 20 25 30
+> total system size n
+> 10 2
+> 10 3
+> Cycle lengths growing with n
+> (n) ( p= 0.01) (n− 1, 1) ( p= 0.12) Bal( n, 3) ( p= −0.11) Spike( n, 3) ( p= 0.16) Bal( n, ⌊√ n⌋) ( p= 0.77) Spike( n, ⌊√ n⌋) ( p= 0.90)
+
+Figure 5 : Total Trotter steps Mtot = ℓ(ν)M∗ needed for the complete CSP circuit to reach final-state error 10 −2, Eq. (4.28), for 8 ≤ n ≤ 30. Markers are data, dashed lines are least-squares fits 
+
+Mtot ∝ np. Left : uniform cycle types ( sn/s ), s = 1 , . . . , 4. The fits give p = 1 .20–1 .24, far below the operator-norm bound (4.14), which scales as n3 log n, and the leading-order state-dependent bound (4.23), which scales as n2 at fixed s. Right : cycle types whose lengths grow with n. Bal( n, c )has c cycles whose lengths differ by at most one, and Spike( n, c ) = ( n − c + 1 , 1c−1) has one long cycle and c − 1 fixed points. The fits give |p| ≤ 0.16 at fixed cycle count and p = 0 .77 and 0 .90 for ⌊√n⌋ cycles. Only the operator-norm bound (4.14) applies here: it scales as n for ( n) and Bal( n, 3), as n2 for ( n − 1, 1) and Spike( n, 3), and as n2 log n and n5/2 log n for the ⌊√n⌋ families. For 9 ≤ n ≤ 15, ⌊√n⌋ = 3, so these coincide with the c = 3 families. 
+
+Uniform cycles of fixed length. For uniform cycle types of fixed length s, left panel of Figure 5, 
+
+Mtot grows as n1.2 for every s. The operator-norm bound (4.15) predicts n3 log 2 n, and evaluated for (1 30 ) at δ = 10 −2 it exceeds the observed count by a factor of 10 4. The leading state-dependent bound of Section 4.1.3 predicts between n3/2 and n2 at fixed s, and the observed growth is below this too. The number of steps per transfer grows only as n0.2 over the range, so most of the growth of Mtot is the growth of the number of transfers n/s. 
+
+Cycle lengths growing with n. For cycle types whose lengths grow with n, right panel of Figure 5, the observed Trotter step count depends mainly on the number of cycles over the tested range. At fixed cycle count, Mtot stays bounded over the whole range, and for the ⌊√n⌋-cycle families it changes only when ⌊√n⌋ does. At the same cycle count c, the spiked family Spike( n, c )costs three to four times more than the balanced family Bal( n, c ), and the two grow at a similar rate. We remark that the families in Figure 5 probe how the Trotter cost depends on the spread of the cycle lengths, not classical hardness. As mentioned in Theorem 1.5, we have found a classical algorithm to sample from |χν ⟩ for uniform cycles, or almost-uniform cycles with a small number of exceptions. The spiked family is almost-uniform with a single exceptional cycle relative to 21 the block 1 c−1, so there is a polynomial-time sampler for every n (Theorem 6.2). The balanced family is uniform at n = 9 , 16 , 25 (so Theorem 6.1 applies), and almost-uniform with up to ⌊√n⌋/2exceptional cycles (which would make it difficult for the known classical methods). 12 18 24 30 36 42 48 
+
+total system size n = 3 m          
+
+> 250 500 1000 2000 4000 8000
+> total Trotter steps  Mtot  = m M  *
+> uniform (3 m) ( p= 1.18)
+> b= 4 ( p= 1.19)
+> b= ⌈log 2n⌉ ( p= 1.38)
+> b=m(p= 1.51)
+
+Figure 6 : Total Trotter steps Mtot = mM ∗ for the uniform family (3 m) and for random replace-ments of b of its m cycles at fixed n = 3 m. A replacement draws b lengths uniformly among the partitions of 3 b into b parts with no part equal to 3. For b = 4 and b = ⌈log 2 n⌉ the same eight multisets are used at every n, and for b = m they are drawn independently at each n. Markers are medians over the eight draws, bands are the interquartile range, and faint dots are the individual draws. Dashed lines are least-squares fits Mtot ∝ np of the medians over 12 ≤ n ≤ 48. At n = 12 the three values of b coincide. For the uniform family, the fit gives p = 1 .18, whereas the leading-order bound (4.23) scales as n2 at fixed s and the operator-norm bound (4.14) as n3 log n. For the replaced ensembles, only the operator-norm bound applies, again n3 log n, while the fits give n1.19 ,
+
+n1.38 , and n1.51 .
+
+Random replacements at fixed n and m. The state-dependent bound of Theorem 1.2 is specific to uniform cycles. To test how the cost changes when the cycle type is perturbed, we keep 
+
+n = 3 m and the number of transfers m fixed and replace b of the m cycles of (3 m) by a random multiset of b lengths with the same total 3 b and no length equal to 3. We take b = 4, b = ⌈log 2 n⌉,and b = m, and certify Mtot for eight random draws at each n up to 48. Figure 6 shows the result, and we make the following observations: 
+
+• Replacing a constant number of cycles multiplies the cost by a constant and leaves the expo-nent unchanged. The fit for b = 4 gives 1 .19 against 1 .18 for (3 m). 
+
+• The fitted exponent increases with the number of replaced cycles, to 1 .38 for b = ⌈log 2 n⌉ and 22 1.51 for b = m, where none of the original cycles is kept. 
+
+• All three ensembles stay well below the exponent 3 of the operator-norm bound (4.14) for 
+
+Mtot at ℓ = n/ 3. They are also well below the exponent 2 predicted by proxy from the state-dependent bound for the uniform cycles. Since each Trotter step costs O(n) gates, the corresponding gate-count exponents for these tested families are 2 .19, 2 .38, and 2 .51. The distinction between constant and growing b matters for classical hardness. In Section 6 we show that cycle types with a bounded number of exceptional cycles are classically tractable. The number of replaced cycles b upper-bounds the number of exceptional cycles in the sense of Section 6.3, so the b = 4 ensemble is classically polynomial-time tractable, while the ensembles with b growing with n are not covered by the algorithm in Theorem 6.2. 
+
+Limitations. For n ≤ 48, πp2n/ 3/ log n < 5, so the granularity condition on the cycle count Θ( √n/ log n) from (1.7) does not define a well-resolved asymptotic regime at these sizes. The numerics do not establish scaling for growing cycle counts near this threshold. The fits span a factor of at most 4 in n, and the exponents may change at larger n. Nevertheless, within the families studied, our analytical and proven bounds overestimate the Trotter cost by orders of magnitude, and the cost depends on the number of cycles and on how unequal their lengths are. 
+
+4.2 Implementation via quantum singular value transformation 
+
+The Trotter construction has three limitations: its dependence on the target error is inverse-linear, its worst-case bound is O(n4 log 2 n/δ ), and its state-dependent improvement is a leading-order bound for uniform cycles only. We now replace each Trotterized transfer with QSVT-based Hamiltonian simulation, which gives a complete bound of eO(n5/2) gates for every cycle type with polylogarithmic dependence on the error. We first construct an explicit block-encoding of Hs, then bound the cost of CSP for a fixed cycle type, and then extend the construction coherently over all cycle types. Section 5.1 completes the QCT by erasing the cycle-type registers. We assume a gate set of arbitrary one- and two-qubit gates. Constant-arity controlled gates are decomposed at constant cost. Arithmetic and comparisons on O(log n) qubits are implemented reversibly. Compilation into a fixed discrete gate set introduces additional polylogarithmic precision factors. The gate counts below are circuit-size bounds. We assume throughout that 0 < δ < 1. 
+
+Block-Hamiltonian simulation. An ( ω, a, 0)-block-encoding of a Hermitian operator H is a unitary UH satisfying  ⟨0|⊗a ⊗ I UH
+
+ |0⟩⊗a ⊗ I = Hω . (4.30) The parameter ω is the normalization of the block-encoding, and a is the number of work qubits. We use the block-Hamiltonian simulation result of Ref. [18, Theorem 58 and Corollary 60]. Given an exact ( ω, a, 0)-block-encoding of H, QSVT constructs a unitary VH (t) satisfying 
+
+
+
+⟨0|⊗(a+2) ⊗ I
+
+
+
+VH (t)
+
+
+
+|0⟩⊗(a+2) ⊗ I
+
+
+
+− e−itH ≤ η . (4.31) The required number of uses of UH , U † 
+
+> H
+
+, and their controlled versions is 
+
+Qsim (ω|t|, η ) = Θ 
+
+ω|t| + log(1 /η )log 
+
+
+
+e + log(1 /η )
+
+ω|t|
+
+ . (4.32) 23 The construction uses two additional block-encoding qubits and O(1) further work qubits. It also uses O(a Qsim (ω|t|, η )) two-qubit gates outside the block-encoding queries. Eq. (4.31) controls the encoded block. We next convert this into a bound on the complete output state, including all work qubits. Define 
+
+V00 (t) := 
+
+
+
+⟨0|⊗(a+2) ⊗ I
+
+
+
+VH (t)
+
+
+
+|0⟩⊗(a+2) ⊗ I
+
+
+
+. (4.33) For every normalized input state |ψ⟩, Eq. (4.31) gives ∥(V00 (t) − e−itH ) |ψ⟩ ∥ ≤ η, and since e−itH 
+
+is unitary the triangle inequality gives ∥V00 (t) |ψ⟩ ∥ ≥ 1 − η. The component of VH (t) |0⟩⊗(a+2) |ψ⟩
+
+whose work register is orthogonal to |0⟩⊗(a+2) has squared norm 1 − ∥ V00 (t) |ψ⟩ ∥ 2. Orthogonality of the two work-register subspaces therefore implies 
+
+VH (t) |0⟩⊗(a+2) |ψ⟩ − | 0⟩⊗(a+2) e−itH |ψ⟩ 2
+
+=  V00 (t) − e−itH  |ψ⟩ 2 + 1 − ∥ V00 (t) |ψ⟩∥ 2 ≤ η2 + 1 − (1 − η)2 = 2 η . (4.34) Setting η = ε2/2 makes the simulated evolution ε-accurate in state norm. Since log(1 /η ) = 2 log(1 /ε ) + O(1), the coarser bound 
+
+Qstate (ω|t|, ε ) = O
+
+
+
+ω|t| + log 1
+
+ε
+
+
+
+(4.35) is sufficient for all estimates below. 
+
+Block-encoding the transfer Hamiltonian. Recall that 
+
+Hs =
+
+> 2n−s
+
+X
+
+> i=1
+
+hi, hi = σ+ 
+
+> a
+
+⊗ a†
+
+> i+s
+
+ai + σ− 
+
+> a
+
+⊗ a† 
+
+> i
+
+ai+s . (4.36) Here, the subscript a denotes the transfer ancilla. Under the Jordan–Wigner transformation, 
+
+hi = 14 XaXiXi+sZ(s) 
+
+> i
+
++ 14 XaYiYi+sZ(s) 
+
+> i
+
++ 14 YaYiXi+sZ(s) 
+
+> i
+
+− 14 YaXiYi+sZ(s) 
+
+> i
+
+, (4.37) where 
+
+Z(s) 
+
+> i
+
+:= 
+
+> i+s−1
+
+Y
+
+> k=i+1
+
+Zk . (4.38) For s = 1, this product is the identity. Thus, every bond term hi is a sum of four Pauli strings, each with coefficient of magnitude 1 /4. Pauli strings belonging to different bonds cannot coincide. Indeed, if i̸ = j, then the endpoint pairs {i, i + s} and {j, j + s} differ. At an endpoint belonging to only one of these pairs, one string contains X or Y , while the other contains either I or Z. The Pauli one-norm of Hs is therefore exactly 
+
+ωs = (2 n − s)
+
+
+
+4 · 14
+
+
+
+= 2 n − s . (4.39) Write the Pauli decomposition as 
+
+Hs =
+
+> 2n−s
+
+X
+
+> i=1
+
+X
+
+> β∈{ 00 ,01 ,10 ,11 }
+
+ci,β Pi,β , (4.40) 24 where the four values of β label the terms in the order displayed in (4.37). Each coefficient has magnitude 1 /4, and ci, 11 = −1/4. The preparation circuit creates the uniform superposition PREP s |0⟩ = 1
+
+p4(2 n − s)
+
+> 2n−s
+
+X
+
+> i=1
+
+X
+
+> β∈{ 00 ,01 ,10 ,11 }
+
+|i, β ⟩ . (4.41) The selection circuit is SELECT s =
+
+> 2n−s
+
+X
+
+> i=1
+
+X
+
+> β∈{ 00 ,01 ,10 ,11 }
+
+|i, β ⟩⟨ i, β | ⊗ sgn( ci,β )Pi,β . (4.42) Unused computational-basis labels are defined to act as the identity. They have zero amplitude in the state prepared by PREP s.Define 
+
+Us := 
+
+
+
+PREP † 
+
+> s
+
+⊗ I
+
+
+
+SELECT s (PREP s ⊗ I) . (4.43) This is the circuit of Figure 1(c), with V = PREP s and the controlled Paulis forming SELECT s.Its upper-left block is (⟨0| ⊗ I)Us(|0⟩ ⊗ I) = 14(2 n − s)
+
+> 2n−s
+
+X
+
+> i=1
+
+X
+
+> β∈{ 00 ,01 ,10 ,11 }
+
+sgn( ci,β )Pi,β = Hs
+
+2n − s = Hs
+
+ωs
+
+. (4.44) Consequently, Us is an exact ( ωs, as, 0)-block-encoding of Hs, with 
+
+as = ⌈log 2(2 n − s)⌉ + 2 = O(log n) (4.45) work qubits. A generic exact circuit for the range-state preparation (4.41) uses O(n) one- and two-qubit gates. This cost is included in the gate estimates below. 
+
+Proposition 4.2 (Cost of SELECT s). For fixed s, the circuit SELECT s can be implemented using 
+
+O(n log n) gates and O(log n) work qubits. The same gate count holds if we add a fixed number of control qubits. Proof. The label register stores the bond index i and the two-bit label β. We first compute a bit 
+
+v that is equal to one exactly when 1 ≤ i ≤ 2n − s. When v = 1, we compute the other endpoint 
+
+iR = i + s, and when v = 0 we set iR = 0. The register holding iR has ⌈log 2(2 n + 1) ⌉ qubits, which is enough because iR ≤ 2n for every valid bond. We then run through the physical sites k = 1 , . . . , 2n. At each site, the circuit checks whether 
+
+k = i, k = iR, or i < k < i R. It applies the endpoint Pauli operators when k = i or k = iR and applies Zk when i < k < i R. The choice of endpoint Pauli is determined by β, as in Eq. (4.37). After all physical sites have been processed, the circuit applies Xa for β = 00 , 01 and Ya for 
+
+β = 10 , 11. For β = 11, it also applies the minus sign in Eq. (4.37). All these operations are turned off when v = 0. The circuit then uncomputes iR and v.Each comparison of two O(log n)-bit numbers uses O(log n) gates. We perform a constant number of comparisons at each of the 2 n sites. The total gate count is therefore O(n log n). The same comparison registers are reused at every site, so the circuit needs only O(log n) work qubits. Adding a fixed number of controls to the whole circuit changes the gate count by only a constant factor in our gate model. 25 Combining the O(n) cost of PREP s with Proposition 4.2, one use of Us, U † 
+
+> s
+
+, or either circuit with a fixed number of extra controls costs 
+
+gs := cost( Us) = O(n log n) . (4.46) This includes the controlled versions needed by QSVT and by the coherent QCT circuit. 
+
+A fixed cycle type. The transfer that adds the j-th cycle of length s has evolution time ts,j =
+
+π/ (2 √sj ). Since ωs = 2 n − s, Eq. (4.35) shows that a state error of at most εs,j requires 
+
+Qs,j = O
+
+ 2n − s
+
+√sj + log 1
+
+εs,j 
+
+
+
+(4.47) uses of Us or U † 
+
+> s
+
+.Fix a cycle type ν = ( nmn · · · 2m2 1m1 ) ⊢ n with ℓ(ν) = P 
+
+> s
+
+ms transfers, and give each transfer error εs,j = δ/ℓ (ν), so that the errors add to at most δ. Using Pmj=1 1/√j ≤ 2√m,
+
+QCSP (ν) = O
+
+> n
+
+X
+
+> s=1
+
+(2 n − s)
+
+r ms
+
+s + ℓ(ν) log ℓ(ν)
+
+δ
+
+!
+
+. (4.48) To bound the first sum, set xs := s m s, so that P 
+
+> s
+
+xs = n. The Cauchy–Schwarz inequality gives 
+
+> n
+
+X
+
+> s=1
+
+(2 n − s)√xs
+
+s
+
+!2
+
+≤
+
+> n
+
+X
+
+> s=1
+
+xs
+
+! nX
+
+> s=1
+
+(2 n − s)2
+
+s2
+
+!
+
+≤ n 4n2
+
+> n
+
+X
+
+> s=1
+
+1
+
+s2
+
+!
+
+= O(n3) , (4.49) so the first sum in Eq. (4.48) is O(n3/2). Each query costs O(n log n) gates, and the extra O(log n)gates used by QSVT per query are smaller than this. It follows that 
+
+GCSP (ν) = O
+
+
+
+n5/2 log n + nℓ (ν) log n log ℓ(ν)
+
+δ
+
+
+
+. (4.50) 
+
+Theorem 4.3 (QSVT bound for CSP) . For every cycle type ν ⊢ n and 0 < δ < 1, the CSP circuit with QSVT-simulated Hamiltonian transfers prepares |χν ⟩ to state error at most δ using 
+
+Gworst CSP = O
+
+
+
+n5/2 log n + n2 log n log nδ
+
+
+
+(4.51) 
+
+one- and two-qubit gates and 2n + O(log n) qubits. Proof. Set ℓ(ν) ≤ n in (4.50). The qubit count is the 2 n system qubits, the transfer ancilla, the as = O(log n) block-encoding qubits, and the O(log n) work qubits of Proposition 4.2 and of QSVT. This is an upper bound for our circuit, and we do not claim that it is optimal. 
+
+# 5 Quantum Character Transform 
+
+We now generalize our CSP algorithm to the full Quantum Character Transform (2.8). This is the unitary operation that maps coherent superpositions of cycle types to coherent superpositions of character column states QCT Sn = X
+
+> ν⊢n
+
+|χν ⟩ ⟨ ν| = X
+
+> λ,ν ⊢n
+
+χλ(ν)
+
+√zν
+
+|λ⟩ ⟨ ν| . (5.1) 26 The basic idea is to run our CSP algorithm via a control register encoding the cycle types, 
+
+|ν⟩ | seed ⟩ → | ν⟩ | χν ⟩, and uncompute the cycle type to get |0⟩ | χν ⟩. This realizes QCT Sn up to a swapping of registers. To improve efficiency, we interleave the uncomputing subroutines with the Hamiltonian simulation subroutines in CSP. Our full QCT circuit is summarized in Figure 7. The cycle type ν = ( nmn . . . 2m2 1m1 ) is held in count registers Cn, . . . , C 2, C 1. Since a cycle of length s takes up s of the n elements, the multiplicity satisfies ms ≤ ⌊ n/s ⌋, and so each cycle count register Cs needs qs := ⌈log 2(⌊n/s ⌋ + 1) ⌉ qubits to encode an integer in {0, . . . , ⌊n/s ⌋} . The label |ν⟩ is shorthand for the product of these registers, 
+
+|ν⟩C := |mn⟩Cn · · · | m1⟩C1 ,
+
+> n
+
+X
+
+> s=1
+
+s m s = n , (5.2) and the constraint P 
+
+> s
+
+s m s = n picks out the register configurations that encode a genuine cycle type of Sn. The full input is 
+
+|Ψin ⟩ = |ν⟩C |0⟩a |seed ⟩Λ = |ν⟩C |0⟩a |1n0n⟩Λ (5.3) with Λ the 2 n-qubit system register. The registers shrink with s, and their total size is linear in n,since nX
+
+> s=1
+
+qs ≤ n +
+
+> n
+
+X
+
+> s=1
+
+log 2
+
+
+
+1 + ns
+
+
+
+= n + log 2
+
+> n
+
+Y
+
+> s=1
+
+n + ss = n + log 2
+
+2nn
+
+
+
+< 3n (5.4) Hence, our QCT implementation uses 2 n + O(n) qubits, compared to the 2 n + 1 qubits sufficient for CSP. Cycle lengths are processed in decreasing order, and for each s our QCT circuit performs a deposit step followed by an erase step. 
+
+Deposit. For a fixed cycle type, recall our CSP algorithm (3.13) applies exactly ms transfers at length s. In superposition, however, ms is not fixed, so we instead apply the transfer Ws,j =(iX a ⊗ 1)e−iH sts,j at every slot j = 1 , . . . , L s with Ls = ⌊n/s ⌋, each conditioned on the control register Cs,
+
+Vs,j : |x⟩Cs |ψ⟩ 7 −→ 
+
+(|x⟩Cs Ws,j |ψ⟩ , j ≤ x, 
+
+|x⟩Cs |ψ⟩ , j > x. (5.5) Note the control applies to every gate component of Ws,j , including the iX a correction to the ancilla. The s-th deposit operation is then Ds = QLs 
+
+> j=1
+
+Vs,j . On the branch with multiplicity ms,the slots j ≤ ms act and the slots j > m s are identity, so exactly ms transfers are applied, and the system advances from |Φ>s ⟩ to |Φs,m s ⟩.
+
+Erase. After the deposit by Ds, the register Cs still holds |ms⟩, which must be erased to |0⟩ to preserve coherence between different cycle types. The multiplicity ms can be recovered from the system state using the operator 
+
+Ns := 1 
+
+> s
+
+JsJ† 
+
+> s
+
+, as Ns |Φs,m ⟩ = m |Φs,m ⟩ . (5.6) The eigenvalue follows from the raising and lowering relations (3.9): J† 
+
+> s
+
+|Φs,m ⟩ = √sm |Φs,m −1⟩
+
+and then Js |Φs,m −1⟩ = √sm |Φs,m ⟩, so JsJ† 
+
+> s
+
+|Φs,m ⟩ = sm |Φs,m ⟩. Since |Φs,m s ⟩ is an eigenstate of Ns with eigenvalue ms, the register Cs can be erased by subtracting this eigenvalue from it. Writing Fs for the quantum Fourier transform on Cs and Rs = 2 ⌈log 2(Ls+1) ⌉, the subtraction can be implemented via the following phase estimation protocol: SUB s := F † 
+
+> s
+
+K− 
+
+> s
+
+Fs , K− 
+
+> s
+
+: |q⟩Cs |ψ⟩ 7 → e−2πiq Ns/R s |q⟩Cs |ψ⟩ . (5.7) Note SUB s |ms⟩Cs |Φs,m s ⟩ = |0⟩Cs |Φs,m s ⟩, since Ns acts as the number ms on the system. 27 (a) QCT, s = n, . . . , 1        
+
+> 2n
+> · · · · · · · · · · · · |mn⟩En|0⟩
+> ...
+> |m1⟩E1|0⟩|0⟩aDnD1
+> |0⟩a
+> |1n0n⟩|χν⟩
+
+(b) one length s: deposit Ds, then erase Es        
+
+> · · · · · · · · · |ms⟩FsF†
+> s|0⟩|0⟩a
+> e−iH sts, 1
+> iX e−iH sts,Ls
+> iX
+> |Φ>s ⟩K−
+> s|Φs,m s⟩
+> DsEs
+
+Figure 7 : (a) Our QCT circuit. Each count register |ms⟩ controls the deposit Ds and is then erased by Es = SUB s using the system state. (b) The block for one length s. Slot j of the deposit fires when ms ≥ j, so exactly ms transfers act and the system advances from |Φ>s ⟩ to |Φs,m s ⟩. The erase step applies the Fourier-controlled phase K− 
+
+> s
+
+of Eq. (5.7) between Fs and F † 
+
+> s
+
+, which returns the register to |0⟩.
+
+Output. After every cycle length has been processed, all count registers are back in |0⟩ and the system holds the character column state, 
+
+|Ψout ⟩ = |0⟩Cn · · · | 0⟩C1 |0⟩a |χν ⟩Λ . (5.8) Each deposit and erase step is unitary. On the valid cycle-type input subspace, column orthogonal-ity ensures that distinct states |ν⟩ are mapped to orthogonal character states. Hence, the circuit implements the QCT on this subspace and, by linearity, on any superposition of valid cycle types. 
+
+5.1 QSVT-based implementation and resource estimate 
+
+We now describe a QSVT-based implementation of the QCT protocol outlined above. We first analyze the costs associated with the deposit operations, then the erasure operations, before giving the complete QCT gate count to prove Theorem 1.4. 
+
+Deposit operations Ds. The deposit operation Ds consists of a sequence of controlled transfers 
+
+Vs,j (5.5). The effect of the control by |ms⟩Cs is such that the transfer operation Ws,j in slot ( s, j )is applied only when j ≤ ms, and the circuit runs all slots 1 ≤ s ≤ n, 1 ≤ j ≤ Ls := ⌊n/s ⌋. The total number of slots (and transfer operations) is 
+
+Nslot (n) := 
+
+> n
+
+X
+
+> s=1
+
+Ls = Θ( n log n) . (5.9) The part of the query count in (4.35) that depends on the evolution times satisfies 
+
+X
+
+> s,j
+
+ωs|ts,j | = π
+
+2
+
+> n
+
+X
+
+> s=1
+> Ls
+
+X
+
+> j=1
+
+2n − s
+
+√sj ≤ π
+
+> n
+
+X
+
+> s=1
+
+2n − s
+
+√s
+
+r ns = π√n
+
+> n
+
+X
+
+> s=1
+
+2n − ss = O(n3/2 log n) . (5.10) We give every slot a state error budget of δdep /N slot (n), so that the total state error is at most δdep .The number of queries to Us is 
+
+Qdep = O
+
+
+
+n3/2 log n + n log n log n log nδdep 
+
+
+
+, (5.11) and multiplying by the cost of one query from (4.46) gives 
+
+Gdep = O
+
+
+
+n5/2 log 2 n + n2 log 2 n log n log nδdep 
+
+
+
+. (5.12) 28 Computing and uncomputing the controls [ ms ≥ j] over all slots uses O(n log 2 n) additional gates, which is smaller than the bound above. The coherent circuit, therefore, implements 
+
+|ν⟩C |0⟩a |seed ⟩Λ 7 −→ | ν⟩C |0⟩a |χν ⟩Λ (5.13) with state error at most δdep for every ν ⊢ n. The gate count includes every controlled slot. The deposit steps of the QCT therefore use eO(n5/2) gates. 
+
+Singular-value-amplified erasure Es. Next, we describe and analyze the implementation of the erasure steps Es within the same budget as (5.12) above. After the deposit Ds for all current operators at length s, the count register Cs contains the multiplicity |ms⟩ and the system is in |Φs,m s ⟩. To erase |ms⟩, we use phase estimation on the operator Ns = 1 
+
+> s
+
+JsJ† 
+
+> s
+
+, since Ns |Φs,m ⟩ = m |Φs,m ⟩ as explained earlier in (5.6). The register Cs has qs = ⌈log 2(Ls + 1) ⌉ qubits and dimension Rs := 2 qs . We need the following quantum Fourier transform for the Cs register 
+
+Fs |x⟩ = 1
+
+√RsRs−1X
+
+> y=0
+
+e2πixy/R s |y⟩ , (5.14) which can be implemented with at most O(q2 
+
+> s
+
+) = O(log 2 n) gates. Then the phase-estimation or subtraction operation SUB s = F † 
+
+> s
+
+K− 
+
+> s
+
+Fs of Eq. (5.7), with 
+
+K− 
+
+> s
+
+: |y⟩ | ψ⟩ 7 −→ e−2πiy Ns/R s |y⟩ | ψ⟩ , (5.15) maps |ms⟩Cs |Φs,m s ⟩Λ to |0⟩Cs |Φs,m s ⟩Λ, because the phase in K− 
+
+> s
+
+cancels the Fourier phase of |ms⟩
+
+by (5.6). The outstanding issue is an efficient implementation of the evolution generated by Ns.A direct construction block-encodes JsJ† 
+
+> s
+
+as the square of the block-encoding Us and divides by 
+
+s. Its normalization is ω2 
+
+> s
+
+/s = (2 n − s)2/s , and using it at every length gives eO(n3) gates. We do better because the algorithm only accesses a small part of the spectrum of Hs.
+
+♢ The part of Hs’s spectrum used by the algorithm. The square of the transfer Hamiltonian is 
+
+H2 
+
+> s
+
+= |0⟩⟨ 0|a ⊗ J† 
+
+> s
+
+Js + |1⟩⟨ 1|a ⊗ JsJ† 
+
+> s
+
+. (5.16) For every 1 ≤ j ≤ Ls, the two-dimensional space 
+
+Ks,j := span |0⟩a |Φs,j −1⟩Λ , |1⟩a |Φs,j ⟩Λ (5.17) is invariant under Hs, on which its eigenvalues are E± 
+
+> s,j
+
+= ±√sj , and |1⟩a |Φs, 0⟩Λ has eigenvalue zero. Since j ≤ Ls,
+
+E± 
+
+> s,j
+
+≤ psL s ≤ √n . (5.18) The norm of Hs can be larger. The bound (5.18) only holds for the eigenvalues of Hs on the states that the algorithm visits. 29 ♢ Amplifying these eigenvalues. The block-encoding Us contains Hs/ω s with ωs = 2 n − s. We use uniform singular value amplification [18, Theorem 30]. For γ > 1 and ∆ , η ∈ (0 , 1/2), that result gives an odd polynomial P with |P (x)| ≤ 1 on [ −1, 1] and 
+
+P (x)
+
+γx − 1 ≤ η for |x| ≤ 1 − ∆
+
+γ , (5.19) of degree O(γ log( γ/η )) for fixed ∆. We choose 
+
+γs := ωs
+
+3√n , ∆ := 12 . (5.20) For n > 9, γs > 1 for every s, and the finitely many smaller values of n can be implemented directly. For every eigenvalue E in (5.18), 
+
+Eωs
+
+≤√nωs
+
+= 13γs
+
+< 1 − ∆
+
+γs
+
+, (5.21) so the amplification theorem applies to every eigenvalue used by the algorithm. Let ps be the resulting polynomial and Bs := ps(Hs/ω s). QSVT gives a block-encoding of Bs,and on the relevant eigenvalues 
+
+ps
+
+ Eωs
+
+
+
+= E
+
+3√n (1 + e) , |e| ≤ ηs . (5.22) The polynomial stays bounded by one on all of [ −1, 1], so the QSVT circuit is a valid unitary even where Hs has larger eigenvalues outside the states used by the algorithm. We now square the amplified block-encoding. By the product rule for block-encodings [18, Lemma 53], two copies of its work register give a block-encoding of B2 
+
+> s
+
+, which we use as a block-encoding of 
+
+eNs := 9ns B2 
+
+> s
+
+with normalization α(N ) 
+
+> s
+
+= 9ns . (5.23) This is smaller than the direct normalization (2 n − s)2/s by a factor of order n. Because ps is odd, 
+
+B2 
+
+> s
+
+is a polynomial in H2 
+
+> s
+
+and preserves the two ancilla sectors in (5.16). We flip the transfer ancilla to |1⟩a before the Fourier-controlled evolution and back afterwards, so that the operator acting is  
+
+> 1
+> s
+
+JsJ† 
+
+> s
+
+= Ns.
+
+♢ Amplification error. On Ks,j , where E2 = sj , Eq. (5.22) gives the eigenvalue ej = 9ns
+
+ E 
+
+> 3√n
+
+(1 + 
+
+e)2 = j(1 + e)2 of eNs. If ηs ≤ 1/2, then 
+
+|ej − j| ≤ 3ηsj ≤ 3ηs
+
+ns . (5.24) The Fourier-controlled evolution is implemented one register qubit at a time, with evolution times 
+
+θs,b := 2 π2b/R s for 0 ≤ b < q s, whose sum is 2 π(Rs − 1) /R s < 2π. The phase error from replacing 
+
+j by ej is therefore at most 2 π|ej − j| ≤ 6πη sn/s . Choosing 
+
+ηs := δer s
+
+12 πn 2 (5.25) makes the amplification error at most δer /(2 n) at each length, and at most δer /2 in total. Since 
+
+γs = O(√n), this choice gives polynomial degree 
+
+ds = O
+
+√n log nδer 
+
+
+
+, (5.26) so one query to the amplified block-encoding uses O(ds) queries to Us or U † 
+
+> s
+
+.30 ♢ Simulation error and gate count. The number of Fourier-controlled simulations is Nphase (n) := Pns=1 qs = Θ( n) by (5.4). We give each of them a state error δer /(2 Nphase (n)), so that these errors add to at most δer /2. At fixed s, the total number of queries to the block-encoding of B2 
+
+> s
+
+is 
+
+O
+
+ ns + qs log Nphase (n)
+
+δer 
+
+
+
+, (5.27) where the first term follows from α(N ) 
+
+> s
+
+= 9 n/s and P 
+
+> b
+
+θs,b < 2π, and the second is the precision cost of the qs simulations. Using P 
+
+> s
+
+n/s = O(n log n) and P 
+
+> s
+
+qs = O(n) together with (5.26), the total number of queries to the original block-encodings Us is 
+
+Qer = O
+
+
+
+n3/2 log nδer 
+
+
+
+log n + log nδer 
+
+ 
+
+. (5.28) Each query costs O(n log n) gates by (4.46), so 
+
+Ger = O
+
+
+
+n5/2 log n log nδer 
+
+
+
+log n + log nδer 
+
+ 
+
+. (5.29) The Fourier transforms use O(P 
+
+> s
+
+q2 
+
+> s
+
+) = O(n) gates, and the comparisons, QSVT phase gates, and reflections have smaller gate counts than (5.29). 
+
+Complete QCT gate count upper bound. Let Pvalid ,0 project onto the states for which P 
+
+> s
+
+s m s = n, the system is in the seed state, and all transfer and work qubits are zero. On this input space, the exact circuit (where all Hamiltonian simulations are error-free) acts as 
+
+UQCT : |ν⟩C |0⟩a |0⟩w |seed ⟩Λ 7 −→ | 0⟩C |0⟩a |0⟩w |χν ⟩Λ . (5.30) 
+
+Theorem 5.1 (Quantum character transform; also Theorem 1.4) . For 0 < δ < 1, the circuit ˜UQCT 
+
+described above with δdep = δer = δ/ 2 satisfies 
+
+ eUQCT − UQCT 
+
+
+
+Pvalid ,0 ≤ δ (5.31) 
+
+and uses 
+
+GQCT = O
+
+
+
+n5/2 log 2 n + n2 log 2 n log n log nδ
+
+
+
++ O
+
+h
+
+n5/2 log n log nδ
+
+
+
+log n + log nδ
+
+i 
+
+(5.32) 
+
+gates and 2n + O(n) qubits. For δ = 1 / poly( n),
+
+GQCT = eO(n5/2) . (5.33) 
+
+Proof. By telescoping the difference of ˜UQCT and UQCT and using the triangle inequality, we can add the errors from individual unitary steps. The amplification error is bounded uniformly on this entire spectral subspace, and the simulation bound (4.34) is uniform over normalized inputs, including inputs entangled with the count registers. Thus, the same bounds hold for arbitrary initial states in Pvalid ,0. In our QSVT construction of ˜UQCT above, we have budgeted the total deposit error to be δdep , and the total erasure error to be δer . Choosing δdep = δer = δ/ 2 and adding them yields (5.31). The gate count to guarantee this error level is the sum of (5.12) and (5.29). The qubits are the 2 n system qubits, the O(n) multiplicity-register qubits of (5.4), and O(log n)reusable qubits for the indices, transfer ancilla, arithmetic, block-encodings, and QSVT. 31 5.2 Application: character row state and defect entropy from the inverse QCT 
+
+The QCT algorithm in Theorem 5.1 run in reverse also gives access to the rows of the normalized character table. Indeed, the reversed circuit effectively implements the inverse of QCT (5.1), which when applied to a given Fock state |λ⟩ returns 
+
+U † 
+
+> QCT
+
+|0⟩C |0⟩a |0⟩w |λ⟩Λ =
+
+ X 
+
+> ν⊢n
+
+1
+
+√zν
+
+χλ(ν) |ν⟩C
+
+
+
+⊗ | 0⟩a |0⟩w |seed ⟩Λ . (5.34) This is the λ-th row of the normalized character table, at the cost of one QCT. Measuring the count registers in this state returns a cycle type ν with probability 
+
+Pλ(ν) = [χλ(ν)] 2
+
+zν
+
+. (5.35) These are the weights in the defect entropy (1.1) of a symmetric orbifold CFT with a universal defect labeled by λ at the entangling surface [8]. Writing [ χλ(ν)] 2 = zν Pλ(ν) inside the logarithm, ∆Sλ = H(Pλ) − Eν∼Pλ [ln zν ] ≤ 0 , (5.36) where H is the Shannon entropy and the sign follows from [ χλ(ν)] 2 ≥ 1 on the support of Pλ. Since 
+
+Pλ is supported on the p(n) = eO(√n) partitions of n, the first term is at most ln p(n) = O(√n), while ln zν = P
+
+> s
+
+[ms ln s+ln( ms!)] is given in closed form by the cycle multiplicities of ν. Therefore, samples of ν from the inverse QCT can be used to efficiently compute a lower bound Lλ := −Eν ln zν ,where 0 ≤ ∆Sλ − Lλ ≤ ln p(n). This quantity can also be used as a biased estimator for ∆ Sλ,with additive error |Lλ − ∆Sλ| ≤ ln p(n) = O(√n), which corresponds to a vanishing relative error whenever |∆Sλ| grows faster than √n.In Figure 8, we evaluated (1.1) numerically for all λ ⊢ n with n ≤ 30, and find that |∆Sλ| grows roughly linearly in n for generic λ. For 5 ≤ n ≤ 30, linear fits give slopes 0 .336 for the Plancherel average and 0 .450 for the maximum over λ. At n = 30, |∆Sλ| > ln p(n) for 31% of the irreps, which carry 96% of the Plancherel weight. Only shapes close to the trivial or sign representation stay bounded, e.g., |∆S(n−1,1) | ≈ 0.83 for all n.
+
+# 6 Classical computational complexity 
+
+The argument of Bravyi et al. [1] for quantum advantage in character sampling, reviewed in Sec-tion 1.1, applies to cycle types with at most A√n/ log n cycles. This section shows that the number of cycles alone does not determine classical hardness: uniform cycle types in this regime, and their perturbations by a bounded number of exceptional cycles, admit exact polynomial-time classical samplers. 
+
+6.1 Conditions for quantum advantage 
+
+Recall from Section 1.1 that the hardness argument of Bravyi et al. for sampling from Pν (λ) = [χλ(ν)] 2/z ν needs Pν to be granular, which holds in the regime (1.7). In order for the quantum advantage to hold, their argument also needs to assume the noncollapse of the polynomial hierarchy, which is standard, and an average-case hardness conjecture that computing Pν (λ) exactly is hard for a uniformly random λ with a 1 − 1/ poly( n) success probability. 32 5 10 15 20 30 
+
+n
+
+0.5 12510 20 |Δ Sλ|
+
+max 
+
+> λ
+
+|Δ Sλ |Plancherel average 0.336 n (fit to Plancherel avg.) 
+
+λ = ( n − 1, 1) ln p(n)Figure 8 : Growth of the defect entropy |∆Sλ| of Eq. (1.1) with n, computed from the full character table of Sn for 5 ≤ n ≤ 30. The loglog plot shows the maximum |∆Sλ| over all λ ⊢ n, the average over λ weighted by the Plancherel measure d2
+
+> λ
+
+/n !, and the value at the standard representation 
+
+λ = ( n − 1, 1). The largest possible value of the entropy term H(Pλ) in Eq. (5.36), plotted as ln p(n), bounds the additive error in estimating ∆ Sλ by −Eν [ln zν ]. The maximum ∆ Sλ is attained at staircase-like shapes, with prominent peaks at the perfect staircases n = 6 , 10 , 15 , 21 , 28. We observe that this average-case hardness conjecture can only hold if the granularity γ =
+
+p(n)/z ν is at most polynomial in n, since an algorithm that always outputs zero is correct on at least a 1 − 1/γ fraction of the partitions [1]. Since zν = Q 
+
+> s
+
+sms ms! ≤ nℓ(ν), this requires 
+
+ℓ(ν) ≥ ln p(n)ln n − O(1) , where ln p(n) = πp2n/ 3 − O(log n) . (6.1) The candidate cycle types therefore lie near the upper end of the regime (1.7). Bravyi et al. ’s classical MPS algorithm computes any χλ(ν) (and thus Pν (λ)) exactly in time 
+
+nO(ℓ(ν)) , which is polynomial for a bounded number of cycles but becomes superpolynomial for cycle types with ℓ(ν) = Θ( √n/ log n) cycles. We now show that some of these cycle types are classically easy. 
+
+6.2 Uniform cycles are classically tractable 
+
+We first show that uniform cycle types have an exact polynomial-time classical sampler, including when the number of cycles lies in the regime (1.7). 33 Theorem 6.1 (Classical sampling for uniform cycles) . Let ν = ( sm) with n = ms . The distribution 
+
+P(sm)(λ) = [χλ(sm)] 2
+
+smm! (6.2) 
+
+can be sampled exactly by a classical randomized algorithm with expected running time eO(n2). For any given λ ⊢ n, the probability P(sm)(λ) can be computed exactly in polynomial time. Proof. The Murnaghan-Nakayama rule computes χλ(sm) by successively removing m border strips of length s from the Young diagram of λ [20, Section 7.17]. A border strip is a connected set of boundary boxes that contains no 2 × 2 block and whose removal leaves a valid Young diagram. These removals are described by the s-core and s-quotient of λ [21, Section 2.7]. The s-core is the diagram that remains after removing as many length-s border strips as possible, and does not depend on the order of removal. The s-quotient is an s-tuple of partitions ( λ(0) , . . . , λ (s−1) ). The core and quotient determine λ uniquely, and they can be computed from λ, and λ reconstructed from them, in polynomial time using the standard abacus description. If the s-core of λ is nonempty, then λ cannot be reduced to the empty diagram by removing m
+
+strips of length s, and the Murnaghan-Nakayama rule gives χλ(sm) = 0. Suppose instead that the s-core is empty, and let di := |λ(i)|, so that Ps−1 
+
+> i=0
+
+di = m. Removing a length-s border strip from λ corresponds to removing one corner box from one component of the 
+
+s-quotient. Let f μ denote the number of standard Young tableaux of shape μ, which is the number of orders in which the corner boxes of μ can be removed. The boxes of λ(i) can be removed in 
+
+f λ(i)
+
+orders, and the removal orders from the different quotient components can be interleaved in   md0,...,d s−1
+
+ ways. The product of the Murnaghan-Nakayama signs does not depend on the order in which the strips are removed [21, Section 2.7]. Hence, 
+
+χλ(sm) = 
+
+
+
+±
+
+ md0, . . . , d s−1
+
+ s−1Y
+
+> i=0
+
+f λ(i)
+
+, if the s-core of λ is empty ,
+
+0 , otherwise .
+
+(6.3) Since z(sm) = smm!, squaring gives 
+
+P(sm)(λ) = 1
+
+sm
+
+ md0, . . . , d s−1
+
+ s−1Y
+
+> i=0
+
+ f λ(i) 2
+
+di! . (6.4) The first two factors in Eq. (6.4) form a multinomial distribution: they give the probability that m independent uniform choices from {0, . . . , s − 1} produce counts ( d0, . . . , d s−1). It remains to sample a partition μ ⊢ d with probability (f μ)2
+
+d! . (6.5) The Robinson-Schensted correspondence is a bijection between permutations of d objects and pairs of standard Young tableaux of the same shape [20, Section 7.11]. For a fixed shape μ there are ( f μ)2
+
+such pairs, so choosing a uniformly random permutation and applying the Robinson–Schensted algorithm samples μ with probability (6.5). Eq. (6.4) now gives an exact classical sampler: 1. Choose m independent uniform values from {0, . . . , s − 1}. Let di be the number of times that i occurs. 34 2. For every i, choose a uniformly random permutation of di objects, apply the Robinson-Schensted algorithm, and let λ(i) be the resulting shape. 3. Reconstruct λ from the empty s-core and the quotient ( λ(0) , . . . , λ (s−1) ). The probability that this algorithm outputs λ is exactly Eq. (6.4). Row insertion of a permutation of d objects takes O(d2) steps, and P 
+
+> i
+
+d2 
+
+> i
+
+≤ (P 
+
+> i
+
+di)2 ≤ n2, so the second step takes O(n2) steps. The uniform choices in the first step can be made exactly from random bits in expected time O(n log n), and the abacus reconstruction in the third step takes 
+
+O(n log n) steps. The expected running time is therefore eO(n2). Finally, suppose that λ is given. Its s-core and s-quotient can be computed in polynomial time. A nonempty core gives probability zero. Otherwise, each f λ(i)
+
+follows from the hook-length formula [22], 
+
+f μ = |μ|!
+
+Y
+
+> x∈μ
+
+h(x) , (6.6) where h(x) is the hook length of the box x, and substitution into Eq. (6.4) gives the exact probability with polynomially many arithmetic operations on integers of polynomially many bits. Theorem 6.1 holds for every s and m, in particular for m = Θ( √n/ log n). Uniform cycle types therefore lie inside the granularity regime (1.7) while remaining classically tractable, with every output probability efficiently computable and an exact classical sampler for the distribution. They do not satisfy the average-case hardness condition of Bravyi et al. and cannot provide the sampling advantage considered there. 
+
+6.3 Almost-uniform cycles 
+
+We now consider cycle types for which all but a small number of cycles have the same length. Write 
+
+νj := ( sm, r 1, . . . , r j ) , nj := ms +
+
+> j
+
+X
+
+> t=1
+
+rt , 0 ≤ j ≤ b , (6.7) so that ν0 = ( sm) and νb is the cycle type we want to sample. The order of r1, . . . , r b is arbitrary and fixed throughout the algorithm, and the lengths rj need not be close to s. Here “almost uniform” means that only b cycles have been separated from the uniform block. The decomposition of ν into a uniform block and exceptional cycles is not unique. Since Theorem 6.2 below holds for every decomposition, its bound applies with the smallest possible b, namely b(ν) := ℓ(ν) − max s ms, the number of cycles whose length is not the most frequent one. For example, the spiked cycle types (n − c + 1 , 1c−1) of Section 4.1.4 have b(ν) = 1 for every 1 < c < n .
+
+Theorem 6.2 (Classical sampling for almost-uniform cycles) . For ν = ( sm, r 1, . . . , r b) ⊢ n, there is an exact classical randomized algorithm that samples 
+
+Pν (λ) = [χλ(ν)] 2
+
+zν
+
+(6.8) 
+
+in expected time n4b+O(1) . Consequently, the sampler runs in polynomial time when b = O(1) and in quasipolynomial time when b = O(log n). For any given λ ⊢ n, the character χλ(ν) and the probability Pν (λ) can be computed exactly in time n2b+O(1) .
+
+35 The algorithm adds the exceptional cycles one at a time. At step j, it converts an exact sample from the distribution for νj−1 into an exact sample from the distribution for νj . We first bound the number of possible border-strip moves. 
+
+Lemma 6.3 (Number of border-strip moves) . Let r ≥ 1 and let μ be a partition with |μ| + r ≤ n.There are at most n2 partitions λ such that λ/μ is a border strip of size r. The same bound holds for the number of partitions μ obtained by removing a border strip of size r from a fixed partition 
+
+λ with |λ| ≤ n. Moreover, all these partitions can be listed in time polynomial in n.Proof. Pad every partition with zero parts so that it has n rows. A nonempty border strip occupies a consecutive set of rows. Let a and c be its top and bottom rows. If it occupies more than one row, connectedness and the absence of a 2 × 2 block imply that its boxes in two consecutive rows overlap in exactly one column. The boxes added to row i form the interval {μi + 1 , . . . , λ i}, and since both 
+
+μ and λ are partitions the one-column overlap condition gives λi = μi−1 + 1 for a < i ≤ c. The total size r then determines the remaining part through 
+
+λa − μa = r −
+
+> c
+
+X
+
+> i=a+1
+
+ μi−1 + 1 − μi
+
+ . (6.9) All rows outside a, . . . , c are unchanged, so ( a, c ) determines at most one λ. For removal from a fixed λ, the same overlap condition gives μi = λi+1 − 1 for a ≤ i < c , and the total size determines 
+
+μc, so ( a, c ) also determines at most one removable strip. There are at most n2 pairs. Enumerating the pairs, constructing the corresponding candidate, and checking the partition and border-strip conditions takes polynomial time. We want to choose each border-strip move with the same probability, independent of the current partition. Set K := n2. For every partition and every strip length, use Lemma 6.3 to list the valid additions and pad this list with invalid labels until it has exactly K entries, so that each valid addition occurs exactly once. Suppose inductively that μ ⊢ nj−1 is sampled from 
+
+Pj−1(μ) = [χμ(νj−1)] 2
+
+zνj−1
+
+. (6.10) Choose one of the K labels uniformly. If it is invalid, reject the proposal and repeat the step with a fresh sample μ. If it is valid, add the corresponding border strip of size rj and call the resulting partition λ. For a proposed λ, let 
+
+Rj (λ) := μ′ ⊢ nj−1 : λ/μ ′ is a border strip of size rj , Sj (λ) := X 
+
+> μ′∈R j(λ)
+
+[χμ′
+
+(νj−1)] 2 . (6.11) For every candidate that can actually be proposed, Sj (λ) > 0, since the sampled μ belongs to Rj (λ)and has χμ(νj−1)̸ = 0 with probability one under Eq. (6.10). The Murnaghan-Nakayama rule gives 
+
+χλ(νj ) = X 
+
+> μ′∈R j(λ)
+
+(−1) ht( λ/μ ′)χμ′
+
+(νj−1) , (6.12) where ht( λ/μ ′) is one less than the number of rows occupied by the border strip [20, Theorem 7.17.3]. Accept the proposed partition with probability 
+
+Aj (λ) := [χλ(νj )] 2
+
+KS j (λ) . (6.13) If the proposal is rejected, sample a new μ from Eq. (6.10) and repeat the entire step. 36 Lemma 6.4 (One-cycle update) . The acceptance probability (6.13) lies in [0 , 1] . Conditioned on acceptance, the output has distribution 
+
+Pj (λ) = [χλ(νj )] 2
+
+zνj
+
+. (6.14) 
+
+Proof. Lemma 6.3 gives |R j (λ)| ≤ K, and Cauchy-Schwarz applied to Eq. (6.12) gives [χλ(νj )] 2 ≤ |R j (λ)| X 
+
+> μ′∈R j(λ)
+
+[χμ′
+
+(νj−1)] 2 ≤ KS j (λ) , (6.15) so 0 ≤ Aj (λ) ≤ 1. Before the acceptance test, the probability of proposing λ is 
+
+qj (λ) = Sj (λ)
+
+Kz νj−1
+
+, (6.16) since each μ′ ∈ R j (λ) is sampled with probability [ χμ′
+
+(νj−1)] 2/z νj−1 and its unique label leading to 
+
+λ is chosen with probability 1 /K . It follows that 
+
+qj (λ)Aj (λ) = [χλ(νj )] 2
+
+K2zνj−1
+
+. (6.17) Column orthogonality gives P 
+
+> λ⊢nj
+
+[χλ(νj )] 2 = zνj , so the total probability of acceptance in one trial is zνj
+
+K2zνj−1
+
+. (6.18) Dividing Eq. (6.17) by Eq. (6.18) gives Eq. (6.14). 
+
+Proof of Theorem 6.2. Theorem 6.1 supplies the exact sampler for P0. Apply Lemma 6.4 succes-sively for j = 1 , . . . , b . Induction shows that the final output has distribution Pb(λ) = [ χλ(νb)] 2/z νb .It remains to bound the runtime. Write poly( n) for a fixed polynomial in n, independent of b, that bounds every elementary step below: listing the at most K = n2 border-strip moves of Lemma 6.3, computing an s-core and s-quotient, evaluating the hook-length formula, and arithmetic on integers with O(n log n) bits. Let Cj be the time to compute χλ(νj ) exactly for one partition λ ⊢ nj . For j = 0 the value is the signed uniform-cycle character. Starting from the Young diagram of λ, list all border strips of length s whose removal leaves a valid Young diagram, and remove any one of them. Repeat until the diagram is empty. When the s-core is empty, such a removal is available at every step, and the product of the Murnaghan-Nakayama signs does not depend on which valid strips are chosen [21, Section 2.7]. There are m ≤ n removals, each listed in polynomial time by Lemma 6.3, and the magnitude is given by Eq. (6.3). Hence C0 = poly( n). For j ≥ 1, the recursion (6.12) has at most K terms, so 
+
+Cj ≤ K C j−1 + poly( n) , hence Cj ≤ (j + 1) Kj poly( n) = n2j+O(1) . (6.19) The centralizer zνj is given explicitly by the cycle multiplicities, so Pνj (λ) is computable within the same bound. Taking j = b proves the evaluation claim. A trial at step j draws one sample from Pj−1, chooses one of the K labels, and evaluates the acceptance probability (6.13). The latter requires χλ(νj ), at cost Cj , and Sj (λ), which is a sum 37 of at most K characters at level j − 1, at cost K C j−1 ≤ Cj . All quantities in the acceptance test are integers with O(n log n) bits, up to O(b log n) further bits from the intermediate sums, so the rational probability, and the uniform choice among the K labels, can be sampled exactly from random bits in expected time polynomial in this bit length. Writing Tj for the expected time to produce one sample from Pj , a trial at step j therefore costs at most Tj−1 + 2 Cj + poly( n). Let cj be the multiplicity of the part rj in νj−1. From zν = Q 
+
+> r≥1
+
+rmr mr!, 
+
+zνj
+
+zνj−1
+
+= rj (cj + 1) ≥ 1 , (6.20) so by Eq. (6.18) a trial at step j is accepted with probability rj (cj + 1) /K 2 ≥ K−2. The number of trials is geometric with this success probability, and its expectation is at most K2. Since the trials are independent of one another, Wald’s identity gives 
+
+Tj ≤ K2 Tj−1 + 2 Cj + poly( n) , T0 = poly( n) . (6.21) Substituting Eq. (6.19) and iterating gives 
+
+Tb ≤ K2b T0 +
+
+> b
+
+X
+
+> j=1
+
+K2( b−j+1)  2Cj + poly( n)
+
+≤ K2b poly( n) + 
+
+> b
+
+X
+
+> j=1
+
+K2b−2j+2 (j + 1) Kj poly( n) ≤ (b + 1) 2 K2b+1 poly( n) , (6.22) where the last step uses the fact that the exponent 2 b − j + 2 is largest at j = 1. Since K = n2 and 
+
+b ≤ n, this is Tb = n4b+O(1) .Theorem 6.2 shows that a constant number of exceptional cycles does not produce a classically hard sampling problem. Any candidate family for quantum advantage built from perturbations of uniform cycles must, therefore, have a number of exceptional cycles that grows with n.
+
+# 7 Discussion and Outlook 
+
+We have given a Hamiltonian-based algorithm for character state preparation, and extended it coherently to realize the quantum character transform over Sn. Our construction replaces the existing quantum Fourier transform-based approach [1] by a sequence of transfer evolutions under the Hamiltonians Hs, each run for an exactly known time. Simulated using QSVT, the resulting circuit uses eO(n5/2 log δ−1) gates and O(n) qubits for CSP at any cycle type and for the full QCT. This is below the eO(n3) gates and eO(n3/2) qubits of the best known implementation [14] of the quantum Fourier transform over Sn.Towards near-term hardware-friendly realizations, we also consider implementing the Hamil-tonian evolution subroutines of our algorithm by Trotter decomposition. Using fast fermionic permutations with reconfigurable qubits [16], the Hamiltonian evolution can be implemented with geometrically local gates in 1D or 2D geometry. While the general operator-norm Trotter error bound indicates a gate complexity of eO(n4/δ ), we improved the bound by focusing on the states that our algorithm actually visits. Looking at the leading-order Trotter error, our CSP algorithm has a sufficient gate complexity of eO(n7/4/δ ) for uniform cycles with the Θ( √n/ log n) cycle count that the hardness argument of Bravyi et al. [1] requires for the granularity condition. To better 38 understand classical hardness, we showed that such uniform cycle types, as well as their perturba-tions by a constant number of exceptional cycles, admit exact polynomial-time classical samplers despite satisfying the granularity condition. Nevertheless, when the number of exceptional cycles grows with n, or for generic cycle types with Θ( √n/ log n) cycles, no efficient classical algorithms are known, and quantum advantage is still possible. Our numerical simulations up to n = 48 suggest that the Trotter method remains efficient for these general cycle types, and generally have far better resource scaling than what our bounds predict. These results motivate further study of the Trotter-based CSP, which we put forth as a candidate quantum advantage task on near-term reconfigurable-qubit quantum hardware. Several interesting questions remain open: 
+
+• Can the full Trotter error on the states visited by the algorithm be bounded, beyond the leading-order term? Our state-dependent bound controls only the error at order in 1 /M ,where M is the number of Trotter steps. A bound on the full error would turn our eO(n7/4/δ )estimate into a rigorous complexity bound. It would also be valuable to extend the analysis to cycle types with a growing number of exceptional cycles, where known classical algorithms become inefficient. For these cycle types, our numerics show smaller costs than both the worst-case bounds and the estimated bounds from the state-dependent error analysis, suggesting there is much room for improvements. 
+
+• Can our Hamiltonian transfer mechanism also prepare the Kostka and Littlewood-Richardson states described in Crichigno and Prakash [11]? These quantum spin-chain states encode Kostka numbers and Littlewood–Richardson coefficients as amplitudes, with the currents replaced by noncommutative complete symmetric polynomials and noncommutative Schur polynomials. Bravyi et al. [1] turned the complete symmetric operators into a classical MPS algorithm for Kostka numbers and left the Littlewood-Richardson case open. Neither work gives a quantum algorithm for preparing these states. Larocca and Havl´ ıˇ cek [23] compute Kostka, Littlewood-Richardson, plethysm and Kronecker coefficients with QFT-based quan-tum algorithms whenever the ratio of the relevant representation dimensions is polynomial. In this regime, they give an efficient classical algorithm for Kostka numbers and conjecture one for Littlewood-Richardson coefficients. For Kronecker coefficients, a classical algorithm of Panova [24] reduces the conjectured advantage to a polynomial gap. Exact Hamiltonian transfers for these nonunitary operators would give a QFT-free route to the same quantities. 
+
+• Can we generalize our CSP and QCT algorithms to other finite groups? In particular, QCT for general finite groups has applications in symmetry-adapted quantum simulations [13]. The transfer mechanism (Lemma 3.1) can be applied to any family of linear operators with the ladder property of Proposition 3.2, so groups whose characters obey a Murnaghan-Nakayama-type rule, such as the wreath products Zk ≀ Sn, are natural candidates. 
+
+• Can our Hamiltonian-based approach for the QCT be extended to realize the full quantum Fourier transform over Sn? The QCT is the restriction of the QFT to class functions, with the representation-matrix indices traced out. It would be useful to investigate whether the Hamiltonian approach can reach the remaining O(n log n) qubits of the Fourier basis at a cost below the eO(n3) gates in the state-of-the-art QFT circuits [14]. 39 Acknowledgments 
+
+We thank Jason Cong, David Gosset, and Yuan Liu for helpful discussions. DR is supported by the Mani L. Bhaumik Institute for Theoretical Physics. LZ is supported by the Google Research Scholar Award and Department of Navy Award No. N000142612399 issued by the Office of Naval Research. 
+
+Use of generative AI 
+
+OpenAI GPT-5.4 Pro, accessed through ChatGPT in April 2026, was used to explore approaches to the state-dependent Trotter error bound (Section 4.1.3 and Appendix C). Each step of the final proof was derived and verified independently by the authors. Anthropic Claude Opus 4.8, accessed through Claude Code in June 2026, was used to check the QSVT-based implementation of the quantum character transform (Section 5.1). Anthropic Claude Fable 5, accessed through Claude Code in August 2026, was used to explore the classical sampling algorithms for uniform and almost-uniform cycle types (Section 6) and to code the numerical simulations of the Trotterized CSP circuit for uniform cycle types and their perturbations (Section 4.1.4). Each step of these algorithms and their proofs was verified independently by the authors, and the simulation code was checked against a brute-force simulation on the full Fock space for n = 4 and n = 5. 
+
+# Appendices 
+
+# Appendix A Proof of the eigenvalue condition 
+
+This appendix proves Proposition 3.2 and the normalization in Eq. (3.7). The proof has three steps. First, we introduce a displacement operator, which measures how far the fermions have hopped relative to the seed state |seed ⟩ = |1n0n⟩, and show that each intermediate state of the algorithm has a fixed displacement (Lemma A.1). Second, we show that a state of small displacement has its lowest s sites occupied and its highest s sites empty (Lemma A.3). Third, on such states the commutators of the current operators take a simple form (Lemma A.7), and the ladder property follows by induction. Define the displacement operator 
+
+bD := 
+
+> 2n
+
+X
+
+> j=1
+
+j ˆnj − n(n + 1) 2 1 . (A.1) For every s ∈ { 1, . . . , n },[bD, J s] = sJ s , [bD, J † 
+
+> s
+
+] = −sJ † 
+
+> s
+
+. (A.2) Write |ϕk⟩ := Jνk · · · Jν1 |seed ⟩ for the (unnormalized) state after depositing the first k currents, so 
+
+|ϕ0⟩ = |seed ⟩.
+
+Lemma A.1 (Displacement of intermediate states) . Let Sk = Pkj=1 νj . Then 
+
+bD|ϕk⟩ = Sk|ϕk⟩ . (A.3) 
+
+Equivalently, every occupation-basis state in the support of |ϕk⟩ has total displacement Sk from the seed configuration. 
+
+40 Proof. The claim follows by induction using Eq. (A.2). The base case is bD |seed ⟩ = 0. If the claim holds for k − 1, then 
+
+bDJνk |ϕk−1⟩ = ( Jνk bD + νkJνk )|ϕk−1⟩
+
+= ( Sk−1 + νk)|ϕk⟩ . (A.4) For an occupation-basis state |p1 < · · · < p n⟩,
+
+bD |p1 < · · · < p n⟩ =
+
+> n
+
+X
+
+> r=1
+
+(pr − r)
+
+!
+
+|p1 < · · · < p n⟩ . (A.5) Thus, bD measures how far the occupied sites have moved from their positions 1 , . . . , n in the seed state. Define dr := pr − r. Since pr+1 ≥ pr + 1, the sequence d1 ≤ · · · ≤ dn is nondecreasing. 
+
+Definition A.2. An n-particle state |ψ⟩ on 2n sites is called an s-state if every occupation-basis state in its support has sites 1, . . . , s occupied and sites 2n − s + 1 , . . . , 2n empty. 
+
+Lemma A.3. If every occupation-basis state in the support of |ψ⟩ satisfies 
+
+> n
+
+X
+
+> r=1
+
+dr ≤ n − s , (A.6) 
+
+then |ψ⟩ is an s-state. Proof. Suppose some site j ≤ s is empty. Then pj ≥ j+1, so dj ≥ 1. Since the dr are nondecreasing, 
+
+dr ≥ 1 for every r ≥ j. Therefore, 
+
+> n
+
+X
+
+> r=1
+
+dr ≥
+
+> n
+
+X
+
+> r=j
+
+dr ≥ n − j + 1 ≥ n − s + 1 , (A.7) which contradicts the assumption. Thus, sites 1 , . . . , s are occupied. Moreover, dr ≥ 0 for every r, so 
+
+dn ≤
+
+> n
+
+X
+
+> r=1
+
+dr ≤ n − s . (A.8) It follows that 
+
+pn = n + dn ≤ 2n − s , (A.9) so sites 2 n − s + 1 , . . . , 2n are empty. Hence, |ψ⟩ is an s-state. 
+
+Lemma A.4. For s = νk, the state |ϕk−1⟩ is an s-state. Proof. By Lemma A.1, |ϕk−1⟩ has displacement Sk−1. Since ν is nonincreasing, 
+
+Sk−1 + s = Sk ≤ n . (A.10) Thus Sk−1 ≤ n − s, and Lemma A.3 applies. 41 Lemma A.5. For s ∈ { 1, . . . , n },
+
+[Js, J † 
+
+> s
+
+] = 
+
+> 2n
+
+X
+
+> j=s+1
+
+ˆnj −
+
+> 2n−s
+
+X
+
+> j=1
+
+ˆnj . (A.11) 
+
+Proof. Using the canonical anticommutation relations, [Js, J † 
+
+> s
+
+] = 
+
+> 2n−s
+
+X
+
+> i,j =1
+
+[a†
+
+> i+s
+
+ai, a † 
+
+> j
+
+aj+s] = 
+
+> 2n−s
+
+X
+
+> j=1
+
+(a†
+
+> j+s
+
+aj+s − a† 
+
+> j
+
+aj ) , (A.12) which is Eq. (A.11). 
+
+Lemma A.6. For u > s ,
+
+[Ju, J † 
+
+> s
+
+] = 
+
+> 2n−u+s
+
+X
+
+> j=s+1
+
+a†
+
+> j+u−s
+
+aj −
+
+> 2n−u
+
+X
+
+> i=1
+
+a†
+
+> i+u−s
+
+ai . (A.13) 
+
+Proof. Again, using the canonical anticommutation relations, [Ju, J † 
+
+> s
+
+] = 
+
+> 2n−u
+
+X
+
+> i=1 2n−s
+
+X
+
+> j=1
+
+[a†
+
+> i+u
+
+ai, a † 
+
+> j
+
+aj+s] = 
+
+> 2n−u
+
+X
+
+> i=1
+
+a†
+
+> i+u
+
+ai+s −
+
+> 2n−u
+
+X
+
+> i=1
+> i+u−s≤2n−s
+
+a†
+
+> i+u−s
+
+ai , (A.14) which gives Eq. (A.13) after reindexing. 
+
+Lemma A.7. The following hold. (i) If |ψ⟩ is an s-state, then 
+
+[J† 
+
+> s
+
+, J s]|ψ⟩ = s|ψ⟩ . (A.15) 
+
+(ii) If u > s and |ψ⟩ is a u-state, then 
+
+[Ju, J † 
+
+> s
+
+]|ψ⟩ = 0 . (A.16) 
+
+Proof. For (i), Eq. (A.11) gives [J† 
+
+> s
+
+, J s] = 
+
+> 2n−s
+
+X
+
+> j=1
+
+ˆnj −
+
+> 2n
+
+X
+
+> j=s+1
+
+ˆnj
+
+=
+
+> s
+
+X
+
+> j=1
+
+ˆnj −
+
+> 2n
+
+X
+
+> j=2 n−s+1
+
+ˆnj . (A.17) On an s-state this equals s.For (ii), rewrite Eq. (A.13) as [Ju, J † 
+
+> s
+
+] = 
+
+> 2n−u+s
+
+X
+
+> j=2 n−u+1
+
+a†
+
+> j+u−s
+
+aj −
+
+> s
+
+X
+
+> i=1
+
+a†
+
+> i+u−s
+
+ai . (A.18) On a u-state, the first sum annihilates the state because the annihilation operators act on empty sites in {2n − u + 1 , . . . , 2n}. The second sum annihilates the state because i + u − s ∈ { 1, . . . , u }
+
+is already occupied, so the creation operator vanishes. 42 Proof of Proposition 3.2. Fix k and set s = νk. Let rk be the number of earlier factors equal to s.Since ν is nonincreasing, the factors equal to s among ν1, . . . , ν k−1 occur after all parts larger than 
+
+s, so 
+
+Jνk−1 · · · Jν1 = Jrk 
+
+> s
+
+B , (A.19) where B = Jut · · · Ju1 with every uj > s . In the notation of Section 3.2, 
+
+|Φ>s ⟩ = B |seed ⟩∥B |seed ⟩ ∥ . (A.20) First, J† 
+
+> s
+
+B |seed ⟩ = 0. Commute J† 
+
+> s
+
+through B toward the seed. Write B<j = Juj−1 · · · Ju1 for the partial product. By Lemma A.1, B<j |seed ⟩ has displacement P 
+
+> i<j
+
+ui. Since |ϕk−1⟩ deposits total length Sk−1 ≤ n−s < n and the ui are among its factors, P 
+
+> i≤j
+
+ui ≤ n, hence P 
+
+> i<j
+
+ui ≤ n−uj .By Lemma A.3, B<j |seed ⟩ is therefore a uj -state, and Lemma A.7(ii) gives [ Juj , J † 
+
+> s
+
+] = 0 on it. Passing J† 
+
+> s
+
+through every factor of B leaves J† 
+
+> s
+
+B |seed ⟩ = BJ † 
+
+> s
+
+|seed ⟩ = 0, because every term in 
+
+J† 
+
+> s
+
+= P 
+
+> i
+
+a† 
+
+> i
+
+ai+s annihilates |seed ⟩.Second, the states Jqs B |seed ⟩ are s-states for 0 ≤ q ≤ rk, because their displacement is at most Pk−1 
+
+> j=1
+
+νj ≤ n − s, so Lemma A.3 applies. Let |ψq⟩ = Jqs B |seed ⟩. Since J† 
+
+> s
+
+B |seed ⟩ = 0, 
+
+J† 
+
+> s
+
+|ψq+1 ⟩ = [ J† 
+
+> s
+
+, J q+1  
+
+> s
+
+]B |seed ⟩
+
+=
+
+> q
+
+X
+
+> r=0
+
+Jrs [J† 
+
+> s
+
+, J s]Jq−rs B |seed ⟩ . (A.21) Each state Jq−rs B |seed ⟩ is an s-state, so Lemma A.7(i) gives 
+
+J† 
+
+> s
+
+|ψq+1 ⟩ = ( q + 1) s|ψq⟩ . (A.22) Since |ψq+1 ⟩ = Js|ψq⟩, this also gives 
+
+∥ψq+1 ∥2 = ( q + 1) s ∥ψq∥2 . (A.23) Thus 
+
+∥Jqs B |seed ⟩ ∥ = psqq! ∥B |seed ⟩ ∥ , (A.24) for every 0 ≤ q ≤ rk + 1. Taking k to be the last occurrence of s proves the normalization in Eq. (3.7) for all 0 ≤ q ≤ ms. Taking q = rk gives 
+
+J† 
+
+> s
+
+Js|ϕk−1⟩ = ( rk + 1) s|ϕk−1⟩ , (A.25) and the norm formula gives 
+
+|Φs,r k ⟩ = |ϕk−1⟩∥ϕk−1∥ . (A.26) This is Eq. (3.8) with j = rk + 1. Since k can be any occurrence of the part s, it proves the claim for every 1 ≤ j ≤ ms. The two relations in Eq. (3.9) then follow from Eq. (3.7) and the lowering relation above. 43 Appendix B Trotter error: commutator calculations 
+
+B.1 Commutator norms 
+
+Write hq,a = σ+ 
+
+> a
+
+⊗ Aq + σ− 
+
+> a
+
+⊗ A† 
+
+> q
+
+where Aq = σ+
+
+> q+1
+
+σ− 
+
+> q
+
+. Using σ+ 
+
+> a
+
+σ− 
+
+> a
+
+= |1⟩⟨ 1|a, σ− 
+
+> a
+
+σ+ 
+
+> a
+
+= |0⟩⟨ 0|a and (σ± 
+
+> a
+
+)2 = 0, [hq,a , h q′,a ] = |1⟩⟨ 1|a ⊗ (AqA† 
+
+> q′
+
+− Aq′ A†
+
+> q
+
+) + |0⟩⟨ 0|a ⊗ (A†
+
+> q
+
+Aq′ − A† 
+
+> q′
+
+Aq) . (B.1) 
+
+Adjacent bonds ( |q − q′| = 1 ). Take q′ = q + 1. Then 
+
+AqA† 
+
+> q+1
+
+= ( σ+
+
+> q+1
+
+σ− 
+
+> q
+
+)( σ+
+
+> q+1
+
+σ−
+
+> q+2
+
+) = ( σ+
+
+> q+1
+
+)2σ− 
+
+> q
+
+σ− 
+
+> q+2
+
+= 0 , (B.2) and the remaining products vanish the same way, so [ hq,a , h q+1 ,a ] = 0. 
+
+Non-adjacent bonds ( |q − q′| ≥ 2). The four sites {q, q + 1 , q ′, q ′ + 1 } are distinct. This includes bonds in different chains, which act on disjoint site pairs and are treated by the same argument. The operators act as 
+
+AqA† 
+
+> q′
+
+: |1q 0q+1 0q′ 1q′+1 ⟩ → | 0q 1q+1 1q′ 0q′+1 ⟩ ,Aq′ A† 
+
+> q
+
+: |0q 1q+1 1q′ 0q′+1 ⟩ → | 1q 0q+1 0q′ 1q′+1 ⟩ , (B.3) with all other basis states annihilated. In the two-dimensional subspace spanned by |1q 0q+1 0q′ 1q′+1 ⟩
+
+and |0q 1q+1 1q′ 0q′+1 ⟩, the difference AqA† 
+
+> q′
+
+− Aq′ A† 
+
+> q
+
+is represented by   0 −11 0
+
+, which has eigenvalues 
+
+±i and norm 1. The same holds for A†
+
+> q
+
+Aq′ − A† 
+
+> q′
+
+Aq. Since the commutator is block-diagonal in the ancilla basis, 
+
+∥[hq,a , h q′,a ]∥ = 1 for |q − q′| ≥ 2 . (B.4) 
+
+B.2 Bond counting 
+
+Fix the length s = νk being deposited, and let 2 n−s be the total number of bonds in H′
+
+> s
+
+. In a chain of length Lμ there are Lμ − 2 adjacent bond pairs, each with vanishing commutator. Summing over the s chains gives P
+
+> μ
+
+(Lμ − 2) = 2 n − 2s commuting pairs. Every remaining pair has commutator norm 1, so 
+
+X
+
+> q<q ′
+
+∥[hq,a , h q′,a ]∥ =
+
+2n − s
+
+2
+
+
+
+− (2 n − 2s) ≡ C(νk, n ) . (B.5) 
+
+# Appendix C Leading-order state-dependent Trotter error for uni-form cycle partitions 
+
+This appendix derives the state-dependent bound of Section 4.1.3. We first reduce the leading-order Trotter error of one transfer to the norms ∥A s |ρr⟩ ∥ . We then write |ρr⟩ explicitly, using the multinomial structure of uniform cycles, and finally evaluate the contributions of commutators between different chains and within the same chain. We specialize to a uniform-cycle partition ν = ( sm) with n = ms . A single permutation Ps is used at every layer. In the permuted basis, there are s chains, each of length 2 m. Throughout this appendix, |seed ⟩ denotes the seed in the following basis 
+
+|seed ⟩ =
+
+> s
+
+O
+
+> α=1
+
+|1m0m⟩α . (C.1) 44 For chain α ∈ { 1, . . . , s } and bond q ∈ { 1, . . . , 2m − 1}, define 
+
+Aα,q := σ+
+
+> α,q +1
+
+σ− 
+
+> α,q
+
+. (C.2) The current on chain α and the total length-s current are 
+
+Jα := 
+
+> 2m−1
+
+X
+
+> q=1
+
+Aα,q , Js =
+
+> s
+
+X
+
+> α=1
+
+Jα . (C.3) 
+
+C.1 Telescoped state-dependent bound 
+
+The input to the k-th transfer is 
+
+|Ψk−1⟩ = |0⟩a |ρk−1⟩ , (C.4) where |ρr⟩ is the normalized system state after r transfers of the length-s current. Write 
+
+Uk := e−it k H′ 
+
+> s
+
+(C.5) for the exact evolution in the k-th transfer. Order the bond terms lexicographically by their chain and bond labels ( α, q ), and write them as h1, . . . , h 2n−s. One first-order Trotter step is 
+
+Ss(τ ) := e−iτ h 1 · · · e−iτ h 2n−s . (C.6) For 
+
+τk := tk
+
+Mk
+
+, (C.7) the Trotter approximation is eUk := Ss(τk)Mk . (C.8) The iX a correction applied after the evolution is omitted here because it is applied to both the exact and Trotterized states and therefore does not change their distance. Expanding one Trotter step gives 
+
+Ss(τ ) − e−iτ H ′ 
+
+> s
+
+= − τ 2
+
+2 Es + O(τ 3) , Es := X
+
+> w<w ′
+
+[hw, h w′ ] . (C.9) Telescoping over the Mk steps gives 
+
+eUk − Uk = 
+
+> Mk−1
+
+X
+
+> j=0
+
+Ss(τk)Mk −1−j 
+
+Ss(τk) − e−iτ k H′
+
+> s
+
+
+
+e−ijτ k H′ 
+
+> s
+
+. (C.10) Define the state error of this transfer by 
+
+εSD  
+
+> k
+
+:= 
+
+ eUk − Uk
+
+
+
+|Ψk−1⟩ . (C.11) Using the unitarity of Ss(τk) and e−iτ k H′ 
+
+> s
+
+gives 
+
+εSD  
+
+> k
+
+≤ τ 2
+
+> k
+
+2 
+
+> Mk−1
+
+X
+
+> j=0
+
+Ese−ijτ k H′ 
+
+> s
+
+|Ψk−1⟩ + O(Mkτ 3 
+
+> k
+
+) . (C.12) 45 The estimates below control the above leading term. For two non-adjacent bonds w = ( α, q ) and w′ = ( β, q ′), define 
+
+Aww ′ := A†
+
+> w
+
+Aw′ − A† 
+
+> w′
+
+Aw . (C.13) Adjacent bonds in the same chain commute. Any two non-adjacent bonds act on disjoint system qubits, and [hw, h w′ ] = Za ⊗ A ww ′ . (C.14) Set 
+
+As := X 
+
+> w<w ′
+> w,w ′non-adjacent
+
+Aww ′ . (C.15) It follows that 
+
+Es = Za ⊗ A s . (C.16) The exact evolution preserves the two-dimensional space span {| 0⟩a |ρk−1⟩ , |1⟩a |ρk⟩} . (C.17) On the input state, 
+
+e−iθH ′ 
+
+> s
+
+|Ψk−1⟩ = cos 
+
+√ks θ 
+
+
+
+|0⟩a |ρk−1⟩− i sin 
+
+√ks θ 
+
+
+
+|1⟩a |ρk⟩ . (C.18) Since 
+
+Za |0⟩a = |0⟩a , Za |1⟩a = − | 1⟩a , (C.19) the two terms obtained after applying Es have orthogonal ancilla states. Therefore, 
+
+Ese−iθH ′ 
+
+> s
+
+|Ψk−1⟩ 2
+
+= cos 2√ks θ 
+
+
+
+∥A s |ρk−1⟩∥ 2
+
++ sin 2√ks θ 
+
+
+
+∥A s |ρk⟩∥ 2 . (C.20) Define Γr := ∥A s |ρr⟩∥ , ∆k := max {Γk−1, Γk} . (C.21) Substituting this bound into Eq. (C.12) and using Mkτk = tk gives 
+
+εSD  
+
+> k, lead
+
+≤ t2
+
+> k
+
+2Mk
+
+∆k . (C.22) The transfer time is 
+
+tk = π
+
+2√ks . (C.23) Thus, making the leading error at most δk requires 
+
+Mk ≥ π2
+
+8ks δ k
+
+∆k . (C.24) 46 C.2 Multinomial structure of |ρr⟩
+
+Because the currents Jα act on different chains, they commute. The multinomial theorem gives 
+
+Jrs |seed ⟩ = X
+
+> d1,...,d s≥0
+> d1+··· +ds=r
+
+r!
+
+d1! · · · ds!
+
+> s
+
+Y
+
+> α=1
+
+Jdα 
+
+> α
+
+|seed ⟩ . (C.25) For one chain, define 
+
+|ξd⟩α := Jdα |1m0m⟩α√d! . (C.26) By Proposition 3.2, specialized to a single chain, these states satisfy 
+
+Jα |ξd⟩α = √d + 1 |ξd+1 ⟩α , J† 
+
+> α
+
+|ξd⟩α = √d |ξd−1⟩α , (C.27) and 
+
+> α
+
+⟨ξd|ξd′ ⟩α = δdd ′ . (C.28) The product states belonging to different vectors ⃗ d = ( d1, . . . , d s) are orthogonal. Consequently, 
+
+∥Jrs |seed ⟩∥ 2 = ( r!) 2 X 
+
+> |⃗d|=r
+
+1
+
+d1! · · · ds!= r!sr . (C.29) The normalized state after r transfers is therefore 
+
+|ρr⟩ = X 
+
+> |⃗d|=r
+
+r r!
+
+srd1! · · · ds!
+
+> s
+
+O
+
+> α=1
+
+|ξdα ⟩α . (C.30) 
+
+C.3 Same-chain and cross-chain terms 
+
+The operator As splits as 
+
+As = As, same + As, cross , (C.31) where 
+
+As, same := 
+
+> s
+
+X
+
+> α=1
+
+As,α ,
+
+As, cross := X
+
+> 1≤α<β ≤s
+
+
+
+J†
+
+> α
+
+Jβ − J† 
+
+> β
+
+Jα
+
+
+
+, (C.32) and 
+
+As,α := X
+
+> 1≤q<q ′≤2m−1
+> q′−q≥2
+
+
+
+A†
+
+> α,q
+
+Aα,q ′ − A† 
+
+> α,q ′
+
+Aα,q 
+
+
+
+. (C.33) The expression for As, cross follows because every bond on chain α is non-adjacent to every bond on a different chain β.47 Lemma C.1 (Orthogonality) . For every 0 ≤ r ≤ m,
+
+As, same |ρr⟩ ⊥ A s, cross |ρr⟩ . (C.34) 
+
+Consequently, 
+
+Γ2 
+
+> r
+
+= ∥A s, same |ρr⟩∥ 2 + ∥A s, cross |ρr⟩∥ 2 . (C.35) 
+
+Proof. Let 
+
+Lr := span 
+
+( sO
+
+> α=1
+
+|ξdα ⟩α : d1 + · · · + ds = r
+
+)
+
+. (C.36) Each term J†
+
+> α
+
+Jβ maps a product of ladder states to another product of ladder states with the same total value of d1 + · · · + ds. Hence, 
+
+As, cross |ρr⟩ ∈ L r . (C.37) The operator As,α preserves the value of d on chain α. In the occupation basis, it is represented by a real skew-symmetric matrix, while |ξd⟩α has real coefficients. Therefore, 
+
+> α
+
+⟨ξd| A s,α |ξd⟩α = 0 . (C.38) Using Eq. (C.30), As, same acts on one chain factor at a time. Its inner product with any product state in Lr therefore contains a factor of the form 
+
+> α
+
+⟨ξd| A s,α |ξd⟩α , (C.39) which vanishes. Thus, 
+
+As, same |ρr⟩ ⊥ L r , (C.40) which proves the result. 
+
+Lemma C.2 (Cross-chain norm) . For every 0 ≤ r ≤ m,
+
+∥A s, cross |ρr⟩∥ 2 = r(s2 − 1) 3 . (C.41) 
+
+Proof. On the ladder subspace, identify 
+
+Jα ←→ b† 
+
+> α
+
+, J† 
+
+> α
+
+←→ bα . (C.42) Under this identification, 
+
+|ρr⟩ ←→ (b†
+
+> u
+
+)r
+
+√r! |Ω⟩ , u := 1
+
+√s (1 , . . . , 1) T . (C.43) The cross-chain operator becomes 
+
+T := 
+
+> s
+
+X
+
+> α,β =1
+
+Kβα b† 
+
+> β
+
+bα , Kμη := sgn( μ − η) . (C.44) Since [T, b †
+
+> u
+
+] = b† 
+
+> Ku
+
+, T |Ω⟩ = 0 , (C.45) 48 the Leibniz rule gives 
+
+T (b†
+
+> u
+
+)r
+
+√r! |Ω⟩ = √r b †
+
+> Ku
+
+(b†
+
+> u
+
+)r−1
+
+p(r − 1)! |Ω⟩ . (C.46) The matrix K is real and skew-symmetric, so 
+
+uT Ku = 0 . (C.47) Thus Ku ⊥ u, and 
+
+∥A s, cross |ρr⟩∥ 2 = r∥Ku ∥2 . (C.48) The components of Ku are (Ku )μ = 2μ − s − 1
+
+√s . (C.49) Therefore, 
+
+∥Ku ∥2 = 1
+
+s
+
+> s
+
+X
+
+> μ=1
+
+(2 μ − s − 1) 2
+
+= s2 − 13 , (C.50) which proves the claim. 
+
+Lemma C.3 (Same-chain contribution) . For every 0 ≤ r ≤ m,
+
+∥A s, same |ρr⟩∥ 2 = s
+
+> r
+
+X
+
+> d=0
+
+rd
+
+  1
+
+s
+
+d 
+
+1 − 1
+
+s
+
+r−d
+
+F (d) , (C.51) 
+
+where 
+
+F (d) := ∥A s,α |ξd⟩α∥2 . (C.52) 
+
+The value of F (d) is independent of α because all chains are identical. Proof. For α̸ = β, the operator A†
+
+> s,α
+
+As,β preserves the displacement on every chain. Expanding 
+
+|ρr⟩ using Eq. (C.30), its expectation value separates into one-chain factors. The chain-α factor contains 
+
+> α
+
+⟨ξd| A s,α |ξd⟩α = 0 . (C.53) Therefore, all cross terms vanish and 
+
+∥A s, same |ρr⟩∥ 2 =
+
+> s
+
+X
+
+> α=1
+
+∥A s,α |ρr⟩∥ 2 . (C.54) For a fixed chain α, the number d of deposited hops has the binomial distribution 
+
+wd =
+
+rd
+
+  1
+
+s
+
+d 
+
+1 − 1
+
+s
+
+r−d
+
+. (C.55) Displacement sectors with different values of d are orthogonal, so 
+
+∥A s,α |ρr⟩∥ 2 =
+
+> r
+
+X
+
+> d=0
+
+wdF (d) . (C.56) All s chains give the same contribution, which proves the result. 49 Combining Lemmas C.1–C.3 gives Γ2 
+
+> r
+
+= r(s2 − 1) 3 + s
+
+> r
+
+X
+
+> d=0
+
+rd
+
+  1
+
+s
+
+d 
+
+1 − 1
+
+s
+
+r−d
+
+F (d) . (C.57) 
+
+Lemma C.4 (One-chain bound) . For every 0 ≤ d ≤ m,
+
+F (d) ≤ d2 . (C.58) 
+
+Proof. The case d = 0 is immediate. For d ≥ 1, use the Young-diagram basis for one chain. Because 
+
+d ≤ m, every partition of d fits inside the m × m diagram allowed by the chain. For λ ⊢ d, let f λ be the number of standard Young tableaux of shape λ. The one-chain ladder state is 
+
+|ξd⟩ = 1
+
+√d!
+
+X
+
+> λ⊢d
+
+f λ |λ⟩ . (C.59) Write √d! As,α |ξd⟩ = X
+
+> λ⊢d
+
+cλ |λ⟩ . (C.60) The operator As,α removes one corner box and adds another. Each such move has coefficient 0, +1, or −1. Therefore, 
+
+cλ = X
+
+> η⊂λ
+> |η|=d−1
+
+X
+
+> μ⊃η
+> |μ|=d
+
+ϵλ,μ,η f μ , |ϵλ,μ,η | ≤ 1 . (C.61) Taking absolute values and using the standard counting identities 
+
+X
+
+> η⊂λ
+> |η|=d−1
+
+f η = f λ , X
+
+> μ⊃η
+> |μ|=d
+
+f μ = df η , (C.62) we obtain 
+
+|cλ| ≤ X
+
+> η⊂λ
+> |η|=d−1
+
+X
+
+> μ⊃η
+> |μ|=d
+
+f μ
+
+= d X
+
+> η⊂λ
+> |η|=d−1
+
+f η = df λ . (C.63) Hence, 
+
+F (d) = ∥A s,α |ξd⟩∥ 2 = 1
+
+d!
+
+X
+
+> λ⊢d
+
+c2
+
+> λ
+
+≤ d2
+
+d!
+
+X
+
+> λ⊢d
+
+(f λ)2 = d2 , (C.64) where the last equality uses X
+
+> λ⊢d
+
+(f λ)2 = d! . (C.65) Combining Lemma C.4 with Eq. (C.57) gives Γ2 
+
+> r
+
+≤ r(s2 − 1) 3 + r
+
+
+
+1 − 1
+
+s
+
+
+
++ r2
+
+s . (C.66) 50 C.4 Gate count from state-dependent Trotter error 
+
+We now use Eq. (C.66) to bound the leading state-dependent error. For 0 ≤ r ≤ m,Γr = O
+
+
+
+s√r + r
+
+√s
+
+
+
+. (C.67) It follows that ∆k = O
+
+
+
+s√k + k
+
+√s
+
+
+
+. (C.68) Substituting this into Eq. (C.22) and using tk = π/ (2 √ks ) gives 
+
+εSD  
+
+> k, lead
+
+= O
+
+ 1
+
+Mk
+
+ 1
+
+√k + 1
+
+s3/2
+
+ 
+
+. (C.69) The first term comes from commutators between different chains. The second comes from commu-tators within the same chain. Let δ be the allowed total leading-order error. Assigning leading error δ/m to each of the m
+
+transfers, it is enough to choose 
+
+Mk =
+
+
+
+C mδ
+
+ 1
+
+√k + 1
+
+s3/2
+
+ 
+
+(C.70) for a sufficiently large constant C. Since 
+
+> m
+
+X
+
+> k=1
+
+1
+
+√k ≤ 2√m , (C.71) the total number of Trotter steps is 
+
+Mtot := 
+
+> m
+
+X
+
+> k=1
+
+Mk = O
+
+ 1
+
+δ
+
+
+
+m3/2 + m2
+
+s3/2
+
+ 
+
+. (C.72) The O(m) contribution from the ceilings is absorbed into this bound because 0 < δ < 1. Each Trotter step contains 
+
+s(2 m − 1) = 2 n − s = O(n) (C.73) bond evolutions. Each bond evolution uses a constant number of elementary gates. The resulting leading-order gate count is 
+
+GSD lead (sm) = O
+
+ nδ
+
+
+
+m3/2 + m2
+
+s3/2
+
+ 
+
+. (C.74) The two terms in Eq. (C.74) give the following cases. 
+
+• If m = O(s3), then 
+
+m2
+
+s3/2 = O(m3/2) . (C.75) The same-chain term does not change the asymptotic gate count, and 
+
+GSD lead (sm) = O nm 3/2
+
+δ
+
+!
+
+. (C.76) If m = o(s3) and s grows, the same-chain term is strictly lower order. 51 • If m ≫ s3, the same-chain term cannot be dropped using the proved bound F (d) ≤ d2. The second term in Eq. (C.74) is then larger, giving 
+
+GSD lead (sm) = O
+
+ nm 2
+
+δs 3/2
+
+
+
+. (C.77) 
+
+• Our numerical results are consistent with linear growth F (d) = O(d), with an observed slope of approximately 0 .6 over the tested range. If this stronger bound holds for all d, then the same-chain contribution is O(r) rather than O(r + r2/s ). In that case, 
+
+GSD lead (sm) = O nm 3/2
+
+δ
+
+!
+
+(C.78) for every uniform-cycle partition, without requiring m = O(s3). This statement is conditional on the unproven linear bound. These estimates control the leading 1 /M k contribution to the state-dependent Trotter error. They do not give a complete finite-Mk error bound because the higher-order remainder in Eq. (C.12) has not been bounded. 
+
+# References 
+
+[1] Sergey Bravyi, David Gosset, Vojtˇ ech Havl´ ıˇ cek, and Louis Schatzki. Classical and quan-tum algorithms for characters of the symmetric group. PRX Quantum , 6:030323, 2025. arXiv:2501.12579. [2] Marc M´ ezard, Giorgio Parisi, and Miguel Angel Virasoro. Spin Glass Theory and Beyond: An Introduction to the Replica Method and Its Applications , volume 9 of World Scientific Lecture Notes in Physics . World Scientific, 1987. [3] Tianci Zhou and Adam Nahum. Emergent statistical mechanics of entanglement in random unitary circuits. Physical Review B , 99:174205, 2019. [4] Gerald V. Dunne. Slater decomposition of Laughlin states. International Journal of Modern Physics B , 7(28):4783–4813, 1993. [5] Robbert Dijkgraaf, Gregory Moore, Erik Verlinde, and Herman Verlinde. Elliptic genera of symmetric products and second quantized strings. Communications in Mathematical Physics ,185:197–209, 1997. [6] Ryan Thorngren and Yifan Wang. Fusion category symmetry. Part II. Categoriosities at c = 1 and beyond. Journal of High Energy Physics , 07:051, 2024. [7] Michael Gutperle, Yan-Yan Li, Dikshant Rathore, and Konstantinos Roumpedakis. Non-invertible symmetries in SN orbifold CFTs and holography. Journal of High Energy Physics ,09:110, 2024. [8] Michael Gutperle, Yan-Yan Li, Dikshant Rathore, and Konstantinos Roumpedakis. A note on entanglement entropy and topological defects in symmetric orbifold CFTs. Journal of High Energy Physics , 09:010, 2024. 52 [9] Suzanne Bintanja and Elliott Gesteau. The α-states of a string worldsheet. 2026. arXiv:2607.15336. [10] Charles T. Hepler. On the complexity of computing characters of finite groups. Master’s thesis, University of Calgary, 1994. [11] Marcos Crichigno and Anupam Prakash. Quantum spin chains and symmetric functions. 2024. arXiv:2404.04322. [12] Christian Ikenmeyer, Igor Pak, and Greta Panova. Positivity of the symmetric group characters is as hard as the polynomial time hierarchy. International Mathematics Research Notices ,2024(10):8442–8458, 2024. [13] Victor M. Bastidas, Nathan Fitzpatrick, K. J. Joven, Zane M. Rossi, Shariful Islam, Troy Van Voorhis, Isaac L. Chuang, and Yuan Liu. Unification of finite symmetries in the simulation of many-body systems on quantum computers. Physical Review A , 111:052433, 2025. [14] Carli Bruinsma, Dmitry Grinko, and Maris Ozols. Quantum Fourier transform for the sym-metric group. 2026. arXiv:2608.28569. [15] Dolev Bluvstein, Simon J. Evered, Alexandra A. Geim, Sophie H. Li, Hengyun Zhou, Tom Manovitz, Sepehr Ebadi, Madelyn Cain, Marcin Kalinowski, Dominik Hangleiter, J. Pablo Bonilla Ataides, Nishad Maskara, Iris Cong, Xun Gao, Pedro Sales Rodriguez, Thomas Karolyshyn, Giulia Semeghini, Michael J. Gullans, Markus Greiner, Vladan Vuleti´ c, and Mikhail D. Lukin. Logical quantum processor based on reconfigurable atom arrays. Nature ,626:58–65, 2024. [16] Nishad Maskara, Marcin Kalinowski, Daniel Gonzalez-Cuadra, and Mikhail D. Lukin. Fast simulation of fermions with reconfigurable qubits, 2025. arXiv:2509.08898. [17] Robert Beals. Quantum computation of Fourier transforms over symmetric groups. In Pro-ceedings of the Twenty-Ninth Annual ACM Symposium on Theory of Computing (STOC ’97) ,pages 48–53. Association for Computing Machinery, 1997. [18] Andr´ as Gily´ en, Yuan Su, Guang Hao Low, and Nathan Wiebe. Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics. In 
+
+Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing (STOC ’19) , pages 193–204. ACM, 2019. [19] Andrew M. Childs, Yuan Su, Minh C. Tran, Nathan Wiebe, and Shuchen Zhu. Theory of Trotter error with commutator scaling. Physical Review X , 11:011020, 2021. [20] Richard P. Stanley. Enumerative Combinatorics, Volume 2 , volume 62 of Cambridge Studies in Advanced Mathematics . Cambridge University Press, 1999. [21] Gordon James and Adalbert Kerber. The Representation Theory of the Symmetric Group ,volume 16 of Encyclopedia of Mathematics and its Applications . Addison-Wesley, Reading, Massachusetts, 1981. [22] J. S. Frame, G. de B. Robinson, and R. M. Thrall. The hook graphs of the symmetric group. 
+
+Canadian Journal of Mathematics , 6:316–324, 1954. 53 [23] Mart´ ın Larocca and Vojtˇ ech Havl´ ıˇ cek. Quantum algorithms for representation-theoretic mul-tiplicities. Physical Review Letters , 135:010602, 2025. [24] Greta Panova. Polynomial time classical versus quantum algorithms for representation theo-retic multiplicities, 2025. arXiv:2502.20253. 54

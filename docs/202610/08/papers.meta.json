@@ -1,0 +1,69 @@
+{
+  "label": "2026-10-08",
+  "date": "2026-10-08",
+  "generated_at": "2026-10-08T23:43:31",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202610/08/2610.02362v1-from-static-lindblad-stabilizability-to-robust-physical-control-sequences",
+      "section": "quick",
+      "title_en": "From Static Lindblad Stabilizability to Robust Physical Control Sequences",
+      "authors": "Yibin Wang, Ruifeng Liu",
+      "date": "2026-10-01",
+      "pdf": "https://arxiv.org/pdf/2610.02362v1",
+      "score": "6.0",
+      "evidence": "耗散动力学、Lindblad稳定化与开放系统控制",
+      "tldr": "耗散动力学虽能稳定量子目标，却未必给出可靠的有限控制序列。本文针对含脉冲、空闲段与背景噪声的不完美控制，基于共同 Lyapunov 偏差量推导可检验的收缩条件，要求不确定集内收缩界一致小于一。若允许路径始终保留目标子空间，则重复周期可从任意初态收敛，并给出有界泄漏下的长期误差界。认证方法还支持有限库搜索，在四能级级联模型中生成显式制备时间保证序列，全程迹距离不超过0.1。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Dissipative dynamics can stabilize a quantum target without providing a reliable sequence of finite control operations. We derive checkable conditions for implementing such stabilization with imperfect controls, with bounds on convergence, errors during operations, and physical cost. The analysis includes pulses, idle intervals, and all simultaneously acting background dynamics. Using a common Lyapunov measure of deviation from the target, we require a contraction bound that remains uniformly below one over the prescribed uncertainty set after accounting for implementation errors. If all allowed paths preserve the target subspace throughout each operation, repeated cycles converge to that subspace from every initial state, even when errors vary between cycles. Comparison with these certified target-preserving paths gives an explicit long-time error bound under bounded leakage. Two single-qubit counterexamples show why a stabilizing average or a stabilizing generator obtained by unitary conjugation does not ensure these path conditions. The certification approach also supports a finite-library search. For a specified four-level cascade model with finite pulses, calibration and timing errors, dephasing, and bounded pumping, this search yields a sequence with an explicit preparation-time bound. For every initial state, it guarantees trace distance at most $0.1$ from the target at the end of preparation and throughout subsequent cycles.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/08/2610.05752v1-an-efficient-hamiltonian-based-quantum-algorithm-for-characters-of-the-symmetric-group",
+      "section": "quick",
+      "title_en": "An efficient Hamiltonian-based quantum algorithm for characters of the symmetric group",
+      "authors": "Dikshant Rathore, Leo Zhou",
+      "date": "2026-10-05",
+      "pdf": "https://arxiv.org/pdf/2610.05752v1",
+      "score": "6.0",
+      "evidence": "基于哈密顿量演化的量子算法并分析门复杂度",
+      "tldr": "对称群特征标列对应的量子态采样被认为在合理复杂度假设下经典困难，但已有基于QFT的制备算法门数较高。本文提出更简单的哈密顿量演化算法，可在1D近邻门与可重构量子比特上实现。门复杂度随目标列变化：从n-轮换列的O(n)，到猜测经典困难区的Õ(n^1.75)，最坏可证Õ(n^2.5)，优于原QFT子程序的Õ(n^3)。该工作还给出量子特征标变换QCT及在对称orbifold CFT纠缠熵中的应用。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "Consider a quantum state vector proportional to any given column of the character table of the symmetric group ($S_n$), corresponding to a superposition over the irreps weighted by the character values. It was recently argued that sampling from this state is classically hard under reasonable complexity-theoretic assumptions, while there exists an efficient quantum algorithm for preparing this character state using the quantum Fourier transform (QFT) over $S_n$ [arXiv:2501.12579]. We give an alternative, simpler algorithm to prepare this character state with a sequence of Hamiltonian evolutions, as well as an efficient implementation with reconfigurable qubits that uses only nearest-neighbor gates in 1D. The gate complexity, accounting for Hamiltonian simulation errors, depends on the choice of the column: For fixed target state error, the estimated sufficient total gate count ranges from as few as $O(n)$ gates for the $n$-cycle column, to $\\widetilde O(n^{1.75})$ gates near the conjecturally classically hard parameter regime, to provably $\\widetilde O(n^{2.5})$ gates in the worst case. In contrast, the QFT subroutine in the prior approach uses $\\widetilde O(n^3)$ gates. Our gate count estimates come from leading-order state-dependent Trotter error analysis, and the proven worst-case bound relies on a QSVT-based Hamiltonian simulation method; numerical benchmarks of the Trotter-based protocol suggest that the estimates are conservative. Furthermore, we generalize our protocol to give an explicit algorithm for the quantum character transform (QCT) over $S_n$ using $\\widetilde O(n^{2.5})$ gates and $O(n)$ qubits. An application to entanglement entropy of symmetric orbifold conformal field theories is also discussed.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/08/2610.06541v1-products-of-unitaries-as-continuous-evolutions-at-finite-precision",
+      "section": "quick",
+      "title_en": "Products of unitaries as continuous evolutions at finite precision",
+      "authors": "Michael Jarret",
+      "date": "2026-10-05",
+      "pdf": "https://arxiv.org/pdf/2610.06541v1",
+      "score": "6.0",
+      "evidence": "将连续酉演化离散为酉乘积并给出误差界",
+      "tldr": "论文研究如何把有限步酉乘积视为连续酉演化的离散实现，并双向建立对应关系。方法是用有限分区上的截断哈密顿量样本逼近乘积，同时通过舍入时间把T步单位酉乘积还原为连续演化（相差两个半步相位）。在导数、谱宽与谱隙条件下，误差按算子范数被界定为O(1/T)。该框架可将连续模拟与绝热定理结论迁移到相位修正乘积，并为条件数κ的正定量子线性系统给出O(κ/δ)步的量子化行走。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "I present a short approach to discretizing continuous unitary evolution. It gives a correspondence in both directions between continuous unitary evolutions and products of unitaries in finite dimensions, and I use it to reduce discrete adiabatic theorems to continuous ones. At fine steps, holding truncated samples of a regulated Hamiltonian on a suitable finite partition gives an approximating product. Conversely, rounding the clock identifies a product of $T$ unit-step samples with a continuous evolution, up to two half-step phases. I bound its operator-norm distance from the original evolution by $O(1/T)$ through cancellation within each time step. This assumes bounded first and second derivatives, bounded spectral width, and eigenvalue differences bounded away from nonzero multiples of $2π$, uniformly in $T$. For a unitary walk with these derivative bounds, a fixed common free spectral arc supplies a Hermitian logarithm path satisfying the comparison hypotheses. Continuous simulation guarantees then transfer to the phase-corrected product, and continuous adiabatic bounds to the product itself, with an explicit additive $O(1/T)$ error and each adiabatic theorem's hypotheses retained. For positive definite quantum linear systems of condition number $κ$, this comparison and continuous adiabatic theory give a rescaled qubitized walk with $O(κ/δ)$ steps for leakage $δ$, matching the scaling previously obtained through a discrete adiabatic theorem. These products need no discrete adiabatic theorem.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/08/2610.09373v1-particle-number-preserving-quantum-signal-processing-for-thermal-properties-canonical-ensemble-estimation-and-grand-canonical-reconstruction",
+      "section": "quick",
+      "title_en": "Particle-Number-Preserving Quantum Signal Processing for Thermal Properties: Canonical-Ensemble Estimation and Grand-Canonical Reconstruction",
+      "authors": "Taehee Ko, Sungbin Lim, Sangkook Choi",
+      "date": "2026-10-07",
+      "pdf": "https://arxiv.org/pdf/2610.09373v1",
+      "score": "6.0",
+      "evidence": "广义量子信号处理用于估计可观测量与配分函数",
+      "tldr": "有限温度量子模拟需在粒子数守恒体系下估计正则热性质，但变化学势时重复量子线路代价高。本文提出端到端框架，用混合Dicke态制备、保粒子数Trotter模拟和广义量子信号处理估计配分函数与观测量。进一步给出巨正则重构，通过经典重加权复用同一测量数据，适应任意化学势。理论上证明在系统尺寸无关温度区，复杂度优于经典Lanczos，并在二维Hubbard模型验证。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "We develop an end-to-end framework for estimating canonical thermal properties of particle-number-conserving second-quantized Hamiltonians using quantum simulations. The framework integrates initial state preparation with mixed Dicke states, particle-number-preserving Trotterized simulation, and generalized quantum signal processing to estimate canonical partition functions and observables. Building on this canonical scheme, we introduce a grand-canonical reconstruction scheme in which the same quantum measurement data can be reused for arbitrary chemical potentials through classical reweighting, thereby avoiding repeated quantum circuit executions as the chemical potential is varied. We prove the existence of system-size-independent temperature regimes in which both the canonical and reconstructed grand-canonical schemes have lower asymptotic time complexity than classical Lanczos methods, up to polynomial factors, for physically relevant Hamiltonians. We numerically validate our theoretical results for the two-dimensional Hubbard model in both weak- and intermediate-coupling regimes.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
