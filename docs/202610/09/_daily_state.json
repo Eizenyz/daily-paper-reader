@@ -1,0 +1,41 @@
+{
+  "date": "20261009",
+  "date_label": "",
+  "generated_at": "2026-10-09 23:05:13 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.03254v1",
+      "route": "202610/09/2610.03254v1-quantum-approaches-for-particle-in-cell-codes",
+      "title": "Quantum approaches for particle-in-cell codes",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "张量网络量子方法求解非线性等离子体偏微分方程",
+      "first_seen_at": "2026-10-09 23:05:13 UTC",
+      "updated_at": "2026-10-09 23:05:13 UTC"
+    },
+    {
+      "paper_id": "2610.11537v1",
+      "route": "202610/09/2610.11537v1-an-efficient-quantum-circuit-for-flow-model-execution-using-quantum-neural-networks",
+      "title": "An Efficient Quantum Circuit for Flow Model Execution Using Quantum Neural Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过薛定谔演化量子模拟流模型常微分方程",
+      "first_seen_at": "2026-10-09 23:05:13 UTC",
+      "updated_at": "2026-10-09 23:05:13 UTC"
+    }
+  ]
+}

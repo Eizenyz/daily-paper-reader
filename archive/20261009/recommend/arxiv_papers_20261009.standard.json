@@ -1,0 +1,96 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-09T23:04:58.034462+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 0,
+    "deep_cap": 7,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 12,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2610.03254v1",
+      "source": "arxiv",
+      "title": "Quantum approaches for particle-in-cell codes",
+      "abstract": "Solving the high-dimensional, nonlinear partial differential equations that govern the rich physics of plasmas remains a major computational challenge. In fluid dynamics, quantum-inspired methods based on tensor-network techniques have recently emerged as a promising new paradigm, offering large degrees of data compression on conventional hardware and a natural pathway towards solving exponentially large problems on quantum computers. Early studies suggest that tensor-network methods may also help overcome key bottlenecks in computational plasma dynamics, particularly for industry-relevant scenarios where conventional simulations remain costly. In this work, we present recent progress in developing tensor-network methods compared to standard particle-in-cell codes and discuss their capability to overcome the bottlenecks of conventional approaches. We further extend the tensor-network formulation to support the insertion of electromagnetic fields at arbitrary spatial locations. This capability is demonstrated through the injection of a laser field to accelerate a plasma, providing a key step towards tensor-network-based simulation of externally driven plasma systems.",
+      "authors": [
+        "Ryan J. J. Connor",
+        "Andrew J. Daley",
+        "Callum W. Duncan",
+        "Preetma Soin"
+      ],
+      "primary_category": "physics.plasm-ph",
+      "categories": [
+        "physics.plasm-ph",
+        "quant-ph"
+      ],
+      "published": "2026-10-02T13:00:28+00:00",
+      "link": "https://arxiv.org/pdf/2610.03254v1",
+      "tags": [
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "tensor-network quantum approaches for solving nonlinear plasma PDEs",
+      "llm_evidence_cn": "张量网络量子方法求解非线性等离子体偏微分方程",
+      "llm_evidence": "张量网络量子方法求解非线性等离子体偏微分方程",
+      "canonical_evidence": "张量网络量子方法求解非线性等离子体偏微分方程",
+      "llm_tldr_en": "Reviews progress in tensor-network and quantum-inspired methods for solving high-dimensional nonlinear PDEs in plasma physics, compared to standard particle-in-cell codes.",
+      "llm_tldr_cn": "该文针对等离子体物理中高维非线性偏微分方程求解这一重大计算挑战，探讨张量网络与量子启发方法的应用前景。作者总结在常规硬件上利用张量网络实现数据压缩、并为量子计算机求解指数级大问题开辟路径的进展，并与标准粒子网格（PIC）代码进行比较。结果表明张量网络方法有望缓解计算等离子体动力学中的关键瓶颈，属于量子/量子启发求解PDE的相关工作，但偏综述性且非严格量子算法复杂度分析。",
+      "llm_tldr": "该文针对等离子体物理中高维非线性偏微分方程求解这一重大计算挑战，探讨张量网络与量子启发方法的应用前景。作者总结在常规硬件上利用张量网络实现数据压缩、并为量子计算机求解指数级大问题开辟路径的进展，并与标准粒子网格（PIC）代码进行比较。结果表明张量网络方法有望缓解计算等离子体动力学中的关键瓶颈，属于量子/量子启发求解PDE的相关工作，但偏综述性且非严格量子算法复杂度分析。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.11537v1",
+      "source": "arxiv",
+      "title": "An Efficient Quantum Circuit for Flow Model Execution Using Quantum Neural Networks",
+      "abstract": "Flow models generate trajectories from an initial distribution to a target distribution by solving an ordinary differential equation defined by a velocity field. Flow matching learns this velocity field by modeling the transport dynamics between the two distributions. Wavefunction flow establishes a formal connection between flow models and quantum dynamics by introducing a continuity Hamiltonian, which drives the Schrödinger evolution of quantum states. In this paper, we investigate accurate and efficient quantum simulation of the wavefunction flow, thereby realizing the efficient implementation of flow models on quantum computers. We first leverage a quantum read-only memory (QROM)-based phase kickback framework for the wavefunction flow simulation, generating probability densities that closely match those produced by the corresponding conventional flow model. To address the high circuit-resource cost, we further incorporate a trained quantum neural network (QNN) into the phase kickback framework, replacing QROM for data encoding. Numerical experiments demonstrate that our proposed method implements flow models on quantum computers more efficiently, since it maintains the accuracy of wavefunction flow simulation compared with the QROM-based framework, and significantly reduces the circuit resources.",
+      "authors": [
+        "Rui Che",
+        "Ludvig af Klinteberg"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.LG"
+      ],
+      "published": "2026-10-08T09:07:01+00:00",
+      "link": "https://arxiv.org/pdf/2610.11537v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "quantum simulation of flow model ODE via Schrodinger evolution",
+      "llm_evidence_cn": "通过薛定谔演化量子模拟流模型常微分方程",
+      "llm_evidence": "通过薛定谔演化量子模拟流模型常微分方程",
+      "canonical_evidence": "通过薛定谔演化量子模拟流模型常微分方程",
+      "llm_tldr_en": "Flow models generate trajectories by solving an ODE given by a velocity field. The paper connects flow models to quantum dynamics via a continuity Hamiltonian and gives an efficient quantum circuit based on QROM phase kickback to simulate the wavefunction flow, enabling efficient quantum execution of flow models.",
+      "llm_tldr_cn": "流模型通过求解速度场定义的常微分方程，将初始分布输运到目标分布，但在量子计算机上高效实现仍具挑战。本文引入连续性哈密顿量，将流模型与量子动力学中的薛定谔演化建立联系，并提出基于量子只读存储器的相位回弹框架来模拟波函数流。该工作实现了流模型在量子计算机上的精确高效仿真，为量子机器学习与微分方程求解的交叉提供了新途径。",
+      "llm_tldr": "流模型通过求解速度场定义的常微分方程，将初始分布输运到目标分布，但在量子计算机上高效实现仍具挑战。本文引入连续性哈密顿量，将流模型与量子动力学中的薛定谔演化建立联系，并提出基于量子只读存储器的相位回弹框架来模拟波函数流。该工作实现了流模型在量子计算机上的精确高效仿真，为量子机器学习与微分方程求解的交叉提供了新途径。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

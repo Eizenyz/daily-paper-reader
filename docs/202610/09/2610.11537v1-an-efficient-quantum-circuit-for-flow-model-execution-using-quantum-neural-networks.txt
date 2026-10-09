@@ -1,0 +1,1401 @@
+Title: An Efficient Quantum Circuit for Flow Model Execution Using Quantum Neural Networks
+
+URL Source: https://arxiv.org/pdf/2610.11537v1
+
+Published Time: Fri, 09 Oct 2026 01:26:32 GMT
+
+Number of Pages: 42
+
+Markdown Content:
+# An Efficient Quantum Circuit for Flow Model Execution Using Quantum Neural Networks 
+
+Rui Che 1* and Ludvig af Klinteberg 1
+
+1* Department of Business and Mathematics, M¨ alardalen University, Universitetsplan 1, V¨ aster˚ as, 721 23, Sweden. *Corresponding author(s). E-mail(s): rui.che@mdu.se; Contributing authors: ludvig.af.klinteberg@mdu.se; 
+
+Abstract 
+
+Flow models generate trajectories from an initial distribution to a target distri-bution by solving an ordinary differential equation defined by a velocity field. Flow matching learns this velocity field by modeling the transport dynamics between the two distributions. Wavefunction flow establishes a formal connection between flow models and quantum dynamics by introducing a continuity Hamil-tonian, which drives the Schr¨ odinger evolution of quantum states. In this paper, we investigate accurate and efficient quantum simulation of the wavefunction flow, thereby realizing the efficient implementation of flow models on quantum computers. We first leverage a quantum read-only memory (QROM)-based phase kickback framework for the wavefunction flow simulation, generating probability densities that closely match those produced by the corresponding conventional flow model. To address the high circuit-resource cost, we further incorporate a trained quantum neural network (QNN) into the phase kickback framework, replacing QROM for data encoding. Numerical experiments demonstrate that our proposed method implements flow models on quantum computers more effi-ciently, since it maintains the accuracy of wavefunction flow simulation compared with the QROM-based framework, and significantly reduces the circuit resources. 
+
+Keywords: Flow models, Wavefunction flow, Quantum read-only memory, Quantum neural networks 
+
+1arXiv:2610.11537v1 [quant-ph] 8 Oct 2026 1 Introduction 
+
+Generative models (Bond-Taylor et al. 2021) are a class of machine learning algo-rithms that learn unknown data distributions and generate new samples accordingly. The most widely used generative models include Generative Adversarial Networks (GANs) (Goodfellow et al. 2014), Variational Autoencoders (VAEs) (Kingma and Welling 2013), Autoregressive models (Van Den Oord et al. 2016), and flow models (Gat et al. 2024; Lipman et al. 2022). Flow models aim at generating complex target distributions from simple source distributions by learning velocity fields. The learned velocity fields govern the transportation of distributions. Flow matching (Lipman et al. 2022) provides an efficient method of learning velocity fields by approximating trajec-tories between source and target distributions that have been predefined, which is an ordinary differential equation (ODE)-based model. Recently, the connection between flow models and quantum dynamics has been developed (Layden et al. 2025). By introducing a continuity Hamiltonian ˆH, the imple-mentation of flow models on quantum computers can be regarded as the Schr¨ odinger evolution under this continuity Hamiltonian. The resulting quantum dynamics is defined as wavefunction flow. Wavefunction flow can be realized through the simula-tion of the Hamiltonian evolution operator e−it ˆH . By discretizing the evolution time and using the Suzuki-Trotter formula, it can be expressed as a product of exponentia-tion operators e−i∆t ˆHj corresponding to all Hamiltonian terms ˆHj (Chen et al. 2022; Low et al. 2023). Here, ∆ t denotes the discretized time step interval. Each operator can be regarded as a quantum oracle and is implemented sequentially in the quantum circuit (Kornell and Selinger 2023). Phase kickback (Cleve et al. 1998) is a classical quantum technique for the imple-mentation of the evolution operator e−i∆tH j . It encodes the eigenvalues of ˆHj into ancilla qubits, then leverages rotation gates to generate the desired phase e−i∆t ˆHj .Finally, the adjoint eigenvalue encoding oracle is employed to uncompute the ancilla qubits to the initial states. In the wavefunction flow framework, the continuity Hamil-tonian ˆHj is constructed by the time-dependent potential term Vt and the kinetic term K. These two terms can be transformed into diagonal operators DVt and DK
+
+by selecting the appropriate basis (Layden et al. 2025). To implement such evolution operators e−i∆tD Vt and e−i∆tD K using phase kickback frameworks, one of the key steps is to encode all diagonal entries of DVt and DK into the quantum register. Quantum read-only memory (QROM) (Babbush et al. 2018; Lee et al. 2021) is a widely used quantum technique for encoding classical data in the quantum circuit, where each data item corresponds to an initial basis state. We utilize QROM-based phase kickback frameworks to implement the evolution operators e−i∆tD Vt and 
+
+e−i∆tD K for the wavefunction flow simulation, and verify the correspondence between the flow model and the wavefunction flow simulation. However, the QROM circuit is constructed by a series of multi-controlled X gates (Zindorf and Bose 2025), and the decomposition of a multi-controlled X with n control qubits without ancilla qubits requires Θ(2 n) CNOT gates (Barenco et al. 1995). Here, Θ denotes “of order 2exactly 2 n” (Knuth 1976). Hence, QROM faces exponentially increasing computa-tional complexity, which leads to a high circuit resource cost for the wavefunction flow simulation. To solve this problem, we introduce a specialized quantum neural network (QNN) circuit to replace QROM in the phase kickback framework for the wavefunction flow simulation. The QNN is a type of parameterized quantum circuit (PQC)-based varia-tional quantum algorithm (Abbas et al. 2021; Schuld et al. 2014). It combines features of neural networks and quantum circuits. The main areas of QNN application include classification problems (Mahmud et al. 2024), generative learning (Tian et al. 2023), optimization (Amosy et al. 2024), chemistry (Smaldone et al. 2025), and financial pre-dictions (Paquet and Soleymani 2022). Through appropriate and sufficient training, our QNN-based phase kickback framework can maintain accuracy compared to that of the QROM-based framework. In addition, with this replacement, the number of required CNOT gates can be reduced to Θ( n). QNN has been applied to Hamiltonian simulation using the variational quantum simulator (VQS) (Li and Benjamin 2017; Heya et al. 2023). The VQS trains the QNN to learn the target quantum state from the given initial quantum state. However, each such QNN is designed for a single initial quantum state, and can generate only the corresponding target quantum state. For a diagonal Hamiltonian operator in the wavefunction flow model, where each diagonal entry corresponds to a different initial state, VQS is unable to generate all the desired target states by training the QNN. Therefore, this approach is not capable of realiz-ing the evolution generated by the entire Hamiltonian. In contrast, our QNN-based framework achieves the whole evolution efficiently. In this paper, inspired by the theory of wavefunction flow (Layden et al. 2025), we investigate an efficient simulation framework for wavefunction flow, thereby realizing the implementation of flow models on quantum computers efficiently. Building on the QROM-based phase kickback framework, we develop a QNN circuit to replace the QROM for data encoding in the wavefunction flow simulation. The new approach significantly reduces the cost of circuit resources while maintaining accuracy compared with the QROM-based framework. The contributions of the paper are as follows. 
+
+• We leverage a QROM-based phase kickback technique to simulate wavefunc-tion flow, thereby verifying the wavefunction flow theory and demonstrating the feasibility of implementing flow models on quantum computers. 
+
+• We propose a QNN circuit to replace QROM in the phase kickback framework for data encoding in the wavefunction flow simulation. Instead of employing multi-controlled X gates to encode the exact binary bits in the ancilla qubits through QROM, our QNN circuit learns the mapping from the states of the address qubits to the corresponding probabilities of the ancilla qubits through training parameterized rotation gates and controlled rotation gates. This method avoids the use of high-level controlled gates and the high circuit resource cost. We also extend the model to encode time-dependent potential operators by utilizing a time oracle inside the QNN circuit. Compared with the QROM-based framework, our proposed QNN-based phase kickback framework maintains accuracy in wavefunction flow simulation while significantly reducing circuit resources, enabling the implementation of flow models on quantum computers more efficiently. 3• We combine flow matching with wavefunction flow simulation. The conventional flow model employs the velocity field learned from flow matching to generate the final dis-tribution. In our work, we learn the potential using flow matching, and its gradient defines the conservative velocity field. Then we incorporate this velocity field into our wavefunction flow simulation. The final distribution generated by the wavefunction flow simulation successfully reconstructs the target distribution and matches the final distribution generated by the conventional flow model. This demonstrates the feasibility of employing wavefunction flow simulation for implementing flow models on quantum computers. The remainder of this paper is organized as follows. Section 2 provides a review of the flow model and flow matching, wavefunction flow, Hamiltonian simulation, quantum data encoding via QROM, and QNN. Section 3 introduces the efficient wavefunction flow simulation through the QROM-based phase kickback framework and our proposed QNN-based phase kickback framework. Section 4 presents the experimental results and the discussion. Section 5 provides a brief conclusion. 
+
+## 2 Background 
+
+2.1 Flow model and flow matching 
+
+The flow model is defined by a time-dependent d-dimensional velocity field v(x, t ), which generates the flow of samples through the ODE 
+
+ddt xt = v(x, t ), 0 ≤ t ≤ 1. (1) Given samples from the d-dimensional initial distribution x0 ∼ p0, new samples 
+
+x1 can be generated that follow the target d-dimensional distribution p1 by solving Equation (1). Flow matching (Lipman et al. 2022) aims to learn a parameterized velocity field 
+
+vθ(x, t ) that approximates the exact velocity field v(x, t ), which generates a probability path from an initial distribution p0 to a target distribution p1. This is done in two steps. First, a d-dimensional probability path ( pt)0≤t≤1 connecting p0 and p1 is defined. For samples x0 ∼ p0 and x1 ∼ p1, the flow trajectory can be viewed as the interpolation over t ∈ [0 , 1] (Lipman et al. 2022; Liu et al. 2022) 
+
+xt = (1 − t)x0 + tx 1. (2) The conditional probability path pt(x|x0, x 1) can be defined conditioned on a sample pair ( x0, x 1), resulting in the probability path that follows the expression (Lipman et al. 2022; Feng et al. 2025) 
+
+pt(x) = 
+
+Z Z
+
+pt(x|x0, x 1)p0(x0)p1(x1)dx 0dx 1, (3) which describes the transport of probability from x0 to x1.4In the second step, a parameterized velocity field vθ (x, t ) that can generate pt is learned through neural networks. It has been demonstrated that there exists a target velocity field vp(x, t ) that is capable of generating the probability path pt (Lipman et al. 2022; Feng et al. 2025). This produces the flow matching objective 
+
+L(θ)FM = Et,x 0∼p0,x 1∼p1
+
+h
+
+∥vθ(x, t ) − vp(x, t )∥2i
+
+. (4) However, this objective is difficult to implement, as the velocity field vp(x, t ) is com-plicated and difficult to evaluate. Therefore, the conditional velocity field can be employed to simplify the training process (Lipman et al. 2022, 2024). For the interpo-lation trajectory in Equation (2), the conditional velocity field can be defined as the derivative of xt with respect to time tv(x, t |x0, x 1) = dx t
+
+dt = x1 − x0. (5) Then, the conditional flow matching objective is defined as 
+
+L(θ)CFM = Et,x 0∼p0,x 1∼p1
+
+h
+
+∥vθ(xt, t ) − v(x, t |x0, x 1)∥2i
+
+. (6) A neural network with parameters θ is trained to learn vθ(xt, t ) by minimizing the objective. After training, the trajectory can be generated using the Euler update rule 
+
+xt+∆ t = xt + vθ(xt, t )∆ t, (7) or a higher-order Runge-Kutta method, such as RK45. (Dormand and Prince 1980). 
+
+2.2 Wavefunction flow 
+
+This section reviews the wavefunction flow theory proposed in (Layden et al. 2025), including the connection between flow models and quantum dynamics, the con-struction of the continuity Hamiltonian, and the definition of the wavefunction flow. Define vt(x) := v(x, t ). For an infinitesimal time step dt , by defining the position transformation xt+dt = xt + vt(x)dt , and by employing the change of variable formula, one can describe the change of probability density through its Jacobian. This deter-mines that the probability path pt in Equation (3), which is generated by the velocity field vt(x), satisfies the continuity equation 
+
+∂∂t pt = −∇ · (vt(x) pt) . (8) The connection between flow models and quantum dynamics has been established by the definition of an appropriate continuity Hamiltonian. Given the probability path 5pt and its wavefunction Ψ t = √pt, by derivation 
+
+i ∂∂t Ψt = i
+
+2√pt
+
+∂∂t pt = − i
+
+2Ψ t
+
+∇ ·  vt(x)Ψ 2
+
+> t
+
+ , (9) and by applying the product rule, we obtain 
+
+i ∂∂t Ψt = − i
+
+2Ψ t
+
+(Ψ t ∇ · (vt(x)Ψ t) + ( vt(x)Ψ t) · ∇ Ψt)= 12 (( −i∇) · (vt(x)Ψ t) + vt(x) · (−i∇)Ψ t) .
+
+(10) Thus, if pt follows the continuity equation (8) under the velocity field vt(x), the wavefunction Ψ t follows the Schr¨ odinger equation 
+
+i ∂∂t Ψt = ˆHtΨt, (11) under time-dependent d-dimensional continuity Hamiltonian ˆHt defined as ˆHt = 12 (ˆ p · vt(x) + vt(x) · ˆp) . (12) Here, ˆ p = −i∇ denotes the d-dimensional momentum operator. When the velocity field is conservative, i.e., vt = ∇Vt, where Vt is a potential function, the corresponding time-dependent continuity Hamiltonian can be written in commutator form ˆHt = i[ ˆK, V t]. (13) Here, [ ˆK, V t] = ˆKV t − Vt ˆK, and ˆK = 12 ˆp · ˆp = − 12 ∇2 denotes the kinetic energy operator. In addition, Vt represents the potential function. Therefore, the continuity Hamiltonians defined in Equations (12) and (13) establish the equivalence between the continuity equation and the corresponding Schr¨ odinger equation. This equivalence formulates the close connection between flow models and quantum dynamics. Given the initial distribution p0 and the corresponding wave-function Ψ 0 = √p0, define the entire evolution time as T . The final distribution pT
+
+generated by the flow model under the velocity field vt has the following relationship with the final wavefunction Ψ T evolved through the Schr¨ odinger equation driven by the vt-based continuity Hamiltonian 
+
+pT = Ψ 2 
+
+> T
+
+. (14) By constructing the continuity Hamiltonian, the quantum dynamics it generates is defined as a wavefunction flow .
+
+2.3 Hamiltonian simulation 
+
+To implement the evolution of the wavefunction flow on a quantum computer, the cor-responding continuity Hamiltonian must be efficiently simulated. This can be achieved 6by Hamiltonian simulation, which implements quantum dynamics generated by the Schr¨ odinger Equation (11). For the time-dependent continuity Hamiltonian ˆHt, the solution of the Schr¨ odinger equation (Childs et al. 2021) is ΨT = T exp −i
+
+Z T
+
+> 0
+
+ˆHτ dτ 
+
+!
+
+Ψ0, (15) Here T denotes the time-ordered operator (Childs et al. 2021), which preserves the Hamiltonians in the correct order according to the time evolution, since Hamiltoni-ans at different times do not commute. This determines the quantum evolution from the initial state Ψ 0 to the final state Ψ T . Therefore, the central objective of the Hamiltonian simulation is to simulate the time evolution operator 
+
+U (T, 0) = T exp −i
+
+Z T
+
+> 0
+
+ˆHτ dτ 
+
+!
+
+. (16) The main methods for simulating the operator include the Trotter product formula (Low et al. 2023; Watson and Watkins 2025), the linear combination of unitaries (LCU) (Berry et al. 2015), and Qubitization (Low and Chuang 2019). Among all approaches, the Trotter product formula is the most straightforward to implement. Therefore, it is widely used in various scenarios. To approximate the operator U (T, 0) in Equation (16) using the Trotter product formula, the evolution time T is generally divided into r time steps with the interval ∆t = T /r . Then U (T, 0) is expressed as 
+
+U (T, 0) = U (T, t r−1) U (tr−1, t r−2) · · · U (t1, 0) ,
+
+where tn+1 − tn = ∆ t. Each decomposition operator U (tn+1 , t n) is defined as 
+
+U (tn+1 , t n) = T exp 
+
+
+
+−i
+
+Z tn+1 
+
+> tn
+
+ˆHτ dτ 
+
+
+
+, (17) and can be approximated by W (tn)
+
+U (tn+1 , t n) ≈ W (tn) = e−i ˆHtn ∆t. (18) Given the 4-step Trotter product formula for commutators (Chen et al. 2022) 
+
+exA exB e−xA e−xB = ex2[A,B ] + O(x3), (19) 7consider a Hamiltonian of the commutator form Htn = i[A, B ]. By choosing x = √∆t,we can construct the corresponding approximation term W (tn), which generates 
+
+W (tn) = e−i·i[A,B ]∆ t = e∆t[A,B ]
+
+= ei√∆tA ei√∆tB e−i√∆tA e−i√∆tB + O
+
+
+
+∆t3/2
+
+. (20) The 8-step product formula (Childs and Wiebe 2013) is a symmetric form of the 4-step Trotter product formula. By choosing x =
+
+q ∆t 
+
+> 2
+
+, the formula is given by 
+
+W (tn)= ei√ ∆t 
+
+> 2A
+
+ei√ ∆t  
+
+> 2B
+
+e−i√ ∆t 
+
+> 2A
+
+e−i√ ∆t  
+
+> 2B
+
+e−i√ ∆t 
+
+> 2A
+
+e−i√ ∆t  
+
+> 2B
+
+ei√ ∆t 
+
+> 2A
+
+ei√ ∆t  
+
+> 2B
+
++ O  ∆t2 .
+
+(21) 
+
+2.4 Data encoding via QROM 
+
+The question of how to load classical data into quantum computers is a critical problem in quantum algorithms. In Hamiltonian simulation, encoding the data items corresponding to the Hamiltonian operator into the quantum register is the first step. For example, consider a Hamiltonian that is a diagonal operator; all the diago-nal entries must be encoded into the quantum register. Quantum read-only memory (QROM) is a prominent technique used to encode such classical data entries into the quantum register (Babbush et al. 2018); see also (Hann et al. 2021, Sec. VI). Specif-ically, for an n-qubit quantum circuit system, there are N = 2 n basis states in total. QROM is able to encode N classical data entries in the quantum register, and each data entry corresponds to a basis state. In the QROM oracle, each data item is represented as an m-bit binary string. For the i-th data entry di, the corresponding binary string is expressed as 
+
+di = ( di, 1, · · · , d i,m ), (22) where di,j ∈ { 0, 1}. Furthermore, m ancilla qubits are used to encode these binary bits in the circuit. For example, when n = 2 and m = 2, Figure 1 illustrates the corresponding QROM circuit. The first two qubits serve as address qubits associated with the indices of the encoded data entries. The last two qubits are ancilla qubits initialized as |0⟩, which play the role of the data register. For each address xi ∈ { 0, 1}2, a controlled operator 
+
+Oi is implemented through multi-controlled X gates, whose control values correspond to the address state |xi⟩. The specific implementation form of Oi depends on the binary string of the i-th data entry di. If di,j = 1, a multi-controlled X will be implemented in the j-th ancilla qubit, transforming its state from |0⟩ to |1⟩. If di,j = 0, no X gate is applied, and the state of j-th ancilla qubit remains |0⟩. Hence, each controlled oracle selects a state of the address qubits and encodes the binary representation of the data entry corresponding to the same address index into the quantum circuit. 8add : |k1⟩
+
+QROM add : |k2⟩
+
+anc : |0⟩
+
+anc : |0⟩⇒
+
+add : |k1⟩
+
+add : |k2⟩
+
+anc : |0⟩
+
+O1 O2 O3 O4
+
+anc : |0⟩Fig. 1 QROM circuit for n = 2 and m = 2, where add denotes the address qubits, and anc denotes the ancilla qubits. Multi-controlled operators Oi are implemented on ancilla qubits and controlled by address qubits by iterating over all 2 2 = 4 address states. Black and white control nodes represent controls on |0⟩ and |1⟩, respectively, which select the different address states. Therefore, the controlled states of four Oi operators are |00 ⟩, |01 ⟩, |10 ⟩ and |11 ⟩, respectively 
+
+Therefore, the operator Oi performs the transformation 
+
+|xi⟩| 0⟩⊗m Oi
+
+−−→ | xi⟩| di, 1⟩| di, 2⟩ · · · | di,m ⟩, (23) for all i ∈ { 1, 2, . . . , N }. This implies that all the classical data entries are encoded into the quantum circuit via QROM. QROM enables data encoding without preparing them in superposition (Crum et al. 2025). It has been applied in quantum cryptography (Gidney and Eker˚ a 2021), chemistry (Lee et al. 2021), and some other fields to encode classical data into the quantum circuit. 
+
+2.5 Quantum neural networks 
+
+Quantum neural networks (QNNs) have been widely used in quantum machine learn-ing. They combine the capabilities of both quantum computing and neural networks. QNNs are frameworks based on parameterized quantum circuits (PQCs) (Benedetti et al. 2019), also known as variational quantum circuits, and optimized by classical gradient-based methods (Abbas et al. 2021). The workflow of a QNN is summarized as follows. First, for the n-qubit QNN cir-cuit whose initial state is |0⟩⊗n, the input data is encoded into the quantum circuit by preparing the corresponding quantum state |ψin ⟩. Then, the prepared state passes through several layers consisting of rotation gates parameterized with θ = ( θ1, . . . , θ m)and CNOT gates (Nielsen and Chuang 2010). The latter generate entanglement between qubits. The evolved state is measured by an observable, such as Pauli-Z.Then, the output of the QNN is defined as the expectation value of the observable (Zhao and Wang 2021) ˆy = ⟨ψout |M |ψout ⟩, (24) where M denotes the measurement observable, and |ψout ⟩ represents the final quantum state generated by the QNN 
+
+|ψout ⟩ = U (θ)|0⟩⊗n. (25) 9The gradient of the output ˆ y with respect to θi can be obtained by the parameter shift rule (Schuld et al. 2019). Once the gradients are obtained, we can construct a suitable loss function to measure the distance between the predicted output and the exact output. Then the learning objective is to minimize the loss function. This process can be completed outside the quantum circuit using classical gradient-based methods, such as the Adam optimizer (Kingma and Ba 2014). Advanced architectures of QNN include quantum convolutional neural networks (Cong et al. 2019), quantum recurrent neural networks (Siemaszko et al. 2023), quan-tum graph neural networks (Verdon et al. 2019), and quantum autoencoders (Romero et al. 2017). Recently, the emergence of QNNs in a wide range of applications (Innan et al. 2024; Mahmud et al. 2024; Amosy et al. 2024) has helped quantum machine learning to develop rapidly in different fields. 
+
+## 3 Methodology 
+
+In this section, first, a phase kickback framework via QROM for wavefunction flow simulation is presented (see Section 3.1), followed by the proposed QNN-based phase kickback framework for more efficient simulation (see Section 3.2). 
+
+3.1 QROM-based phase kickback framework for wavefunction flow simulation 
+
+To implement the wavefunction flow simulation under the continuity Hamiltonian ˆHt
+
+defined in Equation (13), both the spatial domain and the evolution time need to be discretized. In addition, we adopt a periodic spatial domain, which can be represented as a d-dimensional torus, to match the Fourier spatial discretization. 
+
+3.1.1 Spatial and temporal discretization 
+
+In this subsection, we adopt the spatial and temporal discretization methods proposed in (Layden et al. 2025). Since the kinetic operator is discretized through the quantum Fourier transform (QFT) (Nielsen and Chuang 2010), to match the periodic characteristic of the Fourier basis, and to avoid the spatial boundary discontinuity, the spatial domain is chosen as a torus. Consider a d-dimensional torus Td, where each spatial dimension is defined on the domain [ −L, L ]. Let N be a positive integer power of 2, the domain [ −L, L ] is first discretized into an N -point grid 
+
+XN = 2LN {− N/ 2, −N/ 2 + 1 , . . . , N/ 2 − 1} ⊂ T1. (26) Thus, the d-dimensional grid XdN consists of N d spatial grid points, and each grid point x = ( x1, . . . , x d) ∈ XdN corresponds to a basis state by assigning an integer index to each coordinate xi
+
+ki = (xi + L)N
+
+2L ∈ { 0, 1, . . . , N − 1}. (27) 10 Here ki corresponds to the one-hot vector |ki⟩ ∈ CN , i.e., |ki⟩ = (0 , . . . , 0, 1, 0, · · · , 0) T ,where the ki-th component is 1 and other components are 0. Therefore, the basis state corresponding to x is given by 
+
+|x⟩ = |k1⟩ ⊗ | k2⟩ ⊗ · · · ⊗ | kd⟩, (28) where ⊗ denotes the tensor product of the vectors. For the continuity Hamiltonian associated with the wavefunction flow, which is defined in Equation (13), a discrete continuity Hamiltonian is defined for simulation 
+
+Ht = i[K, D Vt ]. (29) Here, DVt denotes the N d × N d diagonal matrix containing discretized values of the potential function Vt in Equation (13) 
+
+DVt = X
+
+> x∈XdN
+
+Vt(x) |x⟩⟨ x|. (30) Each diagonal entry in DVt corresponds to the value of Vt at the associated spatial grid point x ∈ XdN , which is given by DVt |x⟩ = Vt(x)|x⟩.The matrix K denotes the discretization of the kinetic operator ˆK in Equation (13). For one spatial dimension, ˆK = − 12 
+
+> ∂2
+> ∂x 2
+
+. Since we have the second-order derivative of 
+
+eikx 
+
+∂2
+
+∂x 2 eikx = −k2eikx , (31) thus, ˆKe ikx = − 12
+
+∂2
+
+∂x 2 eikx = 12 k2eikx . (32) Hence, eikx is the eigenfunction of ˆK with eigenvalue 12 k2. Therefore, the kinetic operator is diagonal in the Fourier basis. After spatial discretization, define 
+
+kj = πL
+
+
+
+j − N
+
+2
+
+
+
+, j = 0 , . . . , N − 1, (33) where j − N 
+
+> 2
+
+represents the centered Fourier basis index. The diagonal representation of the discretized kinetic operator K in the Fourier basis for one spatial dimension can be defined as 
+
+DK =
+
+ πL
+
+2 N −1X
+
+> j=0
+
+
+
+j − N
+
+2
+
+2
+
+|j⟩⟨ j|. (34) Therefore, K can be expressed using DK via QFT across all d spatial dimensions, which is defined as 
+
+K = 12 (SF D K F †S†)⊕d. (35) 11 The operator F represents the QFT transformation 
+
+F = 1
+
+√N 
+
+> N−1
+
+X
+
+> j,ℓ =0
+
+exp 
+
+ i2πjℓ N
+
+
+
+|j⟩⟨ ℓ|. (36) This enables us to encode a state |x⟩ by superposition of computational basis |j⟩, with different relative phases and the same amplitude 1√N (Ruiz-Perez and Garcia-Escartin 2017) 
+
+F |x⟩ = 1
+
+√N 
+
+> N−1
+
+X
+
+> j=0
+
+ei 2πxj N |j⟩. (37) The phase shift operator S is defined as 
+
+S = 
+
+> N−1
+
+X
+
+> j=0
+
+(−1) j |j⟩⟨ j|, (38) which employ a phase shift value ( −1) j to each basis state |j⟩. The operator M ⊕d
+
+denotes the Kronecker sum, which transforms the one-dimensional matrix M into a 
+
+d-dimensional operator 
+
+M ⊕d = ( M ⊗ I⊗d−1) + ( I ⊗ M ⊗ I⊗d−2) + · · · + ( I⊗d−1 ⊗ M ). (39) Each term involves applying M to one dimension and applying the identity operator to other dimensions. The temporal discretization divides the entire evolution time T into multiple time steps with the interval ∆ t. For an interval [ t, t 1] with 0 ≤ t < t 1 ≤ T , the 8-step Trotter product formula in Equation (21) can be employed for the simulation of the operator W (t) to approximate U (t1, t ) defined in Equation (18). This yields 
+
+W (t) = eiβD Vt eiαK e−iβD Vt e−iαK e−iβD Vt e−iαK eiβD Vt eiαK , (40) where 
+
+α = 2LπN 
+
+r ∆td , β = πN 
+
+4L
+
+√d ∆t. (41) The parameters satisfy αβ = ∆t 
+
+> 2
+
+according to Equation (21), and N denotes the number of grids in each dimension after spatial discretization. The corresponding temporal discretization error || U (t1, t ) − W (t)|| satisfies 
+
+∥U (t1, t ) − W (t)∥ = O  ∆t2 , (42) where ∥ · ∥ denotes the spectral norm (Yoshida and Miyato 2017). The spectral norm of a matrix A is defined as 
+
+∥A∥ = max  
+
+> ξ̸=0
+
+∥Aξ ∥2
+
+∥ξ∥2
+
+, (43) 12 where ξ is a non-zero vector that A can act on. The 4-step Trotter product formula for commutators defined in Equation (20) can also be utilized for the approximation, which reduces the implementation of W (t)from 8 exponential terms to 4. This realizes a more efficient implementation, which generates 
+
+W (t) = eiβD Vt eiαK e−iβD Vt e−iαK , (44) where α and β satisfy αβ = ∆ t according to Equation (20). Thus, we can employ 
+
+α = 2LπN 
+
+r ∆td , β = πN 
+
+2L
+
+√d ∆t. (45) The corresponding temporal discretization error || U (t1, t ) − W (t)|| satisfies 
+
+|| U (t1, t ) − W (t)|| = O
+
+
+
+∆t3/2
+
+. (46) 
+
+3.1.2 Phase kickback framework-based simulation 
+
+For the temporal discretization interval [ t, t 1], each exponential term in the corre-sponding approximation operator W (t) defined in Equation (44) can be considered as an oracle. These oracles are implemented sequentially in the quantum circuit, as shown in Figure 2. Here, n1, . . . , n d denote the number of qubits used to represent each spatial dimension, and all of these n = n1 + · · · + nd qubits are defined as address qubits. For the j-th spatial dimension, Nj = 2 nj basis states, i.e., address states, are provided, and each address state corresponds to a discretized spatial grid point as described in Equation (26). In addition, m denotes the number of ancilla qubits used for data encoding. n1             
+
+> nd
+> m
+> ...add 1:|k1⟩
+> eiβD VteiαK e−iβD Vte−iαK
+> add d:|kd⟩
+> anc : |0⟩
+> Fig. 2 Quantum simulation of W(t) using the 4-step Trotter product formula, where add jdenotes the address qubits corresponding to the j-th spatial dimension, and anc denotes the ancilla qubits
+
+Each oracle is suggested to be executed using the phase kickback framework (Lay-den et al. 2025; Cleve et al. 1998). Since DVt is diagonal, we incorporate QROM into the phase kickback framework to encode the diagonal entries of DVt when implement-ing the oracle eiβD Vt . Figure 3(a) presents the details of the phase kickback simulation of eiβD Vt , where the QROM( DVt ) oracle is used to encode all diagonal entries of DVt
+
+using the structure shown in Figure 1. For the 2 n × 2n diagonal matrix DVt defined in Equation (30), the phase kickback framework is applied over all n address qubits across all spatial dimensions. Each 13 n1                                  
+
+> nd
+> ......add 1:|k1⟩
+> QROM( DVt)QROM †(DVt)add d:|kd⟩
+> anc 1:|0⟩RZ (β/ 2) anc 2:|0⟩RZ (β/ 22)anc m:|0⟩RZ (β/ 2m)
+> nj
+> ...add j:|kj⟩SFQROM( DK)QROM †(DK)F†S
+> anc 1:|0⟩RZ (γ/ 2) anc 2:|0⟩RZ (γ/ 22)anc m:|0⟩RZ (γ/ 2m)
+
+(a) The simulation of eiβD Vt (b) The simulation of eiαK in the j-th dimension Fig. 3 The QROM-based phase kickback framework for the simulation of eiβD Vt , and the framework for the simulation of eiαK in the j-th spatial dimension, where add j denotes the address qubits corresponding to the j-th spatial dimension, anc i denotes the i-th ancilla qubit, and γ = α/ 2
+
+diagonal entry corresponds to a basis state |k⟩ = |k1⟩ ⊗ · · · ⊗ | kd⟩, which is defined in Equation (28). For the l-th min-max normalized diagonal entry V lt ∈ [0 , 1] in DVt ,we define its m-bit approximation as 0 .b (t, l, 1) · · · b(t, l, m ). Let |slt⟩ denote states 
+
+|b(t, l, 1) ⟩ · · · | b(t, l, m )⟩, the QROM oracle encodes the approximation ˜V lt =
+
+> m
+
+X
+
+> k=1
+
+b(t, l, k )2 −k, (47) into the ancilla qubits conditioned on the corresponding address state |l⟩. This realizes the state transformation 
+
+|l⟩| 0⟩⊗m QROM 
+
+−−−−→ | l⟩| slt⟩. (48) Then, an RZ( β/ 2k) gate is applied to each ancilla qubit k (see Figure 3), jointly encoding the exponential eiβ ˜V lt , which realizes 
+
+|l⟩|| slt⟩ RZ 
+
+−−→ eiβ ˜V lt |l⟩| slt⟩. (49) Finally, the adjoint of the QROM oracle is employed to uncompute the ancilla qubits to the initial states, which is expressed as 
+
+eiβ ˜V lt |l⟩| slt⟩ QROM †
+
+−−−−−→ eiβ ˜V lt |l⟩| 0⟩⊗m. (50) Thus, the phase kickback framework realizes the transformation over all basis states 
+
+X
+
+> k
+
+|k⟩| 0⟩⊗m phase kickback 
+
+−−−−−−−−−→ eiβD Vt
+
+X
+
+> k
+
+|k⟩| 0⟩⊗m. (51) According to Equation (35), for the N d × N d kinetic operator K, to simulate the evolution operator eiαK , the phase kickback framework corresponding to DK is implemented independently to each spatial dimension. The implementation of eiαK 
+
+corresponding to the j-th spatial dimension is shown in Figure 3(b), where γ = α/ 2. 14 Therefore, the simulation among all spatial dimensions performs 
+
+X
+
+> k1,...,k d
+
+|k1⟩ · · · | kd⟩| 0⟩⊗m phase kickback 
+
+−−−−−−−−−→ X
+
+> k1,...,k d
+
+eiαK |k1⟩ · · · | kd⟩| 0⟩⊗m. (52) 
+
+3.2 QNN-based phase kickback framework for wavefunction flow simulation 
+
+Although QROM is widely used in data encoding applications, for n address qubits, it requires Θ(2 n) CNOT gates (Barenco et al. 1995) for implementation, facing expo-nentially increasing computational complexity. To address this problem, we propose a QNN circuit for wavefunction flow simulation, which replaces QROM in the phase kick-back framework with a trained QNN for data encoding. The proposed QNN mimics the structure of QROM by employing controlled rotation gates instead of multi-controlled 
+
+X gates, which reduces the number of CNOT gates to Θ( n). The structure of the QNN-based phase kickback framework to implement the potential evolution operator is illustrated in Figure 4(a), and the framework for implementing the kinetic evolution operator in the j-th spatial dimension is shown in Figure 4(b). n1                                  
+
+> nd
+> ......add 1:|k1⟩
+> QNN( DVt)QNN †(DVt)add d:|kd⟩
+> anc 1:|0⟩RZ (β/ 2) anc 2:|0⟩RZ (β/ 22)anc m:|0⟩RZ (β/ 2m)
+> nj
+> ...add j:|kj⟩SFQNN( DK)QNN †(DK)F†S
+> anc 1:|0⟩RZ (γ/ 2) anc 2:|0⟩RZ (γ/ 22)anc m:|0⟩RZ (γ/ 2m)
+
+(a) The simulation of eiβD Vt (b) The simulation of eiαK in the j-th dimension 
+
+Fig. 4 The QNN-based phase kickback framework for the simulation of eiβD Vt , and the framework for the simulation of eiαK corresponding to the j-th spatial dimension, where γ = α/ 2
+
+We first propose a time-independent QNN circuit for the phase kickback framework of the kinetic evolution operator eiαK , which does not change over time. Then we intro-duce a QNN circuit for the phase kickback framework of the time-dependent potential evolution operator eiβD Vt by integrating a time oracle into the time-independent QNN circuit. 
+
+3.2.1 Time-independent QNN circuit for kinetic evolution operators 
+
+Consider the simulation of the kinetic evolution operator eiαK corresponding to one spatial dimension; QROM encodes the l-th diagonal entry DlK of DK by loading its binary fractional representation 0 .b (l, 1) · · · b(l, m ) into the m ancilla qubits as basis states. For the q-th ancilla qubit, the resulting state is |b(l, q )⟩ after the implemen-tation of the QROM oracle. To replace QROM, we propose a QNN circuit, which learns the map from the address state |l⟩ to the corresponding m ancilla states 15 |b(l, 1) ⟩ · · · | b(l, m )⟩. The QNN circuit encodes 0 .b (l, 1) · · · b(l, m ) into the m ancilla qubits by loading the predicted probabilities ˆb(l, 1) , . . . , ˆb(l, m ) through minimizing the approximation error. Specifically, the trained QNN performs the map 
+
+|l⟩| 0⟩⊗m QNN 
+
+−−−→ | l⟩| ˆΨ( l)⟩. (53) Here ˆb(l, k ) = P
+
+
+
+k-th ancilla qubit = 1 | ˆΨ( l)⟩
+
+
+
+denotes the predicted probability of 
+
+k-th ancilla qubit that is measured in state |1⟩ given the state | ˆΨ( l)⟩ generated by the trained QNN. The training of the QNN can be viewed as a binary classification problem in machine learning for each ancilla qubit. Therefore, the loss function is defined using binary cross-entropy loss 
+
+LK = −
+
+> N
+
+X
+
+> i=1
+> m
+
+X
+
+> h=1
+
+h
+
+b(i, h ) log ˆb(i, h ) +  1 − b(i, h ) log  1 − ˆb(i, h )i
+
+, (54) where N denotes the number of diagonal entries in the matrix DK . After training, the predicted state | ˆΨ( l)⟩ is employed to encode the approximation of DlK into the ancilla qubits by the trained QNN circuit. The time-independent QNN in each spatial dimension has repeated layers imple-mented in sequence, which is shown in Figure 5. Each layer contains Rot oracles and controlled-Rot oracles, which is illustrated in Figure 6. nj            
+
+> m
+> add j:|kj⟩
+> QNN( DKj)anc : |0⟩≡
+> nj
+> m
+> · · · · · ·
+> add j:|kj⟩
+> Layer Layer Layer anc : |0⟩
+
+Fig. 5 The QNN circuit in the phase kickback framework for the simulation of eiαK corresponding to the j-th spatial dimension · · ·                   
+
+> ...· · · · · ·
+> ...
+> · · ·
+> add j, 1:|kj, 1⟩
+> add j,n j:|kj,n j⟩
+> anc 1:|0⟩Rot( θ0,1)Rot( θ1,1)Rot( θnj,1)anc m:|0⟩Rot( θ0,m )Rot( θ1,m )Rot( θnj,m )
+
+Fig. 6 The QNN layer circuit in the phase kickback framework for the simulation of eiαK corre-sponding to the j-th spatial dimension, where add j,i denotes the i-th address qubit corresponding to the j-th spatial dimension 
+
+16 Inside each layer, m Rot oracles Rot( θ0,1), · · · , Rot( θ0,m ) are applied to the ancilla qubits in the beginning. Then, a controlled Rot oracle is applied between each address qubit and ancilla qubit. The address qubits are controls, and ancilla qubits serve as targets. Each Rot oracle consists of three rotation gates, and each controlled-Rot gate contains three controlled rotation gates, as shown in Figure 7. Rot( θ) ≡ RY( ϕ) RZ( ω) RY( ψ)(a) The structure of a Rot oracle Rot( θ) ≡ RY( ϕ) RZ( ω) RY( ψ)(b) The structure of a controlled-Rot oracle       
+
+> Fig. 7 Circuits of Rot and controlled-Rot oracles, ϕ,ωand ψdenote three angle parameters in each oracle
+
+3.2.2 Time-dependent QNN circuit for potential evolution operators 
+
+QROM encodes diagonal entries of the N d × N d diagonal matrix DVt at each time 
+
+t, respectively, where N d = 2 n denotes the number of address states provided by all 
+
+n address qubits of d dimensions jointly. We propose a time-dependent QNN circuit that can encode the diagonal operator DVt at time t into the phase kickback frame-work by incorporating a time register oracle. For a time step h and the corresponding time th, given the l-th diagonal entry DlVth
+
+and its binary fractional representa-tion 0 .b (th, l, 1) · · · b(th, l, m ), the QNN learns the map from the address state |l⟩ to probabilities b(th, l, 1) , · · · , b (th, l, m ). This generates 
+
+|l⟩| 0⟩⊗m QNN 
+
+−−−→ | l⟩| ˆΨ( th, l )⟩. (55) Let ˆb(th, l, k ) = P
+
+
+
+k-th ancilla qubit = 1 | ˆΨ( th, l )⟩
+
+
+
+denote the predicted probability of k-th ancilla qubit measured in state |1⟩ for the state | ˆΨ( th, l )⟩ generated by the trained QNN. To learn the encoding of all diagonal entries over all time steps, the loss function for QNN training is defined as 
+
+LP = −
+
+> Nt
+
+X 
+
+> k=1
+> Nd
+
+X
+
+> i=1
+> m
+
+X
+
+> j=1
+
+h
+
+b(tk, i, j ) log ˆb(tk, i, j ) +  1 − b(tk, i, j ) log  1 − ˆb(tk, i, j )i
+
+,
+
+(56) where Nt denotes the number of discretized time intervals. After training, the predicted state | ˆΨ( th, l )⟩ is employed to encode the approximation of DlVth
+
+into the ancilla qubits by the trained QNN circuit. 17 For the time step h, the time-dependent QNN circuit operates on the address qubits across all spatial dimensions together with the ancilla qubits. The repeated layers are applied in sequence between a time register oracle and its adjoint oracle, which is shown in Figure 8. n1
+
+> nd
+> m
+
+...add 1 : |k1⟩
+
+QNN( DVth )add d : |kd⟩
+
+anc : |0⟩≡
+
+> n1
+> nd
+> m
+
+· · · 
+
+...
+
+· · · · · · 
+
+add 1 : |k1⟩
+
+Layer Layer add d : |kd⟩
+
+anc : |0⟩ Time( h) Time †(h)
+
+Fig. 8 The time-dependent QNN circuit in the phase kickback framework for the simulation of 
+
+eiβD Vth
+
+In each layer, m Rot oracles Rot( θh
+
+0,1), · · · , Rot( θh
+
+0,m ) operate on the m ancilla qubits. A controlled-Rot oracle is applied between each address qubit and the ancilla qubit. Figure 9 illustrates the structure of the layer. · · ·                         
+
+> ...
+> · · ·
+> ...
+> · · ·
+> ...
+> · · · · · ·
+> ...
+> · · ·
+> add 1,1:|k1,1⟩
+> add 1,n 1:|k1,n 1⟩
+> add d, 1:|kd, 1⟩
+> add d,n d:|kd,n d⟩
+> anc 1:|0⟩Rot( θh
+> 0,1)Rot( θh
+> 1,1,1)Rot( θh
+> 1,n 1,1)Rot( θhd, 1,1)Rot( θhd,n d,1)anc m:|0⟩Rot( θh
+> 0,m )Rot( θh
+> 1,1,m )Rot( θh
+> 1,n 1,m )Rot( θhd, 1,m )Rot( θhd,n d,m )
+
+Fig. 9 The QNN layer circuit in the phase kickback framework for the implementation of eiβD Vth
+
+The Time oracle contains X gates applied to selected ancilla qubits according to the binary representation of the time step h. For example, when h = 0, the states of the ancilla qubits are set as |0⟩⊗m. Hence, no X gate operates on the ancilla qubits. When h = 1, the ancilla qubits are prepared in the states |0⟩⊗(m−1) |1⟩. Thus, an X
+
+gate is applied to the last ancilla qubit in oracle Time(1). Examples of the Time oracle are shown in Figure 10. 
+
+3.2.3 Resource analysis of QROM and QNN circuits 
+
+To compare the circuit resources required for QROM and our proposed QNN simu-lation directly, we analyze the number of CNOT gates required in QROM and QNN circuits with the same number of address qubits and ancilla qubits. For a QROM circuit with n address qubits and m ancilla qubits, whose structure is the same as shown in Figure 1, the number of data entries to be encoded in the 18 n                         
+
+> ...add : |k⟩
+> anc 1:|0⟩
+> Time(1) anc m:|0⟩≡
+> n
+> ...add : |k⟩
+> anc 1:|0⟩
+> anc m:|0⟩X
+> n
+> ...add : |k⟩
+> anc 1:|0⟩
+> Time(3) anc m:|0⟩≡
+> n
+> ...add : |k⟩
+> anc 1:|0⟩
+> anc m−1:|0⟩X
+> anc m:|0⟩X
+
+(a) The structure of Time(1) (b) The structure of Time(3) Fig. 10 Examples of the Time oracles 
+
+quantum register is 2 n, corresponding to all address states. In addition, each data entry corresponds to m binary bits that are encoded in ancilla qubits. Therefore, the number of multi-controlled X gates in the QROM circuit is 2 nm.According to the multi-controlled X decomposition method without ancilla qubits (Barenco et al. 1995), a multi-controlled X gate with n control qubits consists of 3 · 2n−1 − 4 CNOT gates. Thus, the number of CNOT gates required for the QROM circuit is (3 · 2n−1 − 4) · 2n · m = (3 × 22n−1 − 2n+2 )m. Therefore, for fixed m and l,the number of CNOT gates scales as 
+
+NQROM = Θ (4 n) , (57) resulting in exponential growth with the increase of n.For our QNN circuit containing l layers with the same number of address qubits and ancilla qubits, whose layer structure is shown in Figure 6, mn controlled-Rot oracles are required in each layer. Since each controlled-Rot oracle consists of 3 con-trolled rotation gates, and each controlled rotation gate requires 2 CNOT gates for decomposition (Barenco et al. 1995), the total number of CNOT gates in each QNN layer is 6 mn . Thus, the number of CNOT gates required for the QNN circuit is 6 mnl .Therefore, for fixed m and l, the number of CNOT gates scales as 
+
+NQNN = Θ ( n) . (58) This shows that the number of CNOT gates grows linearly as n increases in the QNN circuit. From Equations (57) and (58), it is clear that our proposed QNN circuit requires significantly fewer circuit resources than the QROM circuit with a large value of n.This is also numerically evaluated in Subsection 4.4.2. 
+
+## 4 Results and discussion 
+
+4.1 Reference method 
+
+Given the initial distribution, to evaluate the performance of our approach, the final probability distributions generated by the wavefunction simulation are compared with 19 the reference final distribution obtained from the corresponding conventional flow model, i.e., the solution of the continuity equation defined in Equation (8). Given the initial distribution p0(x) and the corresponding wavefunction Ψ 0(x) = pp0(x), for the evolution time T , the final wavefunction Ψ T (x) generated by the wavefunction flow simulation produces the final probability distribution through 
+
+pT (x) = |ΨT (x)|2. Here, x = ( x1, . . . , x d) ∈ XdN denotes a d-dimensional grid point. The reference final distribution is generated through the numerical solution of the continuity equation ∂∂t pt(x) + ∇ · [vt(x) pt(x)] = 0 , (59) where the velocity field is conservative and is generated by the potential function 
+
+vt(x) = ∇Vt(x). If the dimension of vt is 1, the continuity equation becomes 
+
+∂∂t pt(x) + ∂∂x (vt(x) pt(x)) = 0 . (60) If vt is multi-dimensional, the continuity equation can be written as 
+
+∂∂t pt(x) + 
+
+> d
+
+X
+
+> i=1
+
+∂∂x i
+
+(vt,i (x)pt(x)) = 0 . (61) Starting from the initial distribution p0(x), the spatial derivative terms in the conti-nuity function are obtained using the Fourier spectral method, and the corresponding equation is then solved from t = 0 to t = T using the RK45 method. This generates the reference final distribution pref  
+
+> T
+
+(x). 
+
+4.2 Experimental setup 
+
+4.2.1 Simulation environment and settings 
+
+All quantum simulation-based experiments were conducted using Python 3.12. The quantum software stack comprised Xanadu’s Pennylane 0.45.1 and pennylane-lightning 0.45.0. Quantum circuits were executed using the lightning.gpu backend on an NVIDIA Tesla T4 GPU. The RK45 solver used to generate reference solutions of the continuity equation in Equation (8) is provided by SciPy, and both relative and absolute tolerances are 1e-12. The one-dimensional and two-dimensional wavefunction flow simulations were implemented in our experiments. For the one-dimensional wavefunction flow simula-tion circuit, we set the number of address qubits to 4, which is capable of representing 24 = 16 discretized spatial points in total. In addition, 10 ancilla qubits were used to encode the data entries of potential and kinetic operators into the quantum circuit. We also employed 3 address qubits for each spatial dimension when implementing the two-dimensional wavefunction flow simulation, corresponding to 2 3 = 8 discretized spatial grid points per dimension. The number of ancilla qubits is 12. In our experiments, the uniform distribution and a periodic exponential distribu-tion given by 
+
+p(x) = e−K sin 2(πx/L ) (62) 20 were chosen as the initial distribution p0(x) for the wavefunction flow simulation and reference solutions. In the periodic exponential distribution, K is a constant, and we set K = 1 in our experiments. Both distributions are normalized so that their total probability is 1, and the corresponding initial density is represented as ρ0(x). 
+
+4.2.2 Evaluation metrics 
+
+Let x(i) denote the i-th discretized spatial point in the wavefunction flow simulation, and let x(j)ref denote the j-th discretized spatial point in the reference method. Let 
+
+pT (x(i)) represent the final probability at x(i) generated by the wavefunction flow simulation, and let pref  
+
+> T
+
+(x(j)ref ) denote the reference final probability at x(j)ref . Denote 
+
+ρT (x(i)) = pT (x(i))/(∆ x)d
+
+as the corresponding wavefunction flow simulation-generated final probability density, and denote 
+
+ρref  
+
+> T
+
+(x(j)ref ) = pref  
+
+> T
+
+(x(j)ref )/(∆ xref )d
+
+as the corresponding reference final probability density. Here, ∆ x is the spatial dis-cretization interval in each dimension for wavefunction flow simulation, and ∆ xref 
+
+denotes the spatial discretization interval employed in the reference method. Let 
+
+N denote the number of discretized spatial grid points in the wavefunction flow simulation. To implement the evaluation, the reference final probability density is lin-early interpolated onto the spatial grids of the wavefunction flow simulation. Let the interpolated reference final probability density at x(i) be represented by ρref  
+
+> T
+
+(x(i)). To evaluate the accuracy of the wavefunction flow simulation, we employ four error metrics: the root mean square error (RMSE), relative maximum error (RME), KL divergence ( DKL ), and Wasserstein-1 distance ( W1)
+
+• Root mean square error (RMSE) RMSE = 
+
+vuut 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+ ρT (x(i)) − ρref  
+
+> T
+
+(x(i))2. (63) 
+
+• Relative maximum error (RME), which measures the maximum difference between probability densities ρT (x) and ρref  
+
+> T
+
+(x), normalized by the maximum value of the reference final probability density ρref  
+
+> T
+
+(x)RME = max i ρT (x(i)) − ρref  
+
+> T
+
+(x(i))
+
+max i ρref  
+
+> T
+
+(x(i)) . (64) 
+
+• Kullback-Leibler (KL) divergence, which measures the distance between the nor-malized final density ˜ ρT (x) and the normalized reference final probability density ˜ρref  
+
+> T
+
+(x)
+
+DKL =
+
+> N
+
+X
+
+> i=1
+
+˜ρref  
+
+> T
+
+(x(i)) ln ˜ρref  
+
+> T
+
+(x(i))˜ρT (x(i)) . (65) 21 where ˜ρT (x(i)) = ρT (x(i))
+
+PNj=1 ρT (x(j)) , ˜ρref  
+
+> T
+
+(x(i)) = ρref  
+
+> T
+
+(x(i))
+
+PNj=1 ρref  
+
+> T
+
+(x(j))
+
+• Wasserstein-1 distance, which measures the minimum cost of transporting the normalized final density ˜ ρT (x) to ˜ ρref  
+
+> T
+
+(x)
+
+W1 = min  
+
+> γij ≥0
+> N
+
+X
+
+> i=1
+> N
+
+X
+
+> j=1
+
+γij |x(i) − x(j)|. (66) Here NX
+
+> j=1
+
+γij = ˜ ρT (x(i)),
+
+> N
+
+X
+
+> i=1
+
+γij = ˜ ρref  
+
+> T
+
+(x(j)),
+
+and γij denotes the amount of probability density moving from x(i) to x(j).Smaller values of these error metrics indicate higher consistency between the final probability densities generated by the wavefunction flow simulation and the reference final probability densities, and demonstrate higher accuracy of the wavefunction flow simulation. 
+
+4.3 Training analysis of the QNN circuit 
+
+To implement the wavefunction flow simulation using a trained QNN-based phase kickback framework, the QNN circuits shown in Figures 5 and 8 must be trained first. The values of parameters in QNN circuits were initialized from a normal distribution 
+
+N (0 , 1). The evolution time T was set to 0.02 s, which was divided into 200 time steps. We chose a one-dimensional potential function 
+
+V (x, t ) = cos( πx/L + 0 .75 t). (67) We analyzed the convergence of the training process and compared the performance of different numbers of QNN layers and different loss functions. 
+
+4.3.1 Depth analysis 
+
+We conducted an experiment for the convergence analysis of the QNN training process with different numbers of QNN layers. For the simulation of the potential evolution operator eiβD Vt , the QNN circuit shown in Figure 8 was employed for each time step. To simulate the kinetic evolution operator eiαK , the QNN circuit shown in Figure 5 was implemented independently to each spatial dimension. For the training of QNN circuits associated with the potential and kinetic evolution, the loss functions defined in Equations (54) and (56) were used, respectively. The Adam optimizer with a learning rate of 0.3 was employed in the training process. We recorded the training losses for the QNN circuits of both potential and kinetic evolution with different numbers of layers. The loss convergence curves are shown in 22 0 20 40 60 80 100              
+
+> Training step
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Training loss
+> (a) The training loss for the potential evolution QNN circuit
+> l= 1
+> l= 2
+> l= 3
+> l= 4 020 40 60 80 100
+> Training step
+> 0.0 0.2 0.4 0.6 0.8
+> Training loss
+> (b) The training loss for the kinetic evolution QNN circuit
+> l= 1
+> l= 2
+> l= 3
+> l= 4
+
+Fig. 11 The training losses for the potential and kinetic evolution QNN circuits with different numbers of layers l
+
+Table 1 Final training loss values under different depths of QNN circuits Number of layers QNN circuit for potential evolution QNN circuit for kinetic evolution 1 0.1712 0.1499 2 0.0421 0.0279 3 0.0039 0.0073 4 0.0001 0.0001 
+
+Figure 11. The final loss values for potential and kinetic evolution QNN circuits with different depths are shown in Table 1. Figure 11 shows that the training losses for both the QNN circuits for potential and kinetic evolution decrease as the training step increases, demonstrating the stable training process and the convergence behavior. For both QNN circuits, as the number of layers increases, the convergence of loss becomes faster, and the final training loss becomes lower. These results indicate that a deeper QNN circuit is able to improve the performance of approximating QROM in the phase kickback frameworks. In addition, as shown in Table 1, the final training losses of two QNN circuits for 
+
+l = 1 are 0.1712 and 0.1499, respectively. When l increases to 4, the final training losses are both 0.0001. This indicates that the training loss becomes very small when the QNN depth reaches 4. In addition, as l increases, the final training loss decreases rapidly, demonstrating a rapid convergence of the loss with respect to l.
+
+4.3.2 Loss function comparison 
+
+To explore the influence of different loss functions for QNN training, we compared three loss functions in the training process 
+
+• Loss function 1: Binary cross-entropy loss defined in Equations (54) and (56). 23 • Loss function 2: Mean squared error between the exact values of diagonal entries and the values generated by predicted probabilities obtained from the QNN circuit 
+
+LK =
+
+NX
+
+i=1 
+
+DiK −
+
+mX
+
+h=1 
+
+ˆb(i, h )2 −h
+
+!2
+
+,LP =
+
+NtX
+
+k=1 
+
+NX
+
+i=1 
+
+DiVth
+
+−
+
+mX
+
+j=1 
+
+ˆb(tk, i, j )2 −j
+
+
+
+2
+
+.
+
+• Loss function 3: Fidelity-based loss between the normalized vectors based on exact potential and kinetic diagonal entries and those predicted by the QNN circuit 
+
+LK = 1
+
+d
+
+dX
+
+j=1 
+
+
+
+1 −
+
+D
+
+ψexact 
+
+K ψpred 
+
+K
+
+E 2
+
+,LP = 1
+
+NtNtX
+
+j=1 
+
+
+
+1 −
+
+D
+
+ψexact 
+
+Vj ψpred 
+
+Vj
+
+E 2
+
+,
+
+where ψexact 
+
+K and ψexact 
+
+Vj denote the normalized vectors consisting of the exact diago-nal entries of DK and DVtj , respectively. And ψpred 
+
+K and ψpred 
+
+Vj denote the normalized vectors consisting of the predicted diagonal entries of DK and DVtj generated by the QNN circuit. For the simulation of potential and kinetic operators, the Adam optimizer with a learning rate of 0.3 is adopted, and the number of QNN layers is 2. 0 20 40 60 80 100      
+
+> Training step
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Training loss
+> (a) The training loss for the potential evolution QNN circuit
+> Loss function 1 Loss function 2 Loss function 3 020 40 60 80 100
+> Training step
+> 0.0 0.2 0.4 0.6 0.8
+> Training loss
+> (b) The training loss for the kinetic evolution QNN circuit
+> Loss function 1 Loss function 2 Loss function 3
+
+Fig. 12 The training losses for the potential and kinetic evolution QNN circuits with different loss functions 
+
+Figure 12 shows the training loss curves for both QNN circuits using three loss functions. For both QNN circuits of potential and kinetic evolution, the training losses of all three loss functions converge steadily, and their final values reach approximately 0. Meanwhile, the convergence speed of Loss function 1 is lower than those of Loss 24 functions 2 and 3. This indicates that Loss functions 2 and 3 outperform Loss function 1 for the training process of both QNN circuits according to the training speed. However, when comparing the binary representations of the exact potential diago-nal entries of DVt0 with the corresponding probabilities learned by QNN under different loss functions, different performances are exhibited. The results are shown in Figure 13. The mean distances and standard deviations across all probabilities associated with all diagonal entries of DVt0 under different loss functions are summarized in Table 2. 0 2 4 6 8Ancilla qubit index 0246810 12 14 Input Basis State             
+
+> Exact potential diagonal entries
+> 02468Ancilla qubit index 0246810 12 14 Input Basis State
+> Loss Function 1
+> 02468Ancilla qubit index 0246810 12 14 Input Basis State
+> Loss Function 2
+> 02468Ancilla qubit index 0246810 12 14 Input Basis State
+> Loss Function 3
+> 0.0 0.2 0.4 0.6 0.8 1.0 Probability
+
+Fig. 13 The comparison between the binary representations of the exact potential diagonal entries of DVt0 and the corresponding probabilities learned by the QNN circuit under different loss functions. The y-axis represents the states of the input, where each state corresponds to a diagonal entry. The 
+
+x-axis represents the ancilla qubit indices, where the i-th qubit index corresponds to the i-th binary bit of the diagonal entry 
+
+Table 2 The mean distances and standard deviations across all probabilities under different loss functions Loss function Mean distance Standard deviation Loss function 1 0.0001 0.0001 Loss function 2 0.3726 0.3645 Loss function 3 0.4027 0.3286 
+
+It is observed from the results that the predicted probabilities generated by the QNN circuit using Loss function 1 successfully approximate the exact binary bits of the diagonal entries, which are 0 and 1. However, the predicted probabilities generated by the QNN circuit using Loss functions 2 and 3 cannot match the corresponding binary representation, since massive probabilities stay far from 0 and 1. These indicate that, compared with the other two loss functions, the output states of the QNN circuits using the binary cross-entropy loss are precise and pure, which reduce entanglement significantly. In addition, as shown in Table 2, the mean distance and standard devi-ation under Loss function 1 are both 0.0001, which are significantly lower than those obtained under Loss functions 2 and 3. These results demonstrate that the binary cross-entropy loss outperforms the other two loss functions in the training of potential and kinetic evolution QNN circuits according to the binary bit approximation. 25 4.4 Comparison between QNN and QROM-based phase kickback frameworks for wavefunction flow simulation 
+
+To evaluate the performance of wavefunction flow simulation through our QNN-based phase kickback framework, we first compared its final probability densities with those obtained by the QROM-based phase kickback framework. Then we compared the CNOT gate cost of QROM and QNN circuits, as well as the corresponding phase kick-back frameworks with different address qubits. The decomposition tools in PennyLane are used for counting the number of CNOT gates. 
+
+4.4.1 Accuracy comparison 
+
+We first conducted a comprehensive study of the accuracy performance of the wave-function flow simulation using our trained QNN-based and QROM-based phase kickback frameworks under fixed potentials. To this end, given the same initial distribution, we evaluated the final probability densities generated by the two frame-works compared to the reference final densities, i.e., the results generated by the corresponding conventional flow model. We set L = 1, and the domain of each spatial dimension is [ −L, L ]. We chose four periodic time-dependent potentials, two of which are one-dimensional, 
+
+V1(x, t ) = 3 sin( πx/L + 0 .75 t),V2(x, t ) = 3 cos( πx/L + 0 .75 t).
+
+The other two potentials are two-dimensional, 
+
+V3(x, y, t ) = sin 
+
+ πL (x + y) + 0 .5t
+
+
+
+,V4(x, y, t ) = cos 
+
+ πL (x + y) + 0 .5t
+
+
+
+.
+
+All these potentials are normalized to [0 , 1] using the min-max normalization. The QROM-based phase kickback frameworks for the simulation of potential and kinetic evolution operators are shown in Figures 3(a) and 3(b), respectively. The evo-lution time T was set to 0.02 s and discretized into Nt = 200 time steps. Thus, each time interval is ∆ t = 1 e − 4. We recorded the final probability densities generated by the wavefunction flow simulation using two frameworks. Then we compared them with the corresponding reference final probability densities, which were obtained by solving Equations (60) and (61) using the RK45 method with the same values of T
+
+and Nt as those used in the wavefunction flow simulation. For the one-dimensional case, the number of discretized spatial grid points in the reference method is twice that employed in the wavefunction flow simulation. For the two-dimensional case, the number of grid points for each dimension in the reference method is the same as that in the wavefunction flow simulation. The comparison results with different potentials and initial distributions are shown in Figures 14, 15, 16, and 17. Tables 3 and 4 sum-marize the different error metrics between the final probability densities generated 26 1.00 0.75 0.50 0.25 0.00 0.25 0.50 0.75 1.00 x0.3 0.4 0.5 0.6 0.7 0.8 0.9 Probability density 
+
+(a) Uniform initial distribution              
+
+> QROM-based wavefunction flow final density T(x)
+> QNN-based wavefunction flow final density T(x)
+> Reference final probability density ref T(x)
+> Initial probability density 0(x)
+> 1.00 0.75 0.50 0.25 0.00 0.25 0.50 0.75 1.00 x0.2 0.4 0.6 0.8 1.0 Probability density
+
+(b) Periodic exponential initial distribution      
+
+> QROM-based wavefunction flow final density T(x)
+> QNN-based wavefunction flow final density T(x)
+> Reference final probability density ref T(x)
+> Initial probability density 0(x)
+
+Fig. 14 Comparison of final probability densities generated by wavefunction flow simulation using QNN- and QROM-based phase kickback frameworks, and reference final densities under V1(x, t )−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75 1.00 x0.3 0.4 0.5 0.6 0.7 0.8 0.9 Probability density 
+
+(a) Uniform initial distribution              
+
+> QROM-based wavefunction flow final density ρT(x)QNN-based wavefunction flow final density ρT(x)Reference final probability density ρref
+> T(x)Initial probability density ρ0(x)−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75 1.00 x0.2 0.4 0.6 0.8 1.0 1.2 1.4 Probability density
+
+(b) Periodic exponential initial distribution      
+
+> QROM-based wavefunction flow final density ρT(x)QNN-based wavefunction flow final density ρT(x)Reference final probability density ρref
+> T(x)Initial probability density ρ0(x)
+
+Fig. 15 Comparison of final probability densities generated by wavefunction flow simulation using QNN and QROM-based phase kickback frameworks, and reference final densities under V2(x, t )
+
+by the wavefunction flow simulation using QNN and QROM-based phase kickback frameworks, and the corresponding reference final probability densities. We first evaluate the performance of the wavefunction flow simulation by com-paring its results with those obtained from the flow model. As shown in Figures 14 and 15, the final probability densities produced by the wavefunction flow simulation using both QNN and QROM-based phase kickback frameworks under one-dimensional potentials closely match the corresponding reference final densities under uniform and periodic exponential initial distributions. This is because their curves almost overlap and the values at each discrete spatial point nearly coincide. In addition, Figures 16 and 17 exhibit consistent densities generated by wavefunction flow simula-tion using two frameworks and the reference method under two-dimensional potentials. 27 −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75 y                                       
+
+> Initial density ρ0(x,y)
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Final density ρT(x,y) using QNN
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Final density ρT(x,y) using QROM
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Reference final density ρref
+> T(x,y)
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75 y
+> Initial density ρ0(x,y)
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Final density ρT(x,y) using QNN
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Final density ρT(x,y) using QROM
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Reference final density ρref
+> T(x,y)
+> 0.012 0.014 0.016 0.018 0.020 0.022 Probability density
+> 0.005 0.010 0.015 0.020 0.025 0.030 0.035 0.040 Probability density
+
+(a) Uniform initial distribution (b) Periodic exponential initial distribution Fig. 16 Comparison of final probability densities generated by wavefunction flow simulation using QNN- and QROM-based phase kickback frameworks, and reference final densities under V3(x, y, t )
+
+Table 3 Errors between final probability densities generated by wavefunction flow simulation using QNN- and QROM-based phase kickback frameworks, and reference final probability densities under the uniform initial distribution QNN-based phase kickback QROM-based phase kickback 
+
+V RMSE RME DKL W1 RMSE RME DKL W1
+
+V1 5.965e-3 0.011 6.475e-5 1.119e-3 6.141e-3 0.012 6.677e-5 9.107e-4 
+
+V2 6.424e-3 0.014 6.443e-5 9.353e-4 6.381e-3 0.014 6.386e-5 9.191e-4 
+
+V3 1.580e-4 0.013 6.028e-5 7.397e-3 1.550e-4 0.011 5.306e-5 7.202e-3 
+
+V4 1.572e-4 0.011 5.548e-5 6.819e-3 1.568e-4 0.011 5.499e-5 6.818e-3 
+
+According to Tables 3 and 4, the RMSE values corresponding to the one-dimensional potentials are on the order of 10 −3, while those for the two-dimensional potentials are on the order of 10 −4. These results indicate very small density errors between the wave-function flow simulation and the reference method. The RME measures the maximum difference of all discretized spatial points between the wavefunction flow simulation and the reference method. All RME values are not greater than 0 .022, which shows that local density errors at all spatial points are well controlled. We take small KL divergence values to indicate reliable density matching, and all the values in the two tables are below 2 × 10 −4. In addition, all the values of W1
+
+in the two tables are below 0.02. These also indicate the close agreement between the densities. All these results demonstrate that the phase kickback framework-based wavefunction flow simulation generates the expected evolution of the wavefunction 28 −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75 y                                       
+
+> Initial density ρ0(x,y)
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Final density ρT(x,y) using QNN
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Final density ρT(x,y) using QROM
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Reference final density ρref
+> T(x,y)
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75 y
+> Initial density ρ0(x,y)
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Final density ρT(x,y) using QNN
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Final density ρT(x,y) using QROM
+> −1.0 −0.5 0.0 0.5 x−1.00 −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Reference final density ρref
+> T(x,y)
+> 0.012 0.014 0.016 0.018 0.020 0.022
+> Probability density
+> 0.01 0.02 0.03 0.04 0.05
+> Probability density
+
+(a) Uniform initial distribution (b) Periodic exponential initial distribution Fig. 17 Comparison of final probability densities generated by wavefunction flow simulation using QNN- and QROM-based phase kickback frameworks, and reference final densities under V4(x, y, t )
+
+Table 4 Errors between final probability densities generated by wavefunction flow simulation using QNN- and QROM-based phase kickback frameworks, and reference final densities under the periodic exponential initial distribution QNN-based phase kickback QROM-based phase kickback 
+
+V RMSE RME DKL W1 RMSE RME DKL W1
+
+V1 6.339e-3 0.012 7.010e-5 8.843e-4 6.234e-3 0.013 6.724e-5 7.669e-4 
+
+V2 7.154e-3 0.013 5.382e-5 1.444e-3 7.852e-3 0.013 6.704e-5 1.382e-3 
+
+V3 2.344e-4 0.013 9.852e-5 7.870e-3 2.346e-4 0.013 9.826e-5 7.870e-3 
+
+V4 3.465e-4 0.021 1.691e-4 1.051e-2 3.525e-4 0.022 1.720e-4 1.036e-2 
+
+flow theory and matches the results of the flow model, which is obtained by solving the corresponding continuity equation. Then we compare the accuracy of wavefunction flow using QNN- and QROM-based wavefunction flow simulation. According to Figures 14, 15, 16, and 17, for all four potentials, the final probability densities produced by the wavefunction flow simulation through the QNN-based phase kickback framework closely match those obtained using the QROM-based phase kickback framework. In Table 3, for V1, the RMSE, RME, KL divergence, and Wasserstein-1 distance between the final probability density gener-ated by the QNN-based phase kickback framework and the reference final probability density under uniform initial distribution are 5.965e-3, 0.011, 6.475e-5, and 1.119e-3, respectively. These values are very close to those generated by the QROM-based phase kickback framework, which are 6.141e-3, 0.012, 6.677e-5, and 9.107e-4. Similar behav-iors are observed for V2, V3, and V4 under both initial distributions. All error metrics 29 corresponding to wavefunction flow simulation using the QNN-based phase kickback framework and the QROM-based phase kickback framework show only slight differ-ences. These results demonstrate that the wavefunction flow simulation through the QNN-based phase kickback framework achieves accuracy comparable to that of the simulation using the QROM-based phase kickback framework. 
+
+4.4.2 Circuit resource comparison 
+
+We measured the number of CNOT gates used in (i) QNN and QROM circuits, (ii) QNN-based phase kickback and QROM-based phase kickback frameworks for the simulation of e−iβD Vt corresponding to the potential function V1(x, t ) with different numbers of address qubits. The number of ancilla qubits was set to 6. Figure 18 presents the trends of the CNOT gate counts with different numbers of address qubits. Detailed statistics for QNN and QROM circuits, as well as the corresponding phase kickback frameworks, are shown in Table 5. 3 4 5Number of address qubits 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 Number of CNOT gates 1e4 Resource Comparison of QNN and QROM oracles 
+
+> QNN QROM
+
+Fig. 18 The number of CNOT gates in QNN and QROM circuits obtained from decomposition tools in PennyLane for the simulation of e−iβD Vt corresponding to V1(x, t )
+
+.
+
+Table 5 The number of CNOT gates in QNN and QROM circuits, and the corresponding phase kickback frameworks from decomposition tools in PennyLane QNN QROM 
+
+n QNN circuit Phase kickback framework QROM circuit Phase kickback framework 2 192 384 24 48 3 432 864 576 1152 4 960 1920 6080 12160 5 1680 3360 39424 78848 
+
+30 As shown in Figure 18 and Table 5, when n = 2, the numbers of CNOT gates in the QNN and QROM circuits to simulate e−iβD Vt are 192 and 24, respectively. As n
+
+increases from 2 to 5, the number of CNOT gates in the QNN circuit increases to 1680. However, the number of CNOT gates in the QROM circuit increases exponentially to 39424, which is significantly higher than that of the QNN circuit. In addition, the number of CNOT gates required for the QNN-based phase kick-back framework is twice that of the single QNN circuit. The same applies to the QROM-based phase kickback framework, since the phase kickback framework includes a QROM or QNN circuit together with its adjoint. Overall, these results demonstrate that as we introduce more address qubits to improve the precision of the wavefunction flow simulation, the QROM-based frame-work requires more circuit resources than the QNN-based framework. Therefore, our QNN-based framework provides a more efficient method for the implementation of flow models on quantum computers. 
+
+4.5 Error analysis 
+
+We investigate the errors in the phase kickback framework-based wavefunction flow simulation. The primary sources of quantum simulation errors include the approx-imation errors of the values encoded in the phase kickback framework, spatial discretization errors, and temporal discretization errors. 
+
+4.5.1 Phase kickback encoding error 
+
+To simulate the potential evolution operator e−iβV t using the phase kickback frame-work, each diagonal entry Vj ∈ [0 , 1] in DVt must first be encoded in the ancilla register. For a phase kickback framework with m ancilla qubits, the corresponding approximation value ˜Vj is encoded in the quantum circuit ˜Vj =
+
+> m
+
+X
+
+> k=1
+
+bk2−k, (68) where 0 .b 1 · · · bm denotes the binary fractional representation of Vj .Similarly, to simulate the kinetic evolution operator e−iαD K , for any diagonal entry 
+
+Kj ∈ [0 , 1] in the operator DK , whose binary fractional representation is 0 .k 1 · · · km,the approximation value ˜Kj is encoded in the circuit ˜Kj =
+
+> m
+
+X
+
+> i=1
+
+ki2−i. (69) When m changes, the approximation errors EV = | ˜Vj − Vj | and EK = | ˜Kj − Kj | are expected to follow 
+
+EV , E K ∼ 2−m. (70) 31 We set the evolution time T to 0.1 s, and the number of time steps to 100. The potential function was chosen to be 
+
+V (x, t ) = sin( πx/L + 0 .75 t), (71) which is normalized to [0 , 1] using the min-max normalization. The uniform distri-bution was chosen as the initial distribution. We evaluated the errors between the final densities generated by the wavefunction flow simulation and the reference final densities with different values of m. The results are shown in Figure 19. 6 7 8 9 10 11 12 13 14 Number of ancilla qubits m        
+
+> 10 2
+> RMSE
+> 4.7e-02 1.9e-02 9.0e-03 4.8e-03 4.4e-03 4.4e-03 4.4e-03 4.4e-03 4.4e-03
+> Error
+> Fig. 19 Errors between the final probability densities generated by wavefunction flow simulation and the reference final probability densities with different numbers of ancilla qubits m
+
+Increasing the number of ancilla qubits m leads to an increase in the num-ber of binary fractional representation bits of the diagonal entries. According to Equation (70), the corresponding approximation error is expected to decrease. As shown in Figure 19, when the number of ancilla qubits increases from 6 to 14, the final density error decreases from 4.7e-02 to a converged value of 4.4e-03. This indicates that increasing the number of ancilla qubits improves the approximation precision of the phase kickback data encoding and enhances the accuracy of the wavefunction flow simulation. 
+
+4.5.2 Spatial discretization error 
+
+To perform the wavefunction flow simulation corresponding to the continuous Hamilto-nian ˆHt defined in the spatial domain [ −L, L ], the method described in Subsection 3.1.1 was employed for spatial discretization. The domain of each spatial dimension was first discretized into N points 2LN {− N/ 2, −N/ 2 + 1 , . . . , N/ 2 − 1}. The kinetic oper-ator corresponding to each spatial dimension was then discretized into N diagonal entries, and the potential operator was discretized into N d diagonal entries across all 
+
+d dimensions. These diagonal entries are encoded in the phase kickback framework. In the wavefunction flow simulation circuit, spatial discretization depends on the num-ber of address qubits. When the number of address qubits for each spatial dimension is n, the number of discretized points for each dimension is N = 2 n. Each discretized 32 point corresponds to a basis state, into which the associated discretized potential and kinetic entries are encoded. We set the evolution time T to 0.02 s, and the number of time steps Nt to 200. The one-dimensional potential function was given by Equation (71), and the initial distribution was the uniform distribution. The number of address qubits changed from 2 to 8, corresponding to N = [4 , 8, 16 , 32 , 64 , 128 , 256] discretized spatial points and discretization intervals ∆ x = [ 24 , 28 , 216 , 232 , 264 , 2128 , 2256 ]. 0.5 0.25 0.125 0.0625 0.03125 0.015625 0.0078125    
+
+> x
+> 10 5
+> 10 4
+> 10 3
+> RMSE
+> 4.670e-03 1.450e-03 3.713e-04 4.093e-05 1.304e-05 1.079e-05 1.075e-05
+> Quantum simulation
+
+Fig. 20 Errors between the final probability densities generated by wavefunction flow simulation and reference final probability densities with different ∆ x
+
+Figure 20 shows the RMSE between the final probability densities generated by the wavefunction flow simulation and the reference final probability densities with different discretization intervals. When the number of address qubits n increases from 2 to 5, the spatial discretization interval ∆ x = 2 L/ 2n decreases from 0.5 to 0.0625, while the RMSE decreases approximately exponentially from 4.670e-03 to 4.093e-05. This is consistent with the expected rapid decrease of the error, since we adopt Fourier spatial discretization and a smooth periodic initial distribution. As n continues to increase from 5 to 8, corresponding to a decrease in ∆ x from 0.0625 to 0.0078125, the RMSE converges to a value of 1.075e-05. A further decrease of the spatial discretization interval will not lead to a lower error, since the temporal discretization error becomes dominant. These results demonstrate that finer discretized spatial intervals improve the accuracy of the wavefunction flow simulation. 
+
+4.5.3 Temporal discretization error 
+
+For the evolution time T in the wavefunction flow simulation, the method described in Subsection 3.1.1 was employed for temporal discretization. The total time was divided into Nt time intervals [0 , ∆t, 2∆ t, . . . , (Nt −1)∆ t], where ∆ t = T /N t denotes the length of each interval. At each discrete time point, the diagonal operator DVt varies, leading to a different quantum simulation of e−iβD Vt using the Trotter product formula. The diagonal operator DK remains unchanged with time, making the simulation of e−iαD K
+
+identical at different time steps. 33 We set the evolution time T to 0.1 s, and the number of time steps Nt varied in Nt ∈ { 50 , 100 , 200 , 250 , 400 , 500 , 800 , 1000 }, leading to different values of the dis-cretized temporal interval ∆ t = T /N t. The initial distribution was chosen to be the uniform distribution, and the potential function was defined as 
+
+V (x, t ) = (1 + 0 .5 sin (0 .5t)) (sin( πx/L )) ,
+
+which is normalized to [0 , 1] using the min-max normalization. 50 100 200 250 400 500 8001000      
+
+> Nt
+> 10 4
+> 10 3
+> RMSE
+> 1.7e-03 1.2e-03 1.0e-031.0e-03 1.0e-031.0e-03 1.0e-031.0e-03 9.2e-04 4.7e-04 2.6e-04 2.3e-04 1.8e-04 1.7e-04 1.5e-041.5e-04 4.6e-04 2.3e-04 1.2e-04 9.4e-05 6.0e-05 5.0e-05 3.4e-05 3.0e-05
+> n=4 n=5 n=6
+> O(1
+> Nt
+> )
+
+Fig. 21 Errors between the final probability densities generated by the wavefunction flow simulation and reference final probability densities with different Nt under different numbers of address qubits 
+
+Figure 21 exhibits the RMSE between the final probability densities generated by the wavefunction flow simulation and the reference final probability densities with different discretized temporal intervals ∆ t under different discretized spatial points. We chose the number of address qubits to be 4, 5 and 6 for comparison, corresponding to the number of discretized spatial points 16, 32 and 64, respectively, leading to a decrease in ∆ x. As Nt increases and the corresponding ∆ t decreases, the final density errors under all three values of ∆ x decrease. This shows that smaller temporal discretization intervals improve the precision of the wavefunction flow simulation. However, for n = 4, corresponding to ∆ x = 0 .125, the temporal discretization error converges to about 1.0e-03. For n = 5, whose corresponding ∆ x is 0.0625, the temporal discretization error converges to about 1.5e-04. This value is much lower than that of ∆ x = 0 .125. This is more significant when n = 6, where ∆ x decreases further to 0.03125, the temporal discretization error decreases linearly with increasing 
+
+Nt and does not show convergence until Nt = 1000. This is consistent with a straight line scaling as O
+
+ 1
+
+> Nt
+
+
+
+. These results indicate that smaller ∆ x influence the temporal discretization errors less significantly. However, we observe that the decreasing trend does not match the expected temporal discretization error with a scaling O
+
+ 
+
+> 1
+> N3/2
+> t
+
+
+
+as analyzed in Equation (46), this is because the influence of a combination of other sources of error. 34 4.6 Evaluation of wavefunction flow simulation combined with flow matching 
+
+In Subsection 4.4, the potentials employed in the wavefunction flow simulation are fixed. We now consider the potential Vt learned through the flow matching process. Given the initial and target distributions, the flow matching learns a velocity field that governs the transport of particles from the initial distribution to the target distri-bution. We adopted a two-dimensional distribution transport experiment. The initial distribution p0 is uniform in the domain [ −2, 2] × [−2, 2], and the target distribution 
+
+pT consists of four Gaussian balls centered at (1.0, 0), (-1.0, 0), (0, 1.0) and (0, -1.0), each with standard deviation 0.2. The left part of Figure 22 shows the initial and target particle plots. Instead of directly learning the velocity field, we used neural networks to learn the potential Vt using flow matching. The gradient of Vt defines the velocity field that transports particles from p0 to pT . The total evolution time T was set to 2 s, and the number of time steps for particle transport was 2000. Then Vt was learned using a fully connected neural network with layer widths of 5-128-64-32-16-1, and the Tanh activation function was employed in each hidden layer. To satisfy the periodic requirement of the spatial domain, each spatial variable was encoded using sine and cosine functions. Then they were combined with the time variable t, resulting in a 5-dimensional input. The velocity field generated by the learned Vt was then employed to guide particle transportation starting from p0 in the flow model. The right part of Figure 22 presents the final particle plot transported by the velocity field produced by the learned Vt, together with the target particle plot.    
+
+> Fig. 22 The left figure shows the initial and the target particle plots. The right figure shows the final particle plot obtained by the flow model, in which the particles are transported under the velocity field generated by the learned potential Vtthrough flow matching, together with the exact target particle plot
+
+As shown in Figure 22, the flow model successfully transports particles from the initial distribution to the target distribution consisting of four Gaussian balls using 35 the learned potential through flow matching. Although there are a few scattered par-ticles outside each Gaussian ball, they can be regarded as the error generated by flow matching learning. The Vt learned by flow matching was then incorporated into the wavefunction flow simulation as the potential operator in the evolution of e−iβD Vt . The total time T was set to 2 s, and the number of time steps Nt was 200. The number of address qubits for each spatial dimension was set to 3, generating 8 spatial points in each dimension. The evolution was implemented following the process of Figure 2 with the uniform initial distribution. 2 1 0 1x2.0          
+
+> 1.5
+> 1.0
+> 0.5
+> 0.0 0.5 1.0 1.5 y
+> Initial density
+> 2101x2.0
+> 1.5
+> 1.0
+> 0.5
+> 0.0 0.5 1.0 1.5
+> Quantum evolution final density
+> 2101x2.0
+> 1.5
+> 1.0
+> 0.5
+> 0.0 0.5 1.0 1.5
+> Reference final density
+> 2101x2.0
+> 1.5
+> 1.0
+> 0.5
+> 0.0 0.5 1.0 1.5
+> Target density
+> 0.000 0.025 0.050 0.075 0.100 0.125 0.150 0.175 0.200 Probability density
+
+Fig. 23 Comparison of the final probability density obtained by wavefunction flow simulation and the target distribution. The first figure represents the initial probability density, the second figure denotes the final probability density obtained by the wavefunction flow simulation, the third figure shows the the corresponding reference final density, and the last figure shows the target probability density consisting of four Gaussian balls 
+
+Figure 23 shows the initial density, the final probability density obtained by the wavefunction flow simulation, the reference final density generated by the flow model, and the target probability density. Both the final density obtained by the wavefunc-tion flow simulation and the reference final density have four peak regions, which match the target distribution consisting of four Gaussian balls. This indicates that the wavefunction flow simulation, driven by the velocity field generated by Vt learned from the flow matching, successfully generates the target density, and produces results consistent with those obtained from the flow model. Although the probability density value of each peak in the final probability density is lower than those of the reference final density and the target probability density, the similarity between the probabil-ity densities demonstrates that flow matching can be successfully integrated with the wavefunction flow simulation. 
+
+Table 6 Comparison of final probability density errors between wavefunction flow simulation and the reference method Method RMSE Wasserstein-1 distance KL divergence Wavefunction flow simulation 2.248e-2 8.338e-2 2.935e-1 Reference method 3.291e-2 9.213e-2 2.492e+0 
+
+36 Table 6 summarizes the RMSE, Wasserstein-1 distance, and KL divergence between the final probability density generated by the wavefunction flow simulation and the target probability density, as well as those between the corresponding reference final probability density and the target probability density. As shown in Table 6, these val-ues for the wavefunction flow simulation are 2.248e-2, 8.338e-2, and 2.935e-1, which are close to those generated by the reference method. These results demonstrate that the wavefunction flow simulation is comparable to the reference method, i.e. the conven-tional flow model, in generating the target probability density driven by the velocity field learned from flow matching. 
+
+## 5 Conclusion 
+
+We employed a QROM-based phase kickback framework for wavefunction flow simu-lation to verify the wavefunction flow theory, thereby realizing the implementation of flow models on quantum computers. The experimental results show that this frame-work generates final distributions that are highly consistent with those obtained from the corresponding conventional flow model. We also proposed a QNN circuit to replace QROM for more efficient wavefunction flow simulation. Experiments show that our QNN-based phase kickback framework maintains the accuracy of the wavefunction flow simulation compared with the QROM-based phase kickback framework while reduc-ing the circuit resources significantly. These results demonstrate that our approach provides a more efficient framework for implementing flow models on quantum com-puters. Additionally, we incorporate the potential function, which is learned by flow matching, into the wavefunction flow simulation. The results reveal that the final dis-tribution generated by the wavefunction flow simulation successfully reproduces the target distribution and matches those obtained from conventional flow models. Despite promising results, one major constraint of our model is that for a time-dependent potential function, the values of all discretized time steps should be included in the training process of the time-dependent QNN circuit, resulting in considerable training time. Additionally, to encode multi-dimensional potential and kinetic opera-tors in the circuit using QNN frameworks, more than eight QNN layers are required to maintain high precision. This leads to high circuit resources. Further research could explore a more efficient QNN circuit for replacing QROM and encoding data in quan-tum circuits. Furthermore, we aim to develop better strategies for training the QNN circuits, which could lead to a more efficient and accurate implementation of the wavefunction flow. 
+
+Acknowledgements. We would like to express sincere gratitude to Masood Aryapoor from M¨ alardalen University for his help in formulating the theoretical framework, insightful discussions, and guidance in preparing the manuscript. 
+
+## Statements and Declarations 
+
+• Funding This research was partially funded by the initiative AI@MDU. 
+
+• Competing interests The authors declare no competing interests. 
+
+• Ethics approval and consent to participate Not applicable. 37 • Consent for publication Not applicable. 
+
+• Data availability No datasets were generated or analyzed during the current study. 
+
+• Materials availability Not applicable. 
+
+• Code availability The code used in this study will be made available upon reasonable request. 
+
+• Author contribution All authors conceived the research idea. Rui Che conducted the experiments and wrote the main manuscript text. Ludvig af Klinteberg provided guidance and feedback during the research process and manuscript preparation. All authors reviewed the manuscript. 
+
+## References 
+
+Amosy, O., Danzig, T., Lev, O., Porat, E., Chechik, G., Makmal, A.: Iteration-free quantum approximate optimization algorithm using neural networks. Quantum Machine Intelligence 6(2), 38 (2024) https://doi.org/10.1007/s42484-024-00159-y Abbas, A., Sutter, D., Zoufal, C., Lucchi, A., Figalli, A., Woerner, S.: The power of quantum neural networks. Nature computational science 1(6), 403–409 (2021) https://doi.org/10.1038/s43588-021-00084-1 Barenco, A., Bennett, C.H., Cleve, R., DiVincenzo, D.P., Margolus, N., Shor, P., Sleator, T., Smolin, J.A., Weinfurter, H.: Elementary gates for quantum computa-tion. Physical review A 52 (5), 3457 (1995) https://doi.org/10.1103/PhysRevA.52. 3457 Berry, D.W., Childs, A.M., Cleve, R., Kothari, R., Somma, R.D.: Simulating hamilto-nian dynamics with a truncated taylor series. Physical review letters 114 (9), 090502 (2015) https://doi.org/10.1103/PhysRevLett.114.090502 Babbush, R., Gidney, C., Berry, D.W., Wiebe, N., McClean, J., Paler, A., Fowler, A., Neven, H.: Encoding electronic spectra in quantum circuits with linear t complex-ity. Physical Review X 8(4), 041015 (2018) https://doi.org/10.1103/PhysRevX.8. 041015 Benedetti, M., Lloyd, E., Sack, S., Fiorentini, M.: Parameterized quantum circuits as machine learning models. Quantum science and technology 4(4), 043001 (2019) https://doi.org/10.1088/2058-9565/ab4eb5 Bond-Taylor, S., Leach, A., Long, Y., Willcocks, C.G.: Deep generative modelling: A comparative review of vaes, gans, normalizing flows, energy-based and autoregressive models. IEEE transactions on pattern analysis and machine intelligence 44 (11), 7327–7347 (2021) https://doi.org/10.1109/TPAMI.2021.3116668 Chen, Y.-A., Childs, A.M., Hafezi, M., Jiang, Z., Kim, H., Xu, Y.: Efficient product formulas for commutators and applications to quantum simulation. Physical Review Research 4(1), 013191 (2022) https://doi.org/10.1103/PhysRevResearch.4.013191 38 Cong, I., Choi, S., Lukin, M.D.: Quantum convolutional neural networks. Nature Physics 15 (12), 1273–1278 (2019) https://doi.org/10.1038/s41567-019-0648-8 Cleve, R., Ekert, A., Macchiavello, C., Mosca, M.: Quantum algorithms revisited. Proceedings of the Royal Society of London. Series A: Mathematical, Physical and Engineering Sciences 454 (1969), 339–354 (1998) https://doi.org/10.1098/rspa.1998. 0164 Crum, N.A., Sunny, L., Ronagh, P., Laflamme, R., Balu, R., Siopsis, G.: Stochastic security as a performance metric for quantum-enhanced generative ai. Quantum Machine Intelligence 7(1), 25 (2025) https://doi.org/10.1007/s42484-025-00256-6 Childs, A.M., Su, Y., Tran, M.C., Wiebe, N., Zhu, S.: Theory of trotter error with commutator scaling. Physical Review X 11 (1), 011020 (2021) https://doi.org/10. 1103/PhysRevX.11.011020 Childs, A.M., Wiebe, N.: Product formulas for exponentials of commutators. Journal of Mathematical Physics 54 (6) (2013) https://doi.org/10.1063/1.4811386 Dormand, J.R., Prince, P.J.: A family of embedded runge-kutta formulae. Journal of computational and applied mathematics 6(1), 19–26 (1980) https://doi.org/10. 1016/0771-050X(80)90013-3 Feng, R., Yu, C., Deng, W., Hu, P., Wu, T.: On the guidance of flow matching. arXiv preprint arXiv:2502.02150 (2025) https://doi.org/10.48550/arXiv.2502.02150 Gidney, C., Eker˚ a, M.: How to factor 2048 bit rsa integers in 8 hours using 20 million noisy qubits. Quantum 5, 433 (2021) https://doi.org/10.22331/q-2021-04-15-433 Goodfellow, I.J., Pouget-Abadie, J., Mirza, M., Xu, B., Warde-Farley, D., Ozair, S., Courville, A., Bengio, Y.: Generative adversarial nets. Advances in neural information processing systems 27 (2014) Gat, I., Remez, T., Shaul, N., Kreuk, F., Chen, R.T., Synnaeve, G., Adi, Y., Lipman, Y.: Discrete flow matching. Advances in Neural Information Processing Systems 37 ,133345–133385 (2024) https://doi.org/10.48550/arXiv.2407.15595 Hann, C.T., Lee, G., Girvin, S., Jiang, L.: Resilience of quantum random access mem-ory to generic noise. Prx Quantum 2(2), 020311 (2021) https://doi.org/10.1103/ PRXQuantum.2.020311 Heya, K., Nakanishi, K.M., Mitarai, K., Yan, Z., Zuo, K., Suzuki, Y., Sugiyama, T., Tamate, S., Tabuchi, Y., Fujii, K., et al. : Subspace variational quantum sim-ulator. Physical Review Research 5(2), 023078 (2023) https://doi.org/10.1103/ PhysRevResearch.5.023078 Innan, N., Sawaika, A., Dhor, A., Dutta, S., Thota, S., Gokal, H., Patel, N., Khan, 39 M.A.-Z., Theodonis, I., Bennai, M.: Financial fraud detection using quantum graph neural networks. Quantum Machine Intelligence 6(1), 7 (2024) https://doi.org/10. 1007/s42484-024-00143-6 Kingma, D.P., Ba, J.: Adam: A method for stochastic optimization. arXiv preprint arXiv:1412.6980 (2014) https://doi.org/10.48550/arXiv.1412.6980 Knuth, D.E.: Big omicron and big omega and big theta. ACM Sigact News 8(2), 18–24 (1976) https://doi.org/10.1145/1008328.1008329 Kornell, A., Selinger, P.: Some improvements to product formula circuits for hamilto-nian simulation. arXiv preprint arXiv:2310.12256 (2023) https://doi.org/10.48550/ arXiv.2310.12256 Kingma, D.P., Welling, M.: Auto-encoding variational bayes. arXiv preprint arXiv:1312.6114 (2013) Li, Y., Benjamin, S.C.: Efficient variational quantum simulator incorporating active error minimization. Physical Review X 7(2), 021050 (2017) https://doi.org/10.1103/ PhysRevX.7.021050 Lee, J., Berry, D.W., Gidney, C., Huggins, W.J., McClean, J.R., Wiebe, N., Bab-bush, R.: Even more efficient quantum computations of chemistry through tensor hypercontraction. PRX quantum 2(3), 030305 (2021) https://doi.org/10.1103/ PRXQuantum.2.030305 Low, G.H., Chuang, I.L.: Hamiltonian simulation by qubitization. Quantum 3, 163 (2019) https://doi.org/10.22331/q-2019-07-12-163 Lipman, Y., Chen, R.T., Ben-Hamu, H., Nickel, M., Le, M.: Flow matching for gener-ative modeling. arXiv preprint arXiv:2210.02747 (2022) https://doi.org/10.48550/ arXiv.2210.02747 Liu, X., Gong, C., Liu, Q.: Flow straight and fast: Learning to generate and transfer data with rectified flow. arXiv preprint arXiv:2209.03003 (2022) https://doi.org/10. 48550/arXiv.2209.03003 Lipman, Y., Havasi, M., Holderrieth, P., Shaul, N., Le, M., Karrer, B., Chen, R.T., Lopez-Paz, D., Ben-Hamu, H., Gat, I.: Flow matching guide and code. arXiv preprint arXiv:2412.06264 (2024) https://doi.org/10.48550/arXiv.2412.06264 Layden, D., Sweke, R., Havl´ ıˇ cek, V., Chowdhury, A., Neklyudov, K.: Wavefunc-tion flows: Efficient quantum simulation of continuous flow models. arXiv preprint arXiv:2510.08462 (2025) https://doi.org/10.48550/arXiv.2510.08462 Low, G.H., Su, Y., Tong, Y., Tran, M.C.: Complexity of implementing trotter steps. PRX Quantum 4(2), 020323 (2023) https://doi.org/10.1103/PRXQuantum. 4.020323 40 Mahmud, J., Mashtura, R., Fattah, S.A., Saquib, M.: Quantum convolutional neu-ral networks with interaction layers for classification of classical data. Quantum Machine Intelligence 6(1), 11 (2024) https://doi.org/10.1007/s42484-024-00145-4 Nielsen, M.A., Chuang, I.L.: Quantum Computation and Quantum Information. Cambridge university press, Cambridge, UK (2010) Paquet, E., Soleymani, F.: Quantumleap: Hybrid quantum neural network for financial predictions. Expert Systems with Applications 195 , 116583 (2022) https://doi.org/ 10.1016/j.eswa.2022.116583 Romero, J., Olson, J.P., Aspuru-Guzik, A.: Quantum autoencoders for efficient com-pression of quantum data. Quantum Science and Technology 2(4), 045001 (2017) https://doi.org/10.1088/2058-9565/aa8072 Ruiz-Perez, L., Garcia-Escartin, J.C.: Quantum arithmetic with the quantum fourier transform. Quantum Information Processing 16 (6), 152 (2017) https://doi.org/10. 1007/s11128-017-1603-1 Schuld, M., Bergholm, V., Gogolin, C., Izaac, J., Killoran, N.: Evaluating analytic gradients on quantum hardware. Physical Review A 99 (3), 032331 (2019) https: //doi.org/10.1103/PhysRevA.99.032331 Siemaszko, M., Buraczewski, A., Le Saux, B., Stobi´ nska, M.: Rapid training of quan-tum recurrent neural networks. Quantum Machine Intelligence 5(2), 31 (2023) https://doi.org/10.1007/s42484-023-00117-0 Smaldone, A.M., Shee, Y., Kyro, G.W., Xu, C., Vu, N.P., Dutta, R., Farag, M.H., Galda, A., Kumar, S., Kyoseva, E., et al. : Quantum machine learning in drug dis-covery: Applications in academia and pharmaceutical industries. Chemical Reviews 
+
+125 (12), 5436–5460 (2025) https://doi.org/10.48550/arXiv.2409.15645 Schuld, M., Sinayskiy, I., Petruccione, F.: The quest for a quantum neural net-work. Quantum Information Processing 13 (11), 2567–2586 (2014) https://doi.org/ 10.1007/s11128-014-0809-8 Tian, J., Sun, X., Du, Y., Zhao, S., Liu, Q., Zhang, K., Yi, W., Huang, W., Wang, C., Wu, X., et al. : Recent advances for quantum neural networks in generative learning. IEEE Transactions on Pattern Analysis and Machine Intelligence 45 (10), 12321–12340 (2023) https://doi.org/10.1109/TPAMI.2023.3272029 Van Den Oord, A., Kalchbrenner, N., Kavukcuoglu, K.: Pixel recurrent neural net-works. In: International Conference on Machine Learning, pp. 1747–1756 (2016). https://doi.org/10.48550/arXiv.1601.06759 . PMLR Verdon, G., McCourt, T., Luzhnica, E., Singh, V., Leichenauer, S., Hidary, J.: Quan-tum graph neural networks. arXiv preprint arXiv:1909.12264 (2019) https://doi. 41 org/10.48550/arXiv.1909.12264 Watson, J.D., Watkins, J.: Exponentially reduced circuit depths using trotter error mitigation. PRX Quantum 6(3), 030325 (2025) https://doi.org/10.1103/kw39-yxq5 Yoshida, Y., Miyato, T.: Spectral norm regularization for improving the generaliz-ability of deep learning. arXiv preprint arXiv:1705.10941 (2017) https://doi.org/10. 48550/arXiv.1705.10941 Zindorf, B., Bose, S.: Efficient implementation of multicontrolled quantum gates. Physical Review Applied 24 (4), 044030 (2025) https://doi.org/10.1103/8blx-nfcr Zhao, R., Wang, S.: A review of quantum neural networks: methods, models, dilemma. arXiv preprint arXiv:2109.01840 (2021) https://doi.org/10.48550/arXiv.2109.01840 42

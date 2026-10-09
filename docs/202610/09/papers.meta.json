@@ -1,0 +1,39 @@
+{
+  "label": "2026-10-09",
+  "date": "2026-10-09",
+  "generated_at": "2026-10-09T23:05:14",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202610/09/2610.03254v1-quantum-approaches-for-particle-in-cell-codes",
+      "section": "quick",
+      "title_en": "Quantum approaches for particle-in-cell codes",
+      "authors": "Ryan J. J. Connor, Andrew J. Daley, Callum W. Duncan, Preetma Soin",
+      "date": "2026-10-02",
+      "pdf": "https://arxiv.org/pdf/2610.03254v1",
+      "score": "6.0",
+      "evidence": "张量网络量子方法求解非线性等离子体偏微分方程",
+      "tldr": "求解等离子体高维非线性偏微分方程仍是重大计算挑战，传统粒子网格（PIC）方法在工业相关场景中依然昂贵。本文发展基于张量网络的量子启发方法，并与标准PIC代码对比，探讨其突破传统瓶颈的能力。作者进一步扩展张量网络表述，使其支持在任意空间位置注入电磁场。通过激光场加速等离子体的演示，为外部驱动等离子体系统的张量网络模拟迈出关键一步。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Solving the high-dimensional, nonlinear partial differential equations that govern the rich physics of plasmas remains a major computational challenge. In fluid dynamics, quantum-inspired methods based on tensor-network techniques have recently emerged as a promising new paradigm, offering large degrees of data compression on conventional hardware and a natural pathway towards solving exponentially large problems on quantum computers. Early studies suggest that tensor-network methods may also help overcome key bottlenecks in computational plasma dynamics, particularly for industry-relevant scenarios where conventional simulations remain costly. In this work, we present recent progress in developing tensor-network methods compared to standard particle-in-cell codes and discuss their capability to overcome the bottlenecks of conventional approaches. We further extend the tensor-network formulation to support the insertion of electromagnetic fields at arbitrary spatial locations. This capability is demonstrated through the injection of a laser field to accelerate a plasma, providing a key step towards tensor-network-based simulation of externally driven plasma systems.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/09/2610.11537v1-an-efficient-quantum-circuit-for-flow-model-execution-using-quantum-neural-networks",
+      "section": "quick",
+      "title_en": "An Efficient Quantum Circuit for Flow Model Execution Using Quantum Neural Networks",
+      "authors": "Rui Che, Ludvig af Klinteberg",
+      "date": "2026-10-08",
+      "pdf": "https://arxiv.org/pdf/2610.11537v1",
+      "score": "6.0",
+      "evidence": "通过薛定谔演化量子模拟流模型常微分方程",
+      "tldr": "流模型通过求解速度场定义的常微分方程，将初始分布输运至目标分布；波函数流借助连续性哈密顿量建立其与量子动力学的联系。本文研究波函数流的量子模拟，先提出基于QROM的相位回踢框架，使生成概率密度逼近经典流模型。为降低电路开销，又将训练好的量子神经网络嵌入该框架替代QROM编码。数值实验表明，该方法在保持精度的同时显著减少量子电路资源，实现流模型在量子计算机上的高效执行。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Flow models generate trajectories from an initial distribution to a target distribution by solving an ordinary differential equation defined by a velocity field. Flow matching learns this velocity field by modeling the transport dynamics between the two distributions. Wavefunction flow establishes a formal connection between flow models and quantum dynamics by introducing a continuity Hamiltonian, which drives the Schrödinger evolution of quantum states. In this paper, we investigate accurate and efficient quantum simulation of the wavefunction flow, thereby realizing the efficient implementation of flow models on quantum computers. We first leverage a quantum read-only memory (QROM)-based phase kickback framework for the wavefunction flow simulation, generating probability densities that closely match those produced by the corresponding conventional flow model. To address the high circuit-resource cost, we further incorporate a trained quantum neural network (QNN) into the phase kickback framework, replacing QROM for data encoding. Numerical experiments demonstrate that our proposed method implements flow models on quantum computers more efficiently, since it maintains the accuracy of wavefunction flow simulation compared with the QROM-based framework, and significantly reduces the circuit resources.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
