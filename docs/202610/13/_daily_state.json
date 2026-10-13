@@ -1,0 +1,41 @@
+{
+  "date": "20261013",
+  "date_label": "",
+  "generated_at": "2026-10-13 01:33:13 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.13228v1",
+      "route": "202610/13/2610.13228v1-block-encoding-of-semiseparable-matrices-via-their-generators",
+      "title": "Block encoding of semiseparable matrices via their generators",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "显式量子线路构造半可分矩阵的块编码",
+      "first_seen_at": "2026-10-13 01:33:13 UTC",
+      "updated_at": "2026-10-13 01:33:13 UTC"
+    },
+    {
+      "paper_id": "2610.13784v1",
+      "route": "202610/13/2610.13784v1-locality-preparation-time-tradeoffs-in-dissipative-quantum-systems",
+      "title": "Locality-Preparation Time Tradeoffs in Dissipative Quantum Systems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "耗散开系统动力学与局域性-制备时间权衡",
+      "first_seen_at": "2026-10-13 01:33:13 UTC",
+      "updated_at": "2026-10-13 01:33:13 UTC"
+    }
+  ]
+}

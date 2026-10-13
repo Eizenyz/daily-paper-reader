@@ -1,0 +1,97 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-13T01:32:28.318901+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 0,
+    "deep_cap": 7,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 12,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2610.13228v1",
+      "source": "arxiv",
+      "title": "Block encoding of semiseparable matrices via their generators",
+      "abstract": "We present an explicit quantum circuit that constructs a block encoding of a generator-representable semiseparable (one-pair) matrix directly from its two generators. For an $N\\times N$ semiseparable matrix with $N=2^{n}$, the circuit uses $2n+2$ ancilla qubits and has $O({\\rm polylog} N)$ depth, and it realizes a $(2\\sqrt{N},\\,2n+2,\\,2 \\sqrt{2}\\ \\varepsilon)$-block encoding, where $\\varepsilon$ is controlled by the accuracy of the state-preparation routines that load the generators. The building blocks of the circuit are cyclic shifts, swaps, and Hadamard gates, each admitting an efficient implementation through the binary decomposition of the relevant indices.",
+      "authors": [
+        "Giacomo Antonioli",
+        "Gianna M. Del Corso",
+        "Roel Van Beeumen"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.NA"
+      ],
+      "published": "2026-10-09T08:47:10+00:00",
+      "link": "https://arxiv.org/pdf/2610.13228v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "explicit quantum circuit constructing a block encoding of semiseparable matrices",
+      "llm_evidence_cn": "显式量子线路构造半可分矩阵的块编码",
+      "llm_evidence": "显式量子线路构造半可分矩阵的块编码",
+      "canonical_evidence": "显式量子线路构造半可分矩阵的块编码",
+      "llm_tldr_en": "This paper gives an explicit circuit that builds a block encoding of generator-representable semiseparable matrices directly from their two generators, using O(polylog N) depth.",
+      "llm_tldr_cn": "针对一般矩阵块编码线路深度大、依赖繁重预处理的问题，本文提出从半可分矩阵的两个生成元直接构造块编码的显式量子线路。方法仅使用循环移位、交换和Hadamard门，借助索引的二进制分解高效实现，使用2n+2个辅助比特且深度为O(polylog N)。所得块编码误差由生成元态制备精度控制，为量子算法中结构化矩阵的访问提供了高效途径，可迁移到线性系统与微分方程求解等任务。",
+      "llm_tldr": "针对一般矩阵块编码线路深度大、依赖繁重预处理的问题，本文提出从半可分矩阵的两个生成元直接构造块编码的显式量子线路。方法仅使用循环移位、交换和Hadamard门，借助索引的二进制分解高效实现，使用2n+2个辅助比特且深度为O(polylog N)。所得块编码误差由生成元态制备精度控制，为量子算法中结构化矩阵的访问提供了高效途径，可迁移到线性系统与微分方程求解等任务。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "block encoding techniques for accessing matrices in quantum algorithms",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.13784v1",
+      "source": "arxiv",
+      "title": "Locality-Preparation Time Tradeoffs in Dissipative Quantum Systems",
+      "abstract": "Dissipative state preparation engineers quantum many-body states as steady states of an open-system dynamics. The spatial range of the required dissipation sets both the feasibility of analog implementations and the connectivity and control complexity of digital ones. Yet how this locality quantitatively constrains preparation times remains largely unknown. Here, we establish an exact locality-preparation time relation for quadratic fermionic systems and develop a construction that optimizes the locality of the dissipative dynamics while preserving the target state. Applied to the Kitaev chain, our framework reveals sharply different locality-preparation time tradeoffs in critical and gapped regimes. At criticality, suppressing the algebraic tails of the jump operators necessarily forces the preparation time to grow algebraically with system size. By contrast, both trivial and topological gapped phases admit exponentially localized dissipation with a finite preparation time in the thermodynamic limit. Our results identify when fast dissipative preparation is compatible with local control and when criticality imposes an unavoidable dynamical cost.",
+      "authors": [
+        "Philipp Westhoff",
+        "Sara Murciano",
+        "Mattia Moroder"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cond-mat.stat-mech"
+      ],
+      "published": "2026-10-09T16:03:49+00:00",
+      "link": "https://arxiv.org/pdf/2610.13784v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Dissipative open-system dynamics and locality-preparation time tradeoffs",
+      "llm_evidence_cn": "耗散开系统动力学与局域性-制备时间权衡",
+      "llm_evidence": "耗散开系统动力学与局域性-制备时间权衡",
+      "canonical_evidence": "耗散开系统动力学与局域性-制备时间权衡",
+      "llm_tldr_en": "Establishes an exact locality-preparation time relation for quadratic fermionic dissipative dynamics, applied to the Kitaev chain.",
+      "llm_tldr_cn": "该工作关注耗散态制备中，耗散的空间局域性如何定量限制制备时间这一未知问题。作者针对二次费米子系统建立精确的局域性-制备时间关系，并构造在保持目标态的同时优化耗散局域性的方案。将其应用于Kitaev链，揭示临界与能隙区制下截然不同的权衡行为，为开放系统动力学的数字与模拟实现提供指导。",
+      "llm_tldr": "该工作关注耗散态制备中，耗散的空间局域性如何定量限制制备时间这一未知问题。作者针对二次费米子系统建立精确的局域性-制备时间关系，并构造在保持目标态的同时优化耗散局域性的方案。将其应用于Kitaev链，揭示临界与能隙区制下截然不同的权衡行为，为开放系统动力学的数字与模拟实现提供指导。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -1,0 +1,1578 @@
+Title: Block encoding of semiseparable matrices via their generators
+
+URL Source: https://arxiv.org/pdf/2610.13228v1
+
+Published Time: Mon, 12 Oct 2026 00:52:59 GMT
+
+Number of Pages: 28
+
+Markdown Content:
+BLOCK ENCODING OF SEMISEPARABLE MATRICES VIA THEIR GENERATORS ∗
+
+GIACOMO ANTONIOLI † , GIANNA M. DEL CORSO ‡ , AND ROEL VAN BEEUMEN §
+
+Abstract. We present an explicit quantum circuit that constructs a block encoding of a generator-representable semiseparable (one-pair) matrix directly from its two generators. For an 
+
+N × N semiseparable matrix with N = 2n, the circuit uses 2 n + 2 ancilla qubits and has O(polylog N )
+
+depth, and it realizes a (2√N , 2n + 2, 2√2 ε)-block encoding, where ε is controlled by the accuracy of the state-preparation routines that load the generators. The building blocks of the circuit are cyclic shifts, swaps, and Hadamard gates, each admitting an efficient implementation through the binary decomposition of the relevant indices. 
+
+Key words. block encoding, semiseparable matrices, quantum linear algebra, quantum circuits 
+
+MSC codes. 68Q25, 68R10, 68U05, 15A23, 65F99 
+
+1. Introduction. Block encodings are the standard input model for quantum linear algebra. Indeed, quantum algorithms for solving linear systems, estimating spectral quantities, or applying matrix functions all assume access to a unitary whose leading block is a suitably scaled copy of the target matrix, and their efficiency is in-herited from the quality of that encoding, namely its ancilla count, its circuit depth, and the subnormalization factor by which the matrix is scaled. Since most algorithms simply presuppose such access, explicit and economical constructions have drawn increasing attention. Structured matrices have long been a source of algorithmic gains in classical numerical linear algebra: sparsity patterns, displacement structure, banded-ness and off-diagonal low-rank structure each translate into fast solvers, and it is natural to ask whether the same structure yields analogous savings on a quan-tum computer. For sparse matrices Camps et al. [5] give circuits acting directly on the sparsity pattern, while FABLE [6] targets arbitrary dense matrices through an approximate, compressible circuit. For matrices with displacement structure this is by now well established. Effi-cient quantum circuits and block encodings have been designed for circulant, Toeplitz and Hankel matrices by exploiting their parametrization through a small number of generators and their close relationship with the quantum Fourier transform [19, 31]; displacement-structured matrices have been decomposed into linear combinations of shift matrices to yield ε-approximate block encodings in both black-box and QRAM data-access models [30], and more recent work builds block encodings directly from an arithmetic description of a matrix’s sparsity and repeated-value pattern, with 
+
+> ∗
+
+Submitted to the editors DATE. 
+
+Funding: G.Antonioli and G. Del Corso carried out this study within the National Centre on HPC, Big Data and Quantum Computing - SPOKE 10 (Quantum Computing) and received funding from the European Union Next-GenerationEU - National Recovery and Resilience Plan (NRRP) – MISSION 4 COMPONENT 2, INVESTMENT N. 1.4 – CUP N. I53C22000690001. Partial support for these authors was also provided by the INdAM - GNCS project “Strutture di matrici e di funzioni per la sintesi di circuiti quantistici efficienti”, CUP E53C23001670001. G. Del Corso is also partially supported by the U.S. Department of Energy, Office of Science, National Quantum Information Science Research Centers, Superconducting Quantum Materials and Systems Center (SQMS), under Contract No. 89243024CSC000002. 
+
+> †
+
+Department of Computer Science, University of Pisa, Italy (giacomo.antonioli@phd.unipi.it). 
+
+> ‡
+
+Department of Computer Science, University of Pisa, Italy (gianna.delcorso@unipi.it). 
+
+> §
+
+Applied Mathematics and Computational Research Division, Lawrence Berkeley National Lab-oratory, Berkeley, CA 94720, USA 1arXiv:2610.13228v1 [quant-ph] 9 Oct 2026 2 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+Toeplitz matrices as a guiding example [25]. For rank-structured matrices, Nguyen, Kiani and Lloyd [23] block-encode hierarchical (HODLR/HSS) kernel matrices by re-cursively combining encodings of their low-rank blocks through linear combinations of unitaries, attaining near-optimal linear-system runtimes for dense, full-rank kernels, and Tang and Lai [26] obtain a direct hierarchical encoding that lowers the required oracle access from O(N 2) to O(N ) entries. The common thread across these results is that it is data sparsity, i.e., the number of parameters needed to describe the matrix, rather than the number of its nonzero entries that governs the achievable quantum cost, exactly as it governs classical complexity. Generator-representable semiseparable matrices are a particularly clean instance of this principle: the entire N × N matrix is fixed by two length-N vectors, giving a data-sparse yet dense, full-rank object. Beyond their defining role as inverses of irre-ducible tridiagonal matrices, they arise as the Green’s functions of two-point bound-ary value problems, as covariance matrices of Gauss–Markov and Brownian-motion type processes in statistics and filtering, in the oscillation theory of small mechanical vibrations, and in the theory of orthogonal polynomials [12, 29]. A first quantum block encoding tailored to this class was recently proposed in [1], where S is encoded through a triangular-diagonal factorization; the resulting circuit has polylogarithmic depth, but the factorization is paid for by a subnormalization factor and an error that both grow as O(N 2). In this work we show that no factorization is needed. Loading the two generators into separate registers already produces every product uivj , hence every entry of S(u, v ), and an explicit circuit of cyclic shifts, swaps and Hadamard gates discards the spurious products and routes each entry to its place in the leading block. The resulting encoding has O(polylog N ) depth and uses 2 n + 2 ancillas in-stead of 2 n + 7, while the subnormalization drops from O(N 2) to 2 √N and the error from O(N 2ε) to 2 √2 ε, independently of N . Its only matrix-dependent ingredients are the two state preparations, and it extends to the unsymmetric case. A detailed comparison is given in Section 7. The paper is organized as follows. In Section 2 we introduce the notation and preliminary facts about quantum computation. In Section 3 we review the definition of generator representable semiseparable matrices, in both the symmetric and unsym-metric case. Section 4 introduces the building blocks of our construction, namely the cyclic shift and the composite operators derived from it, together with their circuits. Section 5 is devoted to the main result of this paper, the block encoding of symmetric, generator representable semiseparable matrices: there we present the main idea and the complete circuit, and then assemble the building blocks to prove the theorem. Sec-tion 6 extends the result to unsymmetric generator-representable matrices. Section 7 compares our block encoding with the state of the art for relevant classes of struc-tured matrices. Numerical experiments are presented in Section 8, and conclusions in Section 9. 
+
+2. Quantum Computing preliminaries. This section briefly recalls the qubit formalism, the gates used in our circuits, and the formal notion of a block encoding, on which the statement of Theorem 5.1 relies. The material is entirely standard and is included only to make the paper accessible to readers with a numerical linear algebra background but little prior exposure to quantum computing; a reader already familiar with these notions can skip directly to Section 3. 
+
+Notation. We adopt the bra-ket Dirac notation, writing ⟨⋅∣ and ∣⋅⟩ for row and column vectors respectively. The two canonical basis vectors of C2 are denoted ∣0⟩ = [1, 0]T and ∣1⟩ = [ 0, 1]T . A qubit is a unit vector in the two-dimensional complex BLOCK ENCODING OF SEMISEPARABLE MATRICES 3Hilbert space C2 with basis {∣ 0⟩ , ∣1⟩} ; its most general state is a superposition α ∣0⟩ + 
+
+β ∣1⟩ with ∣α∣2 + ∣ β∣2 = 1. The state of several qubits taken jointly is described by the tensor product of the individual spaces, so that ∣x⟩ ∣ y⟩ = ∣ xy ⟩ = ∣ x⟩ ⊗ ∣ y⟩ ∈ C2 ⊗ C2.More generally, a register of n qubits lives in (C2)⊗n = CN with N = 2n. This space has a natural basis, the computational basis {∣ j⟩} N −1 
+
+> j=0
+
+, where j is the integer whose 
+
+n-bit binary expansion labels the basis state, and ∣j⟩ coincides with the j-th column of the identity matrix IN . A general state of an n-qubit register, 
+
+∣ψ⟩ =  
+
+> N−1
+
+∑
+
+> j=0
+
+αj ∣j⟩ , ∑
+
+> j
+
+∣αj ∣2 = 1,
+
+thus simultaneously carries 2 n complex amplitudes. 
+
+Gates. A quantum computation consists of applying a sequence of unitary ma-trices, called gates, to a qubit register. The single-qubit gates used in this paper are 
+
+H = 1
+
+√2 (1 11 −1) , X = ( 0 11 0) , Z = ( 1 00 −1) , Ry (θ) = ( cos θ 
+
+> 2
+
+− sin θ
+
+> 2
+
+sin θ 
+
+> 2
+
+cos θ
+
+> 2
+
+) .
+
+Among two-qubit gates, we rely on the CNOT and SWAP gates, CNOT =⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+1 0 0 00 1 0 00 0 0 10 0 1 0
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦
+
+, SWAP =⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+1 0 0 00 0 1 00 1 0 00 0 0 1
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦
+
+.
+
+The CNOT gate flips the second qubit whenever the first qubit is in state ∣1⟩, while the SWAP gate exchanges the states of two adjacent qubits. More generally, a controlled-
+
+U gate applies a unitary U to a target register only when a designated control qubit is in a specific state. On a state vector, this means that U is applied to the component of the state in which the control qubit is in the selected state, while the component in which the control qubit is in the complementary state is left unchanged; as an operator, the gate is block-diagonal matrix with respect to the configuration induced by the control qubit, with U acting on one diagonal block and the identity on the other. Multi-controlled gates extend this idea by requiring several control qubits to be in a particular configuration before the target unitary is applied: on a state vector, only the component corresponding to that configuration is transformed by U , while as an operator the gate is block-diagonal, acting as U on the block selected by the configuration and as the identity on all remaining blocks. We define the C-SWAP (c, a, b ) gate as an gate that swaps the qubits indexed by 
+
+a, b and is controlled by the state of the qubit c.A quantum circuit is simply an ordered sequence of gates of this kind. 
+
+Block encodings. In quantum computing all the valid operations require the op-erators to be unitary matrices. In classical numerical linear algebra many problems tackle general matrices, that do not respect this requirement. In order to extend the usage of quantum computing to all the linear algebra problems, we need to be able to represent non unitary matrices in these systems. A way to achieve this is through block encoding techniques: a target matrix A ∈ CM ×N is embedded as the top-left block of a larger unitary matrix UA, scaled by a factor α ≥ ∥ A∥2, i.e. UA encodes A/α.We give below a formal definition. 4 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+Definition 2.1. (Block encoding). Given an n-qubit matrix A (N = 2n), if we can find α, ε ∈ R+ and an (m + n)-qubit unitary matrix UA so that 
+
+∥A − α(⟨ 0m∣ ⊗ IN )UA(∣ 0m⟩ ⊗ IN )∥ 2 ≤ ε
+
+then UA is called an (α, m, ε )-block-encoding of A. In particular, when the block encoding is exact with ε = 0, UA is called an (α, m )-block-encoding of A.
+
+3. Semiseparable Matrices. A matrix is called semiseparable when every sub-matrix extracted from its lower triangular part, and every submatrix extracted from its upper triangular part, has rank at most one, so that its off-diagonal structure is entirely low-rank [11, 29]. Matrices of this kind, and the broader family of rank-structured matrices to which they belong, arise frequently in applications and have long been exploited to design fast algorithms for solving linear systems, computing eigenvalues, and other fundamental tasks in numerical linear algebra [29, 11, 3, 8, 20]. In this paper we focus on the subclass in which the rank-one off-diagonal structure is described globally by two vectors: the generator-representable, or one-pair, semisep-arable matrices, originally introduced in [12] in the context of operator theory. 
+
+Definition 3.1. Given vectors u = ( ui)i=0,...,N −1, v = ( vj )j=0,...,N −1 of dimension 
+
+N , the one-pair matrix associated with u, v is the symmetric N ×N matrix S = S(u, v )
+
+such that 
+
+Si,j =⎧⎪⎪⎨⎪⎪⎩
+
+uivj if i ≤ j, viuj if i ≥ j. 
+
+In other words, 
+
+S = S(u, v ) = ⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+u0v0 u0v1 u0v2 ⋯ u0vN −1
+
+v1u0 u1v1 u1v2 ⋯ u1vN −1
+
+v2u0 v2u1 u2v2 ⋯ u2vN −1
+
+⋮ ⋮ ⋮ ⋱ ⋮
+
+vN −1u0 vN −1u1 vN −1u2 ⋯ uN −1vN −1
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦
+
+.
+
+A well-known property of one-pair matrices is their connection to Jacobi matrices, as stated in the following result [12, 27]. 
+
+Theorem 3.2. Let A be an N × N symmetric tridiagonal matrix of the form 
+
+A =⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+a0 b0
+
+b0 a1 b1
+
+⋱ ⋱ ⋱
+
+bN −3 aN −2 bN −2
+
+bN −2 aN −1
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦
+
+with bi ≠ 0 for i = 0, . . . , N −2. Then the inverse of A is a one-pair matrix. Conversely, the inverse of an invertible one-pair matrix is an irreducible symmetric tridiagonal matrix. 
+
+The unsymmetric analogue is obtained by allowing two independent generator pairs for the two triangular parts; it arises, in particular, as the inverse of a nonsym-metric irreducible tridiagonal matrix. 
+
+Definition 3.3. Given four vectors u, v, x, y ∈ RN with the diagonal compatibility 
+
+uivi = xiyi for i = 0, . . . , N − 1, the associated one-pair matrix S = S(u, v, x, y ) is 
+
+Sij =⎧⎪⎪⎨⎪⎪⎩
+
+xiyj i ≤ j, uj vi i ≥ j. BLOCK ENCODING OF SEMISEPARABLE MATRICES 5The compatibility condition makes the two expressions agree on the diagonal, and for x = u, y = v one recovers the symmetric matrix S(u, v ) of Definition 3.1. The duality between tridiagonal and generator-representable semiseparable matri-ces [24] admits an interesting generalization. A fundamental result due to Asplund [2] establishes that the inverse of a nonsingular band matrix of bandwidth p is semisep-arable of order p, in the sense that every submatrix lying entirely above or below the main diagonal has rank at most p. Equivalently, this can be expressed via the nullity theorem [28]: for an invertible matrix A, the rank of any subblock of A−1 is related to the nullity of a complementary subblock of A, providing a precise quantitative link between the sparsity structure of a matrix and the off-diagonal rank structure of its inverse. These results were developed and extended to the block and nonsymmetric settings by several authors [9, 10], while the structural properties of semiseparable matrices, including uniqueness of the generator representation and behavior under unitary similarity transformations, are studied in [4]. To place the class treated in this paper within the broader landscape of rank-structured matrices, we recall the relevant hierarchy. A matrix is quasiseparable (of order one) when the rank-at-most-one condition is imposed only on its strictly trian-gular submatrices, leaving the diagonal free; adding a free diagonal to a semiseparable matrix yields the semiseparable-plus-diagonal matrices, which are quasiseparable but not, in general, semiseparable. At the top of the hierarchy, HODLR (hierarchically off-diagonal low-rank) and HSS (hierarchically semiseparable) matrices [20] relax the single-level, rank-one condition to a bounded off-diagonal rank imposed recursively across a hierarchical partition of the index set. One thus has the strict inclusions (3.1) {gen.-repr. } ⊊ { semisep. } ⊊ { semisep. + diag. } ⊊ { quasisep. } ⊊ { HODLR/HSS }.
+
+The first inclusion is strict because a diagonal matrix with nonzero entries is semisep-arable but not generator-representable; the third because an irreducible tridiagonal matrix is quasiseparable yet not semiseparable-plus-diagonal. The construction of this paper targets the smallest class in (3.1), and Section 9 discusses its extension to the larger ones. 
+
+4. Building blocks. Before stating and proving our main result, we collect in this section the operators from which the block encoding of Section 5 is assembled, so that each of them can be introduced, and its circuit analyzed, on its own. All of them are built from a single primitive, the cyclic shift, raised to suitable powers. We first recall the shift and its circuit, then state once the square-and-multiply principle used to realize all required powers, and present the composite operators Zblk /Zrblk , Zsel ,
+
+Zfix , and Zflip , giving for each its definition and its circuit. Finally we present the 
+
+UC-SWAP operator. Each operator plays a precise role in the construction: UC-SWAP 
+
+creates the branch carrying the upper triangular part, Zsel discards the spurious products, Zfix moves the surviving entries to their final rows, and Zflip places each column of S in its final position. These roles are explained in Section 5.1, and the operators are applied in Section 5.3. 
+
+4.1. The Cyclic shift and its circuit. The cyclic shift matrix ZN ∈ RN ×N is the fundamental building block used throughout the construction of all subsequent operators. It acts by cyclically permuting the canonical basis, while its adjoint Z†
+
+> N
+
+implements the inverse permutation. For the canonical basis {e0, . . . , e N −1}, their action is 
+
+ZN ej = ej−1 mod N , Z† 
+
+> N
+
+ej = ej+1 mod N .6 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+For instance, for N = 4 and x = [ x0, x 1, x 2, x 3]T we have 
+
+Z4x =⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+0 1 0 00 0 1 00 0 0 11 0 0 0
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+x0
+
+x1
+
+x2
+
+x3
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦=⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+x1
+
+x2
+
+x3
+
+x0
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦
+
+, Z† 
+
+> 4
+
+x =⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+0 0 0 11 0 0 00 1 0 00 0 1 0
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+x0
+
+x1
+
+x2
+
+x3
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦=⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+x3
+
+x0
+
+x1
+
+x2
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦
+
+,
+
+so that ZN moves every entry of a vector one position up, and Z† 
+
+> N
+
+one position down, the entry leaving at one end re-entering at the other. Note that Z† 
+
+> N
+
+= ZN −1 
+
+> N
+
+, Z NN = IN ,and that ZkN performs a cyclic shift of k positions. We will also need the following property, which for citation purposes we formulate as a technical lemma. 
+
+Lemma 4.1. Let D = 2d and let ZD be the cyclic shift on RD . For every ℓ =
+
+0, . . . , d ,
+
+(4.1) Z 2ℓ 
+
+> D
+
+= ZD/2ℓ ⊗ I2ℓ ,
+
+where the shifted factor acts on the d−ℓ most significant qubits and the identity on the 
+
+ℓ least significant ones. The same identity holds for the adjoint, (Z† 
+
+> D
+
+)2ℓ
+
+= Z† 
+
+> D/2ℓ
+
+⊗ I2ℓ .
+
+For example, with D = 4 and ℓ = 1, a shift by two positions acts on pairs of consecutive entries as a whole: 
+
+Z24 =⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+0 0 1 00 0 0 11 0 0 00 1 0 0
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦= [ 0 I2
+
+I2 0 ] = Z2 ⊗ I2, Z24 x =⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+x2
+
+x3
+
+x0
+
+x1
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦
+
+,
+
+so that Z24 reduces to the single-qubit shift Z2 = X applied to the most significant qubit. Cyclic shift admit a natural circuit implementation as a cascade of multi-control-led gates [5]. For instance, when N = 8, a circuit with open controls implements the map x ↦ x − 1 mod 8, corresponding to the operator Z8. Replacing the open controls with closed controls inverts the direction of the shift, yielding x ↦ x + 1 mod 8 and thus implementing Z† 
+
+> 8
+
+. These two implementations are shown in Figure 4.1. 
+
+q0
+
+q1
+
+q2 XZ8: x ↦ x − 1 mod 8 
+
+q0
+
+q1 ●
+
+q2 ● ● XZ† 
+
+> 8
+
+: x ↦ x + 1 mod 8 Fig. 4.1: Circuit representation of Z8 and Z† 
+
+> 8
+
+.
+
+4.2. The square-and-multiply principle. Each composite operator below is block-diagonal, with the j-th block carrying a power Zj of some cyclic shift Z of dimension N = 2n or 2 N = 2n+1, with j = 0, 1, . . . , N − 1. Rather than constructing each power independently, we generate it from the binary decomposition of the index. Writing 
+
+j =
+
+> n−1
+
+∑
+
+> ℓ=0
+
+b(j) 
+
+> ℓ
+
+2ℓ = ( b(j)
+
+> n−1
+
+b(j)
+
+> n−2
+
+⋯b(j) 
+
+> 0
+
+)2, b(j) 
+
+> ℓ
+
+∈ { 0, 1}.BLOCK ENCODING OF SEMISEPARABLE MATRICES 7Here b(j) 
+
+> ℓ
+
+denotes the ℓ-th binary digit of j, starting from the least significant digit. Each binary digit determines whether the corresponding power of the cyclic shift is applied: the least significant digit selects the factor Z, the next digit selects Z2, and, in general, the ℓ-th digit selects Z2ℓ
+
+. Equivalently, 
+
+Zj =
+
+> n−1
+
+∏
+
+> ℓ=0
+
+(Z2ℓ
+
+)b(j)
+
+> ℓ
+
+.
+
+For instance, for N = 4 ( n = 2) and Z = Z4, the indices j = 0, 1, 2, 3 have binary expan-sions (00 )2, (01 )2, (10 )2, (11 )2, so that Z3 = Z2 Z, and the block-diagonal operator carrying Zj in its j-th block factors as 
+
+⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+I4
+
+ZZ2
+
+Z3
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦=⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+I4
+
+I4
+
+Z2
+
+Z2
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦´¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¸¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¶  
+
+> controlled by b1
+
+⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+I4
+
+ZI4
+
+Z
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦´¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¸¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¶  
+
+> controlled by b0
+
+.
+
+The right factor applies Z to the blocks with odd index, i.e. it is Z controlled by the least significant index qubit, while the left factor applies Z2 to the blocks j = 2, 3, i.e. it is Z2 controlled by the most significant one. By Lemma 4.1, Z24 = Z2 ⊗ I2, so the latter reduces to a single CNOT acting on the most significant qubit of the target register. The same construction with n factors yields all N powers Z0, . . . , Z N −1 at once. Consequently each composite operator is realized as a product of n = log 2 N
+
+controlled, structured factors, the ℓ-th controlled by the qubit carrying bℓ. We use this principle repeatedly without further comment. 
+
+4.3. The block-shift operators Zblk and Zrblk . The block-shift operator 
+
+Zblk ∈ R2N 2×2N 2
+
+is a block-diagonal matrix, its j-th diagonal block being the power 
+
+Zj 
+
+> 2N
+
+of the cyclic shift. Explicitly, 
+
+Zblk =⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+I2N 0 0 ⋯ 00 Z2N 0 ⋯ 00 0 Z22N ⋯ 0
+
+⋮ ⋮ ⋮ ⋱ ⋮
+
+0 0 0 ⋯ ZN −12N
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦∈ R2N 2×2N 2
+
+.
+
+Applied to a vector Zblk shifts of j positions the entries of the j-th block of size 2 N .By the square-and-multiply principle 4.2, define for each digit ℓ the block-diagonal factor Z(ℓ) 
+
+> blk
+
+that applies Z2ℓ 
+
+> 2N
+
+to the blocks whose ℓ-th binary digit is one and the identity to the others, i.e. 
+
+Z(ℓ) 
+
+> blk
+
+=⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+Zb(0) 
+
+> ℓ2ℓ
+> 2N
+
+Zb(1) 
+
+> ℓ2ℓ
+> 2N
+
+⋱
+
+Zb(N −1) 
+
+> ℓ2ℓ
+> 2N
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦
+
+.
+
+Then 
+
+Zblk = Z(n−1) 
+
+> blk
+
+Z(n−2) 
+
+> blk
+
+⋯Z(0) 
+
+> blk
+
+,8 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+a product of only n = log N structured block-diagonal matrices. The reverse block-shift operator Zrblk has the same structure but with the diag-onal blocks ordered by decreasing powers of Z† 
+
+> 2N
+
+.
+
+Zrblk =⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣(Z† 
+
+> 2N
+
+)N
+
+0 0 ⋯ 00 (Z† 
+
+> 2N
+
+)N −1
+
+0 ⋯ 00 0 (Z† 
+
+> 2N
+
+)N −2
+
+⋯ 0
+
+⋮ ⋮ ⋮ ⋱ ⋮
+
+0 0 0 ⋯ Z†
+
+> 2N
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦∈ R2N 2×2N 2
+
+.
+
+While Z2N induces an upward cyclic shift, its adjoint Z† 
+
+> 2N
+
+implements the opposite (downward) shift. As a result, Zrblk reverses the direction of the block-wise action of 
+
+Zblk , producing a complementary block structure. Since ZN 
+
+> 2N
+
+= Z−N 
+
+> 2N
+
+= ( Z† 
+
+> 2N
+
+)N
+
+and exponents are taken modulo 2 N , applying a half-period shift to every diagonal block of Zblk turns Zj 
+
+> 2N
+
+into ZN +j 
+
+> 2N
+
+= Z−( N −j) 
+
+> 2N
+
+=(Z† 
+
+> 2N
+
+)N −j
+
+. Hence Zrblk need not to be build independently: (4.2) Zrblk = ( IN ⊗ ZN 
+
+> 2N
+
+)Zblk .
+
+4.4. The operator Zsel and its circuit. The operator Zsel ∈ R4N 2×4N 2
+
+com-bines the two complementary block-shift structures Zblk and Zrblk . Its role is to assemble both operators into a single block-diagonal form and to replicate this struc-ture N times via a Kronecker product with IN , so that each copy acts on a separate diagonal block. It is given by 
+
+Zsel = [ Zblk 00 Zrblk 
+
+] .
+
+Using (4.2), Zsel admits the factorization (4.3) Zsel = ([ I2N 2 00 IN ⊗ ZN
+
+> 2N
+
+] ( I2 ⊗ Zblk )) ,
+
+which applies I2 ⊗ Zblk and then maps the second copy of Zblk to Zrblk via the block-selective half-period shift, avoiding the independent construction of Zrblk .
+
+Circuit. The construction acts on a total of 2 n + 2 qubits, partitioned into two registers of n + 1 qubits each, one used for indexing and the other for the shift it-self. Because the shifts act on a space of dimension 2 N , the shift register requires 
+
+n + 1 qubits. Moreover, because Zsel ranges over all powers of Z2N , from Z02N to 
+
+Z2N −12N , the index register also requires n + 1 qubits to encode the exponent. Following Lemma 4.1 and the binary decomposition, the first controlled gate applies ZN 
+
+> 2N
+
+(real-ized as Z2 ⊗ IN ) , controlled by the leading index qubit. This gate accounts for the largest binary contribution to the exponent of Z2N and distinguishes the lower block from the upper one. The remaining controlled gates implement the decreasing powers 
+
+ZN /22N , Z N /42N , . . . , Z 2N , realized respectively by the shifts Z4, Z 8, . . . , Z 2N on progres-sively larger subregisters, together with identities on the remaining qubits. These gates construct the common block-shift action I2 ⊗ Zblk . The complete construction is represented schematically in Figure 4.2. The depth of the circuit is O(n3).BLOCK ENCODING OF SEMISEPARABLE MATRICES 9
+
+q0 ● . . . q1 ● . . . 
+
+⋮ . . . qn . . . ●
+
+qn+1 Z2 Z4
+
+. . . Z2N
+
+qn+2 . . . 
+
+⋮ . . . q2n+1 . . . 
+
+Fig. 4.2: Circuit for the construction of the operator Zsel .
+
+4.5. The operator Zfix and its circuit. The operator Zfix ∈ R4N 3×4N 3
+
+, extends the previously described shift constructions to a block setting with an internal two-component structure. Its j-th block carries (Z† 
+
+> N
+
+)j on the leading component and the identity on the trailing one. 
+
+Zfix = IN ⊗ I2 ⊗⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+IN
+
+IN
+
+Z†
+
+> N
+
+IN
+
+⋱(Z† 
+
+> N
+
+)N −1
+
+IN
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦∈ R4N 3×4N 3
+
+.
+
+More explicitly, the nontrivial part of the j-th block is determined by the block in-dex. The leading component carries the power (Z† 
+
+> N
+
+)j
+
+, whereas the trailing component remains equal to IN . Therefore, the block structure can be interpreted as 
+
+Z(j) 
+
+> fix
+
+= [ (Z† 
+
+> N
+
+)j
+
+00 IN
+
+] ,
+
+with the appropriate value of j selected by the block index. As for the operator Zblk ,the powers of Z† 
+
+> N
+
+can be generated using the binary decomposition of the index. If 
+
+N = 2n and 
+
+j =
+
+> n−1
+
+∑
+
+> ℓ=0
+
+b(j) 
+
+> ℓ
+
+2ℓ, b(j) 
+
+> ℓ
+
+∈ { 0, 1},
+
+then 
+
+(Z† 
+
+> N
+
+)j
+
+=
+
+> n−1
+
+∏
+
+> ℓ=0
+
+(( Z† 
+
+> N
+
+)2ℓ
+
+)
+
+> b(j)
+> ℓ
+
+.
+
+Each binary digit determines whether the corresponding power of Z† 
+
+> N
+
+is applied to the leading component of the block. The second component is not affected by these operations and remains the identity. Hence, Zfix is obtained by applying the same power-and-multiply construction used for Zblk , with the additional restriction that the controlled inverse shifts act only on the leading subblock of each diagonal block. 10 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+Circuit. We now describe the quantum circuit that implements Zfix . The con-struction uses 2 n + 2 qubits. The first n qubits form an index register that encodes the integer j in binary. An additional qubit acts as a control that enables or disables the shift operations, and the remaining n qubits form the target register on which the operators Z† 
+
+> N
+
+act. Since N = 2n, the target space is represented using n qubits. As before, the power of the shift is generated from the binary decomposition of the index. The controlled gates implement the powers 
+
+(Z† 
+
+> N
+
+)N /2
+
+, (Z† 
+
+> N
+
+)N /4
+
+, . . . , Z † 
+
+> N
+
+,
+
+which are realized on the full target register as 
+
+Z† 
+
+> 2
+
+⊗ IN /2, Z† 
+
+> 4
+
+⊗ IN /4, . . . , Z† 
+
+> N
+
+.
+
+Each qubit of the index register selects one of these powers. Their product therefore gives the required downward shift (Z† 
+
+> N
+
+)j
+
+on the leading component of the j-th block. The additional selection qubit prevents the same shifts from being applied to the second component of the block. When this qubit selects the leading component, the controlled downward shifts are applied; otherwise, the target register is left unchanged. The complete construction is represented schematically in Figure 4.3. 
+
+q0 ● . . . q1 ● . . . 
+
+⋮ . . . qn . . . ●
+
+qn+1 . . . qn+2 Z†
+
+> 2
+
+Z†
+
+> 4
+
+. . . Z†
+
+> N
+
+qn+3 . . . 
+
+⋮ . . . q2n+1 . . . 
+
+Fig. 4.3: Circuit for the construction of the operator Zfix . The index register controls the powers of Z† 
+
+> N
+
+selected by the binary decomposition of the block index, while the additional selection qubit restricts their action to the leading component of each diagonal block. 
+
+4.6. The operator Zflip and its circuit. The block-shift operator Zflip is a block-diagonal matrix whose structure differs from the previously introduced shift-based operators. In this case, the diagonal blocks are constructed directly from tensor products of 2 × 2 Pauli-X matrices and identity operators, without relying on cyclic shift matrices. Each block is determined by a binary index and encodes a correspond-ing tensor product of X0 = I and X1 = X factors, followed by an identity acting on BLOCK ENCODING OF SEMISEPARABLE MATRICES 11 the remaining degrees of freedom: 
+
+Zflip =⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+X0 ⊗ ⋅ ⋅ ⋅ ⊗ X0 ⋯ 0 ⋯ 0
+
+⋮ ⋱ 0 ⋯ 00 ⋯ Xin−1 ⊗ ⋅ ⋅ ⋅ ⊗ Xi0 ⋯ 0
+
+⋮ ⋯ ⋮ ⋱ ⋮
+
+0 ⋯ 0 ⋯ X1 ⊗ ⋅ ⋅ ⋅ ⊗ X1
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦⊗ I2N ∈ R4N 3×4N 3
+
+.
+
+Each diagonal block of Zflip can be described as: 
+
+(Zflip )i = Pi ⊗ I2N , Pi ∶= n−1
+
+⊗
+
+> k=0
+
+Xin−1−k = Xin−1 ⊗ ⋯ ⊗ Xi0 ,
+
+where i = ∑ n−1 
+
+> ℓ=0
+
+iℓ 2ℓ with iℓ ∈ { 0, 1} is the binary decomposition of the block index i,and X0 = I, X1 = X. In each block, the operator Pi applies Pauli-X on the ℓ-th factor whenever iℓ = 1, and acts as the identity otherwise. In other words, Zflip applies a block-dependent pattern of Pauli-X flips determined by the binary representation of the block index, while acting as the identity on the remaining subsystem. We now describe the circuit implementation of Zflip . The construction acts on 2 n + 2 qubits, where the first n qubits encode the binary representation of the index and act as controls. One additional qubit is unused, while the next n qubits form the target registers on which the permutations are applied. 
+
+Circuit. The circuit is built as a sequence of independent controlled-NOT opera-tions implementing the block-dependent bit-flip structure: 
+
+Zflip = ( 
+
+> n−1
+
+∏
+
+> a=0
+
+I2a ⊗ CNOT (a, a + n+1) ⊗ I2n−a−1 ) .
+
+The complete construction is represented schematically in Figure 4.4. 
+
+q0 ● . . . q1 ● . . . 
+
+⋮ . . . qn−1 . . . ●
+
+qn . . . qn+1 . . . qn+2 . . . 
+
+⋮ . . . q2n+1 . . . 
+
+Fig. 4.4: Circuit for the construction of the operator Zflip .
+
+4.7. The UC-SWAP operator. The last building block is the controlled-swap operator UC-SWAP , whose role is to exploit the symmetry of S: within the branch se-lected by the triangular qubit, it exchanges the contents of the two generator registers, turning the blocks uj v into vj u. It is defined as 
+
+UC-SWAP = IN ⊗ ( 
+
+> n
+
+∏
+
+> a=0
+
+I2a ⊗ C-SWAP (n, n + 1 + a, 2n + 2 + a) ⊗ I2n−a−1 ) ,
+
+where C-SWAP (c, a, b ) is the controlled-swap gate introduced in Section 2, which swaps the qubits a and b conditionally on the state of qubit c.12 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+Remark 4.1.1. Let N = 2n. The operators of Section 4 can be realized by circuits with the following depth: 
+
+1. the cyclic shift Z2k of Figure 4.1 has depth O(k2);
+
+2. Zsel , a product of n + 1 singly controlled shifts Z2k , k = 1, . . . , n + 1, has depth 
+
+O(n3);
+
+3. Zfix , a product of n doubly controlled inverse shifts Z† 
+
+> 2k
+
+, k = 1, . . . , n , has depth O(n3);
+
+4. Zflip consists of n CNOT gates acting on pairwise disjoint qubit pairs and has depth O(1);
+
+5. UC-SWAP consists of n C-SWAP gates sharing the same control qubit, and has depth O(n).Consequently, the circuit of Theorem 5.1 in Section 5, which combines these operators with two state preparations, has depth O(log 3 N ) + Dsp , where Dsp denotes the depth of the state-preparation routine. The cost can be lowered using QFT-based algorithm for implementing cyclic shifts, but the overall cost remains polylogarithmic in N .
+
+5. Block encoding of semiseparable matrices. We now state our main re-sult. Section 5.1 gives the high-level idea of the construction together with the com-plete circuit, and Section 5.3 assembles the building blocks of Section 4 and proves correctness, including the error bound. 
+
+Theorem 5.1 (Block encoding of a semiseparable matrix). Let N = 2n and let 
+
+S(u, v ) ∈ RN ×N be the semiseparable matrix with generators u, v ∈ RN . Assume that 
+
+1. the generators are unit-norm, ∥u∥2 = ∥ v∥2 = 1;
+
+2. the state-preparation routines load unit-norm approximations ˜u, ˜v with ∥u −
+
+˜u∥2 ≤ ε and ∥v − ˜v∥2 ≤ ε;
+
+3. the state preparation routines have circuit depth of O(polylog N ).Then there exists a quantum circuit acting on 3n + 2 qubits, with circuit depth of 
+
+O(polylog N ), that implements a (2√N , 2n + 2, 2√2 ε)-block-encoding of S(u, v ).
+
+5.1. Idea of the construction. The starting point is to load the two generators 
+
+u and v as quantum states via a state-preparation routine. Loaded in separated registers in a suitably entangled state, they produce all products uivj . These contain the entries of S(u, v ) which selects uivj on the upper triangular part (for i ≤ j) and 
+
+uj vi for the lower triangular part (for i ≥ j), together with spurious products that do not appear in S. The task of the circuit is therefore twofold: discard the spurious products, and route each surviving entry into the appropriate column of the unitary realizing the block encoding. This is accomplished as follows. A Hadamard gate on an ancillary qubit first duplicates the loaded amplitudes into two branches, intended to carry the lower and the strict upper triangular part of S, respectively; a controlled swap of the two gen-erator registers, conditioned on the branching qubit, exploits the symmetry of S to turn the second branch into the reversed products vj ui. At this stage each branch contains the correct entries of its triangular part interleaved with spurious ones. Afirst shift operator, acting on a doubled register whose extra ∣0⟩ components serve as placeholders, moves the spurious entries out of the way, replacing them with zeros; a second shift operator then repositions the surviving entries so that each block carries a triangular column of S in its final layout. A second Hadamard gate on the branching qubit interferes the two branches, summing the lower and upper contributions and producing the full columns of S, identically replicated across the copies indexed by BLOCK ENCODING OF SEMISEPARABLE MATRICES 13                   
+
+> Zsel Zfix ̃
+> Lj=uj⊗vafter Zsel Lj
+> lower part LZsel Zfix ̃
+> Rj=vj⊗uafter Zsel Rj
+> strict-upper part R
+
++ Zflip H⊗n       
+
+> U6∶Nidentical copies
+> Sjto head of copy jS(leading block)
+> Hon triang. q.
+
+Fig. 5.1: Construction of the block encoding of a 4 × 4 semiseparable matrix, shown on its first N = 4 columns. Colour encodes the u-index a = min (i, j ) and shade the 
+
+v-index b = max (i, j ). Left, top and bottom rows: from ̃ Lj = uj ⊗v and ̃ Rj = vj ⊗u, the shifts Zsel and Zfix produce the lower/upper triangular columns Lj , Rj (background gray = zero, faded = discarded amplitudes). Right column: the Hadamard on the triangular qubit adds the branches, so each of the N identical copies now stacks all columns S0, . . . , S N −1 (U6); Zflip moves Sj to the head of the j-th copy (the four columns become distinct; faded = amplitudes later discarded); finally H⊗n superposes the copies and places S in the leading block. 
+
+q0
+
+Uv
+
+×
+
+Zflip 
+
+Hq1 × Hq2 × Hq3 H ● ● ● 
+
+Zsel 
+
+Hq4
+
+Uu
+
+×
+
+Zfix 
+
+q5 ×
+
+q6 ×
+
+q7
+
+q8 × ×
+
+q9 × ×
+
+q10 × ×
+
+Fig. 5.2: The circuit for the block encoding of a symmetric semiseparable matrix 
+
+S(u, v )14 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+a further n-qubit register. A third shift operator permutes the entries within each copy so that the j-th copy carries the j-th column of S at its top, and a final layer of Hadamard gates on the leading register places the columns side by side, leaving S/α
+
+in the top-left block of the resulting unitary. Since all building blocks are shifts, swaps, and Hadamard gates, the whole con-struction has O(polylog N ) depth, assuming efficient state preparation of the gener-ators. The action of the different shifts on the unitary operator is depicted in Figure 5.1, while the complete circuit is shown in Figure 5.2. 
+
+5.2. Efficient state preparation. The polylogarithmic depth of the circuit stated in Theorem 5.1 is based on the assumption that the generators u and v can be prepared by a state preparation routine whose circuit has a polylogarithmic depth. This holds either when the data are stored in a QRAM [14, 17], or when the generators are samples of a function. In the latter case the entries are never computed one by one. Let ui = g(xi) on the uniform grid xi = i/N of [0, 1], and let P be a polynomial of degree dε with ∥P − g∥∞ ≤ ε∥g∥∞. Since xi is a linear function of the binary digits of i, xi = ∑ n−1 
+
+> ℓ=0
+
+2ℓb(i) 
+
+> ℓ
+
+/N , the diagonal matrix of the grid variable splits as 
+
+D = diag (xi) = 
+
+> n−1
+
+∑
+
+> ℓ=0
+
+2ℓ
+
+N Πℓ, Πℓ = I2 n−1−ℓ ⊗ [ 0 00 1] ⊗ I2ℓ , = diag (b(i) 
+
+> ℓ
+
+)
+
+where Π ℓ is the projector onto the states whose ℓ-th digit is one, a single-qubit opera-tor acting on the ℓ-th qubit. A linear combination of these n commuting terms gives a block encoding of D of depth O(n), whose subnormalization ∑ℓ 2ℓ/N = ( N − 1)/ N
+
+equals ∥D∥2. Quantum singular value transformation builds P (D) with dε applica-tions of that encoding, and the normalized state ∣u⟩ is obtained by applying P (D)
+
+to the uniform superposition H⊗n ∣0⟩ and amplifying the successful branch. The only classical work is the computation of the dε + 1 Chebyshev coefficients of g, whose cost does not depend on N . The depth of the circuit is polylogarithmic if two conditions hold at the same time: dε has to grow at most polylogarithmically, which is the case with dε = O(log (1/ε)) whenever g is analytic on [0, 1], and the maximum modulus of g must be comparable to its root mean square over the grid, this ratio being the number of amplification rounds required [21]. The three-point discretization of a Sturm-Liouville operator gives a family of tridiagonal matrices whose inverses are one-pair matrices, with generators that are available in closed form and satisfy both conditions. Let πk = p(( k + 12 )/( N + 1)) ,
+
+k = 0, . . . , N , be the values of the coefficient at the midpoints of the grid, and let A be the symmetric irreducible tridiagonal matrix with entries ai = πi + πi+1 and bi = − πi+1,the three-point discretization of −( p(x)w′)′ on (0, 1) with Dirichlet conditions and 
+
+p > 0. The matrix to be encoded is S = A−1, which is a one-pair matrix by Theorem 3.2, and writing qk = 1/πk and Σ = ∑ Nk=0 qk its generators are 
+
+ui = 1
+
+√Σ ∑
+
+> k≤i
+
+qk, vj = 1
+
+√Σ ∑
+
+> k>j
+
+qk, i, j = 0, . . . , N − 1,
+
+or equivalently Au = eN −1/vN −1 and Av = e0/u0. They are the discrete counterparts of U (x) = ∫ x 
+
+> 0
+
+dt /p(t) and V (x) = ∫ 1 
+
+> x
+
+dt /p(t), the two solutions of −( pw ′)′ = 0 meeting one of the two boundary conditions. Assume now p analytic on [0, 1] and bounded away from zero. Then 1 /p is analytic, so U and V are analytic and the degree required by the construction above is dε = O(log (1/ε)) , independent of N , which is the first BLOCK ENCODING OF SEMISEPARABLE MATRICES 15 condition. Moreover U and V are monotone and free of interior peaks, so their values are of comparable size across the grid, which is the second condition. The routine above prepares samples of U and V , while the exact generators are the cumulative sums written above. The two vectors are not equal: the sum ∑k≤i qk is the midpoint quadrature rule for the integral (N + 1) ∫ xi 
+
+> 0
+
+dt /p(t), so the relative difference between the two is O(N −2). This difference adds to the error ε of hypothesis 2 of Theorem 5.1. 
+
+5.3. Assembly and proof of Theorem 5.1. 
+
+Proof. We first describe the construction assuming the generators u, v are loaded exactly, and show that it produces an exact block-encoding of S(u, v )/( 2√N ). We then account for the state-preparation error, which is the only source of inexactness. Furthermore, Since only the first N columns of the realized unitary are needed, we project every operator onto ∣0⟩2n+2 ⊗ IN .The circuit used to construct the block-encoding can be organized into five specific registers: 
+
+● An n-qubit register used to load the generator v;
+
+● A one qubit register, that we call the triangular register, used to index the lower or upper triangular part of the matrix; 
+
+● An n-qubit register used to load the generator u;
+
+● A one qubit register, that we call the placeholder register, used for doubling the space of action of the shifts, allowing us to move some spurious elements and replacing them with zeros, when constructing the lower and upper trian-gular matrices; 
+
+● A n qubits register, that we call the replication register, used to replicate the generators. In total the circuit acts on 3 n + 2 qubits. We now review the main steps of the algorithm. We refer to Figure 5.1 for a pictorial representation of the algorithm and to Figure 5.2 for the complete circuit. 
+
+State preparation. The first step is to load into the quantum state the generators 
+
+u, v ∈ RN . Assuming an efficient state-preparation circuit, we define the two operators 
+
+Uu and Uv , which encode the two normalized vectors into the quantum state, i.e. 
+
+Uu ∣0⟩ = u, U v ∣0⟩ = v. We define Ugen ∈ R4N 3×4N 3
+
+, Ugen = Uv ⊗ I2 ⊗ Uu ⊗ I2 ⊗ IN as the operator that loads both generators in the quantum circuit. Looking a the first 
+
+N columns of the operator, that is projecting it onto ∣02n+2⟩ ⊗ IN
+
+Ugen (∣ 02n+2⟩ ⊗ IN ) = ⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+v0u
+
+0N
+
+v1u
+
+0N
+
+⋮
+
+vN −1u
+
+0N
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦⊗ (∣ 0⟩ ⊗ IN ),
+
+where each vector viu has length N and because of the external Kroneker product with IN , the values viuj and viuj+1 are separated by N zeros. 
+
+Reordering. The swap operator USWAP exchanges the v-register with the repli-cation register; it moves the column-indexing identity IN to the leading register and collects the loaded amplitudes into the row blocks uj v, for j = 0, . . . , N − 1. We denote 16 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+the result by U1 = USWAP Ugen , we have 
+
+U1(∣ 02n+2⟩ ⊗ IN ) = ( IN ⊗ ∣ 0⟩) ⊗ ⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+u0v
+
+0N
+
+u1v
+
+0N
+
+⋮
+
+uN −1v
+
+0N
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦
+
+.
+
+Duplication and the second branch. A Hadamard gate on the triangular qubit duplicates each block, U2 = ( IN ⊗ H ⊗ I2N 2 ) U1, producing, up to the global factor 1/√2, two identical branches: one will form the lower-triangular part L of S, the other its strict upper-triangular part R. Since S is symmetric, the strict-upper entries are obtained from the lower ones by reversing the order of the Kronecker product; applying the controlled-swap operator UC-SWAP of Section 4.7 to the second branch turns uj v
+
+into vj u, yielding U3 = UC-SWAP U2. Writing ̃ Lj = uj v and ̃ Rj = vj u for the two (still unprocessed) column blocks, 
+
+U3(∣ 0⟩2n+2 ⊗ IN ) = IN ⊗ 1√2
+
+⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣̃ 
+
+L0
+
+0N
+
+⋮̃ 
+
+LN −1
+
+0Ñ
+
+R0
+
+0N
+
+⋮̃ 
+
+RN −1
+
+0N
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦
+
+,
+
+so that each padded block [̃ Lj ; 0 N ] and [̃ Rj ; 0 N ] has length 2 N and still carries spurious entries, removed in the next steps. 
+
+Selecting the triangular entries. The operator Zsel of Section 4.4 acts within each 2N -block, applying Z j 
+
+> 2N
+
+to the j-th lower block and (Z† 
+
+> 2N
+
+)N −j to the j-th upper block. This brings the wanted entries of L and R into the leading half of each block and routes the spurious entries into the auxiliary (trailing) half, giving U4 = Zsel U3:
+
+U4(∣ 0⟩2n+2 ⊗ IN ) = IN ⊗ 1√2
+
+⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+Z02N [̃ L0; 0 ]
+
+Z12N [̃ L1; 0 ]⋮
+
+ZN −12N [̃ LN −1; 0 ](Z† 
+
+> 2N
+
+)N [̃ R0; 0 ]⋮(Z† 
+
+> 2N
+
+)1 [̃ RN −1; 0 ]⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦
+
+.
+
+After this step the leading halves contain exactly the entries of L and R, though not yet in their final rows. In particular we have (5.1) Zk−12N [ ˜Lk
+
+0N
+
+] = ⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+˜Lk(k ∶ N )
+
+0k−1
+
+0N −k+1
+
+˜Lk(1 ∶ k − 1)⎤⎥⎥⎥⎥⎥⎥⎥⎦
+
+,BLOCK ENCODING OF SEMISEPARABLE MATRICES 17 where Lk(k ∶ N ) contains the entries of the k-th column of L, and (5.2) (Z† 
+
+> 2N
+
+)k [ ˜RN −k+1
+
+0N
+
+] = ⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+0k
+
+˜RN −k+1(1 ∶ N − k)
+
+˜RN −k+1(N − k + 1 ∶ N )
+
+0N −k
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎦
+
+.
+
+At this point, the two sets of blocks contain exactly the correct entries of L and 
+
+R, but not yet in the positions needed to assemble the columns of S.
+
+Placing the entries. The operator Zfix of Section 4.5 completes the placement, shifting the leading N entries of each lower block down by k and those of each upper block up by N − k, so that every entry reaches its final row. The resulting state 
+
+U5 = Zfix U4 carries the same 1 /√2 normalization as U4 and has the columns of L and 
+
+R correctly positioned, with the surplus amplitudes gathered in the trailing N entries (denoted ⋆) of each 2 N -block. A second Hadamard gate on the triangular qubit interferes the two branches and assembles each column Si = Li + Ri, giving U6 = ( IN ⊗ H ⊗ I2N 2 ) U5:
+
+U6(∣ 0⟩2n+2 ⊗ IN ) = IN ⊗ 12
+
+⎡⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎢⎣
+
+S0
+
+⋆
+
+S1
+
+⋆⋮
+
+SN −1
+
+⋆⊛⎤⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎥⎦
+
+,
+
+where Si is the i-th column of S, each ⋆ ∈ RN is a garbage block, and ⊛ ∈ R2N 2
+
+collects the remaining garbage. 
+
+Final mixing. At this stage the tensor factor IN ⊗ means that the stacked columns 
+
+S0, . . . , S N −1 are replicated identically (but shifted of N positions down respect to the previous column) across the N copies indexed by the replication register. The permutation operator Zflip of Section 4.6 selects, within the j-th copy, the column Sj
+
+and moves it to the head of that column-block, producing U7 = Zflip U6, in which the 
+
+j-th column-block carries Sj at its top. Applying n Hadamard gates to the leading register superposes the N copies, UBE = ( H⊗n ⊗ I4N 2 ) U7, and places the columns side by side: 
+
+UBE (∣ 0⟩2n+2 ⊗ IN ) = 12√N
+
+⎡⎢⎢⎢⎢⎢⎢⎢⎣
+
+S0 S1 ⋯ SN −1
+
+⋆ ⋆ ⋯ ⋆⋮ ⋮ ⋱ ⋮⋆ ⋆ ⋯ ⋆⎤⎥⎥⎥⎥⎥⎥⎥⎦
+
+.
+
+The top-left N × N block equals S(u, v )/( 2√N ). All building blocks are Hada-mard gates, swaps, and shift operators, each of O(polylog N ) depth as stated in Remark 4.1.1; together with the assumed O(polylog N ) state preparation, the whole circuit has depth O(polylog N ). Hence, when u and v are loaded exactly, UBE is an exact (2√N , 2n + 2)-block-encoding of S(u, v ).In general the state preparation routines, load unit-norm approximations ˜ u, ˜v, so the circuit described above realizes a block-encoding of S(˜u, ˜v)/( 2√N ), from now on we set S(˜u, ˜v) = ˜S. By Definition 2.1 with α = 2√N , the block-encoding error is 18 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+∥S(u, v ) − S(˜u, ˜v)∥ 2, which we now bound. Set δu = u − ˜u and δv = v − ˜v. The map 
+
+(u, v ) ↦ S(u, v ) is bilinear, so by linearity in each argument 
+
+S(u, v ) − S(˜u, ˜v) = S(δu, v ) + S(˜u, δ v ).
+
+For any a, b ∈ RN the Frobenius norm of S(a, b ) satisfies 
+
+∥S(a, b )∥ 2 
+
+> F
+
+= 2 ∑
+
+> i<j
+
+a2 
+
+> i
+
+b2 
+
+> j
+
++ ∑ 
+
+> i
+
+a2 
+
+> i
+
+b2 
+
+> i
+
+≤ 2 ∥a∥22 ∥b∥22.
+
+Since ∥⋅∥ 2 ≤ ∥⋅∥ F , applying this bound to the two terms gives 
+
+∥S(u, v ) − S(˜u, ˜v)∥ 2 ≤ √2(∥ v∥2∥δu∥2 + ∥ ˜u∥2∥δv ∥2).
+
+Using the unit-norm assumptions ∥v∥2 = ∥ ˜u∥2 = 1 and ∥δu∥2, ∥δv ∥2 ≤ ε, we conclude 
+
+∥S(u, v ) − S(˜u, ˜v)∥ 2 ≤ 2√2 ε, 
+
+so the circuit implements a (2√N , 2n + 2, 2√2 ε)-block-encoding of S(u, v ). In par-ticular, for ε = 0 the encoding is exact. 
+
+6. The unsymmetric case. The construction extends to general (non-symme-tric) generator-representable semiseparable matrices at the sole cost of making the state preparation controlled and of replacing the Hadamard gate on the triangular qubit by a suitable rotation. Before stating the result we discuss why the unit-norm normalization of Theorem 5.1 cannot be carried over unchanged. A one-pair matrix S(u, v, x, y ) of Definition 3.3 is determined by four generators subject to the diagonal compatibility uivi = xiyi, i = 0, . . . , N −1, which makes the two triangular expressions agree on the diagonal. Requiring in addition that all four gen-erators be unit-norm is an overdetermined constraint: normalizing u, v, x, y indepen-dently rescales the two triangular parts by the different factors ∥u∥2∥v∥2 and ∥x∥2∥y∥2,and the compatibility is destroyed unless these two products happen to coincide. In other words, one cannot in general prescribe both ∥u∥2 = ∥ v∥2 = ∥ x∥2 = ∥ y∥2 = 1 and 
+
+uivi = xiyi.We therefore drop the normalization hypothesis altogether and block-encode S =
+
+S(u, v, x, y ) for arbitrary generators. This is possible because the two triangular parts are separately bilinear in their own pair of generators. Writing L(u, v ) for the lower triangular part including the diagonal, Lij = uj vi for i ≥ j, and R(x, y ) for the strictly upper one, Rij = xiyj for i < j, we have S = L(u, v ) + R(x, y ) and, denoting by 
+
+un = u/∥ u∥2 the normalized generators and setting 
+
+wlo = ∥ u∥2∥v∥2, wup = ∥ x∥2∥y∥2,
+
+bilinearity gives (6.1) S(u, v, x, y ) = wlo L(un, v n) + wup R(xn, y n).
+
+The circuit thus loads the four normalized generators, which is what any state-preparation routine produces, while the two scales wlo , w up are classically computable numbers that are absorbed into the subnormalization. The diagonal is supplied by the lower branch and equals wlo un,i vn,i = uivi, i.e. the correct entry: the compat-ibility condition is imposed on the original generators, as in Definition 3.3, and no compatibility is required of their normalized counterparts. BLOCK ENCODING OF SEMISEPARABLE MATRICES 19 
+
+Theorem 6.1. Let N = 2n and let S = S(u, v, x, y ) ∈ RN ×N be a one-pair matrix as in Definition 3.3, with arbitrary nonzero generators. Assume that 
+
+1. the state-preparation routines load approximations ˜un, ˜vn, ˜xn, ˜yn of the nor-malized generators, with error at most ε in the Euclidean norm; 
+
+2. these routines have circuit depth O(polylog N ).Then there exists a quantum circuit acting on 3n + 2 qubits, with depth O(polylog N ),that implements an (α, 2n + 2, 2
+
+√
+
+w2lo + w2up ε)-block-encoding of S, where 
+
+(6.2) α = √N (wlo + wup ) = √N (∥ u∥2∥v∥2 + ∥ x∥2∥y∥2).
+
+Proof sketch. The circuit is that of Theorem 5.1 with two modifications. The triangular qubit, which already selects the lower versus the strict upper branch, is also used to select the pair of generators: on ∣0⟩ the pair (un, v n) is loaded, on ∣1⟩ the pair (xn, y n), into the same registers. Formally Ugen is replaced by a multiplexed operator whose depth is the sum of the two state preparations, hence still O(polylog N ); no additional qubit is required, so the circuit still acts on 3 n + 2qubits. The two Hadamard gates acting on the triangular qubit in the symmetric case, are now replaced by the rotation Ry (ϑ) with (6.3) ϑ = 2 arctan 
+
+√ wup 
+
+wlo 
+
+,
+
+so that the branches are created, and later recombined, with amplitudes cos (ϑ/2) = √wlo /( wlo + wup ) and sin (ϑ/2) = √wup /( wlo + wup ). Using the same angle in both gates makes the amplitude collected by each branch proportional to the square of its weight, hence to its scale, so that the two terms of (6.1) are recombined in the correct proportion with the single common factor (wlo + wup )−1.The remaining steps are unchanged. After USWAP and UC-SWAP the ∣0⟩ branch carries ˜Lj = un,j vn and the ∣1⟩ branch ˜Rj = yn,j xn; applying Zsel and Zfix as before, the lower branch retains the entries with i ≥ j and the upper one those with i < j.The final rotation on the triangular qubit adds the two branches, and Zflip together with H⊗n place the columns side by side, contributing the factor √N . Collecting the factors gives S/α in the leading block with α as in (6.2). The circuit encodes ˜S = wlo L(˜un, ˜vn) + wup R(˜xn, ˜yn),
+
+and wlo and wup are classically computed values so they carry no error. The two terms act on disjoint index sets, so ∥S − ˜S∥2 
+
+> F
+
+= w2lo ∥L − ˜L∥2 
+
+> F
+
++ w2up ∥R − ˜R∥2 
+
+> F
+
+. By bilinearity and the bound ∥L(a, b )∥ 2 
+
+> F
+
+= ∑ i≥j a2 
+
+> j
+
+b2 
+
+> i
+
+≤ ∥ a∥22∥b∥22 one gets ∥L − ˜L∥F ≤ 2ε and likewise 
+
+∥R − ˜R∥F ≤ 2ε, whence ∥S − ˜S∥2 ≤ ∥ S − ˜S∥F ≤ 2
+
+√
+
+w2lo + w2up ε.
+
+Remark 6.1.1. Theorem 5.1 is recovered as the special case x = u, y = v. Then 
+
+wlo = wup = ∥ u∥2∥v∥2, the angle (6.3) becomes ϑ = π/2 and Ry (π/2) reduces to the Hadamard gate of the symmetric construction, while (6.2) gives α = 2√N ∥u∥2∥v∥2
+
+and the error bound becomes 2√2 ∥u∥2∥v∥2 ε. In particular, for unit-norm generators one obtains the (2√N , 2n + 2, 2√2 ε)-block-encoding of Theorem 5.1; more generally, the same argument shows that the unit-norm assumption can be dropped there as well, at the price of the explicit factor ∥u∥2∥v∥2 in the subnormalization. 20 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+7. Comparison with other encoding. In this section we compare our con-struction with existing block-encoding schemes that are applicable to generator-repre-sentable semiseparable matrices, either because they are tailored to (a superclass of) this structure, or because they apply to arbitrary dense matrices. The relevant pa-rameters for the comparison are the subnormalization factor α, the number of ancilla qubits, the error of the final encoding, the circuit depth or gate count, and the data-access model, that is, the form in which the matrix must be supplied to the circuit: state-preparation routines for the generators, oracle access to matrix entries, or clas-sical data compiled directly into the circuit. The scheme of [1] is, to the best of our knowledge, the only previous block encoding tailored to one-pair matrices, and is therefore the closest term of comparison. It is based on a triangular-diagonal factorization of S, and while it achieves polylogarithmic depth, the factorization is paid for by a subnormalization factor growing as O(N 2),together with 2 log N + 7 ancillas. Our construction bypasses any factorization and works with the generators alone: the only matrix-dependent ingredients are the two state-preparation routines, no classical pre-processing of the matrix is required, and the subnormalization drops from O(N 2) to 2 √N . The improvement in α is not a detail of the encoding but propagates through any subsequent algorithm: in quantum singular value transformation and related solvers, the cost of applying a function of the encoded matrix scales with α (e.g., as O(ακ polylog (1/ϵ)) for linear systems with condition number κ [13, 7]), so the reduction from N 2 to √N yields a polynomial saving on the whole pipeline. We remark that α = 2√N is not optimal in absolute terms: any (α, m, ε )-block-encoding requires α ≥ ∥ S∥2, and for unit-norm generators ∥S∥2 ≤ ∥ S∥F ≤ √2, so the overhead α/∥ S∥2 can be as large as Θ (√N ). The factor √N originates from the final Hadamard layer that superposes the N column copies, and is analogous to the normalization loss incurred by FABLE-type constructions. Whether it can be removed within a generator-based, factorization-free construction is an open question. In Figure 7.1 we plot the ratio r(N ) = α/∥ S∥2 for semiseparable matrices whose generators are constructed in three different ways (see Section 8 for the details). For 
+
+α = 2√N we see the overhead for our method while for α = N we see the overhead of FABLE. The comparison in terms of the error in the encoding shows another improvement of the algorithm of this paper over [1]. The error in [1] grows as O(N 2ε), where here is 2 √2ε, independent on the size of the encoded matrix. Semiseparable matrices are the simplest instance of the hierarchical rank-struc-tured classes addressed in [23, 26], so the natural term of comparison is the block encoding of general H-matrices of [23, Section 4.3]. In this framework, S(u, v ) is split by recursive bisection of the index set into O(N ) off-diagonal blocks distributed over log N levels; an interesting fact is that every such block in the semiseparable case is exactly of rank one, being the outer product of two contiguous portions of the generators. The scheme of [23] block-encodes each block from state preparations of the normalized restrictions of generators, assembles each level as a block-sparse matrix, and sums the levels by a linear combination of unitaries. For unit-norm generators the resulting subnormalization is O(log N ), asymptotically smaller than our 2 √N ; the gain, however, is paid in the access model, which requires state-preparation oracles multiplexed over all blocks of the hierarchy together with an oracle for the O(N )
+
+partial norms of the portions of the generators, i.e., classically precomputed data of the same size as the generators themselves. Moreover, the input inaccuracy of these oracles is amplified by the subnormalization and accumulated across the levels. BLOCK ENCODING OF SEMISEPARABLE MATRICES 21 Our construction is different; it requires nothing beyond two plain state preparations of the full generators, involves no classical pre-processing, no multiplexing, and no propagation of errors, at the price of a larger subnormalization. The direct scheme of [26] for hierarchically block separable matrices lowers the oracle access to O(N )
+
+entries, but builds the encoding recursively by multiplying per-level block encodings, so that both the subnormalization and the error propagate multiplicatively along the 
+
+O(log N ) levels of the recursion, yielding bounds that grow polynomially with N on this class; their alternative sparsification approach achieves constant subnormalization but encodes an extended sparse system rather than S itself, and is a tool for linear solves rather than a block encoding of the matrix.             
+
+> 200 400 600 800 1,000 0500 1,000 1,500
+> Nα/∥ S∥2Random FABLE 200 400 600 800 1,000 0500 1,000
+> Nα/∥ S∥2Tridiagonal FABLE 200 400 600 800 1,000 02,000 4,000 6,000 8,000
+> Nα/∥ S∥2Exponential FABLE
+
+Fig. 7.1: Comparison of the subnormalization ratio r(N ) = α/∥ S∥2 between our method and FABLE, for different generator-pair types (one per plot). FABLE [6] block-encodes arbitrary dense matrices by compiling the classical en-tries into O(N 2) controlled rotations, with n + 1 ancillas and subnormalization N
+
+for entries bounded by one; the circuit is often compressible, but no compression guarantee holds in general. Since FABLE assumes no structure, the comparison mea-sures the value of structure: on generator-representable semiseparable matrices our circuit replaces the O(N 2) gate count with polylogarithmic depth and improves the subnormalization from N to 2 √N .
+
+Obtaining a block encoding of the inverse. The construction can also be compared with the route that obtains A−1 by inverting a block encoding of A. We take as test case the family of Section 5.2, where A is the three-point discretization of a Sturm-Liouville operator, S = A−1 is a one-pair matrix and the generators are explicit. The construction of Theorem 5.1 returns a block encoding of A−1 with subnormalization 2√N ∥u∥2∥v∥2 at the cost of a single circuit of polylogarithmic depth. Quantum sin-gular value transformation applied to a block encoding of A returns instead a block encoding of A−1 whose subnormalization Θ (∥ A−1∥2) is optimal up to a constant fac-22 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+tor, since the polynomial approximating 1 /x on the spectral interval is bounded by one in modulus, but it requires that polynomial to have degree ̃ O(κ), hence that many queries to the encoding of A, each of polylogarithmic depth because A is tridi-agonal [5]. Our approach is cheaper in depth by a factor κ and more expensive in subnormalization by a factor Θ (√N ), because ∥u∥2∥v∥2 = Θ(∥ A−1∥2) on this family, and for the discretization of a second-order operator with p analytic and bounded away from zero on [0, 1] one has κ = Θ(N 2). If we apply amplitude amplification to both algorithms, our approach wins by a factor ̃ O(N 3/2).
+
+8. Numerical experiments. The experiments we perform to validate our quan-tum algorithm are aimed in three different directions: 1. correctness of the circuit and of its QCLAB [16] implementation; 2. tightness of the error bound; 3. comparison with FABLE [6] in terms of circuit depth and size. We run our tests on three different classes of generator-representable matrices. The first class, Random , is obtained by constructing the semiseparable matrix S(u, v )
+
+where u and v are normalized random vectors with entries drawn independently from the standard normal distribution (zero mean, unit variance). The second family, which we call Tridiagonal , consists of generators extracted from the semiseparable inverse of a random symmetric tridiagonal matrix, constrained to be irreducible and diagonally dominant. The generators are obtained in a numerically stable way from the first and last columns of the inverse, which are proportional to v and u respec-tively, each obtained by solving a single tridiagonal linear system; the semiseparable matrix is then reconstructed from the normalized generators to enforce the unit-norm assumption. The third class, denoted Exponential , is constructed as follows: for 
+
+i = 0, . . . , N − 1 we set ui = eθt i and vi = e−θt i , where ti = i/N and, in our tests, θ = 3. Once normalized, these generators have two useful features: they are the generators of the covariance matrix of a stationary Ornstein–Uhlenbeck (Gauss–Markov) process sampled on a uniform grid, and, being samples of a smooth exponential, they can be prepared as quantum states by a circuit of polylogarithmic depth [18]. In this particular case, since eθi /N = ∏ k(eθ2k /N )bk
+
+factorizes over the binary digits bk of i,the normalized state is a product state that can be prepared exactly by n = log 2 N
+
+single-qubit Ry rotations, with no entangling gates. The code reproducing all experiments is available both in QCLAB [16] and Qiskit [15] at https://github.com/Giacomo-Antonioli/Semiseparable Block Encoding. 
+
+8.1. Correctness. For semiseparable matrices of the three families we report the block-encoding error ∥S − ˜S∥2, where ˜S = 2√N U BE (1∶N, 1∶N ) is the reconstructed leading block. As shown in Figure 8.1, the error is of order 10 −15 for all three families and all tested sizes, in agreement with the roundoff expected from computing the Euclidean norm of the difference between the exact and the encoded matrix; this confirms that the circuit realizes an exact block encoding when the generators are loaded exactly. 
+
+8.2. Tightness of the error bound. To assess the tightness of the bound of Theorem 5.1 we perturb the generators by an error of order ε in each component. Once the unit-norm generators u, v of each model are constructed, we draw random directions δu, δ v = randn (N, 1) and set ˜ u = u + ε δ u/∥ δu∥2, ˜ v = v + ε δ v /∥ δv ∥2, which we then normalize to unit norm. The resulting approximations satisfy ∥u − ˜u∥2, ∥v − ˜v∥2 =
+
+ε + O(ε2), so that hypotheses 1 and 2 of Theorem 5.1 hold up to higher-order terms. BLOCK ENCODING OF SEMISEPARABLE MATRICES 23 4 8 16 32 64 128 00.51 ⋅10 −15 
+
+N
+
+> ∥S(u, v ) −  2√N U BE (1∶N,  1∶N )∥ 2
+
+Random Tridiagonal Exponential Random Unsymmetric 
+
+Fig. 8.1: Correctness of the encoding. For different testing models and different matrix size we report the error of the encoding assuming the generators correct up to machine precision. We see that the absolute error is O(10 −15 ), comparable with the expected theoretical error. We then apply the circuit and measure ∥S(u, v ) − 2√N U BE (1∶N, 1∶N )∥ 2.        
+
+> 10 −14 10 −12 10 −10 10 −810 −610 −15 10 −10 10 −5
+> ε
+> ∥S − ˜S∥2Error versus ε(N=64) Random Tridiagonal Exponential 2√2ε
+
+(a) For N = 64 we report how the block en-coding error increases with ε ranging from 1.0e − 14 to 1 .0e − 6.            
+
+> 4816 32 64 128 0123
+> ⋅10 −6
+> N
+> ∥S − ˜S∥2Error versus N(ε=1.0e−6) Random Tridiagonal Exponential 2√2ε
+
+(b) For different values of N and for ε =
+
+1.0e−06, we report the actual errors of the encoding. We note that, for all the three different ways of selecting the generators, the actual error is below the value 2 √2ε and is independent of N .
+
+Fig. 8.2: Semiseparable reconstruction error scaling: sensitivity to ε (left) and N
+
+(right). Figure 8.2a fixes N = 64 and varies ε from 10 −14 to 10 −6: the error scales linearly with ε and remains below the bound throughout. The three families behave similarly, all curves lying roughly a factor of three below the bound, which indicates that the constant 2 √2 is conservative but of the correct order of magnitude. Figure 8.2b fixes 24 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN           
+
+> 10 −14 10 −12 10 −10 10 −810 −610 −10 10 −5
+> ε
+> ∥S − ˜S∥2Error versus ε(N=8) Random 2
+> √
+> w2
+> lo +w2
+> up ε
+
+(a) For N = 8 we report how the block en-coding error increases with ε ranging from 1.0e-14 to 1.0e-06.            
+
+> 4816 32 10 −510 −410 −3
+> N
+> ∥S − ˜S∥2Error versus N(ε=1.0e−06) Random 2
+> √
+> w2
+> lo +w2
+> up ε
+
+(b) For different values of N and for ε = 1.0e−
+
+06, we report the actual errors of the encod-ing for the Random generator case, together with the theorem bound 2 √w2 
+
+> lo
+
++ w2
+
+> up
+
+ε.
+
+Fig. 8.3: Unsymmetric semiseparable reconstruction error scaling: sensitivity to ε
+
+(left) and N (right). 
+
+ε = 10 −6 and varies N : the measured error stays well below the theoretical bound 2 √2 ε
+
+for all sizes and does not grow with N , consistently with the dimension-independence of the bound. 
+
+8.3. Comparison with FABLE. As a general-purpose baseline we compare against FABLE [6], which block-encodes an arbitrary dense matrix through a circuit of controlled rotations whose number scales as O(N 2). For our construction we show two variants, differing only in the state-preparation routine: a general-purpose loader following M¨ ott¨ onen et al. [22], applicable to arbitrary generators, and a dedicated loader for the Exponential generators, which, being a product state, requires only 
+
+n = log 2 N single-qubit rotations for each generator. Figure 8.4a reports depth and size of the circuits before transpilation, where the theoretical scalings are directly visible: FABLE grows as 2 N 2, the M¨ ott¨ onen loader linearly in N , and the exponential loader quadratically in log 2 N : indeed its depth and size are exactly n2 + 3n + 5 and 
+
+n2 +8n+3. All circuits are then transpiled with the Qiskit transpiler [15] to the gate set 
+
+{cnot , X, T, T †, S, S †, swap , R y }, and Figure 8.4b reports the resulting decomposed depth and total gate count on a log–log scale. The three curves display two clearly different behaviours. A least-squares fit on the transpiled data confirms that FABLE follows the O(N 2) law almost exactly (fit-ted exponent 2 .04 in N , R2 = 0.9998 for the depth and 2 .02 and R2 = 0.9999 for the size), whereas both variants of our construction grow far more slowly; the curves cross near N = 32, beyond which FABLE becomes more expensive. For the Exponential 
+
+loader the depth and size are well described by a polylogarithmic model C (log 2 N )p
+
+with p ≈ 2.1 ( R2 ≈ 0.99), and the corresponding growth in N is strongly sublinear, con-firming the polylogarithmic scaling predicted by Theorem 5.1. The general-purpose M¨ ott¨ onen loader is more expensive than the dedicated exponential one but still grows much more slowly than FABLE. Although its worst-case cost is linear in N , its tran-spiled depth grows sublinearly, most likely because the Qiskit transpiler simplifies the BLOCK ENCODING OF SEMISEPARABLE MATRICES 25 uniformly controlled rotations. This interpretation is supported by Figure 8.4a, where the untranspiled count follows the expected linear trend. At N = 1024 the FABLE depth and size exceed those of our exponential-loader circuit by more than two or-ders of magnitude. Since FABLE assumes no structure, the comparison quantifies the advantage of exploiting the generator representation rather than criticizing that method.                     
+
+> 4816 32 64 128 256 512 1024 10 210 410 6
+> N
+> Circuit depth Undecomposed circuit depth M¨ ott¨ onen Exponential FABLE
+> ∝N24816 32 64 128 256 512 1024 10 110 310 5
+> N
+> Circuit size (gate count) Undecomposed circuit size M¨ ott¨ onen Exponential FABLE
+> ∝N2
+
+(a) Pre-transpilation depth and size count.                     
+
+> 4816 32 64 128 256 512 1024 10 110 310 5
+> N
+> Circuit depth Decomposed circuit depth M¨ ott¨ onen Exponential FABLE
+> ∝N24816 32 64 128 256 512 1024 10 110 310 5
+> N
+> Circuit size (gate count) Decomposed circuit size M¨ ott¨ onen Exponential FABLE
+> ∝N2
+
+(b) Post-transpilation depth and size count. 
+
+Fig. 8.4: Comparison of our block encoding with FABLE [6] in terms of circuit depth (left) and size (right), for semiseparable matrices with Exponential generators, ui =
+
+eθt i , vi = e−θt i . All panels show two variants of our construction, differing only in the state-preparation routine used to load the generators: the general-purpose scheme of M¨ ott¨ onen et al. [22], of worst-case linear cost, and a dedicated loader (labelled 
+
+Exponential ) that exploits the product structure of the generators to prepare them with a circuit of depth 2 n. FABLE and the M¨ ott¨ onen variant grow polynomially in N
+
+(with FABLE following the O(N 2) reference line), whereas the dedicated exponential loader grows polylogarithmically; for the transpiled circuits, the two regimes cross near N = 32, beyond which our construction is markedly cheaper. 
+
+9. Conclusions. We have presented an explicit quantum circuit that block-encodes a generator-representable semiseparable matrix directly from its two genera-tors, without forming any factorization or using complicated hierarchical decomposi-26 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN 
+
+tions. For an N × N one-pair matrix with N = 2n, the construction uses 2 n + 2 ancilla qubits, has O(polylog N ) depth, and realizes a (2√N , 2n + 2, 2√2 ε)-block encoding, where ε is the accuracy of the state preparation that loads the generators. The same construction extends to the unsymmetric one-pair class, at the cost of a controlled state preparation and of replacing the Hadamard gates on the triangular qubit by a suitable Ry rotation. In general, our results illustrate that the data-sparsity of a matrix can be turned into a concrete quantum advantage, mirroring the role that structure plays in classical fast algorithms. Several extensions appear within reach of the techniques developed here. The ex-tension to r-semiseparable matrices, where the rank of upper and lower part is at most 
+
+r, to generator representable plus diagonal, a subclass of quasiseparable matrices [11], is straightforward combining our construction through a two-term linear combination of unitaries. However, the extension to non-generator-representable structure is still an open problem. The one-pair case is the flat, single-level instance of the broader family of rank-structured matrices. It would be interesting to explore whether the idea behind our algorithm can be applied recursively across the levels of an HODLR or HSS partition, so as to build a block encoding of a hierarchically semiseparable matrix without resorting to a level-by-level linear combination of unitaries [23, 26]. 
+
+Declarations. During the preparation of this work, the authors used Claude (Anthropic) to improve the readability of the text and to assist in identifying relevant literature. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication. 
+
+Fundings. G. Antonioli and G. Del Corso carried out this study within the National Centre on HPC, Big Data and Quantum Computing - SPOKE 10 (Quantum Computing) and received funding from the European Union Next-GenerationEU -National Recovery and Resilience Plan (NRRP) – MISSION 4 COMPONENT 2, INVESTMENT N. 1.4 – CUP N. I53C22000690001. Partial support for these authors was also provided by the INdAM - GNCS project “Strutture di matrici e di funzioni per la sintesi di circuiti quantistici efficienti”, CUP E53C23001670001. G. Del Corso is also partially supported by European Union - NextGenerationEU under the National Recovery and Resilience Plan (PNRR) - Mission 4 Education and research - Component 2 From research to business - Investment 1.1 Notice Prin 2022 - DD N. 104 2/2/2022, titled Low-rank Structures and Numerical Methods in Matrix and Tensor Computations and their Application, proposal code 20227PCCKZ – CUP I53D23002280006. J53D23003620006. G. Del Corso is also partially supported by the U.S. Department of Energy, Office of Science, National Quantum Information Science Research Centers, Superconducting Quantum Materials and Systems Center (SQMS), under Contract No. 89243024CSC000002. 
+
+Ethical Approval. It complies with the Ethical Rules applicable for this journal. 
+
+Data Availability. No datasets were generated or analyzed during the current study. 
+
+Code Availability. The code of the implemented algorithm is available at https://github.com/Giacomo-Antonioli/Semiseparable Block Encoding. 
+
+Competing interests. The authors declare no competing interests. BLOCK ENCODING OF SEMISEPARABLE MATRICES 27 
+
+REFERENCES [1] Giacomo Antonioli, Paola Boito, Gianna M. Del Corso, and Margherita Porcelli. Quantum block encoding for one-pair semiseparable matrices. Numerical Algorithms , 2026. to appear. [2] Edgar Asplund. Inverses of matrices {aij } which satisfy aij = 0 for j > i + p. Mathematica Scandinavica , 7:57–60, 1959. [3] Mario Bebendorf. Hierarchical matrices:A Means to Efficiently Solve Elliptic Boundary Value Problems . Springer, 2008. [4] Roberto Bevilacqua and Gianna M. Del Corso. Structural properties of matrix unitary reduction to semiseparable form. Calcolo , 41(4):177–202, 2004. [5] Daan Camps, Lin Lin, Roel Van Beeumen, and Chao Yang. Explicit quantum circuits for block encodings of certain sparse matrices. SIAM Journal on Matrix Analysis and Applications ,45(1):801–827, 2024. [6] Daan Camps and Roel Van Beeumen. FABLE: Fast approximate quantum circuits for block-encodings. In 2022 IEEE International Conference on Quantum Computing and Engi-neering (QCE) , pages 104–113. IEEE, 2022. [7] Shantanav Chakraborty, Andr´ as Gily´ en, and Stacey Jeffery. The power of block-encoded matrix powers: improved regression techniques via faster Hamiltonian simulation. In 46th Inter-national Colloquium on Automata, Languages, and Programming , volume 132 of LIPIcs. Leibniz Int. Proc. Inform. , pages Art. No. 33, 14. Schloss Dagstuhl. Leibniz-Zent. Inform., Wadern, 2019. [8] S. Chandrasekaran, M. Gu, and T. Pals. A fast ULV decomposition solver for hierarchi-cally semiseparable representations. SIAM Journal on Matrix Analysis and Applications ,28(3):603 – 622, 2006. [9] Yuli Eidelman and Israel Gohberg. On a new class of structured matrices. Integral Equations and Operator Theory , 34(3):293–324, 1999. [10] Yuli Eidelman and Israel Gohberg. On generators of quasiseparable finite block matrices. 
+
+Calcolo , 42(3–4):187–214, 2005. [11] Yuli Eidelman, Israel Gohberg, and Iulian Haimovici. Separable type representations of matrices and fast algorithms . Springer, 2014. [12] Felix R Gantmacher and Mark G Krein. Oscillation matrices and kernels and small vibrations of mechanical systems: revised edition . American Mathematical Society Rhode Island, 2002. [13] Andr´ as Gily´ en, Yuan Su, Guang Hao Low, and Nathan Wiebe. Quantum singular value trans-formation and beyond: exponential improvements for quantum matrix arithmetics. In Pro-ceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing , pages 193–204, 2019. [14] Vittorio Giovannetti, Seth Lloyd, and Lorenzo Maccone. Quantum random access memory. 
+
+Physical review letters , 100(16):160501, 2008. [15] Ali Javadi-Abhari, Matthew Treinish, Kevin Krsulich, Christopher J. Wood, Jake Lishman, Julien Gacon, Simon Martiel, Paul D. Nation, Lev S. Bishop, Andrew W. Cross, Blake R. Johnson, and Jay M. Gambetta. Quantum computing with Qiskit, 2024. [16] Sophia Keip, Daan Camps, and Roel Van Beeumen. Qclab: A matlab toolbox for quantum computing, 2025. [17] Iordanis Kerenidis and Anupam Prakash. Quantum recommendation systems. In 8th Inno-vations in Theoretical Computer Science Conference (ITCS 2017) , pages 49–1. Schloss Dagstuhl–Leibniz-Zentrum f¨ ur Informatik, 2017. [18] Haoya Li, Hongkang Ni, and Lexing Ying. On efficient quantum block encoding of pseudo-differential operators. Quantum , 7:1031, 2023. [19] A Mahasinghe and J B Wang. Efficient quantum circuits for toeplitz and hankel matrices. 
+
+Journal of Physics A: Mathematical and Theoretical , 49(27):275301, May 2016. [20] Stefano Massei, Leonardo Robol, and Daniel Kressner. HM-toolbox: Matlab software for HODLR and HSS matrices. SIAM Journal on Scientific Computing , 42(2):C43–C68, 2020. [21] Sam McArdle, Andr´ as Gily´ en, and Mario Berta. Quantum state preparation without coherent arithmetic, 2025. [22] Mikko M¨ ott¨ onen, Juha J. Vartiainen, Ville Bergholm, and Martti M. Salomaa. Transforma-tion of quantum states using uniformly controlled rotations. Quantum Information and Computation , 5(6):467–473, 2005. Preprint arXiv:quant-ph/0407010. [23] Quynh T. Nguyen, Bobak T. Kiani, and Seth Lloyd. Block-encoding dense and full-rank kernels using hierarchical matrices: applications in quantum numerical linear algebra. Quantum ,6:876, December 2022. [24] P´ al R´ ozsa, Francesco Romani, and Roberto Bevilacqua. On generalized band matrices and their 28 G. ANTONIOLI, G. M. DEL CORSO, R. VAN BEEUMEN inverses. In Proceedings of the Cornelius Lanczos International Centenary Conference ,pages 109–121, Philadelphia, 1994. SIAM. [25] Christoph S¨ underhauf, Earl Campbell, and Joan Camps. Block-encoding structured matrices for data input in quantum computing. Quantum , 8:1226, January 2024. [26] Kun Tang and Jun Lai. Beyond sparsity: Quantum block encoding for dense matrices via hierarchically low rank compression. [27] Raf Vandebril, Marc Van Barel, and Nicola Mastronardi. A note on the representation and def-inition of semiseparable matrices. Numerical Linear Algebra with Applications , 12(8):839– 858, 2005. [28] Raf Vandebril and Marc Van Barel. A note on the nullity theorem. Journal of Computational and Applied Mathematics , 189(1):179–190, 2006. Proceedings of The 11th International Congress on Computational and Applied Mathematics. [29] Raf Vandebril, Marc Van Barel, and Nicola Mastronardi. Matrix computations and semisepa-rable matrices: linear systems , volume 1. JHU Press, 2008. [30] Lin-Chun Wan, Chao-Hua Yu, Shi-Jie Pan, Su-Juan Qin, Fei Gao, and Qiao-Yan Wen. Block-encoding based quantum algorithm for linear systems with displacement structures, 2021. [31] S. S. Zhou and J. B. Wang. Efficient quantum circuits for dense circulant and circulant like operators. Royal Society Open Science , 4(5):160906, 2017.

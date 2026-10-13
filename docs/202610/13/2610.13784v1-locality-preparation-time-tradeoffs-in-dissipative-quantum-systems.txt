@@ -1,0 +1,1335 @@
+Title: Locality-Preparation Time Tradeoffs in Dissipative Quantum Systems
+
+URL Source: https://arxiv.org/pdf/2610.13784v1
+
+Published Time: Mon, 12 Oct 2026 01:31:34 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# Locality-Preparation Time Tradeoffs in Dissipative Quantum Systems 
+
+Philipp Westhoff, 1, ∗ Sara Murciano, 2, † and Mattia Moroder 3, 4, ‡
+
+> 1
+
+Department of Physics, Arnold Sommerfeld Center for Theoretical Physics (ASC), Munich Center for Quantum Science and Technology (MCQST), Ludwig-Maximilians-Universit¨ at M¨ unchen, 80333 M¨ unchen, Germany 
+
+> 2
+
+Universit´ e Paris-Saclay, CNRS, LPTMS, 91405, Orsay, France 
+
+> 3
+
+School of Physics, Trinity College Dublin, Dublin 2, Ireland 
+
+> 4
+
+Rinn Quantum, School of Physics, Trinity College Dublin 
+
+Dissipative state preparation engineers quantum many-body states as steady states of an open-system dynamics. The spatial range of the required dissipation sets both the feasibility of analog implementations and the connectivity and control complexity of digital ones. Yet how this locality quantitatively constrains preparation times remains largely unknown. Here, we establish an exact locality-preparation time relation for quadratic fermionic systems and develop a construction that optimizes the locality of the dissipative dynamics while preserving the target state. Applied to the Kitaev chain, our framework reveals sharply different locality-preparation time tradeoffs in critical and gapped regimes. At criticality, suppressing the algebraic tails of the jump operators necessarily forces the preparation time to grow algebraically with system size. By contrast, both trivial and topological gapped phases admit exponentially localized dissipation with a finite preparation time in the thermodynamic limit. Our results identify when fast dissipative preparation is compatible with local control and when criticality imposes an unavoidable dynamical cost. 
+
+Engineering complex quantum states in many-body systems is a central challenge in quantum computation and simulation [1–4]. Existing approaches include adi-abatic [5] and quench [6] protocols, variational [7] and tensor-network-inspired methods [8], and measurement-or feedback-assisted schemes [9, 10]. Dissipative state preparation (DSP) provides a complementary strategy, in which engineered system-environment interactions make the target state an attractive fixed point of the dynam-ics [11–21]. This fixed-point structure can reduce sensi-tivity to initialization and provide resilience against im-perfections [22]. A central question in DSP concerns the fundamental limits on preparation times. Local Lindbladians obey Lieb-Robinson bounds [23], which constrain the propa-gation of information and therefore the build-up of long-range correlations. Moreover, it has been shown that local gapped Lindbladians feature exponential decay of correlations in the steady state [24]. Complementarily, recent work has established a fundamental tradeoff be-tween steady-state entanglement and relaxation time un-der bipartite locality constraints [25]. Together, these re-sults show that locality limits DSP, but leave open how the preparation time depends on the spatial range of the jump operators. Quantifying this dependence is essential for scalable implementations, where the jump-operator range sets the required connectivity and control complex-ity. One-dimensional topological superconductors provide a minimal setting in which this question can be addressed across different phases. Their topological phase hosts Majorana boundary modes and supports nonlocal infor-mation encoding [26, 27]. These systems can also host critical states at continuous transitions between phases, characterized by correlations that decay algebraically. Bogoliubov basis Real space Initial state Target state ˆLk ∝ ˆak ˆLj ∝ ∑     
+
+> ℓvj−ℓˆcℓ+uj−ℓˆc†
+> ℓ
+
+(a) 0.0 0.2 0.4 0.6 0.8 
+
+> normalized support of jump operators
+
+10 1
+
+10 3
+
+10 5
+
+10 7                
+
+> preparation time [1/ ]
+> n= 0
+> n= 1
+> n= 2 10 010 110 2
+> distance | jl|
+> 10 4
+> 10 2
+> 10 0
+> |Ujl | + | Vjl |
+> /t= 2, /t= 1.5
+> n= 0
+> n= 1
+> n= 2
+> XX criticality Ising criticality, /t= 1.5
+
+(b) FIG. 1. Locality-preparation time tradeoff. (a) Schematic of dissipative ground-state preparation. In the Bo-goliubov basis (left), the target ground state is simply the quasiparticle vacuum, whereas in real space (right) it has a nontrivial structure. In the main text, we show how the jump operators can be optimized to maximize their real-space local-ity while preserving the target steady state. (b) Preparation time, expressed in units of κ−1, as a function of the normal-ized support of the jump operators at XX and Ising criticality (see Fig. 2). Highlighted points correspond to integer values of the suppression exponent n. The inset shows the correspond-ing real-space decay of the jump-operator coefficients at Ising criticality, with the yellow lines indicating the expected alge-braic decay ∼ | j − ℓ|−(n+1) . Data are shown for a system of 
+
+N = 140 lattice sites, using a support cutoff ϵ = 0 .005. arXiv:2610.13784v1 [quant-ph] 9 Oct 2026 2These critical states exhibit universal properties encoded in their entanglement structure and in the critical ex-ponents governing their correlations. These features have established them as central targets of many-body physics [28, 29] and quantum simulation [30–37]. Criti-cal states can also exhibit metrologically useful properties that remain robust against different sources of decoher-ence, highlighting their potential as promising resources for quantum technologies [38, 39]. At the same time, their divergent correlation length makes them especially challenging to prepare [40]. We use the Kitaev chain to address a central question: does criticality or topology impose a fundamental tradeoff between dissipator local-ity and preparation time? Here, we answer this question exactly for quadratic dis-sipative systems. The preparation strategy is illustrated in Fig. 1(a): the system is driven toward the ground state by dissipating quasiparticles. We exploit the freedom to mix Bogoliubov annihilation operators without changing the target state, constructing jump operators that are optimally localized in real space and determining the as-sociated preparation-time cost. At criticality, faster alge-braic decay of the jump-operator tails comes at the cost of a larger exponent governing the polynomial growth of preparation time with system size. By contrast, in both trivial and topological gapped phases, exponentially lo-calized jump operators can coexist with a finite prepara-tion time in the thermodynamic limit. Moreover, along a special curve in the topological phase, the optimal jump operators become strictly finite-range. 
+
+Optimally localized dissipators– Any quadratic fermionic Hamiltonian can be written in the form ˆH = X
+
+> k
+
+εk ˆa† 
+
+> k
+
+ˆak, (1) where ˆ a† 
+
+> k
+
+(ˆ ak) creates (annihilates) a Bogoliubov quasi-particle and by an appropriate particle-hole convention, we can restrict to εk ≥ 0 without loss of generality [26]. We consider Markovian dissipative processes obeying [41] 
+
+ddt ˆρ = −i[ ˆH, ˆρ] + X
+
+> j
+
+DˆLj [ˆ ρ] ≡ L [ˆ ρ] , (2) where ˆ ρ is the density matrix of the system, DˆLj [ˆ ρ] = ˆLj ˆρ ˆL† 
+
+> j
+
+− 12 { ˆL† 
+
+> j
+
+ˆLj , ˆρ} is the dissipator associated with jump operator ˆLj and L is the Lindbladian generating the dynamics. With the above convention, the target ground state is the Bogoliubov vacuum |Ω⟩, satisfying ˆak|Ω⟩ = 0 for all k. Targeting this state dissipatively is then straightforward: the jump operators ˆLk = √κ ˆak,with dissipation strength κ, drive any initial state toward 
+
+|Ω⟩, since each ˆLk continuously removes excitations from mode k. If zero modes are present, the ground state is degenerate and we fix a target state within the ground-state manifold (see Supplemental Material (SM)). A practical limitation of this approach is that the Bo-goliubov operators ˆ ak are generally highly non-local in real space, making them difficult to realize experimen-tally. This limitation can be overcome by noting that the steady state is preserved under a broader class of jump operators ˆLj = √κ X
+
+> k
+
+Bjk ˆak , (3) where B is a full-rank mixing matrix, as we prove in the SM. Since an overall rescaling of B changes only the dissipative timescale, we fix ∥B∥op = 1, so that κ sets the overall rate. Different choices of the mixing matrix can then be used to optimize the real-space locality of the jump operators. 
+
+Locality-preparation time tradeoff To link the matrix elements of B with the locality of the jump operators, we express the Bogoliubov quasiparticles in terms of the physical real-space fermionic operators ˆak = X
+
+> ℓ
+
+
+
+Vkℓ ˆcℓ + Ukℓ ˆc†
+
+> ℓ
+
+
+
+, (4) where V and U are the Bogoliubov transformation matri-ces. Substituting into Eq. (3), the mixed jump operators take the form ˆLj = √κ X
+
+> ℓ
+
+ ˜Vjℓ ˆcℓ + ˜Ujℓ ˆc†
+
+> ℓ
+
+
+
+, (5) so that the locality of the jump operators depends on the asymptotic properties of the coefficients ˜Vjℓ =
+
+P 
+
+> k
+
+Bjk Vkℓ and ˜Ujℓ = P 
+
+> k
+
+Bjk Ukℓ . The relaxation timescale of the system solely depend on the mixing ma-trix B, and can be extracted through third quantiza-tion [42]. In the case of periodic boundary conditions (PBCs), the translation invariance of the jump operators con-strains the mixing matrices to 
+
+Bjk = e−ikj 
+
+√N βk , (6) where βk is a nonzero (potentially complex valued) func-tion satisfying max k |βk| = 1. Furthermore, it can be shown that the dissipative gap is given by ∆L = κ
+
+2 inf  
+
+> k
+
+|βk|2. (7) For fermionic density matrices, however, fermion-parity superselection [43, 44] excludes the parity-odd coherence modes that realize the dissipative gap ∆ L (see SM). The slowest physically accessible relaxation rate is therefore Γ ≡ 2∆ L and we characterize preparation by the asymp-totic relaxation timescale τ = Γ −1.3
+
+Parameter regime Phase Jump operator support τ
+
+|μ| > 2t trivial O(e−r/ξ ) O(1) 
+
+|μ| = 2 t, ∆ > 0 critical O(r−n−1) O(N 2n)
+
+|μ| < 2t, ∆ = 0 critical O(r−n−1) O(N 2n)
+
+|μ| < 2t, ∆ > 0 topological O(e−r/ξ ) O(1) (μ/ 2) 2 + ∆ 2 = t2 topological 2 O(1) TABLE I. Spatial decay of the jump operators and scaling of the relaxation timescale τ = Γ −1 across the Kitaev-chain phase diagram. Here, r denotes the distance from the refer-ence site of the jump operator and ξ the localization length of its coefficients, both measured in lattice spacings (see SM). 
+
+In this setting, we can rewrite the transformation ma-trices in Eq. (4) as Ukℓ = eikℓ uk/√N and Vkℓ =
+
+eikℓ vk/√N yielding the jump operator coefficients ˜Ujℓ = 1
+
+N
+
+X
+
+> k
+
+eik (ℓ−j)ukβk, ˜Vjℓ = 1
+
+N
+
+X
+
+> k
+
+eik (ℓ−j)vkβk .
+
+(8) These are the Fourier coefficients of the functions ukβk,
+
+vkβk, respectively. Equations (7) and (8) thus directly connect the real-space locality of the jump operators to the preparation time through the momentum-space weights βk. The resulting locality-preparation time tradeoff is governed by the analytic structure of the Bo-goliubov coefficients [45]: when these are singular in mo-mentum space, the jump-operator coefficients decay only algebraically, and suppressing these tails to ∼ r−(n+1) 
+
+requires a zero of order n in βk, which by Eq. (7) forces Γ ∝ N −2n (see SM). 
+
+Criticality versus topology– To separate criticality from topology, we turn to the paradigmatic one-dimensional Kitaev chain [26] ˆH =
+
+> N
+
+X
+
+> j=1
+
+h
+
+−t (ˆ c† 
+
+> j
+
+ˆcj+1 +h .c.)−μ
+
+
+
+ˆc† 
+
+> j
+
+ˆcj − 12
+
+
+
++∆ (ˆ cj ˆcj+1 +h .c.)
+
+i
+
+,
+
+(9) where t is the nearest-neighbour hopping amplitude, μ
+
+is the chemical potential, and ∆ is the p-wave pairing amplitude. For |μ| < 2t, the chain is in a topological superconducting phase, while for |μ| > 2t, the system is topologically trivial. These two gapped phases are sep-arated by the critical points at |μ| = 2 t and ∆ > 0. The case ∆ = 0 is special: the model reduces to a number-conserving tight-binding chain, which is gapless for |μ| < 2t, and trivially gapped otherwise. Along the critical lines, the Bogoliubov coefficients de-velop discontinuities in momentum space, which trans-late into algebraically decaying real-space jump-operator coefficients. Their tails can be suppressed by choosing the mixing function βk to vanish at the singular momentum 
+
+k⋆. In particular, a zero of order n smooths the products 
+
+βkuk and βkvk, yielding real-space coefficients that decay asymptotically as |j − l|−(n+1) . The same zero, however, necessarily closes the dissipative gap: since the momen-0 1 2 3/t
+
+> 0.00 0.25 0.50 0.75 1.00 1.25 1.50 /t
+> 0.0 0.2 0.4 0.6 0.8 1.0 normalized support of jump operators
+
+topological trivial 
+
+> XX criticality Ising criticality finite-range ellipse
+
+FIG. 2. Locality of the dissipator at fixed prepara-tion time across the Kitaev phase diagram. Support of the jump operators required to prepare the ground state at fixed dissipative gap 2∆ L/κ = 1, as a function of the chem-ical potential μ/t and pairing strength ∆ /t . The support is determined from the spatial extent of the real-space jump-operator coefficients above a cutoff ϵ = 0 .005 for a system with N = 100 sites. 
+
+tum spacing scales as 1 /N , the smallest value sampled near k⋆ scales as inf k |βk| ∼ N −n. Equation (7) then gives Γ ∼ κN −2n, or equivalently a preparation time 
+
+τ ∼ N 2n/κ . Thus, progressively suppressing the spatial tails of the jump operators comes at the cost of an in-creasingly strong algebraic divergence of the preparation time, as illustrated in Fig. 1(b). In the topologically trivial gapped phase, the Bogoli-ubov coefficients can be chosen analytic in momentum space, yielding exponentially localized jump operators. Since no suppression of momentum modes is required, 
+
+βk can remain bounded away from zero, so the dissipa-tive gap stays finite and τ = O(1) in the thermodynamic limit. The topological phase is quite similar: though nontriv-ial winding occurs, the Gauge can be chosen to lead to jump operators which are exponentially localized with-out closing the dissipative gap, for an arbitrary smooth nonzero mixing function βk. Thus, topology alone does not impose a locality-preparation time tradeoff. Finally, along the special ellipse ∆ 2 + ( μ/ 2) 2 = t2 in the topolog-ical regime, by chosing a specific βk the optimized jump operators become strictly finite range, ˆLj = √κ
+
+
+
+−∆ˆ cj + 2t + μ
+
+2 ˆc† 
+
+> j
+
++ ∆ˆ cj+1 + 2t + μ
+
+2 ˆc†
+
+> j+1
+
+
+
+.
+
+(10) The finite-range structure reflects the fact that, along this special curve, the target state can be written as a superposition of two product states. At μ = 0 and ∆ = t, Eq. (10) reduces to the dissipative construction of Ref. [14]. The locality-preparation time scaling across 4the Kitaev phase diagram is summarized in Table I. To visualize the same constraints at a fixed preparation timescale, in Fig. 2 we set the dissipative gap to 2∆ L/κ =1 (i.e. chosing n = 0 along the critical lines) and show the normalized support of the corresponding jump operators across the phase diagram. The horizontal and vertical bright lines mark the critical regions, where the jump operators extend over the entire system, whereas in the gapped phases they remain localized. Along the special ellipse ∆ 2 + ( μ/ 2) 2 = t2, the support reduces to exactly two sites. In practice, however, the available dissipative couplings will generally be restricted to a finite spatial range. It is therefore crucial to determine how truncating the tails of the jump operators affects the accuracy of the pre-pared steady state, both at the level of physical ob-servables and of the global state. In Fig. 3, we impose the same finite-range cutoff on the three representative points highlighted in Fig. 2 and compare the resulting steady-state correlations with those of the exact target ground state. At the critical points, directly truncating the real-space Bogoliubov annihilators ( n = 0) produces sizable deviations. By contrast, for n > 0 we first ex-ploit the nontrivial mixing βk = | cos k|n at XX criticality and βk = | cos( k/ 2) |n at Ising criticality, which suppress the momentum-space singularities and thereby the alge-braic real-space tails before applying the same trunca-tion. This substantially improves the agreement at fixed spatial range. In the gapped topological phase, where the jump operators are exponentially localized, direct trun-cation remains more accurate. The inset quantifies the corresponding global error through the steady-state infi-delity, showing that an appropriate choice of the suppres-sion exponent n can strongly improve the fidelity of the finite-range dissipator. Note that the fidelity curve shows a non-monotonicity with the tradeoff exponent, which originates from the interplay between real-space trunca-tion and strong suppression of the momentum prefactors close to the point of discontinuity. While the jump oper-ator coefficients close to the momentum discontinuity are very small for large n, the error through truncation can remain comparably large. As for the fidelity the ratio of prefactors matters, the truncation errors can get strongly amplified (see SM). 
+
+Discussion and outlook– We have developed a gen-eral framework for optimizing the locality of dissipative ground-state preparation in quadratic fermionic systems, exploiting the freedom to mix Bogoliubov annihilation operators without changing the target state. The re-sulting exact locality-preparation time relation is con-trolled by the momentum-space regularity of the Bogoli-ubov coefficients: at criticality, the more strongly the algebraic tails of the jump operators are suppressed, the more severely the preparation time grows (polynomially) with system size. By contrast, both trivial and topolog-ical gapped phases admit exponentially localized jump 10 0 10 1                                                        
+
+> distance r
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> correlator  ci ci + r ss
+> 012
+> tradeoff exponent n
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> infidelity
+> truncated jumps, n= 0 truncated jumps, n> 0 groundstate
+> FIG. 3. Accuracy of finite-range dissipators. Steady-state correlator |⟨ ˆc†
+> iˆci+r⟩ss |obtained after truncating the jump operators, compared with the exact ground-state result (solid lines). Dotted lines correspond to direct truncation of the real-space Bogoliubov annihilators, i.e., the trivial mixing
+> βk= 1 ( n= 0). Dashed lines instead exploit a nontrivial mixing βk(n > 0) to suppress the momentum-space discon-tinuities and improve the spatial decay of the jump operators before applying the same finite-range truncation. The inset shows the steady-state infidelity 1 − F HS , where FHS is the normalized Hilbert-Schmidt overlap, as a function of the sup-pression exponent nfor the two critical points. Highlighted points indicate the values of nused for the dashed curves in the main panel. Results are shown for N= 61 sites and jump operators truncated to |j−l|<5, at the XX critical point (μ/t, ∆/t ) = (0 ,0) with n= 1 .65 (dark red), the Ising critical point (2 ,1.4) with n= 2 (blue), and the topological point (1 ,1) (orange), highlighted by the dots with the correspond-ing colors in Fig. 2.
+
+operators while retaining a finite preparation time in the thermodynamic limit. These results establish dissipator locality as a quantitative resource for scalable DSP, link-ing the required interaction range directly to the achiev-able preparation time. The odd- and even-parity character of the low-lying Li-ouvillian modes also leads to an interesting initial-state dependence of the relaxation dynamics. While fermion-parity superselection excludes the slowest mode for phys-ical fermionic states, these modes become accessible in spin realizations. As shown in the SM, eliminating their initial overlap yields a twofold Mpemba-type preparation speedup [46–48]. Looking ahead, an important direction is to investigate whether measurements, feedback, and adaptive open-system dynamics [49] can mitigate or circumvent the locality-preparation time tradeoffs derived here. More-over, it would be valuable to explore how these relations are modified by non-Markovian and spectrally structured reservoirs [50], where memory effects and frequency selec-tivity provide additional resources for state preparation. 5Extending the analysis beyond quadratic systems repre-sents a further central challenge. Interacting many-body models could be studied numerically using methods such as CLIK-MPS [51], which enables the computation of dis-sipative gaps in large-scale systems. Finally, translating the optimized dissipators into experimental protocols will require accounting for restrictions on available couplings and reservoir engineering in platforms such as ultracold atoms [52, 53], trapped ions [54], and superconducting-qubit processors [55]. 
+
+Acknowledgements We thank Artur M. Lacerda and John Goold for enlightening discussions about dissi-pative fermionic systems. PW acknowledges support by the Deutsche Forschungsgemeinschaft (DFG, Ger-man Research Foundation) under Germany’s Excellence Strategy-426 EXC-2111-390814868. MM acknowledges funding from the European Union’s Horizon research and innovation programme under the Marie Sklodowska-Curie grant agreement No 101264565.  
+
+> ∗
+
+p.westhoff@physik.uni-muenchen.de  
+
+> †
+
+sara.murciano@universite-paris-saclay.fr  
+
+> ‡
+
+moroderm@tcd.ie [1] I. Bloch, J. Dalibard, and S. Nascimb` ene, Nature Physics 
+
+8, 267 (2012). [2] I. M. Georgescu, S. Ashhab, and F. Nori, Rev. Mod. Phys. 86 , 153 (2014). [3] E. Altman, K. R. Brown, G. Carleo, L. D. Carr, E. Dem-ler, C. Chin, B. DeMarco, S. E. Economou, M. A. Eriks-son, K.-M. C. Fu, M. Greiner, K. R. Hazzard, R. G. Hulet, A. J. Koll´ ar, B. L. Lev, M. D. Lukin, R. Ma, X. Mi, S. Misra, C. Monroe, K. Murch, Z. Nazario, K.-K. Ni, A. C. Potter, P. Roushan, M. Saffman, M. Schleier-Smith, I. Siddiqi, R. Simmonds, M. Singh, I. Spielman, K. Temme, D. S. Weiss, J. Vuˇ ckovi´ c, V. Vuleti´ c, J. Ye, and M. Zwierlein, PRX Quantum 2, 017003 (2021). [4] J. Eisert and J. Preskill, Mind the gaps: The fraught road to quantum advantage (2025), arXiv:2510.19928 [quant-ph]. [5] I. Sokolov, F. A. Bayocboc, M. M. Rams, and J. Dziar-maga, Phys. Rev. B 110 , 054410 (2024). [6] S. Bernier and K. Agarwal, Phys. Rev. B 111 , 054311 (2025). [7] R. Wang, T. H. Hsieh, and G. Vidal, Phys. Rev. B 106 ,195133 (2022). [8] R. Haghshenas, E. Chertkov, M. DeCross, T. M. Gat-terman, J. A. Gerber, K. Gilmore, D. Gresh, N. He-witt, C. V. Horst, M. Matheny, T. Mengle, B. Neyenhuis, D. Hayes, and M. Foss-Feig, Physical Review Letters 133 ,10.1103/physrevlett.133.266502 (2024). [9] T.-C. Lu, L. A. Lessa, I. H. Kim, and T. H. Hsieh, PRX Quantum 3, 10.1103/prxquantum.3.040337 (2022). [10] K. R. Swain, R. K. Malla, and A. del Campo, Noise-assisted feedback control of open quantum systems for ground state properties (2025), arXiv:2510.18984 [quant-ph]. [11] S. Diehl, A. Micheli, A. Kantian, B. Kraus, H. P. B¨ uchler, and P. Zoller, Nature Physics 4, 878 (2008). [12] B. Kraus, H. P. B¨ uchler, S. Diehl, A. Kantian, A. Micheli, and P. Zoller, Phys. Rev. A 78 , 042307 (2008). [13] F. Verstraete, M. M. Wolf, and J. Ignacio Cirac, Nature Physics 5, 633 (2009). [14] S. Diehl, E. Rico, M. A. Baranov, and P. Zoller, Nature Physics 7, 971–977 (2011). [15] X. Mi, A. A. Michailidis, S. Shabani, K. C. Miao, et al. , Science 383 , 1332 (2024), https://www.science.org/doi/pdf/10.1126/science.adh9932. [16] A. Schnell, C. Weitenberg, and A. Eckardt, SciPost Phys. 
+
+17 , 052 (2024). [17] C.-F. Chen, M. Kastoryano, F. G. S. L. Brand˜ ao, and A. Gily´ en, Nature 646 , 561 (2025). [18] Y. Zhan, Z. Ding, J. Huhn, J. Gray, J. Preskill, G. K.-L. Chan, and L. Lin, Rapid quantum ground state prepara-tion via dissipative dynamics (2026). [19] C. Ong, S. A. Parameswaran, B. Placke, and D. Hahn, Rigorous error bounds for dissipative thermal state preparation from weak system-bath coupling (2026), arXiv:2605.03011 [quant-ph]. [20] A. N. Chowdhury, S. O. Scalet, and K. Sharma, Dissi-pative microcanonical ensemble preparation from kms-detailed balance (2026), arXiv:2604.19973 [quant-ph]. [21] H. Schl¨ omer, L. Chen, S. F. Yelin, and H.-Y. Hu, Model-agnostic cooling algorithms for strongly interact-ing fermions (2026), arXiv:2605.01029 [cond-mat.str-el]. [22] L. Lin, APL Computational Physics 1, 010901 (2025). [23] D. Poulin, Phys. Rev. Lett. 104 , 190401 (2010). [24] M. J. Kastoryano and J. Eisert, Journal of Mathematical Physics 54 , 10.1063/1.4822481 (2013). [25] A. Pocklington and A. A. Clerk, PRX Quantum 5,040305 (2024). [26] A. Y. Kitaev, Physics-Uspekhi 44 , 131 (2001). [27] C. Nayak, S. H. Simon, A. Stern, M. Freedman, and S. Das Sarma, Rev. Mod. Phys. 80 , 1083 (2008). [28] S. Sachdev, Quantum Phase Transitions , 2nd ed. (Cam-bridge University Press, Cambridge, 2011). [29] S. Sachdev and J. Ye, Physical Review Letters 70 , 3339 (1993). [30] J. Simon, W. S. Bakr, R. Ma, M. E. Tai, P. M. Preiss, and M. Greiner, Nature 472 , 307 (2011). [31] A. Keesling, A. Omran, H. Levine, H. Bernien, H. Pich-ler, S. Choi, R. Samajdar, S. Schwartz, P. Silvi, S. Sachdev, P. Zoller, M. Endres, M. Greiner, V. Vuleti´ c, and M. D. Lukin, Nature 568 , 207 (2019). [32] S. Ebadi, T. T. Wang, H. Levine, A. Keesling, G. Se-meghini, A. Omran, D. Bluvstein, R. Samajdar, H. Pich-ler, W. W. Ho, S. Choi, S. Sachdev, M. Greiner, V. Vuleti´ c, and M. D. Lukin, Nature 595 , 227 (2021). [33] T. Manovitz, S. H. Li, S. Ebadi, R. Samajdar, A. A. Geim, S. J. Evered, D. Bluvstein, H. Zhou, N. U. Koylu-oglu, J. Feldmeier, P. E. Dolgirev, N. Maskara, M. Kali-nowski, S. Sachdev, D. A. Huse, M. Greiner, V. Vuleti´ c, and M. D. Lukin, Nature 638 , 86 (2025). [34] T. I. Andersen et al., Nature 638 , 79 (2025). [35] F. Fang, K. Wang, V. S. Liu, Y. Wang, R. Cimmino, J. Wei, M. Bintz, A. Parr, J. Kemp, K.-K. Ni, and N. Y. Yao, Science 390 , 601 (2025). [36] X. Sun, Y. Le, S. Naus, R. B.-S. Tsai, L. R. B. Picard, S. Murciano, M. Knap, J. Alicea, and M. Endres, (2026), arXiv:2601.16275 [quant-ph]. [37] L.-H. Mo, B. Lapierre, and Q. Miao, (2026), arXiv:2605.27530 [quant-ph]. 6
+
+[38] Y. Chen, S. Murciano, P. Sala, and J. Alicea, (2026), arXiv:2601.04364 [quant-ph]. [39] F. Musso, V. Vitale, and S. Murciano, (2026), arXiv:2605.22917 [quant-ph]. [40] R. B. de Sales and K. Zawadzki, Minimal action short-cut to adiabaticity in a driven kitaev chain: compet-ing gaps in a topological transition at finite-time (2026), arXiv:2604.26146 [quant-ph]. [41] G. Lindblad, Commun. Math. Phys. 48 , 119 (1976). [42] T. Prosen, New Journal of Physics 10 , 043026 (2008). [43] G. C. Wick, A. S. Wightman, and E. P. Wigner, Phys. Rev. 88 , 101 (1952). [44] N. T. Vidal, M. L. Bera, A. Riera, M. Lewenstein, and M. N. Bera, Phys. Rev. A 104 , 032411 (2021). [45] J. Nissil¨ a, arXiv preprint arXiv:1805.02445 (2018). [46] F. Carollo, A. Lasanta, and I. Lesanovsky, Phys. Rev. Lett. 127 , 060401 (2021). [47] F. Ares, P. Calabrese, and S. Murciano, Nature Reviews Physics 7, 451 (2025). [48] P. Westhoff, S. Paeckel, and M. Moroder, Phys. Rev. A 
+
+112 , L061304 (2025). [49] A. Pocklington and A. A. Clerk, Phys. Rev. Lett. 134 ,050603 (2025). [50] S. Neri, F. Damanet, A. J. Daley, M. L. Chiofalo, and J. Y. Malo, Phys. Rev. B 113 , 134514 (2026). [51] P. Westhoff, M. Moroder, U. Schollw¨ ock, and S. Paeckel, A tensor network framework for lindbladian spectra and steady states (2026), arXiv:2509.07709 [quant-ph]. [52] M. Aidelsburger, M. Atala, M. Lohse, J. T. Barreiro, B. Paredes, and I. Bloch, Phys. Rev. Lett. 111 , 185301 (2013). [53] J. Zeiher, R. van Bijnen, P. Schauß, S. Hild, J.-Y. Choi, T. Pohl, I. Bloch, and C. Gross, Nature Physics 12 , 1095 (2016). [54] C. Monroe, W. C. Campbell, L.-M. Duan, Z.-X. Gong, A. V. Gorshkov, P. W. Hess, R. Islam, K. Kim, N. M. Linke, G. Pagano, P. Richerme, C. Senko, and N. Y. Yao, Rev. Mod. Phys. 93 , 025001 (2021). [55] F. Arute et al., Nature 574 , 505 (2019). Supplemental Material for “Locality-Preparation Time Tradeoffs in Dissipative Quantum Systems” 
+
+Philipp Westhoff, 1, ∗ Sara Murciano, 2, † and Mattia Moroder 3, 4, ‡
+
+> 1
+
+Department of Physics, Arnold Sommerfeld Center for Theoretical Physics (ASC), Munich Center for Quantum Science and Technology (MCQST), Ludwig-Maximilians-Universit¨ at M¨ unchen, 80333 M¨ unchen, Germany 
+
+> 2
+
+Universit´ e Paris-Saclay, CNRS, LPTMS, 91405, Orsay, France 
+
+> 3
+
+School of Physics, Trinity College Dublin, Dublin 2, Ireland 
+
+> 4
+
+Rinn Quantum, School of Physics, Trinity College Dublin 
+
+Appendix A: General Form of the Jump Operators 
+
+Consider a fermionic Hamiltonian diagonalized in a Bogoliubov basis ˆH = X
+
+> k
+
+εk ˆa† 
+
+> k
+
+ˆak, (A1) where ˆ ak are fermionic annihilation operators. Note that we may restrict all our analysis to the case εk ≥ 0, since a general quadratic fermionic Hamiltonian can always be brought into this form by a particle-hole transformation [1]. This covers a wide range of physical systems, including, for instance, the Su-Schrieffer-Heeger model, the Kitaev chain and the transverse-field Ising model. The ground state in this Bogoliubov eigenbasis is simply the vacuum |Ω⟩ (i.e. ˆak |Ω⟩ = 0 ∀k). Thus, if we choose the simple jump operator ˆLk = √κ ˆak (A2) for each mode, the Lindbladian [2] 
+
+ddt ˆρ = −i[ ˆH, ˆρ] + X
+
+> k
+
+DˆLk [ˆ ρ] ≡ L [ˆ ρ] (A3) will drive any initial state to the ground state. Here ˆ ρ is the density matrix of the system, DˆLk [ˆ ρ] = ˆLk ˆρ ˆL† 
+
+> k
+
+− 12 { ˆL† 
+
+> k
+
+ˆLk, ˆρ}
+
+is the dissipator associated with jump operator ˆLk and L is the Lindbladian superoperator. With Eq. (A2), each dissipator describes amplitude damping of mode k at rate κ. Note that in the case of zero modes ( k′ s.t. ϵk′ = 0), the ground state is degenerate and the choice of jump operators depends on the specific ground state which is of interest. Depending on that, the corresponding jump operator needs to be chosen as annihilation or creation. In the following, we will prove that a much richer family of jump operators than Eq. (A2) drives the system to the target Bogoliubov vacuum state |Ω⟩. These must satisfy [3]: 1. ∀k : ˆLk |Ω⟩ = 0 (|Ω⟩ is a dark state of each ˆLk), 2. ∀ | ψ⟩̸ = |Ω⟩ ∃ k : ˆLk |ψ⟩̸ = 0 (|Ω⟩ is the unique dark state). We consider jump operators which are linear in the creation and annihilation operators. Then, property 1. directly implies that ˆLk = X
+
+> ℓ
+
+Bkℓ ˆaℓ, (A4) i.e. each ˆLk is a linear combination of quasiparticle annihilation operators ˆ aℓ. In fact, these conditions on ˆLk are equivalent to: 
+
+|Ω⟩ is a unique dark state ⇐⇒ ˆLk = X
+
+> ℓ
+
+Bkℓ ˆaℓ with B of full rank . (A5) We call B the mixing matrix.     
+
+> ∗p.westhoff@physik.uni-muenchen.de †sara.murciano@universite-paris-saclay.fr
+> ‡moroderm@tcd.ie
+
+2
+
+Proof ( ⇒ necessity of full rank) Assume that B does not have full rank. Then there exists a nonzero vector v̸ = 0 with ∥v∥ = 1 such that 
+
+Bv = 0 . (A6) Define the (one-quasiparticle) state 
+
+|ψ⟩ =
+
+> N
+
+X
+
+> i=1
+
+vi ˆa† 
+
+> i
+
+|Ω⟩ . (A7) Then for every k,ˆLk |ψ⟩ = X
+
+> ℓ
+
+Bkℓ ˆaℓ
+
+X
+
+> i
+
+viˆa† 
+
+> i
+
+|Ω⟩ = X
+
+> ℓ,i
+
+Bkℓ vi ˆaℓˆa† 
+
+> i
+
+|Ω⟩
+
+= X
+
+> ℓ,i
+
+Bkℓ vi δℓi |Ω⟩ = X
+
+> i
+
+Bki vi
+
+!
+
+|Ω⟩ = ( Bv )k |Ω⟩ = 0 . (A8) Hence |ψ⟩̸ = |Ω⟩ is also a dark state, contradicting uniqueness. 
+
+Proof ( ⇐ sufficiency of full rank) Assume B has full rank. Let |ψ⟩̸ = |Ω⟩. Then there exists at least one mode index ℓ such that ˆaℓ |ψ⟩̸ = 0 . (A9) Define the vector 
+
+A(ψ) =  ˆa1 |ψ⟩ , ˆa2 |ψ⟩ , . . . , ˆaN |ψ⟩ T̸ = 0 . (A10) Now 
+
+  ˆL1 |ψ⟩ , . . . , ˆLN |ψ⟩ T = B A(ψ). (A11) Since B is full rank and A(ψ)̸ = 0, we have B A(ψ)̸ = 0. Therefore, there exists some k such that ˆLk |ψ⟩̸ = 0. This proves the uniqueness of the dark state. 
+
+Appendix B: Spectral decomposition of the Lindbladian 1. Spectrum for decoupled quasiparticle modes 
+
+We first consider the diagonal choice of jump operators ˆLk = √κk ˆak, (B1) for which the Lindbladian decomposes into independent quasiparticle modes, 
+
+L =
+
+> N
+
+X
+
+> k=1
+
+L(k). (B2) For a single mode k, the four Lindbladian eigenvalues are 
+
+λ(k)0 = 0 , λ(k) 
+
+> ±
+
+= − κk
+
+2 ± iε k, λ(k)2 = −κk. (B3) The modes with eigenvalues λ(k) 
+
+> ±
+
+correspond to coherences between the vacuum and the single-quasiparticle state, whereas λ(k)2 describes population relaxation. Since the different quasiparticle sectors are independent, the full Lind-bladian spectrum is obtained by summing the corresponding single-mode eigenvalues. Introducing η = ( η1, . . . , η N )with ηk ∈ { 0, +, −, 2}, one has 
+
+λη =
+
+> N
+
+X
+
+> k=1
+
+λ(k) 
+
+> ηk
+
+. (B4) 3Consequently, Re λη = − 12
+
+X
+
+> k
+
+κk|ηk|, (B5) where |ηk| = 0 , 1, 1, 2 for ηk = 0 , +, −, 2, respectively. Let 
+
+k0 = arg min 
+
+> k
+
+κk. (B6) The slowest nonstationary Lindbladian modes have eigenvalues 
+
+λ(k0) 
+
+> ±
+
+= − κk0
+
+2 ± iε k0 , (B7) and hence the spectral gap of the unrestricted Lindbladian is ∆L = 12 min  
+
+> k
+
+κk. (B8) These slow modes correspond to coherences between the vacuum and single-quasiparticle states. For fermionic sys-tems, however, such coherences connect states of opposite fermion parity and are excluded by the fermion-parity superselection rule. Consequently, the slowest decay rate accessible to physical fermionic density matrices is Γ = min  
+
+> k
+
+κk, (B9) rather than the unrestricted Lindbladian gap ∆ L = 12 min k κk. In spin or hard-core-boson systems, where no analogous parity superselection rule applies, vacuum–single-particle coherences are physical and relaxation at the slower rate  
+
+> 12
+
+min k κk can occur. 
+
+2. Diagonalization for the general jump operators 
+
+Here we study the most general jump operators Eq. (A4). Since B mixes the k modes, the Lindbladian no longer factorizes. Nevertheless, it remains quadratic in the fermionic operators, and third quantization [4] can be used to extract its full spectrum. We first transform to a Majorana basis by defining 2 N Majorana operators ˆw2j−1 = ˆ aj + ˆ a† 
+
+> j
+
+, ˆw2j = i(ˆ aj − ˆa† 
+
+> j
+
+), j = 1 , . . . , N. (B10) The Hamiltonian then takes the form ˆH = i
+
+4
+
+X
+
+> j
+
+εj ( ˆ w2j ˆw2j−1 − ˆw2j−1 ˆw2j ) =: X
+
+> μν
+
+ˆwμhμν ˆwν , (B11) which defines the antisymmetric 2 N × 2N matrix h, whose elements can be read off directly. Similarly, the jump operators read ˆLk = 12
+
+X
+
+> j
+
+Bkj ( ˆ w2j−1 − i ˆw2j ) =: X
+
+> m
+
+lkm ˆwm, (B12) introducing the N × 2N matrix l whose elements are likewise read off directly. We further define the 2 N × 2N matrix 
+
+Mnm = X
+
+> μ
+
+lμn l∗
+
+> μm
+
+, (B13) and the 4 N × 4N matrix A with elements 
+
+A2n−1, 2m−1 = −2i h nm − Mnm + Mmn , (B14) 
+
+A2n−1, 2m = 2 i M mn , (B15) 
+
+A2n, 2m−1 = −2i M nm , (B16) 
+
+A2n, 2m = −2i h nm + Mnm − Mmn . (B17) 4The eigenvalues of the Lindbladian are obtained by diagonalizing A, which yields eigenvalues ζj . Of the 4 N eigenvalues of A, exactly 2 N have positive real part; only these enter the Lindbladian spectrum. The Lindbladian eigenvalues are labeled by a binary vector ν ∈ { 0, 1}2N and read 
+
+λν = −2 X
+
+> j
+
+ζj νj . (B18) The corresponding eigenmatrices can be constructed from the eigenvectors of A.Two remarks are in order. First, the dissipative gap is completely determined by the smallest (in real part) eigenvalue of A, so the spectral properties of this matrix give complete information about the gap scaling of the Lindbladian. Second, although A may not be analytically diagonalizable for large systems and arbitrary B, third quantization reduces the complexity of the problem from exponential to polynomial in N . 
+
+> 3. Special case: unitary mixing matrix and generalizations
+
+For a general mixing matrix B, extracting the spectrum requires third quantization as described above. In many applications, however, symmetry considerations impose further structure on B. Here we consider the family of matrices of the form 
+
+Bjk = Ujk βk, (B19) where U is unitary and βk̸ = 0, so that B has full rank. This turns out to be a remarkably powerful class: as we now show, the Lindbladian spectrum is identical to that of the simple diagonal case. Let ˆ a denote the vector of Bogoliubov annihilation operators, with (ˆ a)k = ˆ ak, and consider a general dispersion 
+
+εk ≥ 0. The Hamiltonian part of the Lindbladian is already diagonal, so we focus on the dissipative part. The jump operators read ˆLj = X
+
+> k
+
+Bjk ˆak = [ Bˆa]j . (B20) The corresponding dissipators are 
+
+Dj [ˆ ρ] = ˆLj ˆρ ˆL† 
+
+> j
+
+− 12 ˆL† 
+
+> j
+
+ˆLj ˆρ − 12 ˆρ ˆL† 
+
+> j
+
+ˆLj
+
+= X
+
+> km
+
+B∗
+
+> jm
+
+Bjk 
+
+
+
+ˆak ˆρˆa† 
+
+> m
+
+− 12 ˆa†
+
+> m
+
+ˆak ˆρ − 12 ˆρˆa†
+
+> m
+
+ˆak
+
+
+
+. (B21) Defining 
+
+Dkm [ˆ ρ] := ˆ ak ˆρˆa† 
+
+> m
+
+− 12 ˆa†
+
+> m
+
+ˆak ˆρ − 12 ˆρˆa†
+
+> m
+
+ˆak, (B22) and summing over all jump operators j, the total dissipator becomes 
+
+D[ˆ ρ] = X
+
+> j
+
+Dj [ˆ ρ] = X
+
+> km
+
+Dkm [ˆ ρ] X
+
+> j
+
+B∗
+
+> jm
+
+Bjk = X
+
+> km
+
+Dkm [ˆ ρ] [ B†B]mk . (B23) For the specific choice Eq. (B19), unitarity of U gives [B†B]mk = β∗
+
+> m
+
+[U †U ]mk βk = δmk |βk|2. (B24) Hence Eq. (B23) reduces to 
+
+D[ˆ ρ] = X
+
+> m
+
+|βm|2 Dmm [ˆ ρ] = X
+
+> m
+
+|βm|2
+
+
+
+ˆam ˆρˆa† 
+
+> m
+
+− 12 ˆa†
+
+> m
+
+ˆam ˆρ − 12 ˆρˆa†
+
+> m
+
+ˆam
+
+
+
+, (B25) which is precisely the simple decoupled dissipator with rates |βm|2. Hence the spectrum and eigenmatrices are unchanged with respect to the diagonal case, and the results of Section B 1 apply directly. In particular, the dissipative gap reads ∆L := inf  
+
+> n: Re λn<0
+
+|Re λn| = 12 inf  
+
+> k
+
+|βk|2 . (B26) As discussed in Section B 1, for physical fermionic density matrices the parity-odd coherence modes associated with this gap are excluded by fermion-parity superselection. The slowest physically accessible decay rate is therefore 2∆ L.5 
+
+> 4. Restrictions on the mixing matrix for periodic systems
+
+For systems with periodic boundary conditions, physical considerations impose additional constraints on the jump operators: they should respect the translation invariance of the system, meaning they transform covariantly under translations. Denoting by T the translation operator acting as T ˆcj = ˆ cj+1 , this requirement reads 
+
+T ˆLj−1 = ˆLj , (B27) i.e. translating a jump operator by one site yields the next one, so the spatial profile is the same around every center site. To make this concrete, consider a Kitaev-like system in which the annihilation operators take the Bogoliubov form ˆak = vk ˆck + uk ˆc†−k, with parameters uk and vk to be specified by the model. Transforming back to the real-space basis, the jump operators read ˆLj = X
+
+> l
+
+ ˜Vjl ˆcl + ˜Ujl ˆc†
+
+> l
+
+
+
+, (B28) where the coefficients are ˜Ujl = 1
+
+√N
+
+X
+
+> k
+
+eikl Bjk uk , ˜Vjl = 1
+
+√N
+
+X
+
+> k
+
+eikl Bjk vk . (B29) The translation constraint T ˆLj−1 = ˆLj requires ˜Ujl = ˜Uj−1, l −1 and ˜Vjl = ˜Vj−1, l −1. Substituting into Eq. (B29), this imposes eik Bjk = Bj−1,k for all j, k . Denoting √N B0k =: βk, the unique solution is 
+
+Bjk = βke−ikj /√N , (B30) which is precisely of the form of Eq. (B19) with the unitary Ujk = e −ikj /√N .This result has a significant implication: for translationally invariant systems, the most general linear jump operators that respect the symmetry and prepare the ground state give rise to an analytically tractable spectrum. One can therefore make rigorous, general statements about the scaling of preparation times, which are fully determined by the single-mode weights βk.
+
+> Appendix C: Derivation of the locality-preparation time tradeoff at criticality
+
+As shown in the previous section, we may work with the mixing matrix of the form 
+
+Bjk = 1
+
+√N βk e−ikj . (C1) Combining this with Eq. (B29) and setting r = l − j, the real-space coefficients of the jump operators are ˜ur = 1
+
+N
+
+X
+
+> k
+
+βkuk eikr , ˜vr = 1
+
+N
+
+X
+
+> k
+
+βkvk eikr . (C2) Thus the locality of the jump operators is governed by the Fourier coefficients of the two functions 
+
+fu(k) = β(k) u(k), fv (k) = β(k) v(k). (C3) 
+
+I. Regularity and Fourier decay. For n ∈ N0 and α ∈ (0 , 1], a 2 π-periodic function f belongs to the H¨ older class 
+
+Cn,α if it is n times continuously differentiable and its n-th derivative is uniformly α-H¨ older continuous, |f (n)(k +
+
+h) − f (n)(k)| ≤ C|h|α. We use the sharp Fourier-decay estimate of Ref. [5]. In the direction from regularity to decay, two further hypotheses are required: f (n) must be absolutely continuous, and the number of local extrema of ∆hf (n)(k) := f (n)(k + h) − f (n)(k) must stay bounded for small h. Under these conditions, 
+
+f ∈ Cn,α =⇒ ˆfr = O
+
+
+
+|r|−(n+α+1) 
+
+, (C4) 6where ˆfr denotes the r-th Fourier coefficient of f . In our setting fu and fv are piecewise smooth with a finite number of isolated algebraic singularities. α = 1 (Lipschitz) is included; it is this case that produces the integer tail exponents used in the main text. For the converse we need only the standard, softer statement: ˆfr = O(|r|−s−1) = ⇒ f ∈ Cn′,α ′
+
+∀n′, α ′ : n′ + α′ < s. (C5) We also invoke it through its weak consequence: tails decaying faster than the jump rate |r|−1 force fu, f v to be continuous. 
+
+II. Critical discontinuity. At the Ising critical points the Bogoliubov coefficients have, near the singular momen-tum x = π, the structure 
+
+u(k) = sgn( k − x) u0(k), v(k) = v0(k), (C6) with u0, v 0 regular across x and u0(x), v 0(x)̸ = 0 (Appendix D). In close analogy, on the XX critical line, the coefficients again have a discontinuity 
+
+u(k) = Θ( k0 − | k|), v(k) = 1 − u(k), (C7) for some k0.
+
+III. Lemma. Assume the local structure (C6) or (C7). Then fu = βu and fv = βv both belong to Cn,α across x
+
+if and only if β ∈ Cn,α across x with 
+
+β(m)(x) = 0 , m = 0 , . . . , n. (C8) 
+
+Proof. For the forward direction and the local structure Eq. (C6), since v0(x)̸ = 0 and fv = βv 0 is regular across 
+
+x, we may write β = fv /v 0 locally, so β inherits the Cn,α regularity of fv . Set g(k) = β(k)u0(k), so that fu(k) = sgn( k − x) g(k). Continuity of fu at x requires its one-sided limits to agree; as the sign flips, this forces g(x) = 0, and hence β(x) = 0 since u0(x)̸ = 0. Proceeding inductively, suppose β(j)(x) = 0 for all j < n . Away from x the sign is constant, so continuity of the n-th derivative of fu requires g(n)(x) = 0; by Leibniz, 
+
+g(n)(x) = 
+
+> n
+
+X
+
+> j=0
+
+nj
+
+
+
+β(j)(x) u(n−j)0 (x) = β(n)(x) u0(x), (C9) so β(n)(x) = 0. Conversely, if β ∈ Cn,α with Eq. (C8), the vanishing derivatives cancel the sign discontinuity through order n, and the α-H¨ older continuity of β(n) gives fu, f v ∈ Cn,α .For the structure (C7), the arguments are analogous. The regularity of β directly follows from fu +fv = β, continuity of fu requires the one sided limits at x = ±k0 to agree, which directly implies β(x) = 0 since fu(k) = 0 ∀| k| > |x|.Also, the induction can be carried out similarly as u itself is constant away from x. The converse direction is identical to the one above. □
+
+IV. Tradeoff. Combining the Lemma with Eq. (C4), a dissipative gap ∆ L ∼ N −2( n+α) implies at best a Fourier decay of max( |˜ur |, |˜vr |) = O
+
+
+
+|r|−(n+α+1) 
+
+, (C10) up to subpolynomial corrections. If on the other hand Eq. (C10) holds, the gap at least closes at a rate ∆ L ∼ N −2( n+α) up to subpolynomial corrections. Already at n = 0 the obstruction appears: by the Lemma, making fu and fv merely continuous across x requires 
+
+β(x) = 0, so β cannot stay bounded away from zero. More generally, the conditions on the dissipative gap dictates that the highest order zero crossing of β is of order n + α. This directly implies that if α̸ = 0 at most the first n
+
+derivatives of β can vanish at x, and β can at most be in Cn,α , if n + α is not a whole number. Assume first that β
+
+is not Cn,α or, Eq. (C8) is not fulfilled. Then at least one of fu and fv are also not Cn,α (w.l.o.g. assume its fu) by the Lemma and by Eq. (C5) ˜ ur cannot decay like |r|−s−1 for some s < n + α. On the other hand, if β is Cn,α and fulfills Eq. (C8), then fu and fv are Cn,α and by Eq. (C4) we get the desired decay. In the special case of an integer exponent, then, if β is in Cn, 0 it is also in any Cn−1,α ′
+
+for α′ ≤ 1, leading to the desired scaling through the same argumentation. 7For the converse direction, Eq. (C10) implies that fu and fv are in Cn′,α ′
+
+with n′ + α′ < n + α. By Lemma III 
+
+β obeys Eq. (C8) together with corresponding α-H¨ older continuity. On a chain of N sites the momenta are spaced by 2 π/N , so, provided x is not itself a sampled momentum, the smallest sampled value of |βk| near x scales as inf k |βk| ∼ N −(n′+α′), by the H¨ older continuity. Consequently, we obtain that the gap closes quicker than N −2a for any a < n + α. □
+
+This is the locality–preparation-time tradeoff: shortening the tails from |r|−1 to |r|−(n+α+1) requires a zero of order 
+
+n + α in β, which drives the preparation time up as N 2( n+α). The main-text constructions βk = | cos( k/ 2) |n (Ising) and βk = | cos k|n (XX) have a zero of integer order n, i.e. the Lipschitz case α = 1, giving |r|−(n+1) and ∆ L ∼ N −2n.
+
+> Appendix D: Jump-Operator Localization in the Kitaev Chain
+
+In the following we consider the Kitaev chain Hamiltonian [1] ˆH =
+
+> N
+
+X
+
+> j=1
+
+h
+
+− t (ˆ c† 
+
+> j
+
+ˆcj+1 + ˆ c† 
+
+> j+1
+
+ˆcj ) − μ
+
+
+
+ˆc† 
+
+> j
+
+ˆcj − 12
+
+
+
++ ∆ (ˆ cj ˆcj+1 + ˆ c† 
+
+> j+1
+
+ˆc† 
+
+> j
+
+)
+
+i
+
+. (D1) After a Fourier transformation it becomes ˆH = X
+
+> k
+
+ϵk ˆc† 
+
+> k
+
+ˆck + ∆ 
+
+
+
+e−ik ˆck ˆc−k + e ik ˆc†−k ˆc†
+
+> k
+
+
+
+, (D2) where ϵk = −μ − 2t cos( k). The Hamiltonian is already block diagonal in blocks ( −k, k ), so we can directly consider a single block. The Hamiltonian can then be written in a simpler form by introducing the Nambu spinor ˆΨk =  ˆck, ˆc†−k
+
+T
+
+ˆH = X
+
+> k> 0
+
+ˆΨ†
+
+> k
+
+Hk ˆΨk, Hk =
+
+ ϵk −i∆k
+
+i∆k −ϵk
+
+
+
+, (D3) where we introduced the new matrix ˆHk and the parameter ∆ k = 2∆ sin( k). Note that diagonalizing the Hamiltonian amounts to diagonalizing the matrix ˆHk, since unitary transformations conserve the commutation relations of the Nambu spinor. To explore the connection to the topological properties of the system more, we can rewrite the Hamiltonian matrix in a more geometrical manner as ˆHk = d(k) ˆ σ, d(k) =  0, ∆k, ϵ k
+
+. (D4) Here we introduced the Pauli spin vector ˆ σ =  ˆσx, ˆσy , ˆσz
+
+T . The vector d(k) is a vector on the Bloch sphere and it prescribes an oval rotation in the y-z-plane around (0, 0, −μ). Note that this rotation circles around the origin for |μ| < 2t, while at |μ| = 2 t it passes through the origin. For the sake of generality, we consider an arbitrary vector n(k) = d(k)/|d(k)| =  nx, n y , n z
+
+. In this general case, the eigenvalues are given by ±| d|, and we can directly consider only the upper band in the following. Then, the eigenvector reads 
+
+v = eiα (k) 1
+
+p2(1 − nz )
+
+nx − in y
+
+1 − nz
+
+
+
+. (D5) Note that we explicitly wrote the gauge freedom given by the phase α(k). In the gauge of Eq. (D5), the eigenvector 
+
+v(k) develops a discontinuity in the topological phase |μ| < 2t (for ∆ ̸ = 0). As we show below, this discontinuity can be compensated by an appropriate gauge choice of α(k) = k/ 2. On the critical lines a simple compensation is not possible. To see this, we can make the singular structure at the Ising critical points explicit. For definiteness, consider μ = 2 t, where the gap closes at k = π, and write q = k − π.For ∆ ̸ = 0, 
+
+ϵk = −tq 2 + O(q4), (D6) ∆k = −2∆ q + O(q3), (D7) 
+
+|d(k)| = 2 |∆|| q| + O(|q|3). (D8) Consequently, 
+
+ny (k) = − sgn(∆) sgn( q) + O(q2), (D9) 
+
+nz (k) = − t
+
+2|∆| |q| + O(|q|3). (D10) 8In the gauge of Eq. (D5), the Bogoliubov coefficients therefore behave as 
+
+v1(k) = i sgn(∆) 
+
+√2 sgn( q) + O(|q|), (D11) 
+
+v2(k) = 1
+
+√2 + O(|q|), (D12) where v1/2 denote the entries in v. Thus one Bogoliubov coefficient has a sign discontinuity at the critical momentum, while the other remains finite and continuous. It is therefore not possible to make both entries continuous by an appropriate choice of the gauge, and we chose α(k) = −k/ 4. The transition at μ = −2t, where the gap closes at 
+
+k = 0, follows analogously. To diagonalize the full Hamiltonian, we can define the new annihilation operators ˆ γk = v1(k)ˆ ck +v2(k)ˆ c†−k, bringing ˆH into the form ˆH = X
+
+> k
+
+Ek ˆγ† 
+
+> k
+
+ˆγk + const. , Ek = |d(k)|. (D13) Since E(k) ≥ 0, the groundstate is the Bogoliubov vacuum ˆ γk |vac ⟩ = 0 for every k. Knowing the diagonal annihilation operators we can rewrite the admissible jump operators as ˆLl = X
+
+> k
+
+Blk ˆγk = X
+
+> k
+
+Blk 
+
+1
+
+√N
+
+X
+
+> j
+
+
+
+v1(k)eijk ˆcj + v2(k)eijk ˆc†
+
+> j
+
+
+
+= X
+
+> j
+
+˜Vlj ˆcj + ˜Ulj ˆc† 
+
+> j
+
+, (D14) where we can use Eq. (B30) to bring the prefactors into the form ˜Vlj = 1
+
+N
+
+X
+
+> k
+
+βkv1(k)e i( j−l)k, ˜Ulj = 1
+
+N
+
+X
+
+> k
+
+βkv2(k)e i( j−l)k. (D15) In the trivial phase |μ| > 2t there exists an analytic continuation of the vector v with gauge α(k) = 0, meaning that a simple analytic βk will lead to an exponential behavior for |l − j| → ∞ .In the topological phase, fixing the gauge α(k) = k/ 2 leads again to a v featuring an analytic continuation to a strip in the complex plain, and a simple analytic βk once more leads to an exponential behavior for |l − j| → ∞ .In the special case of the system parameters lying on the ellipse ∆ 2 + ( μ/ 2) 2 = t2, note that |d| = 2 t + μ cos k and by choosing 
+
+βk = |d|p2(1 − nz )2 cos( k/ 2) , (D16) the prefactors take the form 
+
+βkv = e −ik/ 2
+
+ −2i∆ sin( k/ 2) (2 t + μ) cos( k/ 2) 
+
+
+
+=
+
+ −∆(1 − e−ik) 
+
+> 2t+μ
+> 2
+
+(1 + e −ik)
+
+
+
+. (D17) Due to the particularly simple representation in terms of Fourier modes, the real space jump operators are given by ˆLj = −∆ˆ cj + 2t + μ
+
+2 ˆc† 
+
+> j
+
++ ∆ˆ cj+1 + 2t + μ
+
+2 ˆc† 
+
+> j+1
+
+. (D18) We want to stress that especially in the case μ = 0, ∆ = t the jump operators get particularly simple, and we recover the ones introduced in [6] (up to the changed sign in ∆ in the definition of ˆH). We still need to show the analyticity of the Bogoliubov coefficients in the trivial and topological phase. Though tedious, this brings about a second advantage. For an arbitrary point in the topological phase, we need to make use of general theorems from complex analysis. First, we know that 1 − nz ≥ 0, and the zero (present in the topological phase) is of even order. Here, the chosen gauge is of particular importance, as it compensates the phase picked up by the eigenvector through the non-trivial winding. Then, the periodic continuation of v has an analytic continuation to a strip around the real axis. By Theorem 5 in [7], the matrices ˜Vlj and ˜Ulj decay exponentially ∼ e−| l−j|/ξ . This behavior is visible from the Fourier coefficients in Fig. 1 b). Moreover, it is actually possible to calculate the exact jump operator localization length ξ, as it is given by 1/ξ = sup { v | β(·)v2(·) : Cv → C is analytic } , (D19) 9where we defined the complex strip Cv = {R + i a| | a| < v }. The reason for the coefficients not being analytic on the whole of C is the branch cut of the complex square root at the negative reals. This plays a role in the definition of 
+
+nz through |d|. To avoid confusion, in the following we will denote f = |d|2. Since f > 0 in the reals, the branch cut happens on the lines where Im f = 0. Starting from the reals and going along the zero imaginary part lines, we encounter the branch cut exactly at Re f = 0, if the zero crossing is of odd multiplicity. The width of analyticity is thus given by the first (odd) zero of f : f = 0. This connection between momentum-space analyticity and real-space localization is illustrated schematically in Fig. 1a). The singularity closest to the real axis determines the boundary of the analyticity strip and hence the inverse localization length 1 /ξ . Different positions of the nearest branch point therefore directly correspond to different localization lengths. We can analytically extract these zeros by calculating the real and imaginary parts of f . After some straightforward algebra we get Re f (u + i v) = μ2 + 2(∆ 2 + t2) + 2( t2 − ∆2) cos(2 u) cosh(2 v) + 4 tμ cos( u) cosh( v) , (D20) Im f (u + i v) = −2( t2 − ∆2) sin(2 u) sinh(2 v) − 4tμ sin( u) sinh( v) . (D21) First, we will determine the lines on which Im f = 0 is satisfied. There are two trivial solutions, (I) v = 0 and (II) 
+
+u = πn . The first one is not of interest, while the second one could give rise to a zero in the complex plain. Dividing by sin( u) sinh( v) and rearranging gives the third (III) solution cos( u) cosh( v) = tμ 
+
+2(∆ 2 − t2) . (D22) Note that this also entails that possible values for v on this curve lie in the interval [ v(III) min , ∞) with v(III) min =acosh 
+
+h
+
+max 
+
+
+
+1, tμ 
+
+> 2( t2−∆2)
+
+i 
+
+(which we will see is necessary to have zero crossings in this case). We first analyze (II). For definiteness, we take μ > 0; for μ < 0 the same analysis applies with even and odd n
+
+interchanged. Inserting into the real part and setting it to zero gives 0 = μ2 + 4∆ 2 + ( −1) n4tμ cosh( v) + 4( t2 − ∆2) cosh 2(v). (D23) Since the sign of the prefactor in the second term is completely determined by n, the zero crossing for even n (if existing) lies at higher v than the one for odd n. Thus, we can directly restrict to odd n and find the zeros 
+
+v± = acosh( x±), x± = tμ ± 2∆ p(μ/ 2) 2 + ∆ 2 − t2
+
+2( t2 − ∆2) . (D24) Note that the zero crossing exists exactly if the parameters are outside of the ellipse. Exactly on the ellipse, the zero crossing is of second order, and the function is positive. Furthermore, x− ≥ 1, so v− is a genuine zero crossing and gives the smallest zero of solution (II). To see this, define 
+
+Q = t2 − ∆2, S = ( μ/ 2) 2 + ∆ 2 − t2 > 0. (D25) For ∆ ̸ = t, we can write 
+
+x− − 1 = tμ − 2Q − 2∆ √S
+
+2Q . (D26) Using (tμ − 2Q)2 − 4∆ 2S = Q(μ − 2t)2, (D27) we obtain 
+
+x− − 1 = (μ − 2t)2
+
+2
+
+
+
+tμ − 2Q + 2∆ √S
+
+ ≥ 0. (D28) The case ∆ = t follows by continuity. Hence x− ≥ 1, with equality only at the critical point μ = 2 t.We still need to analyze solution (III). Inserting into the real part and setting to zero, we get 0 = t2μ2
+
+∆2 − t2 + ( μ2 + 4 t2) cosh( v)2 − 4( t2 − ∆2) cosh( v)4 . (D29) 10 Solving for the zeros we get 
+
+v± = acosh( √x±) , x± = −(μ2 + 4 t2) ± (μ2 − 4t2)8(∆ 2 − t2) . (D30) We can further analyze these solutions. Both solutions only exist if t > ∆. Additionally, they are only visible if they satisfy v± ≥ v(III) min . We can analyze this conditions in the two cases. For v− this condition would require √t2 − ∆2 ≥ t,which is impossible for ∆ ̸ = 0. For v+ on the other hand, the condition simplifies to t2 ≥ (μ/ 2) 2 + ∆ 2, meaning that the parameters must lie inside of the ellipse. If they are exactly on the ellipse, the zero crossing is exactly at the edge of the curve and there is no branch cut. In total, we thus find the following analytical behavior cosh  ξ−1 =
+
+q t2 
+
+> t2−∆2
+
+, inside the ellipse ,
+
+> tμ −2∆
+
+√(μ/ 2) 2+∆ 2−t2 
+
+> 2( t2−∆2)
+
+, outside the ellipse .
+
+(D31) Now we are able to investigate the behavior close to the critical points. First let’s consider ∆ → 0 (XX-criticality). In this case we have in leading order 
+
+ξ−1 = acosh 
+
+
+
+1 + 12 (∆ /t )2
+
+= ∆ /t + O (∆ /t )2 . (D32) We can similarly approach the Ising critical points at μ = ±2t for fixed ∆ ̸ = 0. For definiteness, consider μ → 2t−
+
+and define δμ = 2 t − μ. Close to the transition we are outside the ellipse, and expanding Eq. (D31) gives cosh  ξ−1 = 1 + (δμ )2
+
+8∆ 2 + O(δμ 3). (D33) Using acosh(1 + x) ≃ √2x for x ≪ 1, we therefore obtain 
+
+ξ−1 = δμ 
+
+2|∆| + O(δμ 2), (D34) and hence 
+
+ξ ∼ 2|∆||2t − μ| . (D35) Thus, the jump-operator localization length diverges upon approaching the Ising critical point, with the Ising critical exponent ν = 1. The transition at μ = −2t follows analogously, with the corresponding gap closing occurring at 
+
+k = 0. A qualitatively different behavior is found when approaching the ellipse from either side. Define the value of ∆ on the ellipse as ∆e = pt2 − (μ/ 2) 2. (D36) Taking the limit ∆ → ∆e in either branch of Eq. (D31) gives lim 
+
+> ∆→∆±
+> e
+
+cosh  ξ−1 = 2t
+
+|μ| , (D37) and therefore, for 0 < |μ| < 2t,lim 
+
+> ∆→∆±
+> e
+
+ξ = 1acosh(2 t/ |μ|) . (D38) Importantly, this finite limiting value is not the localization length exactly on the ellipse, when choosing Eq. (D16). As shown in Eq. (D17) and Eq. (D18), on the ellipse the momentum-space jump operators reduce to finite trigono-metric polynomials and the corresponding real-space jump operators are strictly finite range. Equivalently, in terms of Eq. (D19), the analyticity strip has unbounded width, so that ξ−1 = ∞, or ξ = 0. Consequently, for generic points on the ellipse with 0 < |μ| < 2t, the localization length is discontinuous: approaching the ellipse from either side yields the finite value in Eq. (D38), whereas directly on the ellipse the jump operators become strictly local and ξ = 0. The point μ = 0, ∆ = t is a special case, for which the limiting value itself approaches zero. Note that also the additional algebraic factor in the coefficient decay can be extracted using Cauchy’s formula. 11 Re( k)Im( k)1/ ξB
+
+1/ ξA    
+
+> [β(k)v2(k)] μA,ΔAis analytic [β(k)v2(k)] μB,ΔBis analytic branch point
+> branch point
+
+# a) 0 10 20 30 40 50  
+
+> distance | jl|
+
+10 11 
+
+10 9
+
+10 7
+
+10 5
+
+10 3
+
+10 1
+
+> |Ujl | + | Vjl |
+
+exact data for /t = 0.5, /t = 1 
+
+analytic exponential prediction b) 
+
+FIG. 1. Localization of the jump operators in the topological phase. Left: Schematic analytic continuation to the complex momentum plane. For a given set of Hamiltonian parameters, the localization length ξ is determined by the singularity closest to the real axis: the corresponding branch point bounds the strip of analyticity and lies at an imaginary distance 1 /ξ from the real axis. Right: Real-space jump-operator coefficients | ˜Ujl | + | ˜Vjl |, comparing the exact numerical Fourier coefficients with the asymptotic exponential decay rate derived in Eq. (D31) in the topological phase. The agreement confirms the exponential decay governed by ξ.
+
+Appendix E: Mpemba-type accelerated state preparation 
+
+As discussed in the main text and in App. B, the slowest Lindbladian eigenmodes correspond to coherences between states of opposite fermion parity and are therefore odd under fermion-parity conjugation. Such coherences are excluded from physical fermionic density matrices by fermion-parity superselection [8, 9]. Consequently, physical fermionic states have vanishing overlap with these modes, and their asymptotic relaxation is governed by the next decay rate, 2∆ L. This can be understood directly from the spectral decomposition ˆρ(t) − ˆρss = X
+
+> α
+
+cαeλαt ˆRα, (E1) where ˆRα are right Lindbladian eigenmodes and the coefficients cα are fixed by the initial state. The vanishing of the coefficient associated with the slowest Lindbladian mode is precisely the spectral mechanism underlying a strong Mpemba effect [10–12]: the asymptotic relaxation is then controlled by a faster mode. Figure 2 illustrates this mechanism explicitly at a representative point on the XX critical line (for the phase diagram, see Fig. 2 in the main text). The coherent superposition of states with opposite fermion parity contains coherences between the corresponding parity sectors and therefore accesses the slowest odd-parity Lindbladian modes, relaxing asymptotically at the rate ∆ L. By contrast, the two definite-parity initial states have vanishing overlap with these modes and consequently relax faster, at the rate 2∆ L. While these parity coherences are forbidden for physical fermionic density matrices, they are allowed in spin or hard-core-boson realizations, where no analogous fermion-parity superselection rule applies. In such systems, the spectral structure therefore identifies initial states with vanishing overlap with the slowest modes and hence provides a strong-Mpemba-type factor-of-two acceleration of dissipative state preparation [13, 14]. Larger system sizes can be accessed using covariance-matrix methods for quadratic dynamics, including the Lyapunov-equation approach reviewed in [15]. 12 0 5 10 15 20 25 30 
+
+## ∙t
+
+10 −12 
+
+10 −10 
+
+10 −8
+
+10 −6
+
+10 −4
+
+10 −2
+
+10 0      
+
+> D¡^½(t); ^½gs
+> ¢
+> j00000 ®
+> j10101 ®
+> (j00000 ®+j10000 ®)=p
+> 2
+> /e¡¢L∙t
+> /e¡2¢ L∙t
+
+FIG. 2. Parity-controlled relaxation and Mpemba-type acceleration. Trace distance D(ˆ ρ(t), ˆρgs ) from the target steady state for a Kitaev chain with N = 5, t = 1, ∆ = 0, and μ = 1. The full Lindblad dynamics, including the Kitaev Hamiltonian and Bogoliubov jump operators ˆLk = √κ ˆak , is solved by exact diagonalization of the Lindbladian. The definite-parity states |00000 ⟩ (blue) and |10101 ⟩ (orange dashed) have no overlap with the slowest odd-parity coherence modes and asymptotically decay with rate 2∆ L. The parity-coherent state ( |00000 ⟩+|10000 ⟩)/√2 (green) accesses these modes and instead decays with rate ∆ L. Grey reference lines indicate the corresponding asymptotic decay rates. Time is shown in units of κ−1.
+
+Appendix F: Nonmonotonic behavior in the fidelity 
+
+The inset of Fig. 3 in the main text shows that the infidelity of the steady state first decreases upon increasing the tradeoff exponent n and then increases again for n ≳ 1.7. Here we explain the origin of this non-monotonic behavior. We can explicitly calculate the particle number in a specific momentum mode. For generality we consider Bogoliubov quasiparticles as jump operators ˆLk = ˆ γk = uk ˆck + vk ˆc†−k. Then, the steady-state populations are given by 
+
+⟨ˆc† 
+
+> k
+
+ˆck⟩ss = |vk|2
+
+|uk|2 + |vk|2 . (F1) Note that this holds also for truncated jump operators, where uk and vk are not the Bogoliubov prefactors Eq. (D5) but rather 
+
+uk = X
+
+> g
+
+βg v1(g)fR(k − g) , vk = X
+
+> g
+
+βg v2(g)fR(k − g) , (F2) i.e. the folding of the Bogoliubov prefactors with the function 
+
+fR(g) = e iRg 1 − e−i(2 R+1) g
+
+1 − e−ig . (F3) Here, R denotes the spatial range each jump operator should have after the truncation of its tails, i.e. jump operator ˆLl is supported on [ l − R, l + R]. Notice also that the populations in the momentum basis completely determine the particle-hole correlator in the real space basis 
+
+⟨ˆc† 
+
+> j
+
+ˆcj+r ⟩ss = 1
+
+N
+
+X
+
+> k
+
+e−irk ⟨ˆc† 
+
+> k
+
+ˆck⟩ss . (F4) Since this is a Fourier series, the regularity of the momentum space populations dictates the decay of the correlator with r.Let’s now consider a specific point on the XX critical line, where μ = 0. Then the momentum space populations also control the fidelity of the steady state compared to the target groundstate. We can calculate this fidelity in 13 3 2 1 0 1 2 3 
+
+> momentum k
+
+0.0 0.2 0.4 0.6 0.8 1.0 1.2 ck ck ss |vk| |uk|
+
+# a) 3 2 1 0 1 2 3 
+
+> momentum k
+
+0.0 0.2 0.4 0.6 0.8 1.0 1.2  
+
+> 1.6 1.4
+> 0.00 0.01
+
+ck ck ss |vk| |uk| b)                
+
+> FIG. 3. Momentum population at XX-criticality. We show the momentum population Eq. (F1) (red) and the corre-sponding jump operator prefactors vk(orange) and uk(blue) from Eq. (F2) for βk=|cos( k)|nwith exponents n= 0 (subfigure a) and n= 1 .65 (subfigure b).
+
+each k-sector alone, but let’s first consider the |k| < π/ 2. The groundstate in each of these sectors is given by 
+
+|GS( k)⟩ = ˆ c† 
+
+> k
+
+ˆc†−k |0⟩, while the steady state is the pure state of |SS( k)⟩ = 1 
+
+> N
+
+(uk + vk ˆc† 
+
+> k
+
+ˆc†−k) |0⟩, and the fidelity reads 
+
+| ⟨ GS( k)|SS( k)⟩ | = |vk|
+
+p|uk|2 + |vk|2 =
+
+q
+
+⟨ˆc† 
+
+> k
+
+ˆck⟩ss , (F5) and similarly for |k| > π/ 2
+
+| ⟨ GS( k)|SS( k)⟩ | = |uk|
+
+p|uk|2 + |vk|2 =
+
+q
+
+1 − ⟨ ˆc† 
+
+> k
+
+ˆck⟩ss . (F6) Due to the tensor product structure of both the steady state as well as the groundstate, the full fidelity is calculated as 
+
+| ⟨ GS |SS ⟩ | = Y
+
+> k> 0
+
+| ⟨ GS( k)|SS( k)⟩ | . (F7) This reveals that large deviations in the momentum space populations from 1 (for |k| < π/ 2) and 0 (for |k| > π/ 2) lead to large deviations in the fidelity. When comparing truncated with non-truncated jump operators, whether the decay is accurately captured by the truncated ones now heavily depends on the function βk as it contributes non-trivially in Eq. (F2). To illustrate this behavior, we consider the XX-criticality ( μ = 0) with βk = | cos( k)|n, where we fix the truncation cutoff R = 5 and vary the tradeoff exponent n (same as in Fig. 3). We first consider the two exponents n = 0 and n = 1 .65 in Fig. 3. For n = 0 (Fig. 3 (a)) we see that both vk and uk deviate strongly from the non-truncated curve (not shown, given by two boxes), leading to smoothened out edges at k = ±π/ 2. In contrast, for n = 1 .65 (Fig. 3 (b)) the points at which vk and uk hit zero moved much closer to k = ±π/ 2 than for n = 0. Also, the deviations in the regime where the parameters should be zero in the non-truncated case ( k < −π/ 2 and k > +π/ 2) are much smaller than for the 
+
+n = 0 case. This also leads to much sharper edges at k = ±π/ 2. In contrast, for n = 3 in Fig. 4 (a) the strong suppression due to the zero of third order around k = ±π/ 2 leads to both uk and vk being very small around these points. Since the population depends only on their ratio, the truncation errors introduced by the cutoff are amplified strongly in the population, leading to a residual contribution around the jumps. Note however that this problem originates from the low value of βk ∼ a|k|n around the discontinuity at k = ±π/ 2of the Bogoliubov coefficients, and not from the high tradeoff exponent n itself ( a = 1 for the particular choice of 
+
+βk). We can alleviate this problem, for instance, by strongly increasing the prefactor a in the expansion of βk around 
+
+k = ±π. This is precisely what is shown in Fig. 4 (b), where we change the prefactor from a = 1 to a = 16 by considering β′ 
+
+> k
+
+= 1 − (1 − βk)16 . This changes the behavior drastically and the population is much closer to the box shape corresponding to the non-truncated case. 14 3 2 1 0 1 2 3 
+
+> momentum k
+
+0.0 0.2 0.4 0.6 0.8 1.0 1.2  
+
+> 1.6 1.4
+> 0.00 0.01
+
+ck ck ss |vk| |uk|
+
+# a) 3 2 1 0 1 2 3 
+
+> momentum k
+
+0.0 0.2 0.4 0.6 0.8 1.0 1.2  
+
+> 1.6 1.4
+> 0.00 0.01
+
+ck ck ss |vk| |uk| b) 
+
+FIG. 4. Momentum population at XX-criticality for high tradeoff exponent n = 3 . We show the momentum population Eq. (F1) (red) and the corresponding jump operator prefactors vk (orange) and uk (blue) from Eq. (F2) for 
+
+βk = | cos( k)|3 (subfigure a) and β′ 
+
+> k
+
+= 1 − (1 − βk )16 (subfigure b). [1] A. Y. Kitaev, Unpaired majorana fermions in quantum wires, Physics-Uspekhi 44 , 131 (2001). [2] G. Lindblad, On the generators of quantum dynamical semigroups, Commun. Math. Phys. 48 , 119 (1976). [3] B. Kraus, H. P. B¨ uchler, S. Diehl, A. Kantian, A. Micheli, and P. Zoller, Preparation of entangled states by quantum markov processes, Phys. Rev. A 78 , 042307 (2008). [4] T. Prosen, Third quantization: a general method to solve master equations for quadratic open fermi systems, New Journal of Physics 10 , 043026 (2008). [5] J. Nissil¨ a, Fourier decay of absolutely and h¨ older continuous functions with infinitely or finitely many oscillations, arXiv preprint arXiv:1805.02445 (2018). [6] S. Diehl, E. Rico, M. A. Baranov, and P. Zoller, Topology by dissipation in atomic quantum wires, Nature Physics 7,971–977 (2011). [7] J. P. Boyd, Chebyshev and Fourier spectral methods (Courier Corporation, 2001). [8] G. C. Wick, A. S. Wightman, and E. P. Wigner, The intrinsic parity of elementary particles, Phys. Rev. 88 , 101 (1952). [9] N. T. Vidal, M. L. Bera, A. Riera, M. Lewenstein, and M. N. Bera, Quantum operations in an information theory for fermions, Phys. Rev. A 104 , 032411 (2021). [10] Z. Lu and O. Raz, Nonequilibrium thermodynamics of the markovian mpemba effect and its inverse, Proceedings of the National Academy of Sciences 114 , 5083 (2017). [11] A. Kumar and J. Bechhoefer, Exponentially faster cooling in a colloidal system, Nature 584 , 64 (2020). [12] G. Teza, J. Bechhoefer, A. Lasanta, O. Raz, and M. Vucelja, Speedups in nonequilibrium thermal relaxation: Mpemba and related effects, Physics Reports 1164 , 1 (2026). [13] P. Westhoff, S. Paeckel, and M. Moroder, Fast and direct preparation of a genuine lattice bose-einstein condensate via the quantum mpemba effect, Phys. Rev. A 112 , L061304 (2025). [14] N. Beato and G. Teza, Relaxation control of open quantum systems, Phys. Rev. Lett. 136 , 070401 (2026). [15] A. M. Lacerda, Quantum Thermodynamics with Nonequilibrium Steady States , Phd thesis, Trinity College Dublin, School of Physics, Discipline of Physics (2026).

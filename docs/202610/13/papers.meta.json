@@ -1,0 +1,39 @@
+{
+  "label": "2026-10-13",
+  "date": "2026-10-13",
+  "generated_at": "2026-10-13T01:33:15",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202610/13/2610.13228v1-block-encoding-of-semiseparable-matrices-via-their-generators",
+      "section": "quick",
+      "title_en": "Block encoding of semiseparable matrices via their generators",
+      "authors": "Giacomo Antonioli, Gianna M. Del Corso, Roel Van Beeumen",
+      "date": "2026-10-09",
+      "pdf": "https://arxiv.org/pdf/2610.13228v1",
+      "score": "7.0",
+      "evidence": "显式量子线路构造半可分矩阵的块编码",
+      "tldr": "半可分矩阵在量子算法中常需块编码，但直接构造一般代价较高。本文针对 N=2^n 的情形提出一种显式量子电路，仅利用两个生成元即可构造 generator-representable 半可分矩阵的块编码。该电路使用 2n+2 个辅助量子比特，深度为 O(polylog N)，并实现 (2√N,2n+2,2√2 ε)-块编码，误差由生成元态制备精度控制。其核心门仅为循环移位、交换与 Hadamard，均可借助索引二进制分解高效实现，这一方案为半可分矩阵量子算法提供低深度编码重要工具。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "We present an explicit quantum circuit that constructs a block encoding of a generator-representable semiseparable (one-pair) matrix directly from its two generators. For an $N\\times N$ semiseparable matrix with $N=2^{n}$, the circuit uses $2n+2$ ancilla qubits and has $O({\\rm polylog} N)$ depth, and it realizes a $(2\\sqrt{N},\\,2n+2,\\,2 \\sqrt{2}\\ \\varepsilon)$-block encoding, where $\\varepsilon$ is controlled by the accuracy of the state-preparation routines that load the generators. The building blocks of the circuit are cyclic shifts, swaps, and Hadamard gates, each admitting an efficient implementation through the binary decomposition of the relevant indices.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/13/2610.13784v1-locality-preparation-time-tradeoffs-in-dissipative-quantum-systems",
+      "section": "quick",
+      "title_en": "Locality-Preparation Time Tradeoffs in Dissipative Quantum Systems",
+      "authors": "Philipp Westhoff, Sara Murciano, Mattia Moroder",
+      "date": "2026-10-09",
+      "pdf": "https://arxiv.org/pdf/2610.13784v1",
+      "score": "6.0",
+      "evidence": "耗散开系统动力学与局域性-制备时间权衡",
+      "tldr": "耗散态制备把目标量子多体态设为开放系统稳态，但耗散的空间局域性如何限制制备时间尚不清楚。本文针对二次费米子系统建立精确的局域性—制备时间关系，并提出在保持目标态的同时优化耗散局域性的构造。以 Kitaev 链为例，临界区压制跳跃算符的代数尾必然使制备时间随系统尺寸代数增长；而平庸与拓扑能隙相可用指数局域耗散在热力学极限下有限时间制备。这明确了快速耗散制备与局域控制的兼容边界及临界性的动力学代价。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Dissipative state preparation engineers quantum many-body states as steady states of an open-system dynamics. The spatial range of the required dissipation sets both the feasibility of analog implementations and the connectivity and control complexity of digital ones. Yet how this locality quantitatively constrains preparation times remains largely unknown. Here, we establish an exact locality-preparation time relation for quadratic fermionic systems and develop a construction that optimizes the locality of the dissipative dynamics while preserving the target state. Applied to the Kitaev chain, our framework reveals sharply different locality-preparation time tradeoffs in critical and gapped regimes. At criticality, suppressing the algebraic tails of the jump operators necessarily forces the preparation time to grow algebraically with system size. By contrast, both trivial and topological gapped phases admit exponentially localized dissipation with a finite preparation time in the thermodynamic limit. Our results identify when fast dissipative preparation is compatible with local control and when criticality imposes an unavoidable dynamical cost.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
