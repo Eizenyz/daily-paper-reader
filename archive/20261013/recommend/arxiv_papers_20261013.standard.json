@@ -1,15 +1,15 @@
 {
   "mode": "standard",
-  "generated_at": "2026-10-13T01:32:28.318901+00:00",
+  "generated_at": "2026-10-13T23:57:13.913636+00:00",
   "stats": {
     "mode": "standard",
     "tag_count": 2,
     "deep_divecandidates": 0,
     "deep_cap": 7,
     "deep_selected": 0,
-    "quick_candidates": 2,
+    "quick_candidates": 1,
     "quick_skim_target": 12,
-    "quick_selected": 2
+    "quick_selected": 1
   },
   "deep_dive": [],
   "quick_skim": [
@@ -37,13 +37,13 @@
         "query:quantum-ode"
       ],
       "llm_score": 7.0,
-      "llm_evidence_en": "explicit quantum circuit constructing a block encoding of semiseparable matrices",
-      "llm_evidence_cn": "显式量子线路构造半可分矩阵的块编码",
-      "llm_evidence": "显式量子线路构造半可分矩阵的块编码",
-      "canonical_evidence": "显式量子线路构造半可分矩阵的块编码",
-      "llm_tldr_en": "This paper gives an explicit circuit that builds a block encoding of generator-representable semiseparable matrices directly from their two generators, using O(polylog N) depth.",
-      "llm_tldr_cn": "针对一般矩阵块编码线路深度大、依赖繁重预处理的问题，本文提出从半可分矩阵的两个生成元直接构造块编码的显式量子线路。方法仅使用循环移位、交换和Hadamard门，借助索引的二进制分解高效实现，使用2n+2个辅助比特且深度为O(polylog N)。所得块编码误差由生成元态制备精度控制，为量子算法中结构化矩阵的访问提供了高效途径，可迁移到线性系统与微分方程求解等任务。",
-      "llm_tldr": "针对一般矩阵块编码线路深度大、依赖繁重预处理的问题，本文提出从半可分矩阵的两个生成元直接构造块编码的显式量子线路。方法仅使用循环移位、交换和Hadamard门，借助索引的二进制分解高效实现，使用2n+2个辅助比特且深度为O(polylog N)。所得块编码误差由生成元态制备精度控制，为量子算法中结构化矩阵的访问提供了高效途径，可迁移到线性系统与微分方程求解等任务。",
+      "llm_evidence_en": "block encoding construction of matrices from generators for quantum algorithms",
+      "llm_evidence_cn": "从生成元构造矩阵块编码，服务于量子算法",
+      "llm_evidence": "从生成元构造矩阵块编码，服务于量子算法",
+      "canonical_evidence": "从生成元构造矩阵块编码，服务于量子算法",
+      "llm_tldr_en": "An explicit quantum circuit block-encodes generator-representable semiseparable matrices directly from two generators with polylogarithmic depth.",
+      "llm_tldr_cn": "针对结构化矩阵缺乏高效量子访问方式的问题，本文提出直接由两个生成元构建半可分矩阵块编码的显式量子线路。线路仅使用循环移位、交换与Hadamard门，采用2n+2个辅助比特，深度为O(polylog N)，并给出精度可控的块编码参数。该结果为依赖结构化矩阵访问的量子算法提供了高效且可实现的块编码构造。",
+      "llm_tldr": "针对结构化矩阵缺乏高效量子访问方式的问题，本文提出直接由两个生成元构建半可分矩阵块编码的显式量子线路。线路仅使用循环移位、交换与Hadamard门，采用2n+2个辅助比特，深度为O(polylog N)，并给出精度可控的块编码参数。该结果为依赖结构化矩阵访问的量子算法提供了高效且可实现的块编码构造。",
       "llm_tags": [
         "query:quantum-algo"
       ],
@@ -52,46 +52,6 @@
       "matched_requirement_id": "req-13",
       "selection_source": "fresh_fetch",
       "quick_tier": "7"
-    },
-    {
-      "id": "2610.13784v1",
-      "source": "arxiv",
-      "title": "Locality-Preparation Time Tradeoffs in Dissipative Quantum Systems",
-      "abstract": "Dissipative state preparation engineers quantum many-body states as steady states of an open-system dynamics. The spatial range of the required dissipation sets both the feasibility of analog implementations and the connectivity and control complexity of digital ones. Yet how this locality quantitatively constrains preparation times remains largely unknown. Here, we establish an exact locality-preparation time relation for quadratic fermionic systems and develop a construction that optimizes the locality of the dissipative dynamics while preserving the target state. Applied to the Kitaev chain, our framework reveals sharply different locality-preparation time tradeoffs in critical and gapped regimes. At criticality, suppressing the algebraic tails of the jump operators necessarily forces the preparation time to grow algebraically with system size. By contrast, both trivial and topological gapped phases admit exponentially localized dissipation with a finite preparation time in the thermodynamic limit. Our results identify when fast dissipative preparation is compatible with local control and when criticality imposes an unavoidable dynamical cost.",
-      "authors": [
-        "Philipp Westhoff",
-        "Sara Murciano",
-        "Mattia Moroder"
-      ],
-      "primary_category": "quant-ph",
-      "categories": [
-        "quant-ph",
-        "cond-mat.stat-mech"
-      ],
-      "published": "2026-10-09T16:03:49+00:00",
-      "link": "https://arxiv.org/pdf/2610.13784v1",
-      "tags": [
-        "keyword:quantum-algo",
-        "keyword:quantum-ode",
-        "query:quantum-algo",
-        "query:quantum-ode"
-      ],
-      "llm_score": 6.0,
-      "llm_evidence_en": "Dissipative open-system dynamics and locality-preparation time tradeoffs",
-      "llm_evidence_cn": "耗散开系统动力学与局域性-制备时间权衡",
-      "llm_evidence": "耗散开系统动力学与局域性-制备时间权衡",
-      "canonical_evidence": "耗散开系统动力学与局域性-制备时间权衡",
-      "llm_tldr_en": "Establishes an exact locality-preparation time relation for quadratic fermionic dissipative dynamics, applied to the Kitaev chain.",
-      "llm_tldr_cn": "该工作关注耗散态制备中，耗散的空间局域性如何定量限制制备时间这一未知问题。作者针对二次费米子系统建立精确的局域性-制备时间关系，并构造在保持目标态的同时优化耗散局域性的方案。将其应用于Kitaev链，揭示临界与能隙区制下截然不同的权衡行为，为开放系统动力学的数字与模拟实现提供指导。",
-      "llm_tldr": "该工作关注耗散态制备中，耗散的空间局域性如何定量限制制备时间这一未知问题。作者针对二次费米子系统建立精确的局域性-制备时间关系，并构造在保持目标态的同时优化耗散局域性的方案。将其应用于Kitaev链，揭示临界与能隙区制下截然不同的权衡行为，为开放系统动力学的数字与模拟实现提供指导。",
-      "llm_tags": [
-        "query:quantum-ode"
-      ],
-      "matched_query_tag": "query:quantum-ode",
-      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
-      "matched_requirement_id": "req-2",
-      "selection_source": "fresh_fetch",
-      "quick_tier": "6"
     }
   ]
 }

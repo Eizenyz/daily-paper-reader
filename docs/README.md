@@ -54,11 +54,11 @@
     <strong class="dpr-home-dashboard-count">共 2 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-13 01:33:13 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-13 23:57:14 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读两篇量子计算方向论文，聚焦半可分矩阵的块编码与耗散量子系统中的局域性-制备时间权衡。最值得关注的是用生成元实现半可分矩阵块编码（7.0/10），以及耗散系统中局域性与制备时间的取舍关系（6.0/10）。建议普通读者优先从半可分矩阵块编码这篇入手，了解量子算法如何高效处理这类特殊结构矩阵。</p>
+<p>今日速读两篇量子信息预印本，聚焦半可分矩阵的块编码与耗散量子系统中的局域性-制备时间权衡。最值得关注半可分矩阵借助生成元实现块编码（7.0分），以及耗散系统中局域性与制备时间的取舍关系（6.0分）。建议普通读者优先从半可分矩阵这篇入手，关注量子算法中矩阵编码效率的改进思路。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">

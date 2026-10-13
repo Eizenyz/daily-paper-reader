@@ -1,9 +1,9 @@
 {
   "date": "20261013",
   "date_label": "",
-  "generated_at": "2026-10-13 01:33:13 UTC",
+  "generated_at": "2026-10-13 23:57:14 UTC",
   "recommend_exists": true,
-  "run_count": 1,
+  "run_count": 2,
   "papers": [
     {
       "paper_id": "2610.13228v1",
@@ -19,7 +19,7 @@
       "score": 7.0,
       "evidence": "显式量子线路构造半可分矩阵的块编码",
       "first_seen_at": "2026-10-13 01:33:13 UTC",
-      "updated_at": "2026-10-13 01:33:13 UTC"
+      "updated_at": "2026-10-13 23:57:14 UTC"
     },
     {
       "paper_id": "2610.13784v1",
