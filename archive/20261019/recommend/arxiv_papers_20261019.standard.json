@@ -1,0 +1,98 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-19T04:34:40.802458+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 2,
+    "deep_cap": 7,
+    "deep_selected": 2,
+    "quick_candidates": 0,
+    "quick_skim_target": 12,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2610.18589v1",
+      "source": "arxiv",
+      "title": "$T$-efficient unitary synthesis via block-sparse Hamiltonian simulation",
+      "abstract": "We construct Clifford+$T$ circuits implementing arbitrary $n$-qubit unitaries with worst-case $T$-count $\\widetilde{O}(N^{8/7})$ at constant operator-norm error, where $N=2^n$, improving the previous exponent $5/4$. The construction uses $\\widetilde{O}(N^{6/7})$ clean ancillas. The main idea is to reduce the data addressed by each query to the block-encoding circuit for a sparse piece while controlling the additional simulation work needed to combine the pieces. We simulate a Hermitian logarithm of the target by flattening its traceless part with a two-layer random similarity transformation, randomly partitioning the transformed generator into block-sparse Hermitian pieces, and combining their evolutions using qDRIFT. For a target operator-norm error $ε\\in(0,1/2)$, let $L=\\log_2(N/ε)$, the qubit count plus the requested bits of accuracy. By successively correcting the approximation error, we obtain a circuit using $\\widetilde{O}(N^{8/7}L^{3/7}+NL)$ $T$ gates and $\\widetilde{O}(N)$ clean ancillas whenever $L\\le N$. We also prove that, at constant precision, the exponent $8/7$ is optimal within a sequential block-SELECT model.",
+      "authors": [
+        "Diyi Liu",
+        "Shuchen Zhu",
+        "Wibe Albert de Jong",
+        "Di Fang",
+        "David Williams-Young",
+        "Chao Yang"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.CC"
+      ],
+      "published": "2026-10-13T15:49:44+00:00",
+      "link": "https://arxiv.org/pdf/2610.18589v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "block-sparse Hamiltonian simulation with improved T-count for unitary synthesis",
+      "llm_evidence_cn": "利用块稀疏哈密顿量模拟提升酉合成的 T 门复杂度",
+      "llm_evidence": "利用块稀疏哈密顿量模拟提升酉合成的 T 门复杂度",
+      "canonical_evidence": "利用块稀疏哈密顿量模拟提升酉合成的 T 门复杂度",
+      "llm_tldr_en": "The paper improves Clifford+T synthesis of arbitrary n-qubit unitaries by simulating a Hermitian logarithm with block-sparse Hamiltonian pieces, reducing worst-case T-count from N^{5/4} to N^{8/7} at constant error.",
+      "llm_tldr_cn": "针对任意 n 量子比特酉算子的 Clifford+T 电路合成，现有最坏情况 T 门数较高。作者将目标酉算子的厄米对数拆分为块稀疏哈密顿量分量，并用 qDRIFT 组合其演化，从而构造高效合成电路。结果表明，在常数算子范数误差下，最坏 T 门数由 N^{5/4} 降至 N^{8/7}，并给出所需辅助比特数。该工作为哈密顿量模拟与门复杂度优化提供了可迁移技术。",
+      "llm_tldr": "针对任意 n 量子比特酉算子的 Clifford+T 电路合成，现有最坏情况 T 门数较高。作者将目标酉算子的厄米对数拆分为块稀疏哈密顿量分量，并用 qDRIFT 组合其演化，从而构造高效合成电路。结果表明，在常数算子范数误差下，最坏 T 门数由 N^{5/4} 降至 N^{8/7}，并给出所需辅助比特数。该工作为哈密顿量模拟与门复杂度优化提供了可迁移技术。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "efficient Hamiltonian simulation algorithms with rigorous gate and query complexity guarantees",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.14943v1",
+      "source": "arxiv",
+      "title": "A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation",
+      "abstract": "We present a mass-weighted meshless formulation for the shifted incompressible lattice Boltzmann method (LBM) whose streaming step is exactly unitary, combining with the Carleman embedding. In traditional meshless LBM, on a scattered node set the semi-Lagrangian streaming step is an interpolation, which is not unitary; a generic block encoding of this matrix therefore requires a normalization proportional to its sparsity and logarithmically many ancillas. To overcome the non-unitarity, we instead express the interpolation as the exponential exp(a Dx + b Dy) of mimetic derivative operators. Endowing each node with its Voronoi mass and applying a mass-weighted similarity transform renders these derivative operators skew-Hermitian by enforcing moment constraints together with low-wave number trigonometric differentiation conditions, so that the interpolation becomes exactly unitary. Such unitarization of interpolation leave the local collision step unchanged up to a rescaling of its quadratic term, where the same weights define the amplitude encoding of the distribution functions. For quasi-uniform node sets, the mass-weighting diagonal remains within a unit-order normalization that degrades only mildly as the Carleman truncation order grows, thereby mitigating the cost of block encoding. Numerical experiments on the Taylor Green vortex confirm that the method reproduces the full meshless LBM, with the velocity error decreasing as the Carleman order increases.",
+      "authors": [
+        "Chi Zhang",
+        "Hefeng Wang",
+        "Hua Xiang"
+      ],
+      "primary_category": "physics.comp-ph",
+      "categories": [
+        "physics.comp-ph",
+        "math.NA"
+      ],
+      "published": "2026-10-10T14:18:59+00:00",
+      "link": "https://arxiv.org/pdf/2610.14943v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "quantum algorithm for lattice Boltzmann PDE solver via Carleman embedding and unitary streaming",
+      "llm_evidence_cn": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
+      "llm_evidence": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
+      "canonical_evidence": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
+      "llm_tldr_en": "A quantum algorithm for meshless lattice Boltzmann solvers is proposed, making the streaming step exactly unitary via mimetic derivative operators and Carleman embedding, avoiding costly non-unitary block encodings for PDE simulation.",
+      "llm_tldr_cn": "无网格格子玻尔兹曼方法的半拉格朗日平流步骤是非酉插值，直接块编码代价高。作者将插值写成模拟导数算子的指数形式，并通过Voronoi质量加权相似变换使其成为斜厄米算子，从而实现精确酉化的平流步骤。再结合Carleman嵌入把非线性问题线性化以适配量子求解。该工作为流体类偏微分方程提供了可行的量子算法构造。",
+      "llm_tldr": "无网格格子玻尔兹曼方法的半拉格朗日平流步骤是非酉插值，直接块编码代价高。作者将插值写成模拟导数算子的指数形式，并通过Voronoi质量加权相似变换使其成为斜厄米算子，从而实现精确酉化的平流步骤。再结合Carleman嵌入把非线性问题线性化以适配量子求解。该工作为流体类偏微分方程提供了可行的量子算法构造。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

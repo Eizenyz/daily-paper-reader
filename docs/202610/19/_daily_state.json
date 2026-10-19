@@ -1,0 +1,41 @@
+{
+  "date": "20261019",
+  "date_label": "",
+  "generated_at": "2026-10-19 04:35:18 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.14943v1",
+      "route": "202610/19/2610.14943v1-a-quantum-algorithm-for-meshless-lattice-boltzmann-method-with-unitary-interpolation",
+      "title": "A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
+      "first_seen_at": "2026-10-19 04:35:18 UTC",
+      "updated_at": "2026-10-19 04:35:18 UTC"
+    },
+    {
+      "paper_id": "2610.18589v1",
+      "route": "202610/19/2610.18589v1-t-efficient-unitary-synthesis-via-block-sparse-hamiltonian-simulation",
+      "title": "$T$-efficient unitary synthesis via block-sparse Hamiltonian simulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用块稀疏哈密顿量模拟提升酉合成的 T 门复杂度",
+      "first_seen_at": "2026-10-19 04:35:18 UTC",
+      "updated_at": "2026-10-19 04:35:18 UTC"
+    }
+  ]
+}

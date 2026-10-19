@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-13</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-19</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 2 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>2</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-13 23:57:14 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-19 04:35:18 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读两篇量子信息预印本，聚焦半可分矩阵的块编码与耗散量子系统中的局域性-制备时间权衡。最值得关注半可分矩阵借助生成元实现块编码（7.0分），以及耗散系统中局域性与制备时间的取舍关系（6.0分）。建议普通读者优先从半可分矩阵这篇入手，关注量子算法中矩阵编码效率的改进思路。</p>
+<p>今日精读两篇量子算法论文，聚焦无网格格子玻尔兹曼方法与酉合成新路径。两篇均获 8.0 分，值得关注“酉插值”和“块稀疏哈密顿量模拟”这两个方向。普通读者可先了解量子模拟如何服务流体计算，再跟进高效酉合成的实现细节。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -78,12 +78,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">0 篇</strong>
+    <strong class="dpr-home-dashboard-count">2 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation">A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation</span></li><li><span class="dpr-home-dashboard-paper-title" title="$T$-efficient unitary synthesis via block-sparse Hamiltonian simulation">$T$-efficient unitary synthesis via block-sparse Hamiltonian simulation</span></li></ul>
   </div>
-
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">quantum-algo <strong>1</strong></span><span class="dpr-home-dashboard-tag">quantum-ode <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -91,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">2 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Block encoding of semiseparable matrices via their generators">Block encoding of semiseparable matrices via their generators</span></li><li><span class="dpr-home-dashboard-paper-title" title="Locality-Preparation Time Tradeoffs in Dissipative Quantum Systems">Locality-Preparation Time Tradeoffs in Dissipative Quantum Systems</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">quantum-algo <strong>1</strong></span><span class="dpr-home-dashboard-tag">quantum-ode <strong>1</strong></span></div>
+
 </section>
 </div>
 

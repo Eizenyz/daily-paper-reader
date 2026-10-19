@@ -1,0 +1,3537 @@
+Title: T-efficient unitary synthesis via block-sparse Hamiltonian simulation
+
+URL Source: https://arxiv.org/pdf/2610.18589v1
+
+Published Time: Wed, 14 Oct 2026 05:32:40 GMT
+
+Number of Pages: 31
+
+Markdown Content:
+# T -efficient unitary synthesis via block-sparse Hamiltonian simulation 
+
+Diyi Liu, 1 Shuchen Zhu, 2, 3, 4 Wibe Albert de Jong, 1 Di Fang, 3, 4 David Williams-Young, 2 and Chao Yang 1
+
+> 1
+
+Lawrence Berkeley National Laboratory, Berkeley, California 94720, USA 
+
+> 2
+
+Microsoft Quantum, Redmond, Washington 98052, USA 
+
+> 3
+
+Department of Mathematics, Duke University, Durham, North Carolina 27708, USA 
+
+> 4
+
+Duke Quantum Center, Duke University, Durham, North Carolina 27701, USA 
+
+(Dated: October 14, 2026) We construct Clifford+ T circuits implementing arbitrary n-qubit unitaries with worst-case T -count eO(N 8/7) at constant operator-norm error, where N = 2 n, improving the previous exponent 5/4. The construction uses eO(N 6/7) clean ancillas. The main idea is to reduce the data addressed by each query to the block-encoding circuit for a sparse piece while controlling the additional simulation work needed to combine the pieces. We simulate a Hermitian logarithm of the target by flattening its traceless part with a two-layer random similarity transformation, randomly partitioning the transformed generator into block-sparse Hermitian pieces, and combining their evolutions using qDRIFT. For a target operator-norm error ϵ ∈ (0 , 1/2), let L = log 2(N/ϵ ), the qubit count plus the requested bits of accuracy. By successively correcting the approximation error, we obtain a circuit using eO(N 8/7L3/7 + N L ) T gates and eO(N ) clean ancillas whenever L ≤ N . We also prove that, at constant precision, the exponent 8 /7 is optimal within a sequential block-SELECT model. 
+
+I. INTRODUCTION 
+
+In fault tolerant quantum computing, non-Clifford gates are often substantially more expensive than Clif-ford gates. For example, implementations using surface codes [1] can supply the gate T = diag(1 , e iπ/ 4) through magic state distillation [2]. This motivates using the number of T gates as a resource measure, distinct from the total gate count, and has led to extensive optimiza-tion of small circuits [3–5]. Here we ask: how many T
+
+gates are needed to implement an arbitrary unitary on n
+
+qubits to accuracy ϵ?
+
+For N = 2 n, a generic unitary has N 2 real parame-ters. The challenge is to incorporate these parameters into a Clifford+ T circuit using few T gates. At con-stant precision, a polynomial gap remains between the known bounds on the number of T gates required in the worst case. Counting gives a lower bound of Ω( N ) [6, 7]. Low et al. [8] give an upper bound eO(N 3/2). Tan [7] re-duces the exponent to 4 /3 by combining recursive cosine– sine decomposition with the synthesis of multiplexed di-agonal unitaries. Yuan et al. [9] obtain exponent 5 /4through random block flattening, dilation, and singular value transformation. Fang et al. [10] use a different ap-proach based on a logarithm to obtain bounds that de-pend on the target unitary, with eO(N 3/2) T gates in the worst case. Related work studies depth and ancilla tradeoffs us-ing continuously parameterized gates [11–17]. Oracle formulations count Boolean queries as primitive opera-tions [12, 18–23]. A recent construction gives synthesis in polynomial time at constant error in the diamond norm, using a suitably chosen oracle that depends on the tar-get [24]. Here we count the T gates needed to implement the complete circuit, including the synthesis of elemen-tary gates and the implementation of data access. We obtain the following bound by combining encod-ings of block-sparse matrices with Hamiltonian simula-tion and residual refinement. 
+
+Theorem 1 (Unitary synthesis, informal version of The-orems 3 and 4) . Let N = 2 n and L = n + log 2(1 /ϵ ), with 
+
+0 < ϵ < 1/2 and L ≤ N . For sufficiently large n, ev-ery U ∈ U (N ) can be implemented to error at most ϵ in operator norm by a Clifford+ T circuit using 
+
+eO
+
+
+
+N 8/7L3/7 + N L 
+
+
+
+(1) 
+
+T gates and eO(N ) clean ancillas. At constant precision, a separate choice of parameters gives eO(N 8/7) T gates with eO(N 6/7) ancillas. 
+
+The improvement shown in Table I comes from encod-ing block-sparse pieces separately, so each query accesses a smaller lookup table. In the construction of Yuan et al. [9], each query addresses a lookup table containing data for all N 2 matrix entries. Singular value amplifi-cation uses this encoding repeatedly, so the lookup cost is paid at every query. We instead use separate encod-ings with smaller lookup tables. To do this, we represent 
+
+U as evolution under a Hermitian logarithm and parti-tion its generator into block-sparse Hermitian pieces. We construct these pieces using a random change of basis fol-lowed by a random partition that preserves Hermiticity. To approximate evolution under the sum of these pieces, we use qDRIFT [25, 26], which applies short evo-lutions under randomly chosen pieces. More pieces give smaller lookup tables, but can require more such evolu-tions to achieve the same accuracy. We choose the block size and number of pieces to balance these costs, using 
+
+eO(N 8/7) T gates at constant precision. For higher precision, we successively correct the re-maining approximation error using residual refinement. Each correction involves a smaller generator, avoiding arXiv:2610.18589v1 [quant-ph] 13 Oct 2026 2
+
+TABLE I. Number of T gates required in the worst case to implement an arbitrary unitary on n qubits with Clifford+ T
+
+circuits, where N = 2 n and L = n + log 2(1 /ϵ ). Here, fixed ϵ means a sufficiently small positive error tolerance independent of 
+
+N . Theorem 3 gives a smaller ancilla bound at fixed error, while Theorem 4 improves the dependence on accuracy through residual refinement. Ancilla counts follow each reference’s conventions. Our constructions use clean ancillas, while Ref. [8] also allows dirty workspace. The lower bound in Theorem 5 concerns the cost in the sequential block-SELECT model under the stated limit on information stored in the unitaries between evolutions. Reference T gates Ancillas Validity Low, Kliuchnikov, and Schaeffer [8] eO(N 3/2) eO(N 1/2) fixed ϵ
+
+Tan [7] O(N 4/3L2/3 + N L ) O(N 2/3L1/3 + L) all ϵ
+
+Yuan, Zhang, and Zi [9] O(N 5/4L5/8 log N ) O(N √L) L ≤ N
+
+This work, Theorem 3 eO(N 8/7ϵ−6/7) eO(N 6/7ϵ−8/7) ϵ ≥ N −1/8 polylog N
+
+This work, Theorem 4 eO(N 8/7L3/7 + N L ) eO(N ) L ≤ N
+
+Lower bound [6, 7] Ω( N ) — fixed ϵ
+
+This work, Theorem 5 eΩ( N 8/7) — fixed ϵ
+
+the costly precision dependence of a single qDRIFT ap-proximation. All sampling is performed during classical preprocessing, and the sampled evolutions are compiled into a Clifford+ T circuit. We also prove a matching lower bound in a restricted cost model that includes our construction. The model represents the target as a sequence of Hamiltonian evo-lutions, charging for matrix lookups, operations within each block, and simulation. It limits how much infor-mation about the target can be stored in the unitaries between evolutions. Within this model, called the se-quential block-SELECT model, the exponent 8 /7 is opti-mal in the worst case at constant precision, up to factors polynomial in n.
+
+Theorem 2 (Optimality within the model, informal ver-sion of Theorem 5) . At sufficiently small constant error in operator norm, the cost of unitary synthesis in the se-quential block-SELECT model is eΩ( N 8/7) in the worst case. 
+
+The rest of the paper is organized as follows. Sec. II introduces the notation and error criterion and summa-rizes the tools for data loading and Hamiltonian simu-lation. Sec. III illustrates the construction and its cost balance. Sec. IV develops the flattening, partitioning, and encoding steps. Sec. V bounds the resources for uni-tary synthesis using qDRIFT and QSVT, and Sec. VI im-proves the precision dependence through residual refine-ment. Sec. VII states the lower bound in the sequential block-SELECT model. These last three sections include proof sketches. Sec. VIII concludes the work. The ap-pendices contain the complete proofs and an extension of the lower bound to mixed block sizes. 
+
+II. PRELIMINARIES 
+
+We first set the notation and error criterion. The re-maining subsections state the data-loading and simula-tion tools needed.       
+
+> A23
+> 11223344block column J(D= 4) block row  Ib= 2
+> x= ( 01 |{z}
+> xh
+> ,1|{z}
+> xl
+> )
+
+FIG. 1. An N = 8 matrix partitioned into D = 4 block rows and columns, with b = 2 rows and columns per block. The shaded submatrix A23 contains rows 3–4 and columns 5–6. For the row label x = 011, the high bits 01 select row group 
+
+I = 2, and the low bit 1 selects its second row. 
+
+A. Notation 
+
+Let n be the number of data qubits and N = 2 n. We order the computational basis lexicographically by bit strings x ∈ { 0, 1}n. For a positive integer r, write [ r] = 
+
+{1, . . . , r }.The construction groups matrix entries into square blocks. The block size balances the cost of loading the data with the cost of implementing the quantum oper-ations. Let b be the number of rows and columns in each square block, chosen as a power of two with b ≤ N .Then D = N/b is the number of block rows and of block columns. For a matrix A ∈ CN ×N , group its rows and columns consecutively in sets of b. The block AIJ is the 
+
+b × b submatrix in block row I and block column J, with 
+
+I, J ∈ [D]. For a row index x, write x = ( xh, x l). Here xh identi-fies the block row and xl the row within it. They consist of the first log 2 D and last log 2 b bits, respectively. The 3same convention applies to column indices. Fig. 1 illus-trates the partition and its bit labels. We use ∥·∥ for the operator norm and ∥·∥ F for the unnormalized Frobenius norm. Logarithms are natural unless written log 2. Both eO(·) and eΩ( ·) hide factors polynomial in n only. Define F = H⊗n, where H is the Hadamard gate. F is real and symmetric, with F 2 = I.For a sign vector σ ∈ {± 1}N , let Sσ = diag( σ) denote the corresponding diagonal sign matrix.  
+
+> B. Implementation with clean ancillas
+
+We measure error on the full output, including the an-cillas, using the standard convention of Ref. [7]. 
+
+Definition 1 (Approximate implementation with clean ancillas) . A unitary eU on n + m qubits implements U ∈
+
+U (2 n) to error ϵ if 
+
+∥ eU (|0m⟩ ⊗ I) − | 0m⟩ ⊗ U ∥ ≤ ϵ, 
+
+where the ancillas are written first. The T -count of eU is the number of T gates in a Clifford+ T circuit for eU , and 
+
+m is its number of ancillas. If eUj implements Uj to error ϵj on a shared ancilla reg-ister, then eU2 eU1 implements U2U1 to error ϵ1 + ϵ2. This follows from the triangle inequality and unitary invari-ance of the operator norm.   
+
+> C. Data loading with Clifford+ Tcircuits
+
+Lookup tables and classical descriptions of unitaries are inputs to the compiler. We count the T gates and ancillas required to access the data and apply the se-lected unitaries. Quantum lookup methods trade ancil-lary workspace for a lower T -count per lookup [8, 27]. For example, at constant precision, the optimal worst-case T -count for n-qubit diagonal-unitary synthesis is Θ( N 1/2) [6]. Related lookup-based sparsity and am-plitude oracles reduce block-encoding gate counts for second-quantized fermionic Hamiltonians [28]. The first primitive reads a table entry into an output register by bitwise XOR. 
+
+Lemma 1 (Boolean and diagonal sign oracles [6, 8]) .
+
+Let f : {0, 1}m → { 0, 1}r be an arbitrary function. The Boolean oracle 
+
+Of : |x⟩| y⟩ 7 → | x⟩| y ⊕ f (x)⟩
+
+has an exact Clifford+ T implementation with O(√r2m)
+
+T gates and ancillas. For any σ ∈ {± 1}2m
+
+, the diagonal sign oracle Sσ := diag( σ) acts on computational basis states as Sσ |x⟩ =
+
+σx|x⟩. We implement Sσ using the Boolean oracle Of
+
+through phase kickback . Set r = 1 and f (x) = (1 −σx)/2,and prepare the output qubit in |−⟩ = ( |0⟩ − | 1⟩)/√2. A bit flip multiplies |−⟩ by −1, so Of acts as 
+
+|x⟩|−⟩ Of
+
+−−→ (−1) f (x)|x⟩|−⟩ = σx|x⟩|−⟩ .
+
+Thus Of applies Sσ to the input register and preserves 
+
+|−⟩ on the output qubit. Preparing |−⟩ and returning it to |0⟩ use only Clifford gates, so Sσ has an exact imple-mentation with O(2 m/ 2) T gates and ancillas. 
+
+A select oracle uses an address register to select and apply one of M unitaries acting on the same d-dimensional target space. 
+
+Lemma 2 (select oracle [7]) . Let M = 2 μ, d = 2 κ,and Vx ∈ U (d) be arbitrary. Define 
+
+W = X
+
+> x∈{ 0,1}μ
+
+|x⟩⟨ x| ⊗ Vx. (2) 
+
+For every δ ∈ (0 , 1/2) there is a Clifford+ T circuit that implements W to error δ with O(d√M Λ + d2Λ) T gates and ancillas, where Λ = κ + log 2(1 /δ ).Single-qubit synthesis. Single-qubit synthesis [4] sup-plies the variable-angle rotations used in simulation and the global phase of the target. Every V ∈ SU (2) has a Clifford+ T circuit approximation eV satisfying 
+
+∥ eV − V ∥ ≤ δ, T ( eV ) = O(log(1 /δ )) , (3) where T ( eV ) denotes the circuit’s T -gate count. In particular, a global phase eiφ is implemented to er-ror δ by applying diag( eiφ , e −iφ ) to a clean ancilla in state 
+
+|0⟩. 
+
+> D. Block encodings and Hamiltonian simulation
+
+A block encoding places a scaled matrix in the zero-ancilla block of a larger unitary. 
+
+Definition 2 (Block encoding) . A unitary UA on a + n
+
+qubits is an ( α, a, η )-block encoding of A ∈ CN ×N if 
+
+∥A − α(⟨0a| ⊗ I)UA(|0a⟩ ⊗ I)∥ ≤ η. 
+
+Here α is the subnormalization factor, a is the number of encoding ancillas, and η bounds the matrix error after rescaling by α. We count one application of UA or its inverse U †
+
+> A
+
+, including their singly controlled versions, as one query to the block encoding. The total number of such queries is the query complexity .An exact encoding of a Hermitian matrix can be used to simulate its evolution by quantum singular-value transformation (QSVT). The following lemma gives the implementation guarantee and query bound. 4
+
+Lemma 3 (Hamiltonian simulation by QSVT [29, 30]) .
+
+Let UA be an (α, a, 0) -block encoding of a Hermitian ma-trix A, t ∈ R, and δ ∈ (0 , 1/2) . There is a circuit St(UA)
+
+that implements eiAt to error δ in the sense of Defini-tion 1. It makes Qt = O(α|t| + log(1 /δ )) queries to UA,
+
+U †
+
+> A
+
+, or their singly controlled versions. For θ = eα |t|/2 ∈ (0 , 1) , the query complexity also satisfies 
+
+Qt = O
+
+
+
+1 + log(1 /δ )log(1 /θ )
+
+
+
+. (4) 
+
+If each query, including controlled queries and in-verses, has implementation error at most η, the overall implementation error is at most δ + Qtη.
+
+The query bounds follow from [29, Theorem 58 and Lemma 59]. We use block-encoding error δ′ = δ2/2: the corresponding full-output error is at most √2δ′ = δ, as required by Definition 1. The general and small-time query bounds follow from Lemma 59 by choosing q = 1 and q = log(1 /θ ), respectively. Errors in implementing the queries add by the composition rule in Sec. II. Beyond the queries, the circuit uses O(( a + 1) Qt) Clif-ford and Toffoli gates, O(Qt) single-qubit rotations, and 
+
+O(a + 1) reusable clean workspace qubits for the zero-ancilla phase operations. 
+
+E. Random product formulas 
+
+To simulate a sum of Hermitian matrices, we combine short evolutions under the individual pieces. For A =Psk=1 Ak, the randomized product formula qDRIFT [25] approximates eiA by choosing these pieces at random (see also Ref. [31] for randomized orderings). Assume that each Ak is nonzero and Hermitian, and let λ = P
+
+> k
+
+∥Ak∥. Choose a positive integer Nq . During classical preprocessing, sample independent indices Kj ∈
+
+[s] for j = 1 , . . . , N q and set the evolution times τj by Pr( Kj = k) = ∥Ak∥
+
+λ , τj = λNq ∥AKj ∥ . (5) We call the exact evolution Vj = eiτ j AKj a segment . Ap-plying the segments in sequence gives V = VNq · · · V1,with V1 applied first. Thus Nq counts the sampled evo-lutions in the product. The same piece Ak may be se-lected more than once. We account separately for errors in implementing these segments. For synthesis, we choose a fixed sequence of short evolutions whose product approximates eiA in operator norm. Chen et al. [26] show that a randomly sampled sequence has this property with high probability when it contains sufficiently many segments. The following lemma gives the required segment count in terms of the target error and failure probability. 
+
+Lemma 4 (Concentration of qDRIFT [26]) . Let A =Psk=1 Ak with nonzero Hermitian Ak ∈ Cd×d, and let 
+
+λ = P
+
+> k
+
+∥Ak∥. For 0 < ϵ ≤ 4λ and 0 < δ < 1, qDRIFT uses 
+
+Nq = O
+
+ λ2
+
+ϵ2 log 2dδ + λ2
+
+ϵ
+
+
+
+segments to produce a product V that satisfies ∥V −
+
+eiA ∥ ≤ ϵ with probability at least 1 − δ.
+
+III. OVERVIEW OF THE CONSTRUCTION 
+
+Our construction reduces the data addressed by each query to a piece’s block encoding. We use Tan’s select 
+
+oracle synthesis bound [7] (Lemma 2) for data access. Yuan et al. [9] encode the full unitary and repeatedly use that encoding for singular-value amplification. We sim-ulate a Hermitian logarithm using s separately encoded block-sparse pieces, with few nonzero blocks per block row and column. Each piece has a smaller lookup table. qDRIFT [25, 26] combines their evolutions. Balancing the cost per query against the number of queries yields the eO(N 8/7) T -count at constant precision. Fig. 2 com-pares the table access, cost per query, and total query count of the two constructions.                    
+
+> (a) Dense encoding: Yuan et al.
+> all D2blocks query query · · · query same table at every query
+> eO(N+b2)Tgates per query
+> eO(√D) queries
+> (b) Separate piece encodings: this work
+> H1H2
+> O(D2/s ) slots each query query · · · query
+> eO(N/ √s+b2)Tgates per query
+> eO(√D+s) queries
+
+FIG. 2. Schematic table access at fixed precision. Boxes in (a) denote queries to the dense block encoding of the target matrix in Yuan et al. [9]. Boxes in (b) denote queries to the block encodings UHk of our s pieces, illustrated with two piece tables. Each table has O(D2/s ) block slots in the parameter range used in the construction. Dashed arrows link queries to their tables. The query counts are totals over the respective circuits. 5
+
+A. Cost of the dense block encoding 
+
+To identify where our construction can save T gates, we first examine the cost of encoding the target unitary as a whole. In the dense construction of Yuan et al. [9], each query addresses a lookup table containing data for all D2 blocks. Its T -count is eO(N +b2) by Lemma 2. The term N pays for the lookup, while b2 pays for processing the selected block. Increasing the block size makes this processing more expensive. Larger blocks also reduce the number of queries. At fixed accuracy, the construction uses eO(pN/b ) queries, so the two costs give 
+
+T = eO p N/b 
+
+| {z } 
+
+> queries
+
+(N + b2)
+
+| {z } 
+
+> Tgates per query
+
+. (6) Choosing b = Θ( √N ) balances these effects: each query costs eO(N ) T gates, and eO(N 1/4) queries suffice. Their product gives eO(N 5/4). The dense encoding’s sub-normalization factor sets the amplification query scale. For typical target unitaries, this dense encoding requires a subnormalization factor Ω( pN/b ). Appendix A 2 gives the cost derivation and this lower bound. The opportunity for improvement is the repeated lookup cost. Every query pays the term N , even af-ter the block size has been optimized. Our construction uses smaller lookup tables for separate matrix pieces. We choose the number of pieces to balance the lower cost per query against the additional queries needed to simulate their sum. 
+
+B. Block-sparse Hamiltonian simulation 
+
+We obtain smaller lookup tables by changing what we encode. Write U = eiH , where H is the Hermitian log-arithm with eigenvalues in ( −π, π ]. Implementing U is then equivalent to simulating H for time one. We will approximate this evolution using short evolutions under separate matrix pieces. Before splitting the matrix, we separate its scalar part 
+
+φI , where φ = tr H/N . This part contributes only the global phase eiφ , which we apply on a clean ancilla. We then change basis using the random real orthogonal ma-trix P defined in Lemma 5: 
+
+H0 = H − φI, H′ = P H 0P T . (7) This choice of P makes all block norms small with high probability. The scalar part is handled separately be-cause it is unchanged by a change of basis. Once we simulate H′, the identity U = eiφ P T eiH ′
+
+P recovers the target. We now split H′ into s matrices H1, . . . , H s, called pieces. Each piece is still N × N : it keeps its assigned blocks in their original positions and sets all other blocks to zero. Every block belongs to exactly one piece, so 
+
+H′ = Psk=1 Hk.Each piece must be Hermitian so that its short evo-lutions eitH k are unitary for real t. We enforce this by assigning each off-diagonal pair H′ 
+
+> IJ
+
+and H′ 
+
+> JI
+
+= ( H′ 
+
+> IJ
+
+)†
+
+together to one piece chosen uniformly at random. Diag-onal blocks are already Hermitian and are assigned indi-vidually in the same way to one of the s pieces. Choices for distinct pairs and diagonal blocks are independent. This guarantees H† 
+
+> k
+
+= Hk for every piece and every as-signment. Fig. 3 illustrates this assignment with two col-ors.  
+
+> H′
+> 16 blocks 11223344
+> H1
+> 6 blocks 11223344
+> H2
+> 10 blocks 11223344=+
+
+FIG. 3. One possible assignment with D = 4 and s = 2. Colored cells are nonzero b × b blocks; blank cells are zero. Each block and its conjugate-transpose partner are assigned to the same piece, indicated by their shared color. The out-lined blocks show one such pair. Thus H′ = H1 + H2 with Hermitian pieces. 
+
+We build a separate lookup table for each piece by list-ing the row indices of its nonzero blocks in each block col-umn. Each list position is called a slot. A table address (J, u ) specifies slot u in column J. For example, column 
+
+J = 2 of the blue piece H1 in Fig. 3 has row-index list (1 , 3), so address ( J, u ) = (2 , 2) selects row I = 3 and hence block ( H1)3,2. Fig. 4 shows the resulting table.                      
+
+> K=H1
+> 11223344
+> D= 4 ,m= 2
+> Dm = 8 slots lookup table
+> u= 1 u= 2 12pad 21332443pad addresses ( J, u )(2 ,2) ←→ (3 ,1) paired addresses
+
+FIG. 4. Lookup table for the blue piece H1 in Fig. 3. Table rows correspond to block columns J, and table columns to slots u = 1 , 2. Numbers give block row indices I, while gray cells represent zero padding. The outlined blocks ( H1)3,2 and (H1)2,3 are adjoints, with paired addresses (2 , 2) and (3 , 1), respectively. 
+
+The column lists have different lengths, so we add dummy slots representing zero to give them a common 6                                     
+
+> lookup table selected unitary UH1
+> u= 1 u= 2 12pad 21332443pad
+> m= 2 ,M=Dm = 8 (J, u ) = (2 ,2)
+> select
+> entries of (H1)3,2
+> (H1)3,2
+> g∗∗∗
+> encoded block dimension d= 2 b
+> route and unprepare Π : (2 ,2) 7→(3 ,1) output block row I= 3 input block column J= 2
+> H1/(mg )
+> ∗∗∗
+> α1=mg = 2 g
+
+FIG. 5. Building UH1 from the lookup table in Fig. 4 and the matrix entries. The solid outlines trace address ( J, u ) = (2 , 2): its entry I = 3 selects a unitary with encoded block ( H1)3,2/g . Each selected unitary is constructed from the corresponding matrix block and g during classical preprocessing. select applies that unitary for the corresponding address. The permutation Π changes the block label from input J = 2 to output I = 3 and the slot from u = 2 to u′ = 1. This branch therefore contributes to block (3 , 2) of the encoded matrix. 
+
+length m. Here m = 2, so the first column’s list (2) be-comes (2 , pad). The table then has eight entries across four columns, including two padding entries, compared with sixteen for the dense table. In each block column, the D possible blocks are as-signed uniformly among s pieces, giving D/s assigned positions per piece on average. For our parameters, Lemma 6 bounds every column list by O(D/s ) with high probability. We pad these lists to a common length 
+
+m, rounding up to a power of two, which increases the required length by less than a factor of two. Thus 
+
+m = O(D/s ), and each piece’s D column lists give 
+
+M = Dm = O(D2/s ) table entries, compared with D2
+
+for the dense table. Using the lookup tables and the entries of the matrix blocks, we construct a block encoding of each piece, as illustrated in Fig. 5. Let g > 0 bound the operator norm of every b × b block of H′. For each nonzero piece Hk,Lemma 7 gives an exact block encoding UHk with sub-normalization factor αk = mg .For each nonpadding slot address ( J, u ) with table en-try I, we embed the corresponding scaled b × b block (Hk)IJ /g in a 2 b × 2b unitary. Applying Lemma 2 with 
+
+d = 2 b and M = Dm gives cost eO(b√M + b2). Since 
+
+M = O(D2/s ), splitting reduces the lookup term from 
+
+N to O(N/ √s) while leaving the b2 processing term un-changed. The block-label operations fit this bound, so the T -gate cost of one query to UHk is 
+
+cquery = eO(b√M + b2) = eO(N/ √s + b2). (8) The total T -count also depends on the number of queries needed to approximate eiH ′
+
+. qDRIFT approx-imates this evolution by a product of short evolutions 
+
+eiτ j HKj , using the sampling rule in Eq. (5) with Ak = Hk
+
+and omitting zero pieces. For our parameters, Lemma 6 gives λ = P
+
+> k
+
+∥Hk∥ = eO(√s), so Lemma 4 supplies 
+
+Nq = eO(s) segments at fixed target error ϵ.We implement each segment by QSVT using its cor-responding block encoding UHKj . At error ϵ/ (4 Nq ) per segment, Lemma 3 bounds the total query count by 
+
+Q = O
+
+
+
+> Nq
+
+X
+
+> j=1
+
+αKj τj + Nq log( Nq /ϵ )
+
+ .
+
+To bound the first term, recall that m = O(D/s ) and flattening gives g = eO(1 /√D) for ∥H′∥ = O(1). Thus 
+
+αk = mg = eO(√D/s ) and P 
+
+> k
+
+αk = eO(√D) (Corol-lary 1). Lemma 8 guarantees a sampled product meeting the required accuracy and satisfying 
+
+> Nq
+
+X
+
+> j=1
+
+αKj τj = O X
+
+> k
+
+αk
+
+!
+
+= eO(√D).
+
+Together with Nq = eO(s), this gives Q = eO(√D + s)queries in total. Multiplying this query complexity by the cost per query in Eq. (8) gives 
+
+T = eO (√D + s)
+
+| {z }
+
+> #queries
+
+(N/ √s + b2)
+
+| {z } 
+
+> Tgates per query
+
+. (9) Taking s of order √D, and substituting D = N/b gives 
+
+T = eO
+
+
+
+N 5/4b−1/4 + N 1/2b3/2
+
+. (10) The terms balance at b = Θ( N 3/7), yielding eO(N 8/7) T
+
+gates. 
+
+IV. CONSTRUCTING BLOCK-SPARSE ENCODINGS 
+
+To prove the resource bounds used in Sec. III, we con-struct block encodings of the Hermitian pieces Hk. Simi-larity flattening (Sec. IV A) gives a common upper bound 7
+
+g on the operator norms ∥H′ 
+
+> IJ
+
+∥ of the b × b blocks of 
+
+H′. Random splitting (Sec. IV B) bounds the number of nonzero blocks in each block column of each piece, deter-mining the padded number m of slots per block column and hence the Dm entries in that piece’s lookup table. It also bounds the piece norms ∥Hk∥, whose sum controls the number of qDRIFT segments needed to approximate 
+
+eiH ′
+
+. Finally, Sec. IV C constructs block encodings of the pieces with subnormalization factor αk = mg and bounds their T -gate cost per query.  
+
+> A. Similarity flattening
+
+To obtain the required subnormalization factor, we need a real orthogonal matrix P for which every block of H′ = P H 0P T has norm eO(∥H0∥/√D). Let Id denote the d × d identity matrix. An or-thogonal similarity transformation is a change of ba-sis A 7 → P AP T , where P is real orthogonal and hence 
+
+P T = P −1. It leaves the scalar part of H unchanged: 
+
+P (φI N )P T = φI N .
+
+Each diagonal b × b block of this scalar matrix is φI b,with operator norm |φ| in every basis. We therefore re-move the scalar part in Eq. (7) and apply flattening to the traceless matrix H0. The quantities we seek to make small are the operator norms ∥(P H 0P T )IJ ∥ of its indi-vidual b × b blocks. A random sign layer means multiplication by a diag-onal matrix Sσ = diag( σ), whose diagonal entries are independent and take the values +1 and −1 with equal probability. To see why one sign matrix may be insuffi-cient, consider P1 = F S σ F with F = H⊗n. If F H 0F is diagonal, it commutes with Sσ , so the signs cancel: 
+
+P1H0P T 
+
+> 1
+
+= F S σ (F H 0F )Sσ F = H0.
+
+For such inputs, this random change of basis leaves every block unchanged. We therefore use two independent sign matrices, Sσ and Sτ , separated by applications of F . The following lemma defines the resulting P and bounds every block’s operator norm with high probability for any fixed traceless Hermitian input. 
+
+Lemma 5 (Similarity flattening) . Let H ∈ CN ×N be Hermitian with tr H = 0 . For independent, uniformly random sign vectors σ, τ ∈ {± 1}N , set 
+
+P = F S τ F S σ F. (11) 
+
+Then P is a real orthogonal matrix and eiP HP T
+
+=
+
+P e iH P T . For every δ ∈ (0 , 1/2) , with probability at least 
+
+1 − δ over σ, τ ,
+
+max  
+
+> I,J ∈[D]
+
+(P HP T )IJ ≤ CA∥H∥√D log Nδ , (12) 
+
+where CA > 0 is an absolute constant. Moreover, P and 
+
+P T each have an exact Clifford+ T implementation with 
+
+O(√N ) T gates. Proof. We defer the proof to Appendix B 1. The 1/√D dependence in Eq. (12) is optimal in the worst case, up to the logarithmic factor. To see this, consider the traceless Hermitian matrix H =diag( IN/ 2, −IN/ 2), which has ∥H∥ = 1 and ∥H∥2 
+
+> F
+
+= N .A change of basis preserves the sum of squared magni-tudes of the matrix entries, ∥H∥2 
+
+> F
+
+. Since ∥B∥2 
+
+> F
+
+≤ b∥B∥2
+
+for every b × b matrix B, every real orthogonal matrix P
+
+satisfies 
+
+N = ∥H∥2 
+
+> F
+
+= X
+
+> I,J ∈[D]
+
+∥(P HP T )IJ ∥2
+
+> F
+
+≤ bD 2 max 
+
+> I,J ∈[D]
+
+∥(P HP T )IJ ∥2.
+
+Since N = bD , every such P leaves at least one block with max 
+
+> I,J ∈[D]
+
+∥(P HP T )IJ ∥ ≥ 1
+
+√D .
+
+The upper bound in Eq. (12) is therefore within a factor 
+
+CA log( N/δ ) of this lower bound.  
+
+> B. Random block-sparse split
+
+We split H′ into s Hermitian pieces to obtain smaller lookup tables while controlling the piece norms. As in Fig. 3, each off-diagonal adjoint block pair and each di-agonal block is assigned independently to a uniformly random piece. Thus E(Hk) = H′/s , with D/s assigned block positions per piece in each block column on aver-age. To control the lookup cost per query, we bound the number of nonzero blocks per block column. This de-termines the padded length m and the Dm entries in each piece’s lookup table. We also bound the piece norms, since the qDRIFT segment bound in Lemma 4 is quadratic in λ = P
+
+> k
+
+∥Hk∥. The following lemma gives both bounds simultaneously for all pieces with high prob-ability. 
+
+Lemma 6 (Random split) . Let H′ ∈ CN ×N be Hermi-tian with ∥H′ 
+
+> IJ
+
+∥ ≤ g for all I, J ∈ [D]. Let s ≥ 1 be an integer and δ ∈ (0 , 1/2) , and put ℓ = log(8 N s/δ ). Form 
+
+H1, . . . , H s by assigning each off-diagonal adjoint block pair and each diagonal block independently to a uniformly random piece, with zero blocks elsewhere. Then each Hk
+
+is Hermitian and P 
+
+> k
+
+Hk = H′.With probability at least 1 − δ, both of the following bounds hold for every k ∈ [s]. The piece norm satisfies 
+
+∥Hk∥ ≤ ∥ H′∥/s + ∥H′∥p2ℓ/s + 23 gℓ, (13) 
+
+and every block row and block column of Hk contains at most 
+
+m0 := D/s + p2Dℓ/s + ℓ
+
+nonzero blocks. On the same event, if g ≤ ∥ H′∥/√sℓ 
+
+then ∥Hk∥ ≤ 4∥H′∥pℓ/s for all k.8
+
+Proof. We defer the proof to Appendix B 2.  
+
+> C. Block encoding of a piece
+
+We construct a block encoding UK of a nonzero piece 
+
+K = Hk using its lookup table (Fig. 4). On the event in Lemma 6, pad each column’s list to length m, the smallest power of two at least m0.Since ∥KIJ ∥ ≤ g, each block admits an exact ( g, 1, 0)-block encoding. For each nonpadding address ( J, u ), the lookup table records I, and select applies the corre-sponding unitary constructed from KIJ and g during classical preprocessing. The circuit in Fig. 6 prepares the slot register S in the uniform state 1√m
+
+P 
+
+> z
+
+|z⟩S, ap-plies select , routes each block to row I and column J
+
+using Π, and unprepares the slot register. The resulting encoded block is 1
+
+√mKIJ 
+
+g
+
+1
+
+√m = KIJ 
+
+mg .
+
+Thus UK is an exact ( mg, log 2 m + 1 , 0)-block encoding of K.                                                                 
+
+> Π
+> S:|0log 2m⟩FS
+> select
+> u7→u′FS
+> F:|0⟩
+> B:|J⟩J7→I
+> T:|xl⟩
+> FIG. 6. Block encoding UKof a Hermitian piece Kwith
+> b×bblocks. For K=H1, this circuit implements the con-struction in Fig. 5. The data registers are B, holding the input block column J, and T, holding the position xlwithin a block. The encoding ancillas are S, holding one of mpadded slots per column, and the single flag qubit F. The Hadamard layer FS=H⊗log 2mprepares and unprepares the uniform slot state. For each nonpadding address ( J, u ) identifying row
+> I,select applies a unitary on F,Twhose F= 0 block is
+> KIJ /g , where gbounds all block operator norms. Padding encodes zero. The permutation Π exchanges addresses ( J, u )and ( I, u ′) of adjoint blocks on S,B. The block with S=F= 0 on input and output is K/ (mg ).
+
+The following lemma bounds the T -gate and ancilla costs of a query to UK .
+
+Lemma 7 (Sparse block encoding via select ). Let K ∈
+
+CN ×N be a nonzero Hermitian matrix with ∥KIJ ∥ ≤ g
+
+for all blocks, where g > 0. Suppose that every block column of K has at most m nonzero blocks, where m is a power of two. Then there is an (mg, log 2 m + 1 , 0) -block encoding UK of K. It consists of Hadamard gates, one select oracle selecting among M = Dm unitaries of dimension d = 2 b, and a basis-state permutation Π
+
+defined as follows. List the row indices of each column’s nonzero blocks in m slots, adding dummy slots for zero blocks where needed. If slot u of column J records row 
+
+I with KIJ ̸ = 0 , let u′ be the unique slot in column I
+
+recording row J of the adjoint block KJI = K† 
+
+> IJ
+
+. Define the address map 
+
+q(J, u ) = ( I, u ′).
+
+For a padding address, set q(J, u ) = ( J, u ); addresses of diagonal blocks are also fixed. The unitary Π permutes the basis states of the block-label and slot registers ac-cording to q and acts as the identity on the flag qubit and the register for the position within a block. Her-miticity ensures that the adjoint partner exists and that 
+
+q(q(J, u )) = ( J, u ), so Π−1 = Π .For every η ∈ (0 , 1/2) , an ordinary or singly controlled query to UK , or its inverse, can be implemented to error 
+
+η in the sense of Definition 1 with 
+
+O
+
+
+
+b√Dm Λ + b2Λ + pDm log(2 Dm )
+
+
+
+, (14) 
+
+T gates and ancillas, where Λ = log 2(2 b)+log 2(1 /η ). The last term, which comes from the address permutation, is dominated by the first whenever b2Λ ≥ log(2 Dm ).Proof. We defer the proof to Appendix C 1. Recall from Lemma 6 that s counts all pieces and 
+
+ℓ = log(8 N s/δ ), where δ is the allowed failure proba-bility. When sℓ ≤ D, the sparsity bound gives m0 =
+
+O(D/s ). Rounding m0 up to a power of two then gives 
+
+m = O(D/s ) and Dm = O(D2/s ) lookup table entries per piece. Applying Lemma 7 gives the following bounds on the cost per query and the sum of subnormalization factors. 
+
+Corollary 1 (Sum of subnormalization factors and per– query cost) . Suppose the conclusions of Lemma 6 hold with g > 0 and sℓ ≤ D. Discard zero pieces and en-code the remaining Hk by Lemma 7, with m the smallest power of two that is at least m0. Then their subnormal-ization factors αk = mg satisfy P   
+
+> k:Hk̸=0
+
+αk ≤ 7Dg . If 
+
+b2Λ ≥ log(2 Dm ), each query to a block encoding UHk ,its inverse, or a singly controlled version of either costs 
+
+O(N pΛ/s + b2Λ) T gates and ancillas. Here s counts all pieces, including those discarded as zero. Proof. We defer the proof to Appendix C 1. Choose a constant failure probability in Lemma 5. When its bound holds, we can take 
+
+g = O(∥H′∥ log N/ √D), because H′ has the same oper-ator norm as H0. Under the assumptions of Corollary 1, including sℓ ≤ D, this gives 
+
+X  
+
+> k:Hk̸=0
+
+αk ≤ 7Dg = O(√D log N ∥H′∥).
+
+In Sec. V, we combine this bound with the piece-norm estimate to control the total number of block-encoding queries. 9 
+
+> V. UNITARY SYNTHESIS USING QDRIFT AND QSVT
+
+We now combine qDRIFT and QSVT with the block encodings UHk from Sec. IV to implement U to target error ϵ. These block encodings have subnormalization factors αk = mg and are used to approximate the evolu-tion in 
+
+U = eiφ P T eiH ′
+
+P, H′ = X
+
+> k
+
+Hk.
+
+Discard zero pieces and set λ = P
+
+> k
+
+∥Hk∥. Since 
+
+∥eiH ′
+
+− I∥ ≤ ∥ H′∥ ≤ λ, we can omit the evolution when 
+
+λ < ϵ/ 4. Otherwise, apply Lemma 4 at error ϵ/ 4 to choose the segment count Nq . Select a qDRIFT sample with piece indices Kj and durations τj whose product satisfies 
+
+V =
+
+> 1
+
+Y
+
+> j=Nq
+
+eiτ j HKj , ∥V − eiH ′
+
+∥ ≤ ϵ/ 4.
+
+Then eiφ P T V P approximates U with the same error by unitary invariance. To implement the selected product V , we simulate each segment by QSVT using its block encoding UHKj . Treat-ing these queries as exact, we allocate error ϵ/ (4 Nq ) to each segment, so the total simulation error is at most ϵ/ 4. Lemma 3 bounds the total query count by 
+
+Q = O
+
+
+
+> Nq
+
+X
+
+> j=1
+
+αKj τj + Nq log 4Nq
+
+ϵ
+
+ .
+
+Let cquery be the bound on the T -gate cost per query from Corollary 1. These queries contribute at most Qc query T
+
+gates. Appendix D accounts for the remaining gate costs and errors from Clifford+ T compilation. To bound the total query count, we control the sam-pled product’s weighted simulation time P 
+
+> j
+
+αKj τj . The sampling rule in Eq. (5), applied to the nonzero pieces, gives 
+
+E
+
+
+
+> Nq
+
+X
+
+> j=1
+
+αKj τj
+
+ = X  
+
+> k:Hk̸=0
+
+αk.
+
+The following lemma combines this identity with Markov’s inequality and qDRIFT concentration to bound the weighted simulation time and approximation error of the same sampled product. We apply it to the r nonzero pieces, reindexed as A1, . . . , A r , with αk = mg .
+
+Lemma 8 (Sampled-product accuracy and query com-plexity) . Let A = Prk=1 Ak with nonzero Hermitian 
+
+Ak ∈ CN ×N , and set λ = P
+
+> k
+
+∥Ak∥. For each k, suppose an exact block encoding UAk of Ak with subnormalization factor αk > 0 is given. For 0 < ε ≤ 4λ and p ∈ (0 , 1) ,choose Nq using Lemma 4 with error ε and failure proba-bility p/ 2. A qDRIFT sample with indices Kj , durations 
+
+τj , and product V = Q1 
+
+> j=Nq
+
+eiτ j AKj satisfies 
+
+∥V − eiA ∥ ≤ ε, T := X
+
+> j
+
+αKj τj ≤ 2
+
+p
+
+X
+
+> k
+
+αk
+
+with probability at least 1 − p.For any sample satisfying both inequalities above and any ξ ∈ (0 , 1/2) , QSVT implements V to error ξ using a total of 
+
+Q = O 1
+
+p
+
+X
+
+> k
+
+αk + Nq log( Nq /ξ )
+
+!
+
+queries to the block encodings UAk in total over all Nq
+
+segments, counting their inverses and singly controlled versions as well. Proof. We defer the proof to Appendix D. The following theorem bounds the T -count and ancilla count as functions of N and ϵ. We summarize the com-piler in Algorithm 1 and the full procedure can be found in Algorithm 3. 
+
+Theorem 3 (Unitary synthesis using qDRIFT and QSVT) . There is an absolute constant C0 such that the following holds for every U ∈ U (N ) and every ϵ ∈
+
+[N −1/8nC0 , 1/2] . There is a Clifford+ T circuit that im-plements U to error ϵ with eO(N 8/7ϵ−6/7) T gates and 
+
+eO(N 6/7ϵ−8/7) ancillas. The hidden factors are O(n2L)
+
+and O(nL ) respectively, with L = n + log 2(1 /ϵ ) ≤ 2n.Proof sketch. Lemma 8 combines qDRIFT concentration with Markov’s inequality to select a product that meets both an accuracy test and a bound on weighted simula-tion time. The parameter choice in Appendix D has the scalings 
+
+b = Θ( N 3/7ϵ−4/7), s = Θ 
+
+√D ϵ 2
+
+n2L
+
+!
+
+.
+
+The stated range of ϵ ensures s ≥ 1. With these choices, simulating all Nq sampled evolutions requires 
+
+Q = O(√D n ) queries in total to the block encodings 
+
+UHk , including their inverses and singly controlled ver-sions (Eq. (D6)). Multiplying Q by the T -gate cost of one such query from Corollary 1 gives the stated T -count. Reusing the ancillas across these sequential queries gives the ancilla bound. The full proof in Appendix D veri-fies the parameter conditions and gives the error analy-sis for qDRIFT, QSVT, and the Clifford+ T implemen-tation. 10 
+
+Algorithm 1 Unitary synthesis using qDRIFT and QSVT for Theorem 3. Full procedure is in Algorithm 3.                                
+
+> Input: U∈U(N) and ϵin the range of Theorem 3.
+> Output: A fixed Clifford+ Tcircuit implementing Uto error
+> ϵ.
+> 1: Choose b, s, ℓ as in Appendix D and separate the loga-rithm into φI +H0.If H0= 0, return the scalar-phase circuit.
+> 2: Resample the similarity and Hermitian split until the bounds of Lemmas 5 and 6 hold. Discard zero pieces and set λ=P
+> k∥Hk∥. If λ < ϵ/ 4, return the scalar-phase circuit.
+> 3: Encode the pieces and select a qDRIFT product passing the accuracy and weighted-time tests of Lemma 8.
+> 4: Compile its evolutions with QSVT, exact basis changes, and the scalar phase, using reusable clean workspace and the implementation tolerances specified in the error anal-ysis of Appendix D.
+> VI. UNITARY SYNTHESIS USING RESIDUAL REFINEMENT
+
+For a fixed decomposition and failure probability, the qDRIFT segment bound in Lemma 4 grows as ϵ−2. To improve this precision dependence, we successively cor-rect the remaining error, first using block-sparse genera-tors and then the full residual generator. Let Wl−1 be the current unitary approximation to U ,starting from W−1 = I. At block-sparse level l, define the residual Rl = U W †
+
+> l−1
+
+. Since RlWl−1 = U , apply-ing Rl after Wl−1 would give the target exactly. We approximate this correction to obtain Wl. As Wl−1 ap-proaches U , Rl approaches the identity. Its principal Hermitian logarithm H(l) = −i log Rl, whose eigenvalues lie in ( −π, π ], satisfies 
+
+∥H(l)∥ ≤ π
+
+2 ∥Rl − I∥ = π
+
+2 ∥U − Wl−1∥.
+
+Thus a more accurate approximation gives a smaller gen-erator for the next correction. For each residual, we repeat the scalar-phase separa-tion, flattening, and splitting used in Sec. V. Let φl be its scalar phase, Pl its change of basis, and H′(l) = P 
+
+> k
+
+H(l)
+
+> k
+
+its transformed generator, so Rl = eiφ l P Tl eiH ′(l)
+
+Pl. For a residual requiring simulation, qDRIFT selects piece in-dices Kl,u and durations τl,u for u = 1 , . . . , N (l) 
+
+> q
+
+, using the unrounded pieces H(l) 
+
+> k
+
+(Lemma 8). To simplify repeated block-encoding queries, we re-place each selected piece H(l) 
+
+> k
+
+by a nearby Hermitian matrix eK(l) 
+
+> k
+
+obtained by rounding its encoding angles. Using these rounded pieces, define 
+
+Vl =
+
+> 1
+
+Y 
+
+> u=N(l)
+> q
+
+eiτ l,u eK(l) 
+
+> Kl,u
+
+,Wl = eiφ l P Tl VlPlWl−1.
+
+Here Vl approximates eiH ′(l)
+
+, and Wl appends the re-sulting correction, including the basis changes and scalar phase, to Wl−1. The rightmost factor acts first. When a residual evolution is omitted because its generator is zero or sufficiently small, we set Vl = I, as specified in Algorithm 4. All choices of matrices, sample indices, and durations are made during classical preprocessing. We call Wl the ideal product because its exponentials, basis changes, and scalar phases are evaluated exactly. Its difference from U includes qDRIFT and rounding er-rors, which enter the next residual. Circuit implementa-tion errors are analyzed separately. We next explain how rounding simplifies these queries. Round each encoding’s rotation and phase angles to the nearest multiples of 2 π/ 2B , where the integer B sets the angle precision. Given a fixed ( B + 1)-qubit state |Ψ⟩,controlled modular addition implements these phases ex-actly by phase kickback (Lemma 11). Each query returns 
+
+|Ψ⟩ unchanged and unentangled with the other registers, so we call it a catalyst and reuse it throughout the cir-cuit. The following lemma gives the rounded Hermitian encoding and bounds its matrix error and the T -gate and ancilla costs per query. 
+
+Lemma 9 (Block encodings of rounded Hermitian ma-trices) . Let K be Hermitian with blocks of norm at most 
+
+g and at most m0 nonzero blocks in each block column, and let m be the least power of two with m ≥ m0 +1 . The extra slot accommodates diagonal-block symmetrization. For B ≥ log 2(2 b) + 2 , there is a Hermitian matrix eK,determined by K, g, and B, with 
+
+∥ eK − K∥ ≤ 16 π mg b 2−B , (15) 
+
+and an (mg, log 2 m + 1 , 0) -block encoding U eK of eK.Queries to U eK , its inverse, and their singly controlled versions are implemented exactly, given |Ψ⟩, with the cost in Eq. (14) at Λ = B.Proof. We defer the proof to Appendix C 3. The rounding-error bound in Lemma 9 scales with the subnormalization factor mg . During corrections using the full generator, mg shrinks with the residual, so a fixed angle precision gives progressively smaller absolute error bounds in Eq. (15). Appendix E 1 specifies a choice 
+
+B = O(n) independent of the target precision L = n +log 2(1 /ϵ ). With this fixed B, all queries can share the same cat-alyst. Its product form is 
+
+|Ψ⟩ =
+
+> B+1
+
+O
+
+> j=1
+
+|0⟩ + e−2πi/ 2j
+
+|1⟩√2 ,
+
+with qubits ordered from most to least significant. This factorization follows from the binary expansion of the index in Appendix C 2, and allows each qubit to be pre-pared separately. 11 Single-qubit synthesis (Eq. (3)) therefore prepares the catalyst to error δc using O(B log( B/δ c)) T gates. Each query preserves the exact catalyst, so we prepare it once before the first query and unprepare it after the last. Comparing the complete circuit with an exactly initial-ized catalyst bounds the combined error by 2 δc, inde-pendently of the number of queries. Choosing δc = ϵ/ 16 gives error at most ϵ/ 8 and total preparation and un-preparation cost O(nL ). These block-encoding queries are then used within QSVT to approximate the chosen evolutions. QSVT truncation can leave ancillas nonzero, so we bound its full-output error separately from the ideal-product er-ror (Appendix E 2). The following theorem accounts for these implementation costs and errors together with the query costs of both refinement stages. 
+
+Theorem 4 (Unitary synthesis using residual refine-ment) . There is an absolute constant n0 such that for every n ≥ n0, every U ∈ U (N ), and every ϵ ∈ (0 , 1/2) 
+
+with L = n+log 2(1 /ϵ ) ≤ N , there is a Clifford+ T circuit that implements U to error ϵ with 
+
+O n3(N 8/7L3/7 + N L ) (16) 
+
+T gates and O(nN ) ancillas. Proof sketch. Lemma 9 gives Hermitian rounded genera-tors with a bound on the rounding error and encodings implemented exactly given a shared catalyst state. We form each residual from the corresponding ideal product, so later corrections address both qDRIFT error and data rounding. The block-sparse levels use geometrically de-creasing error tolerances. As the generator shrinks, we reduce the number of pieces to control the additive pre-cision cost per segment. The costs of these levels then sum geometrically. When the piece count would fall below one, we cor-rect each remaining residual using a block encoding of its full transformed and rounded generator eGj , where j in-dexes these corrections. QSVT simulates ei eGj by query-ing that block encoding. The subnormalization factors of these block encodings decrease by at least a factor N 2 per correction, and the short-time simulation bound controls their query complexity. The two stages give the stated 
+
+T -count with reusable workspace. Simulation truncation, rotation synthesis, catalyst preparation and unprepara-tion, and the phase are treated in a separate error anal-ysis. We give the full proof in Appendix E. For fixed n, the T -count bound grows at most linearly with the requested number of accuracy bits. This im-proves the ϵ−6/7 dependence in Theorem 3. In particular, for ϵ ≥ 2− poly( n), the number of accuracy bits is poly-nomial in n, giving a T -count of 2 8n/ 7 poly( n) for suffi-ciently large n. When N 1/4 ≤ L ≤ N , the N L term in Eq. (16) dominates, so the bound simplifies to O(n3N L ). The ancilla bound remains O(nN ) throughout L ≤ N .Appendix E 3 compares this precision dependence with 
+
+Algorithm 2 Residual refinement for Theorem 4. Full procedure is in Algorithm 4.                              
+
+> Input: U∈U(N) and ϵin the range of Theorem 4.
+> Output: A fixed Clifford+ Tcircuit implementing Uto error
+> ϵ.
+> 1: Choose the parameters and refinement schedule as in Ap-pendix E 1. Set the current ideal product W=I.
+> 2: For each block-sparse level, select a qDRIFT correction for U W †, round its generators, and left-multiply Wby the resulting ideal correction, including basis changes and the scalar phase.
+> 3: Repeatedly correct U W †using its full rounded genera-tor and update Wby the ideal correction until the latest generator-rounding error is at most ϵ/ 8.
+> 4: Compile the recorded evolutions with QSVT, exact basis changes, and the accumulated scalar phase, preparing and unpreparing one shared catalyst |Ψ⟩. Use reusable clean workspace and the tolerances in Appendix E 2.
+
+previous bounds. The compiler is summarized in Algo-rithm 2, with the full procedure in Algorithm 4.  
+
+> VII. LIMITS OF THE SEQUENTIAL BLOCK-SELECT MODEL
+
+We now ask whether a different choice of pieces or block size can improve the N 8/7 scaling of the T -count in Theorem 3 when the target error ϵ is fixed independently of N . The following theorem establishes a matching lower bound within the sequential block-SELECT model, sub-ject to a bound on the information carried by the inter-vening unitaries. The model represents the target by Hamiltonian evolu-tions separated by unitaries Wj , called interleavers. Du-rations are absorbed into the generators, and s counts exponential factors. Here s and Wj have local meanings, distinct from the split count and residual approximations used earlier. 
+
+Definition 3 (Sequential block-SELECT design) .
+
+A design at block size b is a sequence D =(W0, H 1, W 1, . . . , H s, W s) of unitaries Wj and Hermitian matrices Hk. It approximates U to error ϵ if 
+
+∥eiθ WseiH s · · · W1eiH 1 W0 − U ∥ ≤ ϵ (17) for some θ ∈ R.The Hermitian generators Hk may depend arbitrarily on the target U . Let nk count the nonzero blocks of Hk,and let mk be their maximum count in a block row or col-umn before padding. Set ck = max J (P 
+
+> I
+
+∥(Hk)IJ ∥2)1/2
+
+and βk = √mk ck. For the sequence D, we define the following model of the T -gate cost for implementing its Hamiltonian evolutions eiH 1 , . . . , e iH s :cost( D) = 
+
+> s
+
+X
+
+> k=1
+
+max {1, β k} b√nk + b2. (18) 12 The interleavers have zero model cost. To prevent them from storing the entire target unitary, we require the en-tire sequence ( W0, . . . , W s) to be specified by at most BW
+
+bits. These bits may depend on U . A fixed decoding rule recovers the sequence for every target. The model assigns a lookup charge b√nk and a block-processing charge b2 to each query to a block encoding of Hk. The multiplier max {1, β k} represents the simula-tion work for eiH k , with a minimum charge of one and linear growth for βk > 1, motivated by the black-box query bounds of Ref. [32]. The interleaver budget allows at most 2 BW sequences under the fixed decoding rule. Theorem 5 bounds the resulting model cost in Eq. (18). 
+
+Theorem 5 (Optimality within the sequential block-S-ELECT model) . There are absolute constants c, C with the following property. Let n be large enough and ϵ ∈
+
+[N −3, c ]. Then, with probability at least 1/2 over a Haar-random U ∈ U (N ), the following holds simultaneously for every power-of-two block size b ≤ N , with D = N/b .Every design at block size b with BW ≤ 14 N 2 log 2(1 /ϵ )
+
+that approximates U to error ϵ satisfies 
+
+cost( D) ≥ cnC
+
+√ϵ N D 1/4 + ϵ√D b 2
+
+. (19) 
+
+Minimizing over b, every such design has cost 
+
+eΩ( ϵ4/7N 8/7).Proof sketch. Szarek’s covering bound [33] shows that at least half of Haar-random targets require Ω( N 2 log(1 /ϵ )) bits to be approximated within error O(ϵ) under a fixed decoding rule. The interleaver budget leaves a fixed frac-tion of this information to the generators. We compress a low-cost design by storing each gen-erator’s blocks or a shorter sampled approximation (Lemma 12). Independent sampling controls the prod-uct error through the sum of squared error tolerances (Lemma 13). After rounding, each stored block uses 
+
+O(b2 log N ) bits, and the total target error remains O(ϵ). The information bound requires Ω( D2/ log N ) stored blocks (Lemma 14). Balancing direct storage against block sampling, whose required sample count grows with 
+
+βk, gives the lookup and block-processing contributions to Eq. (19). Recording b in the same code covers all allowed block sizes. The full proof is in Appendix F. At fixed target error ϵ, Theorem 5 matches, up to fac-tors polynomial in n, the model cost of the qDRIFT and QSVT construction in Theorem 3. The jth model gen-erator is τj HKj , with βj ≤ τj αKj . The model cost is 
+
+eO(N 8/7) at b = N 3/7, up to power-of-two rounding. Ap-pendix F 5 extends the exponent bound to mixed block sizes and larger interleaver budgets.  
+
+> VIII. DISCUSSION
+
+We have constructed Clifford+ T circuits for arbitrary 
+
+n-qubit unitaries using eO(N 8/7) T gates and eO(N 6/7)clean ancillas at constant operator-norm error, where 
+
+N = 2 n. The construction combines random similarity flattening, a Hermitian block-sparse split, qDRIFT, and QSVT to reduce the lookup cost per query while con-trolling the total simulation work. Residual refinement gives eO(N 8/7L3/7 +N L ) T gates and eO(N ) clean ancillas for target error ϵ ∈ (0 , 1/2) with L = n + log 2(1 /ϵ ) ≤ N .Within the sequential block-SELECT cost model, the ex-ponent 8 /7 is optimal at constant precision under its in-terleaver information restriction. For synthesis using qDRIFT and QSVT at constant precision, the T -gate and ancilla bounds have prod-uct eO(N 2), matching Tan’s space– T -count tradeoff ( n +
+
+manc )T = Ω( N 2) [7] up to factors polynomial in n. Com-pared with Tan’s construction, we use fewer T gates but more ancillas. This moves the costs closer to the bal-anced scale T ≈ manc ≈ N , though our upper bound remains above the general counting lower bound. Oracle-based synthesis uses a different cost accounting. OpenAI’s recent draft [24] establishes unitary synthe-sis at constant diamond-norm error using polynomially many elementary gates, qubits, and queries to a suitably chosen Boolean oracle. The target-dependent Boolean function has unrestricted truth-table size and circuit complexity, and the polynomial resource bound excludes the cost of implementing its oracle calls. This distinction matters when comparing with the Clifford+ T construc-tions of Tan [7], Yuan et al. [9], and this work. These constructions include the cost of quantum data access and achieve T -counts eO(N 4/3), eO(N 5/4), and eO(N 8/7), respectively. In the OpenAI theorem, p(n) bounds all resources, whereas m(n) ≤ p(n) denotes the oracle in-put length. A generic implementation uses O(2 m(n)/2)
+
+T gates and ancillas per query, yielding a total T -count bounded by 2 m(n)/2 poly( n). A polynomial bound on 
+
+m(n) alone therefore does not determine an exponen-tial scaling comparable with these synthesis bounds. For example, m(n) ≤ 2n + O(log n) would suffice to reach 
+
+N poly( n) through generic oracle compilation, but the draft does not establish this bound or a comparably effi-cient implementation of its particular oracle. A quantita-tive comparison consequently requires accounting for the oracle’s implementation cost and ancillary workspace. Comparisons at finite size likewise require compiled resource estimates, because our bounds are asymptotic. Liu et al. [34] provide such estimates for state prepara-tion, comparing rotation- and sampling-based methods after compilation in both T -count and total gate count. For our construction, compiled estimates must account for its large lookup tables and substantial workspace. When the data have structure, compressed tables can reduce data-loading costs, as compact alias tables do for real-amplitude state preparation with polynomial ampli-tudes [35]. At constant target error, a polynomial gap remains between our eO(N 8/7) upper bound on T -count and the general counting lower bound eΩ( N ). It remains open 13 whether general Clifford+ T circuits can achieve a smaller exponent and ultimately reach the counting scale. Our matching N 8/7 lower bound relies on a counting argu-ment within the sequential block-SELECT cost model under its interleaver information restriction. A comple-mentary question is whether a worst-case lower bound of Ω( N 1+ c) T gates, for some fixed c > 0, can be proved for general circuits with an unrestricted number of clean ancillas. Workspace raises a further question at higher precision, where residual refinement uses O(nN ) clean ancillas throughout L ≤ N , independently of ϵ. How much of its T -count improvement can be retained with fewer ancillas? Similar questions arise beyond qubits. Approximate single-qutrit Clifford+ R synthesis has been studied [36]. For arbitrary unitaries on many qudits, the optimal non-Clifford gate count at constant error remains open. 
+
+> ACKNOWLEDGMENTS
+
+The authors thank Nathan Baker, Daan Camps, and Yu Tong for valuable discussions. D.L. and W.A.d.J. were supported by the U.S. Department of Energy, Of-fice of Science, Office of Advanced Scientific Comput-ing Research through the Accelerated Research in Quan-tum Computing program MACH-Q Project. S.Z., D.F. and C.Y. were supported by the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research through Quantum Utility through Advanced Computational Quantum Algorithms and the Quantum System Accelerator projects. We acknowledge the use of GPT-5.5 Pro, GPT 5.6 Sol, GPT-6 Astra to search for algorithm ideas, explore candi-date proof strategies and to assist with initial manuscript preparation.  
+
+> Appendix A: Simulation and subnormalization bounds 1. Single-realization qDRIFT
+
+Proof of Lemma 4. We bound the bias of the average product and the fluctuations around that average sepa-rately. Choose Nq as the least positive integer satisfying 
+
+Nq ≥ max 
+
+n 44 λ2
+
+ϵ2 log 2dδ , 2λ2
+
+ϵ
+
+o
+
+. (A1) The two terms control fluctuations and bias, respectively. Draw independent indices K1, . . . , K Nq with the same distribution and define the segments by Pr( Kj = k) = ∥Ak∥/λ, Vj = exp  i λNq AKj /∥AKj ∥.
+
+Set V = VNq · · · V1. Since ϵ ≤ 4λ, the first term in the threshold is bounded below by a positive constant. Rounding up therefore preserves the stated asymptotic bound. We apply the estimates of Ref. [26] with H = −A and 
+
+t = 1, so their evolution e−itH is eiA . Proposition 3.2 bounds the bias: 
+
+∥eiA − EV ∥ ≤ λ2/N q ≤ ϵ/ 2.
+
+The last inequality is the second condition on Nq .Proposition 3.3 bounds fluctuations about the average: Pr  ∥V − EV ∥ ≥ ϵ/ 2 ≤ 2d e −Nq ϵ2/(44 λ2) ≤ δ. 
+
+Here the last inequality is the first condition on Nq . Out-side this exceptional event, the triangle inequality gives 
+
+∥V − eiA ∥ ≤ ϵ. 
+
+> 2. Subnormalization factors for block encodings
+
+We consider an exact block encoding of A ∈ CN ×N
+
+constructed in three steps. The data registers B and T
+
+hold the block label and the position within a block. The ancillary registers R and F hold an additional block label and a flag qubit. We write the registers in the order 
+
+R, B, F, T and start with 
+
+|0⟩R|J⟩B|0⟩F|ψ⟩T, |ψ⟩ ∈ Cb.
+
+We first describe preparations without padding. 1. A preparation Pw, controlled on the input block label J, prepares 
+
+P (J) 
+
+> w
+
+|0⟩R = X
+
+> I
+
+wIJ |I⟩R.
+
+The resulting state is 
+
+X
+
+> I
+
+wIJ |I⟩R|J⟩B|0⟩F|ψ⟩T.
+
+2. A select oracle applies CIJ to F, T on address (I, J ), giving 
+
+X
+
+> I
+
+wIJ |I⟩R|J⟩BCIJ 
+
+ |0⟩F|ψ⟩T
+
+.
+
+Swapping the two label registers then gives 
+
+X
+
+> I
+
+wIJ |J⟩R|I⟩BCIJ 
+
+ |0⟩F|ψ⟩T
+
+.
+
+3. A second preparation Pv , controlled on the output block label I, is defined by 
+
+P (I) 
+
+> v
+
+|0⟩R = X
+
+> J′
+
+vIJ ′ |J′⟩R.14 Applying its inverse gives the full output state 
+
+|out J ⟩ = X
+
+> I
+
+wIJ 
+
+ P (I)† 
+
+> v
+
+|J⟩R
+
+|I⟩B
+
+⊗ CIJ 
+
+ |0⟩F|ψ⟩T
+
+.
+
+Its overlap with the zero state of R is determined by 
+
+⟨0|RP (I)† 
+
+> v
+
+|J⟩R = vIJ .
+
+Define the encoded block of CIJ by (CIJ )00 = ( ⟨0|F ⊗ IT)CIJ (|0⟩F ⊗ IT).
+
+The component of the output with both ancillary regis-ters zero is (⟨0|R ⊗ IB ⊗ ⟨ 0|F ⊗ IT)|out J ⟩
+
+= X
+
+> I
+
+vIJ wIJ |I⟩B(CIJ )00 |ψ⟩T. (A2) For a block encoding of A with subnormalization fac-tor α, this component must equal P 
+
+> I
+
+|I⟩B(AIJ /α )|ψ⟩T.Comparing the coefficients for each I and every |ψ⟩ gives the block identity below. The full preparation states are normalized. Padding may add orthogonal branches whose selected unitaries have zero encoded blocks. These branches contribute nothing to Eq. (A2), so the block identity remains valid, while the squared amplitudes on physical addresses may sum to less than one. Thus 
+
+AIJ 
+
+α = vIJ wIJ (CIJ )00 ,
+
+X
+
+> I
+
+|wIJ |2 ≤ 1, X
+
+> J
+
+|vIJ |2 ≤ 1. (A3) The first amplitude sum is for each fixed J and the second for each fixed I. Since CIJ is unitary, ∥(CIJ )00 ∥ ≤ 1. The amplitudes may depend on A in an arbitrary way. The construction of Ref. [9] and Lemma 7 are of this form. In the latter, A = K. A nonpadding slot address (J, u ) identifies the block pair ( I, J ): slot u in column J
+
+contains KIJ . Let u′ be the slot in column I containing its adjoint KJI = K† 
+
+> IJ
+
+. The address map q(J, u ) = ( I, u ′)then gives Π|u⟩S|J⟩B = |u′⟩S|I⟩B,
+
+where S is the slot register. Thus J 7 → I routes KIJ to output block I, while u 7 → u′ supplies the slot address used by the output unpreparation. This is the role of the explicit label swap above. Uniform slot preparations give 
+
+wIJ = vIJ = 1 /√m on nonzero blocks. Together with (CIJ )00 = KIJ /g , Eq. (A3) therefore gives the encoded block KIJ /(mg ). 
+
+Lemma 10 (Lower bound on the subnormaliza-tion factor) . An exact block encoding of A satisfying Eq. (A3) , with subnormalization factor α, satisfies α ≥
+
+> 1
+> D
+
+P 
+
+> I,J
+
+∥AIJ ∥.Proof. The block identity in Eq. (A3) gives ∥AIJ ∥ ≤ 
+
+α|vIJ || wIJ |. Summing the preparation-amplitude bounds over the controlled labels bounds each total squared-amplitude sum by D. Cauchy–Schwarz there-fore gives 
+
+X
+
+> IJ
+
+∥AIJ ∥ ≤ α X
+
+> IJ
+
+|vIJ || wIJ |≤ α
+
+ X 
+
+> IJ
+
+|vIJ |21/2 X 
+
+> IJ
+
+|wIJ |21/2
+
+≤ αD. 
+
+(A4) 
+
+Cost of the uniform dense block encoding. To justify the cost in Sec. III, we derive the subnormalization factor of the block encoding of the transformed target unitary 
+
+U ′ and the resulting number of queries needed for obliv-ious amplitude amplification. We then apply Lemma 10 to Haar-random targets to show that the √D scale is necessary for block encodings of the form Eq. (A3). Yuan et al. [9] use random input and output bases to obtain ∥U ′ 
+
+> IJ
+
+∥ ≤ g = eO(1 /√D) with high probability. Embed each contraction U ′ 
+
+> IJ
+
+/g as the encoded block of a 2 b-dimensional unitary CIJ . Uniform preparation and unpreparation, wIJ = vIJ = 1 /√D, each supply one factor 1 /√D, giving 1
+
+√DU ′
+
+> IJ
+
+g
+
+1
+
+√D = U ′
+
+> IJ
+
+Dg . (A5) Thus the full encoded matrix is U ′/α , where α = Dg =
+
+eO(√D). The subnormalization factor determines how many queries to this full block encoding of U ′ are needed for oblivious amplitude amplification. For any normal-ized input, the zero-ancilla component has squared norm 
+
+p = 1 /α 2 because U ′ is unitary. Oblivious amplitude amplification, implemented through QSVT [29], uses the block encoding of U ′, its inverse, and zero-ancilla phase shifts; O(1 /√p) = O(α) = eO(pN/b ) queries suffice at fixed accuracy. Selecting among D2 unitaries of dimen-sion 2 b costs eO(N + b2) T gates per query by Lemma 2, giving Eq. (6). For a Haar-random U and b ≥ C√log N , concentration of measure on U (N ) [37] shows that, with high probabil-ity, every block satisfies ∥UIJ ∥F ≥ b/ (2 √N ). Comparing the Frobenius and operator norms gives 
+
+∥UIJ ∥ ≥ ∥ UIJ ∥F /√b ≥ 12
+
+pb/N . 
+
+There are D2 blocks, so P 
+
+> IJ
+
+∥UIJ ∥ ≥ D3/2/2. Lemma 10 then gives α ≥ √D/ 2. This gives the scale of the sub-normalization factor used in Sec. III. For any additive split H′ = P 
+
+> k
+
+Hk whose pieces Hk
+
+are block encoded in this way, apply Lemma 10 to each piece and then use the triangle inequality: P 
+
+> k
+
+αk ≥P 
+
+> IJ
+
+∥H′ 
+
+> IJ
+
+∥/D . Splitting reduces the data addressed per query, and the sum of subnormalization factors obeys the same lower bound. 15  
+
+> Appendix B: Matrix preprocessing 1. Similarity flattening
+
+We bound the diagonal contribution by Hanson– Wright and the off-diagonal contribution by decoupling and matrix Rademacher bounds. The required concen-tration inequalities are as follows. 
+
+Fact 1 (Hanson–Wright [38]) . Let σ be uniform on 
+
+{± 1}N and A ∈ RN ×N . For all t ≥ 0, Pr( |σT Aσ −
+
+tr A| > t ) ≤ 2 exp   − c min {t2/∥A∥2 
+
+> F
+
+, t/ ∥A∥} .
+
+Fact 2 (Matrix Rademacher series [39]) . Let By ∈
+
+Cd1×d2 be fixed and τy independent Rademacher signs. Put v = max {∥ P 
+
+> y
+
+By B† 
+
+> y
+
+∥, ∥P 
+
+> y
+
+B† 
+
+> y
+
+By ∥} . Then 
+
+Pr( ∥P 
+
+> y
+
+τy By ∥ ≥ t) ≤ (d1 + d2)e−t2/(2 v).
+
+Fact 3 (Decoupling [40, 41]) . Let τ be a vector of in-dependent random variables and τ ′ an independent copy of it. Let fyz be measurable maps into a separable Ba-nach space. There is an absolute constant Cdec such that for all t > 0, Pr  ∥P  
+
+> y̸=z
+
+fyz (τy , τ z )∥ > t ≤
+
+Cdec Pr  Cdec ∥P  
+
+> y̸=z
+
+fyz (τy , τ ′ 
+
+> z
+
+)∥ > t .
+
+Fact 2 is Theorem 4.1.1 of Ref. [39]; for Fact 3, see also Theorem 3.4.1 of Ref. [41]. 
+
+Proof of Lemma 5. P is real orthogonal, so eiP HP T
+
+=
+
+P e iH P T . The applications of F = H⊗n use only Clifford gates, and the two sign layers cost O(√N ) T gates by Lemma 1, for either P or P T . For the norm bound, the case H = 0 is straightforward. Otherwise, assume 
+
+∥H∥ = 1 without loss of generality, as we can rescale the matrix H. Put G = F HF and K = F S σ GS σ F ,so P HP T = F S τ KS τ F . We separate its diagonal part diag( K) from its remaining entries; the second sign layer leaves diag( K) unchanged. 
+
+Diagonal part. Each Kyy has the distribution of 
+
+N −1σT Re( G)σ, since every entry of F is ±N −1/2. The real symmetric matrix Re( G) has trace zero, operator norm at most 1, and Frobenius norm at most √N . Set 
+
+ℓ = log( N/δ ). By Fact 1 and ∥Re( G)∥2 
+
+> F
+
+≤ N , with fail-ure probability at most δ/ 2, 
+
+∥diag( K)∥ ≤ C
+
+r ℓN + ℓN
+
+!
+
+≤ 2Cℓ 
+
+√N . (B1) Every block of F diag( K)F has norm at most this bound. 
+
+Off-diagonal part. Condition on σ and set A = K −
+
+diag( K). Then ∥A∥ ≤ 2 and P 
+
+> z
+
+|Ayz |2 ≤ 1 for every y.Let RI contain the b rows of F in block I, with columns rIy
+
+for y ∈ [N ]. Thus RI RTI = Ib and ∥rIy ∥2 = b/N . Fix I, J 
+
+and write X = RI Sτ AS τ RTJ . To use Fact 3, introduce an independent copy τ ′ and write the decoupled block as 
+
+V = AS τ ′ RTJ , Y = RI Sτ V = X
+
+> y
+
+τy By ,
+
+where v† 
+
+> y
+
+is the y-th row of V and By = rIy v† 
+
+> y
+
+.Put η = δ/ (2 Cdec D2). Each vy is a vector Rademacher series with variance parameter at most (b/N ) P 
+
+> z
+
+|Ayz |2 ≤ b/N . By Fact 2 and a union bound over y, max y ∥vy ∥2 ≤ C(b/N )ℓ except with probability 
+
+η/ 2; here log( N (b + 1) /η ) = O(ℓ). For any such τ ′, the conditional matrix variance is controlled by 
+
+X
+
+> y
+
+By B† 
+
+> y
+
+⪯ max  
+
+> y
+
+∥vy ∥2 Ib,
+
+X
+
+> y
+
+B† 
+
+> y
+
+By = bN V †V ⪯ 4bN Ib,
+
+(B2) where the last inequality uses ∥V ∥ ≤ ∥ A∥ ≤ 2. A second application of Fact 2, now to τ , gives ∥Y ∥ ≤ Cpb/N ℓ 
+
+except with an additional probability η/ 2. Including the bad choices of τ ′, the failure probability is at most η.Decoupling therefore gives Pr( ∥X∥ > C pb/N ℓ ) ≤
+
+Cdec η, absorbing its constant factor into C. A union bound over the D2 block pairs yields, with failure prob-ability at most δ/ 2, max  
+
+> I,J
+
+∥(F S τ AS τ F )IJ ∥ ≤ C
+
+r bN ℓ. (B3) This estimate holds for every σ. Combining the two parts, using b ≥ 1, and restoring ∥H∥ proves Eq. (12) with total failure probability at most δ. 
+
+> 2. Random block-sparse split
+
+Proof of Lemma 6. Let Bp retain one adjoint block pair of H′ (one block for a diagonal pair), with zero else-where. Then H′ = P 
+
+> p
+
+Bp, each Bp is Hermitian, and 
+
+∥Bp∥ ≤ g. For a fixed class k, Hk − H′/s = P
+
+> p
+
+(ξp −
+
+1/s )Bp, where the assignment indicators ξp are indepen-dent Bernoulli(1 /s ) variables. Each summand has norm at most g, and 
+
+X
+
+> p
+
+E(ξp − 1/s )2B2 
+
+> p
+
+≤ 1
+
+s
+
+M
+
+> I
+
+(H′2)II ≤ ∥H′∥2
+
+s .
+
+Here P 
+
+> p
+
+B2 
+
+> p
+
+= L 
+
+> I
+
+(H′2)II , whose blocks are compres-sions of H′2.Recall that the matrix Bernstein inequality [42] ap-plies to independent, mean-zero Hermitian matrices Zp ∈
+
+CN ×N satisfying ∥Zp∥ ≤ R almost surely. With variance parameter v = ∥P 
+
+> p
+
+EZ2 
+
+> p
+
+∥, it gives, for every t > 0, Pr X
+
+> p
+
+Zp > t 
+
+!
+
+≤ 2N exp 
+
+
+
+− t2
+
+2( v + Rt/ 3) 
+
+
+
+.
+
+For u > 0, the choice t = √2vu + 23 Ru satisfies t2 ≥
+
+2u(v + Rt/ 3), and hence Pr X
+
+> p
+
+Zp > √2vu + 23 Ru 
+
+!
+
+≤ 2N e −u.16 We apply this bound with Zp = (ξp − 1/s )Bp. For the fixed matrix H′ and class k, these matrices are in-dependent and Hermitian, with EZp = 0 and ∥Zp∥ ≤ ∥Bp∥ ≤ g. The variance estimate above allows us to use R = g and v ≤ ∥ H′∥2/s . Taking u = ℓ and using P 
+
+> p
+
+Zp = Hk − H′/s therefore yields Pr 
+
+
+
+∥Hk − H′/s ∥ > ∥H′∥p2ℓ/s + 23 gℓ 
+
+
+
+≤ 2N e −ℓ.
+
+The triangle inequality yields Eq. (13). The D potential blocks in a fixed row belong to distinct pairs, so its occupancy is at most a Binomial( D, 1/s )variable. The scalar Chernoff bound gives occupancy at most m0 = D/s + p2Dℓ/s + ℓ except with probability 
+
+e−ℓ. Hermiticity gives the same bound for columns. Aunion bound over s norm events and sD row events costs at most (2 N s + sD )e−ℓ ≤ δ.Finally, ℓ ≥ 1 and the assumed bound on g imply 
+
+∥H′∥/s, gℓ ≤ ∥H′∥pℓ/s . Thus Eq. (13) is at most (1 + √2 + 2 /3) ∥H′∥pℓ/s < 4∥H′∥pℓ/s .
+
+> Appendix C: Sparse and rounded block encodings
+
+We first construct a block encoding of a block-sparse Hermitian matrix K, then an exact block encoding of its rounded approximation eK, including inverse and con-trolled queries.    
+
+> 1. Block encoding of Kand controlled queries
+
+Proof of Lemma 7. Construction. We trace the circuit in Fig. 6 to verify that it is a block encoding of K with subnormalization factor mg . The data register B holds one of the D = N/b block labels and contains log 2 D =log 2(N/b ) qubits. The data register T holds the position within a b × b block and contains log 2 b qubits. Together, 
+
+B, T contain the n = log 2 N data qubits. The ancillas requires post-selection are the log 2 m-qubit slot register S
+
+and the flag qubit F. List each column’s nonzero blocks in 
+
+m slots, adding padding where needed, and let N (J) be the set of nonpadding slots in column J. For u ∈ N (J), let I = I(J, u ) be the recorded row and set AJ,u = KIJ /g ;for padding, set AJ,u = 0. Since ∥AJ,u ∥ ≤ 1, the Halmos dilation [43] 
+
+VJ,u =
+
+ AJ,u 
+
+q
+
+I − AJ,u A†
+
+> J,u
+
+q
+
+I − A†
+
+> J,u
+
+AJ,u −A†
+
+> J,u
+
+
+
+is a unitary on F, T, with the block rows and columns indexed by the flag. In particular, 
+
+VJ,u |0⟩F|ψ⟩T = |0⟩FAJ,u |ψ⟩T
+
++ |1⟩F
+
+q
+
+I − A†
+
+> J,u
+
+AJ,u |ψ⟩T.
+
+Thus the encoded block applies KIJ /g for a nonpadding slot. For padding, VJ,u = XF ⊗ IT, so this component vanishes. These unitaries are constructed during classi-cal preprocessing, and select applies VJ,u controlled by (J, u ), leaving the address registers unchanged. Let Π be the permutation defined in Lemma 7, which acts on the slot and block-label registers S, B according to the address map q. For a nonpadding address ( J, u )recording row I, let u′ be the slot of column I recording row J. Hermiticity gives KJI = K† 
+
+> IJ
+
+, so this partner exists, and Π|u⟩S|J⟩B = |u′⟩S|I⟩B.
+
+The partner maps back to ( J, u ); padding and diagonal-block addresses are fixed. Hence q2 = id and Π is unitary. Updating the slot together with the block label makes this routing reversible. The registers F, T are unchanged. With FS = H⊗ log 2 m acting on the slot register, set 
+
+UK = FS Π select FS. (C1) To compute its encoded block, take an arbitrary input 
+
+|J⟩B|ψ⟩T and initialize both ancillary registers to zero. The first Hadamard layer prepares 1
+
+√m
+
+X
+
+> u
+
+|u⟩S|0⟩F|J⟩B|ψ⟩T.
+
+After select , the component with flag F = 0 is 1
+
+√m
+
+X 
+
+> u∈N (J)
+
+|u⟩S|0⟩F|J⟩B
+
+KIJ 
+
+g |ψ⟩T,
+
+where I = I(J, u ) in each summand. The remaining com-ponent has flag F = 1 and cannot contribute to the zero-ancilla corner, since neither Π nor the final Hadamard layer changes the flag. Applying Π routes the displayed component to 1
+
+√m
+
+X 
+
+> u∈N (J)
+
+|u′⟩S|0⟩F|I⟩B
+
+KIJ 
+
+g |ψ⟩T,
+
+where u′ is the partner slot associated with ( J, u ). For every output slot, 
+
+⟨0log 2 m|SFS|u′⟩S = 1
+
+√m .
+
+Consequently, after the final Hadamard layer, the com-ponent with both ancillary registers zero is 
+
+|0log 2 m⟩S|0⟩F ⊗ 1
+
+mg 
+
+X 
+
+> u∈N (J)
+
+|I⟩BKIJ |ψ⟩T
+
+= |0log 2 m⟩S|0⟩F ⊗ Kmg 
+
+ |J⟩B|ψ⟩T
+
+.
+
+Here we used that each nonzero block in column J occurs in exactly one slot and that K = P 
+
+> I,J
+
+|I⟩B⟨J|B ⊗ KIJ .17 The preparation and unpreparation each contribute a fac-tor 1 /√m. The final layer need not return the slot reg-ister to zero with certainty; the calculation extracts its zero-output component. By linearity, 
+
+ ⟨0log 2 m|S⟨0|F ⊗ IBT 
+
+
+
+× UK
+
+ |0log 2 m⟩S|0⟩F ⊗ IBT 
+
+ = Kmg . (C2) Here IBT is the identity on the data registers. This proves that UK is an exact ( mg, log 2 m + 1 , 0)-block encoding of 
+
+K.
+
+Compilation. We first bound the cost of select and the address permutation Π, then explain how to im-plement the controlled and inverse queries required by QSVT. There are Dm addresses ( J, u ), one for each block column and slot. For each address, the selected unitary 
+
+VJ,u acts on the flag qubit F and the b-dimensional regis-ter T, so its dimension is 2 b. Substituting M = Dm and 
+
+d = 2 b into Lemma 2 gives O(b√Dm Λ + b2Λ) T gates and ancilla qubits, where Λ = log 2(2 b) + log 2(1 /η ). The error η bounds the implementation of the entire select 
+
+oracle. To implement Π, write x = ( J, u ) and let r = log 2(Dm )be the number of address qubits. Introduce a second r-qubit register initialized to |0r ⟩. Compute q(x) into this register, swap the two registers, and use a second Boolean lookup to erase the old address: 
+
+|x⟩| 0r ⟩ 7 −→ | x⟩| q(x)⟩7−→ | q(x)⟩| x⟩7−→ | q(x)⟩| x ⊕ q(q(x)) ⟩
+
+= |q(x)⟩| 0r ⟩.
+
+Here ⊕ denotes bitwise XOR, and the last equality uses 
+
+q2 = id. This computation also applies to superposi-tions of addresses by linearity. Each lookup has Dm 
+
+entries with r output bits, so the two lookups together cost O(pDm log(2 Dm )) T gates and ancilla qubits by Lemma 1. They are exact and introduce no additional error. The Hadamard layers and the register swap use only Clifford gates. Adding the costs proves Eq. (14). For a controlled query, introduce a control qubit. We describe the circuit for each computational-basis state 
+
+|c⟩, where c ∈ { 0, 1}; its action on superpositions follows by linearity. For every address ( J, u ), select the identity 
+
+IFT when c = 0 and VJ,u when c = 1. Denote this opera-tion by select c. Likewise, let Π c leave ( J, u ) unchanged when c = 0 and apply q when c = 1. Both operations leave the control state |c⟩ unchanged. Applying both Hadamard layers gives, when the control is in |c⟩,
+
+FSΠcselect cFS =
+
+(
+
+F 2 
+
+> S
+
+= I, c = 0 ,UK , c = 1 .
+
+Thus, when c = 0, the middle operations leave all regis-ters unchanged, and the two unconditional applications of FS then cancel. This cancellation holds for every state of the slot register. Including c in the lookup address doubles the table sizes from Dm to 2 Dm , which changes the cost by only a constant factor. The resulting com-piled circuit approximates this controlled unitary to error 
+
+η. Reversing the gate order and replacing each gate by its adjoint implements the inverse of either query with the same T -gate and ancilla costs. Unitary invariance of the norm also preserves the implementation error in Definition 1. To use the block encoding UK of K in QSVT, we dis-tinguish its block-encoding ancillas from the additional ancilla qubits used to compile the circuit. The block-encoding ancillas are the slot register S and flag qubit F,totaling log 2 m + 1 qubits. They are part of the input to 
+
+UK and may be nonzero, in superposition, or entangled with the data registers during QSVT. The implementa-tion guarantee therefore applies to every input state on 
+
+S, F, B, T. Let W denote the compiler workspace, a reg-ister of w additional ancilla qubits initialized to |0w⟩W.For every normalized joint state |Φ⟩SFBT , the compiled circuit eUK satisfies 
+
+∥ eUK
+
+ |0w⟩W|Φ⟩SFBT 
+
+ − | 0w⟩WUK |Φ⟩SFBT ∥ ≤ η. 
+
+The controlled and inverse queries satisfy the correspond-ing guarantees. QSVT reflections apply a phase flip conditioned on the log 2 m + 1 qubits in S, F being zero, with O(1) additional control qubits. Computing this condition with Toffoli gates, applying the phase flip, and uncomputing the con-dition uses O(1 + log m) T gates and temporary ancilla qubits. Single-qubit rotations are counted separately, as in Lemma 3. The ideal queries and reflections return their tempo-rary ancillas to zero. Approximate queries may leave residual errors in these ancillas, which are included in the full error analysis above. The composition rule in Sec. II therefore permits these ancillas to be reused with-out resetting them, with the Qt queries contributing at most Qtη to the total error. 
+
+Proof of Corollary 1. Since sℓ ≤ D and m ≤ 2m0,
+
+sm ≤ 2( D + √2Dsℓ + sℓ ) ≤ (4 + 2 √2) D < 7D. 
+
+There are at most s nonzero pieces, so P 
+
+> k
+
+αk ≤ smg ≤
+
+7Dg . Substitute Dm ≤ 7D2/s and bD = N into Eq. (14); the assumed b2Λ ≥ log(2 Dm ) absorbs the per-mutation term.  
+
+> 2. Exact rounded select oracles
+
+Lemma 11 (Exact rounded select oracles) . Let M =2μ, d = 2 κ, and B ≥ κ + 2 , and let W = P
+
+> x
+
+|x⟩⟨ x| ⊗ Vx
+
+with Vx ∈ U (d). There are unitaries eVx with ∥ eVx − Vx∥ ≤ 
+
+22−B πd , a fixed (B +1) -qubit state |Ψ⟩, and a Clifford+ T18 
+
+circuit C with O(d√M B +d2B) T gates and ancillas such that 
+
+C |x⟩| ψ⟩| 0w⟩| Ψ⟩ = |x⟩ eVx|ψ⟩ | 0w⟩| Ψ⟩ (C3) 
+
+for all x and ψ. The same holds, at the same cost, for the inverse, for the singly controlled version, and when some branches carry eV † 
+
+> y
+
+in place of eVx.Proof of Lemma 11. For d ≥ 2, decompose each Vx us-ing the same sequence of d − 1 uniformly controlled single-qubit gates [7]. For each setting of the control qubits, the selected single-qubit unitary has the form 
+
+eiω 0 Rz (ω1)Ry (ω2)Rz (ω3), with angles depending on x
+
+and the control values. Round each angle to the near-est multiple of 2 π2−B . This changes each uniformly con-trolled gate by at most 4 π2−B in operator norm. Sum-ming the errors over the d − 1 gates gives ∥ eVx − Vx∥ ≤ 
+
+4π(d − 1)2 −B .The fixed catalyst state 
+
+|Ψ⟩ = 2 −(B+1) /22B+1 −1X
+
+> k=0
+
+e−2πik/ 2B+1 
+
+|k⟩
+
+implements each rounded angle exactly by phase kick-back [44]. Adding an integer a modulo 2 B+1 to the catalyst register multiplies the state by e2πia/ 2B+1 
+
+and leaves the catalyst unchanged. For a rounded angle 
+
+θ = 2 πq/ 2B , with q ∈ Z, first add −q, then add 2 q
+
+conditioned on the target qubit being |1⟩. The target states |0⟩ and |1⟩ acquire phases e−iθ/ 2 and eiθ/ 2, re-spectively, which implements Rz (θ). Clifford conjuga-tion gives Ry (θ) = SHRz (θ)HS†, where S = diag(1 , i ). Adding 2 q without the target control implements eiθ . For 
+
+d = 1, only this scalar phase is needed; rounding it gives error at most π2−B and cost O(√M B + B). For each address x, the angle table contains O(d) an-gles for each of O(d) uniformly controlled phase and rota-tion gates, hence O(d2B) bits. Lemma 1 loads and erases this table at cost O(d√M B ), following the lookup scheme in [7, Lemma 4.1]. For each uniformly controlled gate, reversibly selecting the appropriate angle from its table costs O(dB ) Toffoli gates, and the modular additions cost 
+
+O(B) [45]. Uncomputing the selected angle has the same selection cost. Summing over the O(d) gates gives total cost O(d√M B + d2B). Reversing the circuit and adjointing its gates imple-ments the inverse. For a controlled query, include the control bit in the lookup address and select either the original angle table or an all-zero table, which implements the identity. This doubles the number of addresses and preserves the cost bound. For adjoint pairs, let θx de-note the ordered list of rounded angles in the elementary phase and rotation gates implementing eVx. Append the same elementary gate sequence in reverse order. Using the concatenated angle lists ( θx, 0) and ( 0, −θrev  
+
+> x
+
+) for the two branches implements eVx and eV † 
+
+> x
+
+, respectively. Here rev reverses the angle list, and 0 is a zero list of the same length. The zero angles make one half the identity; reversing the gate order and negating the angles in the other half gives the adjoint. This doubles the sequence length and preserves the asymptotic cost.  
+
+> 3. Block encodings of rounded Hermitian matrices
+
+Proof of Lemma 9. If K = 0, set eK = 0. Applying a Pauli X gate to the flag qubit F gives an exact block en-coding of the zero matrix, since ⟨0|X|0⟩ = 0. For K̸ = 0, modify the lookup tables in Lemma 7 as follows. For each off-diagonal pair, round the dilation of KIJ /g us-ing Lemma 11 and place its exact adjoint at the adjoint block’s address. Hence eKJI = eK† 
+
+> IJ
+
+.For a nonzero diagonal block, use two fixed slots car-rying a rounded dilation eV of KJJ /(2 g) and its exact adjoint. Let eA denote the encoded b × b block of eV . The two slots then contribute 
+
+eKJJ = g( eA + eA†),
+
+which is Hermitian. Each block column contains at most one diagonal block, so replacing its single slot by two slots uses at most m0 + 1 ≤ m slots in that column. At every unused slot, select XF ⊗IT and let Π fix its address. This operation maps the flag from |0⟩ to |1⟩, so the slot contributes zero to the encoded matrix. To implement these branches exactly, use zero angle words at unused addresses in the rounded multiplexer, making it act as the identity there. Compute a bit indicating whether the address is unused, apply XF conditioned on this bit, and uncompute the bit. By Lemma 1, this additional lookup costs O(√Dm ) T gates and ancilla qubits. By Lemma 11 with d = 2 b, rounding changes each dilation by at most 8 πb 2−B in operator norm. Taking its block with flag F = 0 on input and output cannot increase this error. After multiplying by g, each off-diagonal block therefore has error at most 8 πgb 2−B . For a diagonal block, write A = KJJ /(2 g) = A†. Its error satisfies 
+
+∥ eKJJ − KJJ ∥ = g∥( eA − A) + ( eA − A)†∥≤ 2g∥ eA − A∥ ≤ 16 πgb 2−B .
+
+Let E = eK − K. The unused slots contribute exactly zero, so EIJ = 0 whenever KIJ = 0. Since E is Her-mitian, it has at most m0 ≤ m nonzero blocks in each block row as well as in each block column. For a Hermi-tian block matrix, the operator norm is bounded by the largest sum of block norms in a row. Hence 
+
+∥E∥ ≤ max 
+
+> I
+
+X
+
+> J
+
+∥EIJ ∥ ≤ 16 πmgb 2−B ,
+
+which proves Eq. (15). To see the first inequality, write a vector x in blocks xI and bound |⟨ x, Ex ⟩| by P 
+
+> I,J
+
+∥EIJ ∥∥ xI ∥∥ xJ ∥. Using 2 ∥xI ∥∥ xJ ∥ ≤ ∥ xI ∥2 +∥xJ ∥2
+
+and ∥EIJ ∥ = ∥EJI ∥ gives the stated bound. 19 Use these slot unitaries in the circuit U eK =
+
+FSΠ ^select FS, where ^select denotes the resulting se-lection oracle. Given the catalyst |Ψ⟩, Lemma 11 implements the rounded multiplexer exactly at cost 
+
+O(b√DmB + b2B). The additional lookup for unused slots is absorbed in this cost. The Hadamard layers and the address permutation are exact; the latter costs 
+
+O(pDm log(2 Dm )) as shown in the proof of Lemma 7. Together these circuits implement the block encoding U eK
+
+of eK exactly with the T -gate and ancilla costs in Eq. (14) at Λ = B. They return the catalyst unchanged and all additional ancilla qubits to |0⟩.Reversing the circuit and replacing each gate by its adjoint implements U † 
+
+> eK
+
+. For a singly controlled query, condition both ^select and Π on the control qubit, leav-ing the two Hadamard layers unconditional. When the control is |0⟩, the middle operations are the identity and 
+
+F 2 
+
+> S
+
+= I; when it is |1⟩, the circuit applies U eK . Including the control bit in the lookup addresses at most doubles the table sizes, preserving the asymptotic cost. Reversing this circuit gives the singly controlled inverse. 
+
+> Appendix D: Unitary synthesis using qDRIFT and QSVT
+
+We prove the shared selection lemma, then establish the parameter and resource bounds for the compiler in Algorithm 3, summarized in Algorithm 1. 
+
+Proof of Lemma 8. We first bound the weighted simula-tion time of the sampled product. For each segment j,Eq. (5) gives 
+
+E[αKj τj ] = 
+
+> r
+
+X
+
+> k=1
+
+∥Ak∥
+
+λαkλNq ∥Ak∥
+
+= 1
+
+NqrX
+
+> k=1
+
+αk.
+
+Summing over the Nq segments yields 
+
+ET =
+
+> Nq
+
+X
+
+> j=1
+
+E[αKj τj ] = 
+
+> r
+
+X
+
+> k=1
+
+αk. (D2) Since T ≥ 0, Markov’s inequality gives Pr T > 2
+
+p
+
+X
+
+> k
+
+αk
+
+!
+
+≤ ET
+
+(2 /p ) P 
+
+> k
+
+αk
+
+= p
+
+2 .
+
+The choice of Nq in Lemma 4 also ensures Pr  ∥V − eiA ∥ > ε  ≤ p
+
+2 .
+
+By the union bound, the probability that either require-ment fails is at most p. Thus the same sampled product satisfies both the accuracy bound and the bound on T
+
+with probability at least 1 − p.Now fix any sample satisfying both bounds. Apply Lemma 3 to segment eiτ j AKj using queries to UAKj at simulation error ξ/N q . This error lies in (0 , 1/2), as re-quired by the lemma. Use a common clean ancilla register for all segments, adding unused ancillas where necessary. The composition rule in Sec. II bounds the implementa-tion error of the product by PNq 
+
+> j=1
+
+ξ/N q = ξ, including the error on the ancillas. For segment j, the query count is 
+
+Qj = O
+
+
+
+αKj τj + log Nq
+
+ξ
+
+
+
+.
+
+Summing over all segments and using the accepted bound on T gives 
+
+Q =
+
+> Nq
+
+X
+
+> j=1
+
+Qj = O
+
+
+
+T + Nq log Nq
+
+ξ
+
+
+
+= O 1
+
+p
+
+X
+
+> k
+
+αk + Nq log Nq
+
+ξ
+
+!
+
+.
+
+These counts include queries to the block encodings UAk
+
+of Ak, their inverses, and their singly controlled versions, as in Lemma 3. 
+
+Proof of Theorem 3. Parameters. Set L = n + log 2(1 /ϵ ). Choose b, a power of 2, satisfying 12 N 3/7ϵ−4/7 ≤ b ≤ 2N 3/7ϵ−4/7.
+
+Put D = N/b and set 
+
+s =
+
+j cs
+
+√D ϵ 2
+
+n2L
+
+k
+
+, ℓ = log(64 N s ), (D3) with a sufficiently small absolute constant cs > 0. For sufficiently large C0 and N , the stated range of ϵ ensures 
+
+s ≥ 1 and sℓ log 2(8 N ) ≤ D/C .Write U = eiH , choosing the Hermitian logarithm H
+
+with eigenvalues in ( −π, π ]; this is our convention for the principal Hermitian logarithm. Set φ = tr H/N and 
+
+H0 = H − φI . Since ∥H∥ ≤ π and |φ| ≤ π,
+
+∥H0∥ ≤ ∥ H∥ + |φ| ≤ 2π. 
+
+If H0 = 0, then U = eiφ I, so only the scalar-phase cir-cuit is needed. Otherwise, for an accepted choice of P ,Lemma 5 with δ = 1 /8 bounds the operator norm of every b × b block of H′ = P H 0P T by 
+
+∥H′ 
+
+> IJ
+
+∥ ≤ g := CA∥H0∥ log(8 N )
+
+√D , I, J ∈ [D].
+
+The parameter condition sℓ log 2(8 N ) ≤ D/C , with C ≥
+
+C2
+
+> A
+
+, and the identity ∥H′∥ = ∥H0∥ imply g ≤ ∥ H′∥/√sℓ ,20 
+
+Algorithm 3 Detailed classical preprocessing and circuit assembly for Theorem 3. 
+
+Input: U ∈ U (N ) and ϵ in the range of Theorem 3. 
+
+Output: A fixed Clifford+ T circuit implementing U to error ϵ.
+
+Setup: From N and ϵ, choose the block size b, set D = N/b , and choose the number s of partition classes and the split parameter ℓ as in Appendix D. 
+
+Stage I: Preprocessing.  
+
+> 1:
+
+Compute the principal Hermitian logarithm of U and separate its scalar part φI and traceless part H0. 
+
+> 2:
+
+if H0 = 0 then  
+
+> 3:
+
+return a phase circuit implementing eiφ I with error ϵ/ 8.  
+
+> 4:
+
+end if  
+
+> 5:
+
+repeat ▷ Success per trial ≥ 3/4.  
+
+> 6:
+
+Draw a fresh similarity P and form H′ = P H 0P T . 
+
+> 7:
+
+Sample a fresh partition of H′ into s Hermitian pieces Hk . ▷ Preserve Hermitian block pairs.  
+
+> 8:
+
+until all block-norm, piece-norm, and sparsity bounds hold at failure parameter 1 /8 (Lemmas 5 and 6).  
+
+> 9:
+
+Discard zero pieces and set λ = P 
+
+> k
+
+∥Hk ∥. 
+
+> 10:
+
+if λ < ϵ/ 4 then ▷ ∥eiH ′
+
+− I∥ ≤ λ. 
+
+> 11:
+
+return a phase circuit implementing eiφ I with error ϵ/ 8.  
+
+> 12:
+
+end if  
+
+> 13:
+
+Build a block encoding UHk of each remaining piece Hk , with subnormalization factor αk (Corollary 1). 
+
+Stage II: qDRIFT certification.  
+
+> 14:
+
+Use Lemma 8 with ε = ϵ/ 4, p = 1 /2, and Nq from Eq. (D5).  
+
+> 15:
+
+repeat ▷ Success per trial ≥ 1/2.  
+
+> 16:
+
+Sample fresh piece indices Kj and durations τj ; form their ideal product V . 
+
+> 17:
+
+until the accuracy and weighted-time tests pass (Lemma 8). 
+
+Stage III: Circuit assembly.  
+
+> 18:
+
+Implement the sampled evolutions with QSVT.  
+
+> 19:
+
+Compile the queries to UHk , their inverses and singly controlled versions, and the single-qubit rotations to the tolerances specified in the error analysis of Appendix D.  
+
+> 20:
+
+Assemble the following circuit, using exact P, P T and reusable clean workspace: 
+
+eiφ P T  1Y
+
+> j=Nq
+
+Sτj (UHKj )
+
+
+
+P. (D1)  
+
+> 21:
+
+return the compiled circuit. 
+
+as required by Lemma 6. Applying Lemma 6 with δ =1/8 and then Corollary 1 gives 
+
+λ ≤ 8π√sℓ, X
+
+> k
+
+αk ≤ 7Dg = O(√D n ). (D4) Here s includes classes whose pieces were discarded as zero. The similarity and split pass jointly with probabil-ity at least 3 /4, giving a constant expected trial count. If λ < ϵ/ 4, the phase alone suffices since ∥eiH ′
+
+− I∥ ≤ λ.
+
+Selection and queries. For λ ≥ ϵ/ 4, choose 
+
+Nq =
+
+l 704 λ2
+
+ϵ2 log(8 N ) + 8λ2
+
+ϵ
+
+m
+
+. (D5) Apply Lemma 8 with Ak = Hk, ε = ξ = ϵ/ 4, and 
+
+p = 1 /2. Each trial passes the accuracy and weighted-time tests with probability at least 1 /2, and the ac-cepted product has QSVT implementation error ϵ/ 4. Now Nq = O(sn 2/ϵ 2) and log( Nq /ϵ ) = O(L). Substi-tuting Eq. (D3) gives 
+
+Q = O(√D n + sn 2L/ϵ 2) = O(√D n ). (D6) Implement each query to UHk , its inverse, or a singly controlled version with error at most η = ϵ/ (8 Q), so Λ = O(L). Since b = Ω( N 3/7) and m ≤ 7D, the domina-tion condition in Corollary 1 holds, giving per-query cost 
+
+cquery = O(N pL/s + b2L) T gates and reusable clean ancillas. 
+
+Error and resources. The basis changes and reflections are exact. Allocate ϵ/ 8 each to the combined errors from implementing the queries to UHk , all O(Q) rotations, and the scalar phase, synthesizing the rotations and the phase by the single-qubit synthesis bound in Eq. (3). Together with the qDRIFT and QSVT errors, the composition rule gives 
+
+ϵ/ 4 + ϵ/ 4 + ϵ/ 8 + ϵ/ 8 + ϵ/ 8 = 7 ϵ/ 8.
+
+The O(√N ) basis-change cost, O(nQ ) reflection cost, 
+
+O(QL ) rotation cost, and O(L) phase cost are all lower order. Thus 
+
+T = O
+
+
+
+n2L
+
+ N D 1/4
+
+ϵ + √D b 2 
+
+. (D7) Substituting b = Θ( N 3/7ϵ−4/7) and D = N/b makes both terms Θ( N 8/7ϵ−6/7). Sequential queries reuse workspace, so the ancilla count is O(cquery ) = O(nL N 6/7ϵ−8/7), including the smaller logical registers and sign-oracle workspace. 21 
+
+Remark 1 (Deterministic product formulas) . Replacing qDRIFT by second-order Strang splitting uses a deter-ministic product formula, but gives the weaker exponent 7/6. The similarity and partition still involve classical randomness; both compilers output fixed circuits. The commutator bounds of Ref. [46] bound the error after r
+
+steps by eO(√s/r 2). This uses ∥Hj ∥ = eO(s−1/2) from Lemma 6, and ∥P 
+
+> k>j
+
+Hk∥ = eO(1) from the same Bern-stein argument applied to unions of classes. The result-ing product formula is fixed once the classical similarity and partition are chosen. At constant accuracy, the error bound requires r = eO(s1/4), so its 2 rs segments number 
+
+eO(s5/4). Keeping this number of order √D, as for qDRIFT, gives s ≈ D2/5. Balancing the resulting lookup and pro-cessing costs gives b ≈ N 4/9 and T = eO(N 7/6). The smaller qDRIFT exponent follows because its segment count depends on the pieces only through the bound 
+
+λ2 = eO(s). 
+
+> Appendix E: Proof of unitary synthesis using residual refinement
+
+We prove Theorem 4 for Algorithm 4, summarized in Algorithm 2. Appendix E 1 specifies the parame-ters, residual data, and acceptance tests. Appendix E 2 proves residual contraction, termination, and the final error bound. These estimates give the T -count and an-cilla bounds in Appendix E 3, followed by a comparison of precision dependence. Finally, Appendix E 4 gives a terminating classical compiler for computably specified targets with the quantum resource bounds of either The-orem 3 or Theorem 4.  
+
+> 1. Parameters and residual data
+
+Constants C, c are absolute, and n ≥ n0 is sufficiently large. For the pieces of Lemma 6, sm ≤ s(2 m0 + 2) ≤ 9D
+
+when sℓ ≤ D. So the subnormalization factors satisfy P 
+
+> k
+
+αk ≤ 9Dg , and each query to the block encoding of a rounded piece costs O(N pB/s + b2B), as in Corollary 1, whenever b2B ≥ log(2 Dm ). The word length below sat-isfies this condition. 
+
+Parameters. Use the word length 
+
+B = 3 n +  log 2
+
+ 9216 π2CA log(8 N ) . (E1) The block encodings of the rounded pieces and full rounded residual generators use Lemma 9, with words relative to the current block scale, and share one state 
+
+|Ψ⟩. Since b√D = √N b ≤ N , this choice gives 9216 π2CA b√D log(8 N ) 2 −B ≤ N −2 with B = O(n). We use this inequality in both stages. Let L0 = c0N 1/4n−7/8, with c0 small enough for the level stage to be nonempty when L ≤ L0. Choose the block size once: if L ≤ L0, take b to be a power of two in the range [ 12 , 2] · N 3/7L2/7 and put D = N/b . Run the qDRIFT levels, then correct the remaining residual by block-encoding and simulating its full rounded generator. If L > L 0, take D to be the least power of two at least min {N, n 2L2} and put b = N/D ; in this regime, run only the corrections. For L ≤ L0, Appendix E 3 bounds the total lookup cost of the qDRIFT levels by O(n2N D 1/4√L) and their total block-processing cost by O(n2√D b 2). Substituting 
+
+D = N/b and balancing these contributions gives b7/4 =Θ( N 3/4√L), hence the choice b = Θ( N 3/7L2/7). Both contributions are then O(n2N 8/7L3/7). For L > L 0, the first correction starts from a trace-less generator of norm at most 2 π. By Lemmas 5 and 9, the block encoding of its full rounded generator has sub-normalization factor O(n√D). The chosen D satisfies 
+
+D ≤ 2n2L2, so this factor is O(n2L). Moreover, if 
+
+D < N , then D ≥ n2L2 gives 
+
+b2B ≤ N 2Bn4L4 = O
+
+ N B 
+
+√n
+
+
+
+= O(N √B),
+
+where we used L > L 0 and B = Θ( n). If D = N ,then b = 1 and the same bound holds. Thus the block-processing cost O(b2B) is at most the order of the lookup cost O(N √B), and each query to the block encoding of a full rounded correction generator costs O(N √B) in this regime. For the level stage, put ϵl = 2 −l/4, a0 = 2 π, and 
+
+al = 4 ϵl−1 for l ≥ 1, and define 
+
+sl =
+
+j cs
+
+√D a l
+
+nL 
+
+k
+
+. (E2) 
+
+al bounds the level’s generator norm, with al ≤ 8πϵ l. The tolerances halve for l ≥ 1, so qDRIFT needs only con-stant relative precision. When L ≤ L0, let l∗ be the first index with sl∗ = 0; then 1 ≤ l∗ = O(n). When L > L 0,set l∗ = 0, so the level loop is empty. Indeed, at l = 0 the argument of the floor in Eq. (E2) is Θ( csN 2/7L−8/7/n ), at least one for L ≤ L0 when c0 is sufficiently small. 
+
+Residual data. For a residual unitary R, the routine Residual( R) = ( H, φ, H 0) computes 
+
+H = −i log R, φ = tr HN , H0 = H − φI. 
+
+We choose the eigenvalues of H in ( −π, π ], including π
+
+at eigenvalue −1 of R, as in Eq. (7). Thus R = eiφ eiH 0
+
+and H0 is traceless. At level l, the current ideal approximation is Wl−1,with W−1 = I, and the residual is Rl = U W −1
+
+> l−1
+
+. Apply the routine above to obtain ( H(l), φ l, H (l)0 ). If H(l)0 = 0, set Pl = Vl = I, H′(l) = 0, and λl = 0; the phase up-date handles this level exactly. For H(l)0̸ = 0, choose a real orthogonal Pl and a split satisfying the bounds of Lemmas 5 and 6, each with failure parameter 1 /8, as in 22 Algorithm 4. Let H′(l) = PlH(l)0 P Tl and write its split as H′(l) = P 
+
+> k∈I l
+
+H(l) 
+
+> k
+
+, where Il indexes only nonzero pieces. The parameter sl counts all pieces in the original random split, including those that are zero, so |I l| ≤ sl.The largest block norm is gl = max I,J ∥(H′(l))IJ ∥, and the total piece norm is λl = P 
+
+> k∈I l
+
+∥H(l) 
+
+> k
+
+∥. Each subnor-malization factor is α(l) 
+
+> k
+
+= mlgl, where ml is the least power of two at least m0,l + 1 and m0,l is the sparsity bound of Lemma 6. Let eK(l) 
+
+> k
+
+be the rounded pieces sup-plied by Lemma 9. Since ml ≥ m0,l , Lemma 7 also sup-plies exact block encodings of the unrounded pieces H(l)
+
+> k
+
+with the same subnormalization factors α(l) 
+
+> k
+
+. Thus the sampling and weighted-time bounds in Lemma 8 apply to these pieces. The simulation circuits use the rounded pieces eK(l) 
+
+> k
+
+instead. When λl ≥ ϵl/4, the qDRIFT sampling law and dura-tions are Pr( Kl,u = k) = ∥H(l) 
+
+> k
+
+∥/λ l,τl,u = λl
+
+N (l) 
+
+> q
+
+∥H(l) 
+
+> Kl,u
+
+∥ . (E3) Keep the unrounded and rounded products distinct: 
+
+V true  
+
+> l
+
+=
+
+> 1
+
+Y 
+
+> u=N(l)
+> q
+
+eiτ l,u H(l) 
+
+> Kl,u
+
+,Vl =
+
+> 1
+
+Y 
+
+> u=N(l)
+> q
+
+eiτ l,u eK(l) 
+
+> Kl,u
+
+.
+
+(E4) Products act from right to left. The classical qDRIFT ac-ceptance test uses V true  
+
+> l
+
+; the next residual and compiled segments use Vl. When λl ≥ ϵl/4, we sample until both of the following tests pass, using Lemma 8 with ε = ϵl/2and p = 1 /2: 
+
+∥V true  
+
+> l
+
+− eiH ′(l)
+
+∥ ≤ ϵl/2,
+
+X
+
+> u
+
+α(l) 
+
+> Kl,u
+
+τl,u ≤ 4 X
+
+> k
+
+α(l) 
+
+> k
+
+. (E5) The first test bounds the qDRIFT approximation er-ror. The second bounds the sum of simulation times weighted by the block-encoding subnormalization fac-tors. This sum controls both the query count and the er-ror introduced when the sampled generators are rounded (Eq. (E9)). If λl < ϵ l/4, the algorithm sets Vl = I and skips sampling at that level. The correction stage starts from the rounded ideal product W (0) = Wl∗−1 produced by the levels; when no levels are used, W (0) = I. At correction j ≥ 1, the transformation needed to turn the current approximation 
+
+W (j−1) into U is 
+
+R(j) = U (W (j−1) )−1,
+
+so R(j)W (j−1) = U . Apply the same residual decompo-sition to define 
+
+Gj = −i log R(j), χj = tr Gj
+
+N ,G0,j = Gj − χj I. 
+
+Thus R(j) = eiχ j eiG 0,j : χj is the scalar phase, and G0,j 
+
+is the traceless generator to be simulated. The notation Residual( R(j)) = ( Gj , χ j , G 0,j ) in Algorithm 4 refers to these definitions. For G0,j ̸ = 0, choose a real orthogonal matrix P c 
+
+> j
+
+sat-isfying the flattening bound of Lemma 5, by resampling with failure parameter 1 /4 until the bound holds. The superscript c identifies a change of basis used in the cor-rection stage. Set 
+
+G′ 
+
+> j
+
+= P c 
+
+> j
+
+G0,j (P c 
+
+> j
+
+)T ,gj = max  
+
+> I,J
+
+∥(G′ 
+
+> j
+
+)IJ ∥.
+
+This choice bounds the norm of every block of G′ 
+
+> j
+
+by 
+
+CA∥G0,j ∥ log(4 N )/√D. Apply Lemma 9 to the full ma-trix G′ 
+
+> j
+
+, using word length B and m = 2 D, to obtain a Hermitian matrix eGj and an exact block encoding of 
+
+eGj . Here m = 2 D accommodates the at most D nonzero blocks in each block column and the additional slot for diagonal-block symmetrization. Define the subnormal-ization factor of this block encoding and the error from rounding the generator by 
+
+αj = 2 Dg j , ρj = ∥ eGj − G′ 
+
+> j
+
+∥. (E6) The correction first applies P c 
+
+> j
+
+, simulates eGj for time one, and then applies ( P c 
+
+> j
+
+)T and the scalar phase. The resulting ideal update is 
+
+W (j) = eiχ j (P c 
+
+> j
+
+)T ei eGj P c 
+
+> j
+
+W (j−1) . (E7) We stop when ρj ≤ ϵ/ 8; the next subsection proves that 
+
+∥U − W (j)∥ ≤ ρj . If G0,j = 0, set P c 
+
+> j
+
+= I, eGj = 0, and αj = ρj = 0. Then the scalar phase alone gives 
+
+W (j) = U , and no Hamiltonian simulation is needed. 
+
+2. Accuracy and termination 
+
+Proof of Theorem 4: accuracy. The products Wl and 
+
+W (j) use exact exponentials of rounded generators, so their error includes qDRIFT and generator rounding. Af-ter bounding this error and proving termination, we add the circuit-implementation errors. 
+
+Level contraction. We prove by induction that level l
+
+produces ∥U − Wl∥ = ∥Rl+1 − I∥ ≤ ϵl. Initially ∥H(0) 0 ∥ ≤ 
+
+2π = a0; for l ≥ 1, the induction hypothesis ∥Rl − I∥ ≤ 
+
+ϵl−1 ≤ 1/4 bounds every principal eigenphase in absolute value by πϵ l−1/2, giving ∥H(l)0 ∥ ≤ 2∥H(l)∥ ≤ πϵ l−1 < a l.23 
+
+Algorithm 4 Detailed classical preprocessing and circuit assembly for Theorem 4. 
+
+Input: U ∈ U (N ) and ϵ in the range of Theorem 4. 
+
+Output: A fixed Clifford+ T circuit implementing U to error ϵ.
+
+Setup: From N and ϵ, choose the block size b, word length B, number l∗ of block-sparse levels, level tolerances ϵl, generator-norm bounds al, and piece counts sl; set D = N/b (Appendix E 1). 
+
+Stage I: Refinement levels. 
+
+1: Set W−1 = I.
+
+2: for l = 0 , . . . , l ∗ − 1 do 
+
+3: Form Rl = U W −1 
+
+> l−1
+
+and ( H(l), φ l, H (l)0 ) = Residual (Rl); set Pl = Vl = I.
+
+4: if H(l)0̸ = 0 then 
+
+5: repeat ▷ Success per trial ≥ 3/4. 
+
+6: Draw a fresh similarity Pl and split H′(l) = PlH(l)0 P Tl into sl Hermitian pieces. 
+
+7: until the block-norm, piece-norm, and sparsity bounds hold at failure parameter 1 /8 (Lemmas 5 and 6). 
+
+8: Discard zero pieces; compute their norm sum λl and construct block encodings of the rounded pieces eK(l) 
+
+> k
+
+with subnormalization factors α(l) 
+
+> k
+
+(Lemma 9). 
+
+9: if λl ≥ ϵl/4 then 
+
+10: Use Lemma 8 with ε = ϵl/2 and p = 1 /2, choosing the least sufficient N (l) 
+
+> q
+
+from Eq. (A1). 
+
+11: repeat ▷ Success per trial ≥ 1/2. 
+
+12: Sample a fresh unrounded product V true  
+
+> l
+
+(Eqs. (E3) and (E4)). 
+
+13: until the accuracy and weighted-time tests pass (Eq. (E5)). 
+
+14: Replace its generators by the rounded ones to form Vl (Eq. (E4)). ▷ Include rounding in the residual. 
+
+15: end if 
+
+16: end if 
+
+17: Set Wl = eiφ l P Tl VlPlWl−1.
+
+18: end for Stage II: Corrections using the full residual generator. 
+
+19: Set W (0) = Wl∗−1 and j = 0. 
+
+20: repeat ▷ O (1 + L/n ) corrections suffice. 
+
+21: Increase j by one; form R(j) = U (W (j−1) )−1 and ( Gj , χ j , G 0,j ) = Residual (R(j)). 
+
+22: if G0,j = 0 then 
+
+23: Set P c 
+
+> j
+
+= I, eGj = 0, and αj = ρj = 0. ▷ Only the scalar phase remains. 
+
+24: else 
+
+25: Resample P c 
+
+> j
+
+until the flattening bound holds at failure parameter 1 /4 (Lemma 5). ▷ Success per trial ≥ 3/4. 
+
+26: Form the full rounded generator eGj and construct its block encoding with subnormalization factor αj ; compute its rounding error ρj (Lemma 9 and Eq. (E6)). 
+
+27: end if 
+
+28: Set W (j) = eiχ j (P c 
+
+> j
+
+)T ei eGj P c 
+
+> j
+
+W (j−1) .
+
+29: until ρj ≤ ϵ/ 8. 
+
+30: Set J = j.
+
+Stage III: Circuit assembly. 
+
+31: Set the tolerances for simulation, rotations, catalyst preparation and unpreparation, and the phase as specified in the error analysis of Appendix E 2. 
+
+32: Prepare |Ψ⟩; compile P Tl VlPl, then ( P c 
+
+> j
+
+)T ei eGj P c 
+
+> j
+
+, in increasing index order (Lemmas 3 and 11). 
+
+33: Apply the phase Φ = Pl∗−1 
+
+> l=0
+
+φl + PJj=1 χj , unprepare |Ψ⟩, and return the circuit. 
+
+If H(l)0 = 0, the phase update gives Wl = U . If H(l)0̸ = 0 but λl < ϵ l/4, setting Vl = I gives 
+
+∥Vl − eiH ′(l)
+
+∥ ≤ ∥ H′(l)∥ ≤ λl < ϵ l/4.
+
+For sampled levels, λl ≥ ϵl/4 and sl ≤ N , so ζ =log(64 N 2) = O(n) bounds the logarithmic factor in Lemma 6 at failure parameter 1 /8. The bounds sl =
+
+O(√D/ (nL )) and √D = Ω( N 1/4) give slζ log 2(8 N ) ≤
+
+D/C 2 
+
+> A
+
+and slζ ≤ D, so the accepted flattening and split-ting bounds yield λl ≤ 4al
+
+√slζ and 
+
+X
+
+> k
+
+α(l) 
+
+> k
+
+≤ 9CAal
+
+√D log(8 N ). (E8) Since ϵl/2 ≤ 4λl and al/ϵ l ≤ 8π, Lemma 8 with Ak =
+
+H(l) 
+
+> k
+
+, subnormalization factors α(l) 
+
+> k
+
+, ε = ϵl/2, and p = 1 /2uses N (l) 
+
+> q
+
+= O(sln2) segments, with the accepted prod-uct satisfying ∥V true  
+
+> l
+
+− eiH ′(l)
+
+∥ ≤ ϵl/2. The generator-rounding bound from Lemma 9 is 
+
+∥ eK(l) 
+
+> k
+
+− H(l) 
+
+> k
+
+∥ ≤ 16 πα (l) 
+
+> k
+
+b2−B .
+
+Duhamel’s formula and product telescoping therefore give 
+
+∥Vl − eiH ′(l)
+
+∥ ≤ ϵl
+
+2 + 16 πb 2−B X
+
+> u
+
+α(l) 
+
+> Kl,u
+
+τl,u 
+
+≤ ϵl.
+
+(E9) 24 The last inequality follows by bounding the weighted-time sum by 4 P 
+
+> k
+
+α(l) 
+
+> k
+
+and applying Eqs. (E1) and (E8) with al ≤ 8πϵ l.In every branch, substituting Wl = eiφ l P Tl VlPlWl−1
+
+and Rl = eiφ l P Tl eiH ′(l)
+
+Pl into Rl+1 = U W −1 
+
+> l
+
+gives 
+
+Rl+1 = P Tl eiH ′(l)
+
+V −1 
+
+> l
+
+Pl. (E10) Hence ∥U − Wl∥ = ∥Rl+1 − I∥ = ∥eiH ′(l)
+
+− Vl∥ ≤ ϵl,closing the induction. This bounds the entire residual, including the errors of preceding levels. 
+
+Corrections and stopping. If G0,j = 0, the phase up-date gives W (j) = U and the algorithm stops. Otherwise Lemmas 5 and 9 give 
+
+αj ≤ 2CA
+
+√D∥G0,j ∥ log(8 N ),ρj ≤ 16 πα j b2−B .
+
+Using Eq. (E7) and R(j) = eiχ j (P c 
+
+> j
+
+)T eiG ′ 
+
+> j
+
+P c 
+
+> j
+
+, the next residual is 
+
+R(j+1) = U (W (j))−1
+
+= ( P c 
+
+> j
+
+)T eiG ′ 
+
+> j
+
+e−i eGj P c 
+
+> j
+
+. (E11) Unitary invariance and Duhamel’s formula then imply 
+
+∥U − W (j)∥ = ∥R(j+1) − I∥
+
+= ∥eiG ′ 
+
+> j
+
+− ei eGj ∥ ≤ ρj .
+
+Thus ρj ≤ ϵ/ 8 guarantees ∥U − W (j)∥ ≤ ϵ/ 8. If levels were used, sl∗ = 0 gives ∥G0,1∥ ≤ al∗ <nL/ (cs
+
+√D); otherwise ∥G0,1∥ ≤ 2π and √D ≤ √2 nL .In both cases, the flattening bound gives α1 = O(n2L). By Eq. (E1), ρj ≤ N −2αj , so ρ1 < 1 for sufficiently large 
+
+n because L ≤ N .Whenever ρj < 1, the eigenphase bound for ∥R(j+1) −
+
+I∥ ≤ ρj gives ∥G0,j +1 ∥ ≤ πρ j ; combining this with the flattening and rounding bounds yields 
+
+αj+1 ≤ 32 π2CA b√D log(8 N ) 2 −B αj
+
+≤ N −2αj . (E12) The last inequality uses Eq. (E1), and induction gives 
+
+αj ≤ N −2( j−1) α1 and ρj ≤ N −2j α1 < 1 until the algo-rithm stops. For α1 > 0, the stopping test is satisfied whenever j ≥ 1 and 2 j log N ≥ log(8 α1/ϵ ). Together with α1 ≤ Cn 2N and L = n + log 2(1 /ϵ ), this gives 
+
+J = O(1 + L/n ); a zero traceless generator stops the algorithm immediately. 
+
+Error analysis. The ideal-product error is at most 
+
+ϵ/ 8; allocate ϵ/ 8 each to simulation truncation, rotation synthesis, catalyst preparation and unpreparation, and phase synthesis. Let Nsim count the sampled level evolutions and cor-rection evolutions that are not skipped. For Nsim > 0, applying Lemma 3 with δ = ϵ/ (8 Nsim ) per call gives total full-output error at most ϵ/ 8, including ancilla leakage. The bounds l∗ = O(n), N (l) 
+
+> q
+
+= O(sln2), and J = O(1 + L/n ) make Nsim polynomial in N , so log(1 /δ ) = O(L) whenever simulations occur. If the QSVT circuits use Nrot > 0 variable-angle rota-tions, synthesize each to operator-norm error ϵ/ (8 Nrot ), giving total error at most ϵ/ 8 by gate telescoping. The query bounds in Lemma 3 make Nrot polynomial in N ,so each rotation costs O(L) by Eq. (3). Synthesize the accumulated phase Φ = Pl∗−1 
+
+> l=0
+
+φl + PJj=1 χj to error ϵ/ 8using Eq. (3). The changes of basis, address permuta-tions, and zero-ancilla reflections have exact Clifford+ T
+
+implementations. With the exact catalyst |Ψ⟩, queries to the block encod-ings of eK(l) 
+
+> k
+
+and eGj are exact and preserve |Ψ⟩. Prepar-ing |Ψ⟩ to error δc = ϵ/ 16 and reversing the preparation after all queries contributes at most 2 δc = ϵ/ 8, by com-parison with the exact-catalyst circuit, independently of the number of queries. Together with the ideal-product error, these contributions give total full-output error at most 5 ϵ/ 8 < ϵ by the composition rule following Defini-tion 1. 
+
+Classical trials. At a level requiring random choices, the joint flattening and splitting test succeeds with prob-ability at least 3 /4, by a union bound for two failure pa-rameters 1 /8. Conditional on acceptance, the qDRIFT accuracy and weighted-time tests succeed together with probability at least 1 /2 (Lemma 8); each correction’s flat-tening test succeeds with probability at least 3 /4. Thus each test takes a constant expected number of fresh trials, giving O(n + L/n ) trials over O(n) levels and O(1 + L/n )corrections. 
+
+3. Resource bounds 
+
+Proof of Theorem 4: resources. Levels. At each sampled level 0 ≤ l < l ∗, Lemma 3 implements the N (l) 
+
+> q
+
+evolutions 
+
+eiτ l,u eK(l) 
+
+> Kl,u
+
+, each to error δ = ϵ/ (8 Nsim ), using a total of 
+
+Ql = O
+
+ 
+
+> N(l)
+> q
+
+X
+
+> u=1
+
+α(l) 
+
+> Kl,u
+
+τl,u + N (l) 
+
+> q
+
+log(1 /δ )
+
+
+
+queries to the block encodings of eK(l) 
+
+> k
+
+. The weighted-time test in Eq. (E5), log(1 /δ ) = O(L), N (l) 
+
+> q
+
+= O(sln2), and Eqs. (E2) and (E8) give 
+
+Ql = O
+
+ X 
+
+> k∈I l
+
+α(l) 
+
+> k
+
++ N (l) 
+
+> q
+
+L
+
+
+
+= O(al
+
+√D n ),
+
+while identity levels use no queries. Since sl ≥ 1 implies 
+
+sl ≥ cs
+
+√Da l/(2 nL ), the per-query cost O(N pB/s l +
+
+b2B) with B = O(n) gives the level cost 
+
+O n2N D 1/4palL + n2al
+
+√D b 2. (E13) 25 Summing over 0 ≤ l < l ∗, with P
+
+> l
+
+√al, P 
+
+> l
+
+al = O(1), gives 
+
+O n2(N D 1/4√L + √D b 2).
+
+Balancing these terms with b = Θ( N 3/7L2/7) gives 
+
+O(n2N 8/7L3/7). 
+
+Corrections. Simulating ei eG1 requires O(α1 + L) = 
+
+O(n2L) queries to the block encoding of eG1. For 2 ≤ j ≤ J with G0,j ̸ = 0, Eq. (E12) gives eα j /2 ≤
+
+Cn 2N 3−2j < 1 and log(2 /(eα j )) = Ω(( j − 1) n). The short-time simulation bound in Lemma 3 therefore gives 
+
+O(1 + L/ (( j − 1) n)) queries to the block encoding of eGj ,totaling O(1+( L/n ) log L) over 2 ≤ j ≤ J = O(1+ L/n ); zero generators require no queries. At O(N √B + b2B)per query, all corrections cost O(n5/2N L + n3b2L). For L ≤ L0, the chosen block size gives 
+
+b2L ≤ 4N 6/7L11 /7 ≤ 4N 8/7L3/7,
+
+using L ≤ N 1/4. For L > L 0, either D = N and b = 1, or 
+
+b2B ≤ N 2B/ (n4L4) = O(N √n) by the definition of L0.Thus in both regimes the correction cost is O(n5/2N L +
+
+n3N 8/7L3/7). 
+
+Remaining resources. QSVT uses O(1) variable-angle rotations per query to the block encoding of a rounded piece eK(l) 
+
+> k
+
+or correction generator eGj , each costing O(L)by Eq. (3); their total cost is 
+
+O(n√D L + n2L2) = O(n3N L ),
+
+using L ≤ N . The changes of basis cost O(( n+L/n )√N ), reflections O(n) per query, catalyst preparation and un-preparation O(nL ), and the accumulated phase O(L), all within the T -count in Eq. (16). Sequential queries reuse 
+
+O(N √B + b2B) = O(nN ) ancilla qubits, which also suf-fice for the catalyst, logical registers, and sign oracle. 
+
+Comparison of precision dependence. For L =
+
+N γ+o(1) ≤ N with fixed γ ≥ 0, Theorem 4 has a smaller leading power of N than Tan’s bound [7] when γ < 1and that of Ref. [9] when γ < 2/3, ignoring polynomial factors in n. Including these factors, L = o(N 2/3/n 16 /3)suffices for improvement over the latter bound, which is smaller among those compared here for N 2/3 < L ≤ N .Theorem 4 covers L ≤ N , and Tan’s bound also applies for L > N .For N 1/4 ≤ L ≤ N , our bound is O(n3N L ), with the 
+
+eO(N L ) term arising from the first correction’s O(n2L)queries to the block encoding of eG1. The gap to the counting scale Ω( N √L) is a factor √L, up to polynomial factors in n; here L = Θ(log 2(1 /ϵ )).  
+
+> 4. Effective classical compilation
+
+The constructions underlying Theorems 3 and 4 treat matrix logarithms, exponentials, norms, comparisons, rounding, and sampling from exact finite distributions as oracle operations. Their probability estimates bound the expected number of resampling trials by a constant for the constant-precision construction and by O(n + L/n )in total for the refined construction. These trial counts do not bound classical running time: the oracles need not have unit cost on a rational-arithmetic RAM, and certified entry approximations alone may not decide zero tests or rounding ties. Finite circuit search avoids these decisions by using the strict error margins in the existence proofs. It yields the following computability guarantee, with no polynomial bound on classical compilation time. 
+
+Proposition 1 (Effective compilation) . Suppose that 
+
+n ≥ 1, the entries of U ∈ U (N ) are supplied by algo-rithms returning certified rational approximations to any requested accuracy, and ϵ > 0 is rational or supplied by such an algorithm. Given a choice of Theorems 3 and 4 and a promise that (n, ϵ ) lies in its parameter range, a deterministic algorithm terminates and outputs a finite Clifford+ T circuit with full-output implementation er-ror strictly less than ϵ and the selected theorem’s asymp-totic T - and ancilla bounds. The compiler relies on the parameter-range promise and requires only computability, with no bound on the time to approximate the entries. Proof. We use H, S, CNOT , T on specified wires, retain-ing their matrix phases and replacing T † by S†T without changing the T -count. All auxiliary registers start in |0⟩,as in Definition 1. 
+
+Strict witnesses at the original precision. The proof in Appendix D allocates errors ϵ/ 4, ϵ/ 4, ϵ/ 8, ϵ/ 8, ϵ/ 8, whose sum is 7 ϵ/ 8; its early exits have no larger error. The proof in Appendix E 2 allocates five contributions of at most ϵ/ 8, whose sum is 5 ϵ/ 8. Thus either proof estab-lishes the existence of a circuit with full-output error at most 7 ϵ/ 8 and the stated quantum resources, even if its exact-data choices are not computable. These witnesses use the original ϵ, preserving both the lower endpoint in Theorem 3 and the endpoint L = N in Theorem 4. 
+
+Computable resource scales. With L = n + log 2(1 /ϵ ), define the comparison scales ( FT , F A) for Theorems 3 and 4 by 
+
+FT = n2LN 8/7ϵ−6/7, FA = nLN 6/7ϵ−8/7,FT = n3 N 8/7L3/7 + N L , F A = nN, 
+
+respectively. These scales are at least one on the stated parameter ranges, and the witnesses satisfy T ≤ cT FT
+
+and m ≤ cAFA for fixed absolute constants cT , c A. The compiler uses rationally computed integer budgets and increases them to accommodate these constants. First choose a positive rational r such that 31 32 ϵ < r < ϵ. 
+
+For computable real ϵ, refine certified rational bounds 0 < l ≤ ϵ ≤ u until (31 /32) u < l , and choose r strictly 26 between (31 /32) u and l. Let p be the least nonnegative integer such that r2p ≥ 1, found by rational comparisons, and put L = n + p. Since ϵ/ 2 < r < ϵ ≤ 1, minimality gives log 2(1 /ϵ ) ≤ p < log 2(1 /ϵ ) + 2 , L ≤ L ≤ 3L. 
+
+The search uses L only to set resource budgets; it may ex-ceed N at L = N , since the witness still uses the original 
+
+ϵ and L.For nonnegative rational x, let R7(x) be the least non-negative integer j with x ≤ j7, found by rational com-parisons; then 
+
+x1/7 ≤ R7(x) < x 1/7 + 1 .
+
+For Theorem 3, define the integer budgets by 
+
+t = n2L R 7(N 8/r 6),a = nL R 7(N 6/r 8).
+
+For Theorem 4, instead use 
+
+t = n3 R7(N 8L3) + N L ,a = nN. 
+
+All arguments of R7 are rational. Using r > ϵ/ 2, L ≤
+
+L ≤ 3L, and the fact that the relevant root factors are at least one gives 
+
+FT ≤ t ≤ 9FT , FA ≤ a ≤ 15 FA for Theorem 3 ,
+
+and 
+
+FT ≤ t ≤ 3FT , a = FA for Theorem 4 .
+
+Thus the rational-arithmetic budgets satisfy FT ≤ t ≤
+
+15 FT and FA ≤ a ≤ 15 FA in either regime. 
+
+A finite family at each resource budget. For each fixed number q of wires, the group Cq generated by the elemen-tary Clifford gates H, S, CNOT is finite as a group of ma-trices with their scalar phases retained. Conjugation per-mutes the finite set of signed Hermitian Pauli matrices. A matrix in the kernel commutes with all single-wire X and 
+
+Z matrices and is therefore zI . Each elementary Clifford generator has determinant in {1, −1, i, −i}, so this scalar kernel satisfies z4·2q
+
+= 1; the finite image and kernel im-ply that Cq is finite. Its entries lie in Q(eiπ/ 4), where exact arithmetic and equality are decidable, so breadth-first closure under the generators terminates with a finite gate word for each element of Cq .For integer budgets A, B , set q = n + A and enumerate the finite set of matrix products 
+
+ChTih Ch−1 · · · Ti1 C0,
+
+where 0 ≤ h ≤ B, Cj ∈ C q , and 1 ≤ ij ≤ q. Grouping consecutive Clifford gates puts every circuit with at most 
+
+B occurrences of T in this finite family, regardless of its Clifford-word length. Circuits with fewer than A ancillas are included by adding unused clean ancillas, preserving their T -count and full-output error. 
+
+A terminating test for every candidate. Write d =2n+A, let JA = |0A⟩ ⊗ IN : CN −→ Cd, and for a candi-date matrix C put 
+
+EC = CJ A − JAU, eC = ∥EC ∥.
+
+This full-output error map includes leakage out of the clean-ancilla subspace. For any positive rational η, com-pute a rational upper bound uC satisfying 
+
+eC ≤ uC ≤ eC + η
+
+in finite time as follows. Compute a rational complex matrix Q approximating every entry of EC to within 
+
+η/ (4 dN ). Then ∥EC − Q∥ ≤ ∥ EC − Q∥F ≤ η/ 4. Starting with j = 0, test the rational numbers sj = jη/ 2 until 
+
+s2 
+
+> j
+
+IN − Q†Q is positive semidefinite. Each test checks that all principal minors of this rational Hermitian ma-trix are nonnegative. The loop terminates at a number s
+
+satisfying ∥Q∥ ≤ s < ∥Q∥+η/ 2, except that s = ∥Q∥ = 0 is also possible. Hence uC = s + η/ 4 satisfies the stated error certificate using only rational comparisons. Use this test with η = r/ 64, and accept a candidate precisely when the resulting rational upper bound satis-fies uC < r . Every candidate receives a finite accept-or-reject test; acceptance certifies eC < r < ϵ , and every witness with eC ≤ 7ϵ/ 8 is accepted because 
+
+uC ≤ 78 ϵ + r
+
+64 < 57 64 ϵ < 31 32 ϵ < r. 
+
+Search, termination, and resources. For k = 1 , 2, . . . ,set A = ka and B = kt , enumerate the finite normal-form family above, and apply the finite test to every candidate, returning the first one accepted and otherwise exhausting the stage before proceeding. Fix any integer 
+
+K ≥ max {1, c T , c A}. Each stage terminates, and stage 
+
+K contains a witness with unused clean ancillas added if needed, so the search returns a circuit at some k ≤ K
+
+with 
+
+T ≤ Kt = O(FT ), m ≤ Ka = O(FA).
+
+The constants are uniform in U, n, ϵ , although the com-piler need not know K; its output uses finitely many Clifford gates, whose number is unrestricted by the theo-rems. The full matrix norm retains scalar phase, and the ancilla bound includes the phase-synthesis ancilla from the existence proofs. The compiler uses certified input approximations, finite circuit enumeration, and rational error certificates. 
+
+> Appendix F: Lower bounds in the sequential block-SELECT model
+
+The proof of Theorem 5 uses three ingredients. Lemma 12 compresses each generator by sampling blocks. 27 Lemma 13 controls the resulting product error. Together they supply the compression used in Lemma 14, which bounds the description length required by a typical tar-get. In Appendix F 4, we optimize the allocation to turn this information bound into a cost lower bound.  
+
+> 1. Unbiased block sparsification
+
+Lemma 12 (Unbiased block sparsification) . Let K =
+
+Hk̸ = 0 be a Hermitian generator with the block param-eters of Definition 3, and put wk = P 
+
+> I,J
+
+∥KIJ ∥. For 
+
+ϵk > 0, δ ∈ (0 , 1) , and any integer 
+
+t ≥ tk(ϵk, δ ) := 3 D
+
+
+
+1 + β2
+
+> k
+
+ϵ2
+
+> k
+
+
+
+log 2Nδ , (F1) 
+
+there is a Hermitian estimator bK formed from t indepen-dent sampled adjoint block pairs, each of norm at most 
+
+wk/t . It satisfies E bK = K, ∥ bK∥ ≤ wk ≤ Dβ k, and 
+
+Pr( ∥ bK − K∥ ≤ ϵk) ≥ 1 − δ.Proof. Rowwise Cauchy–Schwarz and the block Schur test give max 
+
+> I
+
+X
+
+> J
+
+∥KIJ ∥ ≤ βk, ∥K∥ ≤ βk, wk ≤ Dβ k.
+
+(F2) Sample t unordered block pairs independently. Pair 
+
+{I, J } with I < J has probability 2 ∥KIJ ∥/w k, and the diagonal pair {I, I } has probability ∥KII ∥/w k. Here EIJ 
+
+is the D × D matrix with a 1 in position ( I, J ) and zeros elsewhere. A sampled pair contributes 
+
+wk
+
+2t
+
+ EIJ ⊗ VIJ + EJI ⊗ V †
+
+> IJ
+
+ (F3) for I < J , or wk 
+
+> t
+
+EII ⊗ VII for a diagonal pair, with 
+
+VIJ = KIJ /∥KIJ ∥ for a sampled nonzero block. Their sum bK is Hermitian, unbiased, and has ∥ bK∥ ≤ wk. Cen-tered sample norms are at most 2 wk/t . The I-th block of a sample’s second moment is at most ( wk/t 2) P 
+
+> J
+
+∥KIJ ∥,giving total variance at most wkβk/t . Matrix Bern-stein [42], with wk ≤ Dβ k and 2 βk/ϵ k ≤ 1 + β2 
+
+> k
+
+/ϵ 2
+
+> k
+
+, gives the claimed tail bound for Eq. (F1).  
+
+> 2. Composition of sparsification errors
+
+For a design, an allocation consists of a subset O ⊆ {k : Hk̸ = 0 } and a parameter a > 0. Each selected generator receives the positive error tolerance 
+
+ϵ2 
+
+> k
+
+= νβ k/a, ν := ϵ2
+
+72 log(4 N ) . (F4) The allocation is valid if P 
+
+> k∈O
+
+βk ≤ a, so that 
+
+P 
+
+> k∈O
+
+ϵ2 
+
+> k
+
+≤ ν.
+
+Lemma 13 (Composition of sparsification errors) . Fix a design with product X = WseiH s · · · W1eiH 1 W0, an error 
+
+0 < ϵ ≤ 1/2, and a valid allocation (O, a ). For k ∈ O ,draw independent estimators from Lemma 12 with δk =min {1/2, ν/ (4 Da )} and ⌈tk(ϵk, δ k)⌉ samples; denote this integer count by tk. Condition each estimator separately on Gk = {∥ bHk − Hk∥ ≤ ϵk}. Keeping Hk for k / ∈ O ,let bX be the resulting product. Under these conditioned laws, 
+
+Pr( ∥ bX − X∥ ≤ 2ϵ) ≥ 1/2.
+
+Proof. Write ∆ k = bHk − Hk for k ∈ O ; expectations use the independent conditioned laws. Before conditioning, each error has mean zero and norm at most 2 Dβ k by Lemma 12. The acceptance probability is at least 1 −δk ≥
+
+1/2, so 
+
+∥E∆k∥ ≤ 2δkDβ k
+
+1 − δk
+
+≤ 4δkDβ k ≤ ϵ2
+
+> k
+
+.
+
+The second-order Duhamel expansion has a linear term bounded by ∥E∆k∥ and a remainder bounded by  
+
+> 12
+
+E∥∆k∥2, so 
+
+∥Eei(Hk +∆ k ) − eiH k ∥ ≤ ∥ E∆k∥ + 12 E∥∆k∥2
+
+≤ 2ϵ2
+
+> k
+
+. (F5) The unitary factors make this estimate uniform in Hk.List the sampled generator indices as k1, . . . , k |O| in product order, and let Xj replace the first j of them. Write Xj − Xj−1 = Zj + dj , where dj is its conditional mean given previous samples. Unitary prefixes and suf-fixes preserve the bounds ∥dj ∥ ≤ 2ϵ2 
+
+> kj
+
+and ∥Xj −Xj−1∥ ≤ 
+
+ϵkj , hence ∥Zj ∥ ≤ 3ϵkj since ϵkj < 1. Matrix Azuma [42], applied to the Hermitian dilations of the martingale dif-ferences Zj , gives with probability at least 1 /2
+
+∥X
+
+> j
+
+Zj ∥ ≤ 
+
+s
+
+72 X
+
+> j
+
+ϵ2 
+
+> kj
+
+log(4 N ) ≤ ϵ. 
+
+The drift is at most P 
+
+> j
+
+∥dj ∥ ≤ 2ν, so on the same event ∥ bX − X∥ ≤ ϵ + 2 ν ≤ 2ϵ. 
+
+> 3. A counting argument
+
+Lemma 14 (Information bound for compressed designs) .
+
+Fix the interleaver decoding rule of Definition 3. There are absolute constants c, C > 0 such that, for suffi-ciently large n and ϵ ∈ [N −3, c ], with probability at least 1/2 over a Haar-random U ∈ U (N ), the follow-ing holds simultaneously for every power-of-two block size 
+
+b ≤ N . Every design at block size b approximating U
+
+to error ϵ with cost( D) ≤ N 3, s log N ≤ N 2/C , and 
+
+BW ≤ 14 N 2 log 2(1 /ϵ ) satisfies 
+
+X
+
+> k / ∈O
+
+nk + X
+
+> k∈O
+
+min {nk, t k} ≥ I0 := cD 2
+
+log N (F6) 28 
+
+for every valid allocation (O, a ) with a ≤ N 3. Here tk is the integer sample count in Lemma 13. Proof. Fix a target, a design, and an allocation satisfying the hypotheses. Among the selected generators, store those with nk ≤ tk directly. The remaining sampled set is a valid allocation with the same a, so Lemma 13 gives a product within 2 ϵ of the design. The hypotheses imply 
+
+s, P 
+
+> k
+
+βk ≤ N 3, log(1 /δ k) = O(log N ), and tk ≤ N 15 for large n.All stored blocks have norm at most N 4: sampled blocks are bounded by wk ≤ Dβ k from Lemma 12, and directly stored blocks by βk ≤ N 3. Use an absolute operator-norm net of mesh ϵ′′ = ϵ/N 20 in this ball, with Hermitian diagonal blocks and exact adjoint partners. Rounding preserves Hermiticity, so the resulting prod-uct remains unitary. The net has at most (3 N 4/ϵ ′′ )2b2
+
+points, costing O(b2 log N ) bits per block since ϵ ≥ N −3.Fix one target-independent prefix-free decoder. Its header records log 2 b, s, O, block counts, and θ to pre-cision ϵ, using O(log n + s log N + log(1 /ϵ )) bits. Ap-pend the BW interleaver bits and each block’s position (2 log 2 D bits) and rounded value. Directly stored gen-erators need only their upper triangle; sampled blocks include their scale. Block counts and values capture the dependence on the allocation parameter a.There are at most N 15 stored blocks per generator and 
+
+N 3 generators, so rounding changes the product by at most 2 N 18 ϵ′′ ≤ ϵ. The code length satisfies 
+
+L ≤ Cb 2 log N
+
+ X 
+
+> k / ∈O
+
+nk + X
+
+> k∈O
+
+min {nk, t k}
+
+
+
++ BW + O  log n + s log N + log(1 /ϵ ).
+
+(F7) Design error, sampling, rounding, and phase error total 
+
+ϵ + 2 ϵ + ϵ + ϵ = 5 ϵ.
+
+Szarek’s bound. We next bound the description length required to approximate a typical target. For an abso-lute c1 > 0, the covering numbers of U (N ) in operator norm are at least ( c1/r )N 2
+
+[33]. A maximal family of disjoint radius-r balls has centers forming a 2 r-net, so it contains at least ( c1/(2 r)) N 2
+
+balls. By unitary invari-ance, these balls have equal Haar measure; disjointness therefore bounds the measure of each by ( C1r)N 2
+
+for an absolute C1 ≥ 1. Fewer than 2L+1 words of this fixed code have length at most L, and each decodes uniquely [47]. Their 5ϵ neighborhoods have total measure at most 2L+1 (5 C1ϵ)N 2
+
+. Thus at least half of Haar targets require 
+
+N 2 log 2(1 /(5 C1ϵ)) − 2 bits. Because the header records the block size, subset, and counts, this single Haar event covers all target-dependent choices of designs, block sizes, and valid allocations. Choose c ≤ 1/2 so that log 2(1 /(5 C1ϵ)) ≥ 23 log 2(1 /ϵ ), and C so that the header term in Eq. (F7) is at most  
+
+> 112
+
+N 2 log 2(1 /ϵ ) for large n. Subtracting this term and the interleaver budget from the required description length gives Eq. (F6), after reducing c. 
+
+> 4. Optimizing the error allocation
+
+Proof of Theorem 5. Use the constant C and the Haar event of probability at least 1 /2 from Lemma 14. De-signs with cost( D) > N 3 or s log N > N 2/C have cost Ω( N 2/ log N ), which implies Eq. (19) since its target scales sum to at most 2 N 2. For the remaining designs, the lemma gives Eq. (F6) for every valid allocation. We choose an allocation for which the selected generators have sampled descriptions with fewer blocks than direct storage. This connects the information bound to the model cost. Let C′ = 4 log(8 DN 4/ν ) = O(log N ). By Lemmas 12 and 13, the rounded sample counts satisfy tk ≤ C′D(1 + 
+
+aβ k/ν ). Call a generator small if nk ≤ 2C′D and big 
+
+otherwise. For a > 0 let 
+
+O(a) = {k big : nk > 2C′Dβ ka/ν }, (F8) and put A(a) = P 
+
+> k∈O (a)
+
+βk. Selected generators satisfy 
+
+tk < n k/2 + nk/2 = nk. If all generators are small, use 
+
+O = ∅ and any 0 < a ≤ N 3; Eq. (F6) gives case (a) below. Otherwise the non-increasing, right-continuous function A crosses the line a at a∗ = inf {a > 0 : A(a) ≤
+
+a} ∈ (0 , N 3]. Thus A(a∗) ≤ a∗ gives a valid allocation, while A(a−∗ ) ≥ a∗ says that the big generators with nk ≥
+
+2C′Dβ ka∗/ν have total weight at least a∗. We call these the closed-threshold group. Inserting the allocation ( O(a∗), a ∗) into Eq. (F6), 
+
+X
+
+> small
+
+nk + # {big } · C′D
+
++ X
+
+> big \O (a∗)
+
+nk + C′Da ∗A(a∗)
+
+ν ≥ I0. (F9) The second term bounds the additive sampling allowance using the number of big generators. One of the four terms must be at least I0/4. Split the cost into cost look = X
+
+> k
+
+max {1, β k} b√nk,
+
+cost proc = X
+
+> k
+
+max {1, β k} b2, (F10) so cost = cost look + cost proc . The target scales are Γlook := √ϵ N D 1/4, Γproc := ϵ√D b 2. (F11) We prove both bounds for whichever term of Eq. (F9) is large. 
+
+Case (a): small generators. If P 
+
+> small
+
+nk ≥ I0/4, there are at least I0/(8 C′D) = eΩ( D) such generators. Their block-processing cost is eΩ( Db 2), and cost look ≥ b X
+
+> small
+
+nk/√2C′D = eΩ( bD 3/2) ≥ eΩ(Γ look ).
+
+Case (b): many big generators. At least I0/(4 C′D)big generators, each with nk > 2C′D, give the same two 29 bounds. Since N = bD , D ≥ 1, and ϵ ≤ 1, these domi-nate Γ look and Γ proc .
+
+Case (c): directly stored big generators. Suppose P 
+
+> big \O (a∗)
+
+nk ≥ I0/4. These generators have βk ≥
+
+nkν/ (2 C′Da ∗). Their lookup cost is at least bI 0/4 times min 
+
+> x> 0
+
+max {1, xν/ (2 C′Da ∗)}√x =
+
+r ν
+
+2C′Da ∗
+
+, (F12) and their block-processing cost is at least 
+
+b2νI 0/(8 C′Da ∗). The closed-threshold group has weight at least a∗ and 
+
+√nk ≥ p2C′Da ∗/ν √βk. Since max {1, β k}√βk ≥ βk,it gives lookup cost at least bp2C′D/ν a 3/2 
+
+> ∗
+
+and block-processing cost at least b2a∗. The groups may overlap at the threshold, so combine their bounds by taking the maximum. Minimizing each maximum over a∗ > 0 gives cost look ≥ c bI 3/40
+
+ νC′D
+
+1/4
+
+,
+
+cost proc ≥ c b 2
+
+r νI 0
+
+C′D .
+
+Substituting I0 and ν gives eΩ( bD 5/4ν1/4) = eΩ(Γ look ) and 
+
+eΩ( b2√νD ) = eΩ(Γ proc ), respectively. 
+
+Case (d): sampled big generators. Suppose 
+
+C′Da ∗A(a∗)/ν ≥ I0/4. Since A(a∗) ≤ a∗, we get a∗ ≥pνI 0/(4 C′D) = eΩ( ϵ√D). Use the same closed-threshold group as in case (c). Its block-processing and lookup bounds now give directly cost proc ≥ b2a∗ = eΩ(Γ proc ) and cost look ≥ bp2C′D/ν a 3/2 
+
+> ∗
+
+= eΩ( bD 5/4ν1/4) = eΩ(Γ look ). In every case cost = eΩ(Γ look + Γ proc ), where all hidden factors are powers of log N . This proves Eq. (19). 
+
+Minimizing over b. Substituting D = N/b , the sum √ϵN 5/4b−1/4 +ϵN 1/2b3/2 has unrestricted minimum Θ( ϵ4/7N 8/7) at b = Θ( ϵ−2/7N 3/7). The same lower bound holds when b is restricted to the allowed powers of two. 
+
+5. Mixed block sizes and larger interleaver budgets 
+
+We extend Theorem 5 to mixed block sizes and larger interleaver budgets. A mixed-block design is a sequence 
+
+D = ( W0, H 1, W 1, . . . , H s, W s) as in Definition 3, except that each generator Hk carries its own power-of-two block size bk ≤ N , which may be chosen after seeing U . The parameters nk, mk, ck, and βk of generator k are com-puted in the partition of Sec. II into blocks of size bk,and cost( D) = 
+
+> s
+
+X
+
+> k=1
+
+max {1, β k} bk
+
+√nk + b2
+
+> k
+
+. (F13) A design at block size b is the special case in which bk = b
+
+for all k.
+
+Theorem 6 (Mixed block sizes and larger interleaver budgets) . There are absolute constants c, c 0, C > 0 with the following property. Let n be large enough, γ ∈
+
+(0 , 3/4] , and ϵ ∈ [N −3, c 1/γ  
+
+> 0
+
+]. Then, with probability at least 1/2 over a Haar-random U ∈ U (N ), every mixed-block design with BW ≤ (1 − γ)N 2 log 2(1 /ϵ ) that approx-imates U to error ϵ satisfies 
+
+cost( D) ≥ c γ nC ϵ4/7N 8/7. (F14) For γ = 3/4 the interleaver budget is that of Theorem 5. The condition ϵ ≤ c1/γ  
+
+> 0
+
+reads γ ≥
+
+log(1 /c 0)/ log(1 /ϵ ). Within the model, a worst-case cost guarantee smaller than ϵ4/7N 8/7 by a fixed power of N
+
+therefore requires an interleaver budget allowing all but a fraction O(1 / log(1 /ϵ )) of the N 2 log 2(1 /ϵ ) description bits. At ϵ = N −3, this fraction is O(1 /n ). 
+
+Proof. Group generators by Gr = {k : bk = 2 r }, with 
+
+b(r) = 2 r and Dr = N/b (r), keeping their original product order. As before assume cost ≤ N 3, so s, P 
+
+> k
+
+βk ≤ N 3.Here γ is the interleaver-budget fraction. 
+
+Joint compression. Give each class an allocation (Or , a r ) satisfying ar > 0, Or ⊆ {k ∈ Gr : Hk̸ =0}, and P 
+
+> k∈O r
+
+βk ≤ ar ≤ N 3. Assign it the share 
+
+νr = ν/ (n + 1) of the total squared-error tolerance 
+
+ν. Zero generators contribute identity factors and are kept exact. Every sampled generator has βk > 0 and 
+
+ϵk > 0. Apply Lemma 12 using ϵ2 
+
+> k
+
+= νr βk/a r and 
+
+δk = min {1/2, ν r /(4 Dr ar )}. The conditioning estimate in the proof of Lemma 13 gives ∥E∆k∥ ≤ ϵ2
+
+> k
+
+. Its martingale argument applies across all classes because P 
+
+> k
+
+ϵ2 
+
+> k
+
+≤ P 
+
+> r
+
+νr = ν, giving a jointly sparsified product within 2 ϵ of the original. The fixed code in the proof of Lemma 14 adds 
+
+O(s log n) header bits for the bk. Each class-r block costs 
+
+O(( b(r))2 log N ) bits including its position. The counts and values capture the class’s allocation choices. Thus the same counting event covers every mixed design and allocation. Put c0 = (5 C1)−2. Then ϵ ≤ c1/γ  
+
+> 0
+
+gives log 2(1 /(5 C1ϵ)) ≥ (1 − γ/ 2) log 2(1 /ϵ ).
+
+At least half of Haar targets therefore require (1 −
+
+γ/ 2) N 2 log 2(1 /ϵ )−2 bits. Designs with s log N > γN 2/C 
+
+satisfy Eq. (F14) because cost ≥ s. We therefore as-sume s log N ≤ γN 2/C . Subtracting the interleaver and header budgets leaves at least γ 
+
+> 4
+
+N 2 log 2(1 /ϵ ) bits for blocks, hence 
+
+> n
+
+X
+
+> r=0
+
+(b(r))2qr ≥ c γN 2
+
+log N , (F15) where qr = P  
+
+> k∈Gr\O r
+
+nk + P 
+
+> k∈O r
+
+min {nk, t k} is the number of stored blocks of class r.
+
+Allocation. Use the threshold allocation of Ap-pendix F 4 in each class, with Dr , νr , and C′ 
+
+> r
+
+=30 4 log(8 Dr N 4/ν r ); classes of small generators use Or = ∅
+
+and any 0 < a r ≤ N 3. By Eq. (F15) and ( b(r))2D2 
+
+> r
+
+= N 2,some class has 
+
+qr ≥ Ir := c γD 2
+
+> r
+
+(n + 1) log N . (F16) Apply the four deterministic cost cases to this class. Cases (a,b) are linear in Ir ; in cases (c,d), lookup scales as I3/4 
+
+> r
+
+ν1/4 
+
+> r
+
+and processing as ( Ir νr )1/2. Fac-tors of n + 1 are polynomial in n, while γ3/4, √γ ≥ γ.Thus this class, and hence the full design, costs at least (cγ/n C )( √ϵ N D 1/4 
+
+> r
+
++ϵ√Dr (b(r))2). Minimizing over b(r)
+
+gives Eq. (F14). Treating classes separately charges the other exponen-tials as interleavers. Coarsening by a factor q can raise the block-processing charge by q2, while refining can in-crease mk and βk polynomially. Joint counting preserves the original interleaver budget and each generator’s block size. 
+
+[1] A. G. Fowler, M. Mariantoni, J. M. Martinis, and A. N. Cleland, Surface codes: Towards practical large-scale quantum computation, Physical Review A 86 , 032324 (2012). [2] S. Bravyi and A. Kitaev, Universal quantum computa-tion with ideal Clifford gates and noisy ancillas, Physical Review A 71 , 022316 (2005). [3] V. Kliuchnikov, D. Maslov, and M. Mosca, Fast and ef-ficient exact synthesis of single-qubit unitaries generated by Clifford and T gates, Quantum Information and Com-putation 13 , 607 (2013). [4] N. J. Ross and P. Selinger, Optimal ancilla-free Clif-ford+T approximation of z-rotations, Quantum Informa-tion and Computation 16 , 901 (2016). [5] V. Gheorghiu, M. Mosca, and P. Mukhopadhyay, T-count and T-depth of any multi-qubit unitary, npj Quantum Information 8, 141 (2022). [6] D. Gosset, R. Kothari, and K. Wu, Quantum state prepa-ration with optimal T-count, Quantum 10 , 2168 (2026), arXiv:2411.04790 [quant-ph]. [7] X. Tan, Unitary synthesis with fewer T gates, PRX Quantum 7, 033058 (2026), arXiv:2509.25702 [quant-ph]. [8] G. H. Low, V. Kliuchnikov, and L. Schaeffer, Trading T gates for dirty qubits in state preparation and unitary synthesis, Quantum 8, 1375 (2024), arXiv:1812.00954. [9] P. Yuan, S. Zhang, and W. Zi, Quantum circuit for gen-eral unitary: Improved T-count via block flattening and dilation (2026), arXiv:2608.17846 [quant-ph]. [10] W. Fang, C. Heunen, and Q. Wang, Unitary synthe-sis with near-optimal T-count for near-Clifford unitaries (2026), arXiv:2607.12907 [quant-ph]. [11] X. Sun, G. Tian, S. Yang, P. Yuan, and S. Zhang, Asymp-totically optimal circuit depth for quantum state prepa-ration and general unitary synthesis, IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 42 , 3301 (2023), arXiv:2108.06150 [quant-ph]. [12] G. Rosenthal, Query and depth upper bounds for quan-tum unitaries via Grover search, Quantum 10 , 2144 (2026), arXiv:2111.07992 [quant-ph]. [13] P. Yuan and S. Zhang, Optimal (controlled) quantum state preparation and improved unitary synthesis by quantum circuits with any number of ancillary qubits, Quantum 7, 956 (2023), arXiv:2202.11302 [quant-ph]. [14] B. Nehoran, J. Slote, and H. Yuen, All unitaries have con-stant depth quantum circuits (2026), arXiv:2609.40351 [quant-ph]. [15] P. Yuan, W. Zi, and S. Zhang, Exact unitary synthesis: Simultaneously optimal in size and depth-ancilla tradeoff (2026), arXiv:2610.07010 [quant-ph]. [16] S. Strelchuk, S. Subramanian, and M. Weisz, The power of constant-depth quantum circuits of unbounded size (2026), arXiv:2609.40294 [quant-ph]. [17] C. Cao, Mid-circuit measurements and feedforward im-plement every unitary exactly in constant depth (2026), arXiv:2610.06551 [quant-ph]. [18] S. Aaronson and G. Kuperberg, Quantum versus classical proofs and advice, Theory of Computing 3, 129 (2007), arXiv:quant-ph/0604056. [19] A. Lombardi, F. Ma, and J. Wright, A one-query lower bound for unitary synthesis and breaking quantum cryp-tography, in Proceedings of the 56th Annual ACM Sympo-sium on Theory of Computing (2024) arXiv:2310.08870 [quant-ph]. [20] F. Dong, A. Lombardi, and F. Ma, Explicit separations for one-query unitary synthesis (2026), arXiv:2607.26478 [quant-ph]. [21] F. Dong and A. Lombardi, Lower bounds for pre-processing attacks on quantum cryptography (2026), arXiv:2610.02101 [quant-ph]. [22] Z. Brakerski and H. Yuen, On scalable pseudorandom unitaries and the unitary synthesis problem, in Advances in Cryptology – CRYPTO 2026 (2026) arXiv:2605.09957 [quant-ph]. [23] A. Huang, A. Ramkumar, and J. Wright, Random-oracle unitary synthesis is impossible (2026), arXiv:2610.06700 [quant-ph]. [24] OpenAI, Polynomial-time unitary synthesis from aBoolean oracle (2026), preprint, October 5, 2026. [25] E. Campbell, Random compiler for fast Hamiltonian sim-ulation, Physical Review Letters 123 , 070503 (2019). [26] C.-F. Chen, H.-Y. Huang, R. Kueng, and J. A. Tropp, Concentration for random product formulas, PRX Quan-tum 2, 040305 (2021), arXiv:2008.11751. [27] S. Zhu, A. Sundaram, and G. H. Low, Unified archi-tecture for quantum lookup tables, Physical Review Re-search 7, 043230 (2025). [28] D. Liu, S. Zhu, L. Lin, G. H. Low, and C. Yang, Low-gate-count block encodings for second-quantized fermionic Hamiltonians (2025), arXiv:2510.08644 [quant-ph]. [29] A. Gily´ en, Y. Su, G. H. Low, and N. Wiebe, Quantum singular value transformation and beyond: Exponential improvements for quantum matrix arithmetics, in Pro-ceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing (STOC) (2019) pp. 193–204, 31 
+
+arXiv:1806.01838. [30] G. H. Low and I. L. Chuang, Hamiltonian simulation by qubitization, Quantum 3, 163 (2019). [31] A. M. Childs, A. Ostrander, and Y. Su, Faster quantum simulation by randomization, Quantum 3, 182 (2019). [32] G. H. Low, Hamiltonian simulation with nearly optimal dependence on spectral norm, in Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Com-puting (STOC) (2019) pp. 491–502, arXiv:1807.03967. [33] S. J. Szarek, Nets of Grassmann manifold and orthogo-nal group, in Proceedings of Research Workshop on Ba-nach Space Theory (Iowa City, Iowa, 1981) (University of Iowa, Iowa City, 1982) pp. 169–185. [34] D. Liu, H. Wang, S. Zhu, J. Cong, W. A. de Jong, D. Fang, Z. Huang, C. Iancu, and C. Yang, Logical re-source estimation for quantum state preparation with compilation (2026), arXiv:2605.18877 [quant-ph]. [35] D. Liu, H. Wang, S. Zhu, J. Cong, W. A. de Jong, D. Williams-Young, and C. Yang, Exponentially com-pressed and garbage-free alias sampling for polynomial state preparation (2026), arXiv:2610.03800 [quant-ph]. [36] E. J. Gustafson, H. Lamm, D. Liu, E. M. Murairi, and S. Zhu, Synthesis of single-qutrit circuits from Clifford+ R gates, Physical Review A 112 , 062414 (2025), arXiv:2503.20203 [quant-ph]. [37] E. S. Meckes, The Random Matrix Theory of the Classical Compact Groups , Cambridge Tracts in Mathematics, Vol. 218 (Cambridge University Press, Cambridge, 2019). [38] M. Rudelson and R. Vershynin, Hanson–Wright inequal-ity and sub-Gaussian concentration, Electronic Commu-nications in Probability 18 , 1 (2013). [39] J. A. Tropp, An introduction to matrix concentration in-equalities, Foundations and Trends in Machine Learning 
+
+8, 1 (2015). [40] V. H. de la Pe˜ na and S. J. Montgomery-Smith, Decou-pling inequalities for the tail probabilities of multivariate U-statistics, The Annals of Probability 23 , 806 (1995). [41] V. H. de la Pe˜ na and E. Gin´ e, Decoupling: From Depen-dence to Independence (Springer, New York, 1999). [42] J. A. Tropp, User-friendly tail bounds for sums of ran-dom matrices, Foundations of Computational Mathemat-ics 12 , 389 (2012). [43] P. R. Halmos, Normal dilations and extensions of opera-tors, Summa Brasiliensis Mathematicae 2, 125 (1950). [44] C. Gidney, Halving the cost of quantum addition, Quan-tum 2, 74 (2018). [45] S. A. Cuccaro, T. G. Draper, S. A. Kutin, and D. P. Moulton, A new quantum ripple-carry addition circuit (2004), arXiv:quant-ph/0410184. [46] A. M. Childs, Y. Su, M. C. Tran, N. Wiebe, and S. Zhu, Theory of Trotter error with commutator scaling, Phys-ical Review X 11 , 011020 (2021). [47] T. M. Cover and J. A. Thomas, Elements of Information Theory , 2nd ed. (Wiley, Hoboken, NJ, 2006).

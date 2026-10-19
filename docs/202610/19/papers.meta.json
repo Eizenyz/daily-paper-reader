@@ -1,0 +1,39 @@
+{
+  "label": "2026-10-19",
+  "date": "2026-10-19",
+  "generated_at": "2026-10-19T04:35:19",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202610/19/2610.14943v1-a-quantum-algorithm-for-meshless-lattice-boltzmann-method-with-unitary-interpolation",
+      "section": "deep",
+      "title_en": "A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation",
+      "authors": "Chi Zhang, Hefeng Wang, Hua Xiang",
+      "date": "2026-10-10",
+      "pdf": "https://arxiv.org/pdf/2610.14943v1",
+      "score": "8.0",
+      "evidence": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
+      "tldr": "无网格格子Boltzmann方法在散点上用半拉格朗日插值推进，插值非酉导致量子块编码需按稀疏度归一化并消耗辅助比特。本文引入质量加权无网格格式，将插值写成模拟导数算子的指数，并用Voronoi质量与相似变换使导数算子反厄米，从而令流步精确酉化。结合Carleman嵌入后，碰撞步仅二次项重标度，准均匀节点下归一化代价随截断阶增长温和。Taylor-Green涡数值实验复现完整无网格LBM，速度误差随Carleman阶提高而下降。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "We present a mass-weighted meshless formulation for the shifted incompressible lattice Boltzmann method (LBM) whose streaming step is exactly unitary, combining with the Carleman embedding. In traditional meshless LBM, on a scattered node set the semi-Lagrangian streaming step is an interpolation, which is not unitary; a generic block encoding of this matrix therefore requires a normalization proportional to its sparsity and logarithmically many ancillas. To overcome the non-unitarity, we instead express the interpolation as the exponential exp(a Dx + b Dy) of mimetic derivative operators. Endowing each node with its Voronoi mass and applying a mass-weighted similarity transform renders these derivative operators skew-Hermitian by enforcing moment constraints together with low-wave number trigonometric differentiation conditions, so that the interpolation becomes exactly unitary. Such unitarization of interpolation leave the local collision step unchanged up to a rescaling of its quadratic term, where the same weights define the amplitude encoding of the distribution functions. For quasi-uniform node sets, the mass-weighting diagonal remains within a unit-order normalization that degrades only mildly as the Carleman truncation order grows, thereby mitigating the cost of block encoding. Numerical experiments on the Taylor Green vortex confirm that the method reproduces the full meshless LBM, with the velocity error decreasing as the Carleman order increases.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/19/2610.18589v1-t-efficient-unitary-synthesis-via-block-sparse-hamiltonian-simulation",
+      "section": "deep",
+      "title_en": "$T$-efficient unitary synthesis via block-sparse Hamiltonian simulation",
+      "authors": "Diyi Liu, Shuchen Zhu, Wibe Albert de Jong, Di Fang, David Williams-Young, Chao Yang",
+      "date": "2026-10-13",
+      "pdf": "https://arxiv.org/pdf/2610.18589v1",
+      "score": "8.0",
+      "evidence": "利用块稀疏哈密顿量模拟提升酉合成的 T 门复杂度",
+      "tldr": "任意n量子比特酉算子的Clifford+T合成长期受T门数标度限制。本文利用块稀疏哈密顿量模拟，先将目标厄米对数去迹并随机相似变换展平，再随机分块并用qDRIFT组合演化。在常数算符范数误差下，T门数降至O~(N^{8/7})，优于此前N^{5/4}，且仅需O~(N^{6/7})个干净辅助比特。进一步证明在顺序block-SELECT模型中常数精度下指数8/7最优。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "We construct Clifford+$T$ circuits implementing arbitrary $n$-qubit unitaries with worst-case $T$-count $\\widetilde{O}(N^{8/7})$ at constant operator-norm error, where $N=2^n$, improving the previous exponent $5/4$. The construction uses $\\widetilde{O}(N^{6/7})$ clean ancillas. The main idea is to reduce the data addressed by each query to the block-encoding circuit for a sparse piece while controlling the additional simulation work needed to combine the pieces. We simulate a Hermitian logarithm of the target by flattening its traceless part with a two-layer random similarity transformation, randomly partitioning the transformed generator into block-sparse Hermitian pieces, and combining their evolutions using qDRIFT. For a target operator-norm error $ε\\in(0,1/2)$, let $L=\\log_2(N/ε)$, the qubit count plus the requested bits of accuracy. By successively correcting the approximation error, we obtain a circuit using $\\widetilde{O}(N^{8/7}L^{3/7}+NL)$ $T$ gates and $\\widetilde{O}(N)$ clean ancillas whenever $L\\le N$. We also prove that, at constant precision, the exponent $8/7$ is optimal within a sequential block-SELECT model.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

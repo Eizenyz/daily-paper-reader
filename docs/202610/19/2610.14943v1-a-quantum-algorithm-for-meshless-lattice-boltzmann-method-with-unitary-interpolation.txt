@@ -1,0 +1,1425 @@
+Title: A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation
+
+URL Source: https://arxiv.org/pdf/2610.14943v1
+
+Published Time: Wed, 14 Oct 2026 01:02:45 GMT
+
+Number of Pages: 32
+
+Markdown Content:
+# A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation 
+
+Chi Zhang a, Hefeng Wang b, Hua Xiang a, ∗
+
+> aSchool of Mathematics and Statistics, Wuhan University, Wuhan, China
+> bSchool of Physics, Xi’an Jiaotong University, Xi’an, China
+
+Abstract 
+
+We present a mass-weighted meshless formulation for the shifted incompress-ible lattice Boltzmann method (LBM) whose streaming step is exactly uni-tary, combining with the Carleman embedding. In traditional meshless LBM, on a scattered node set the semi-Lagrangian streaming step is an interpo-lation, which is not unitary; a generic block encoding of this matrix there-fore requires a normalization proportional to its sparsity and logarithmically many ancillas. To overcome the non-unitarity, we instead express the inter-polation as the exponential exp( aD x + bD y ) of mimetic derivative operators. Endowing each node with its Voronoi mass and applying a mass-weighted similarity transform renders these derivative operators skew-Hermitian by enforcing moment constraints together with low-wavenumber trigonometric differentiation conditions, so that the interpolation becomes exactly unitary. Such unitarization of interpolation leave the local collision step unchanged up to a rescaling of its quadratic term, where the same weights define the amplitude encoding of the distribution functions. For quasi-uniform node sets, the mass-weighting diagonal remains within a unit-order normalization that degrades only mildly as the Carleman truncation order grows, thereby mitigating the cost of block encoding. Numerical experiments on the Taylor-Green vortex confirm that the method reproduces the full meshless LBM, with the velocity error decreasing as the Carleman order increases. 
+
+Keywords: 
+
+> ∗Corresponding author. Email: hxiang@whu.edu.cn arXiv:2610.14943v1 [physics.comp-ph] 10 Oct 2026
+
+1. Introduction 
+
+Computational fluid dynamics (CFD) remains one of the most demanding areas of scientific computing, and quantum computers have been proposed as a route to accelerating the solution of the partial differential equations underlying incompressible flow. The lattice Boltzmann method (LBM) is particularly attractive in this direction: it replaces the nonlinear Navier-Stokes system by a kinetic description in which a small set of distribution functions obey a linear streaming step and a local, algebraic collision step [1]. The locality of the collision operator makes the nonlinearity tractable, while the streaming step is a pure shift on the lattice. For a quantum setting, the collision nonlinearity can be addressed by Carleman linearization [2, 3], which embeds the finite-dimensional nonlinear dynamics into an infinite-dimensional linear system on the tensor powers of the state. Truncating this hierarchy at order NC yields a finite but high di-mensional linear evolution [4, 5, 6]. Applying the Carleman linearization to the lattice Boltzmann equation, the entire time step becomes a single linear map on the Carleman vector y = ( g, g⊗2, . . . , g⊗NC ), so that a collision-and-streaming update reduces to repeated application of a high-dimensional matrix. Several quantum lattice Boltzmann algorithms based on this con-struction have been proposed [7, 8, 9], and recent work has analyzed the Carleman truncation error and the block-encoding cost of the full incom-pressible flow solver, including nontrivial boundary conditions [10, 11]. Acentral conclusion of these analyses is that the quantum resources are gov-erned by the subnormalization factors of the block-encoded operators, which must be controlled for the algorithm to retain a useful complexity of the quantum linear system solver. Classically, the restriction of LBM to uniform Cartesian lattices is a se-rious practical limitation. To address this limitation, many methods have been developed to lift it by allowing the nodes to move. In the interpolation-supplemented LBM of He, Luo and Dembo the streaming step is performed on a non-uniform mesh by interpolating the populations back onto the ref-erence nodes [12]; the least-squares (meshless) LBM of Shu, Niu and Chew instead constructs Taylor-expansion based local interpolation and derivative operators on scattered nodes [13], and radial basis function (RBF) variants have since been developed [14, 15]. In all of these the streaming step is written as 
+
+fm(X, t + ∆ t) = f Cm (X − em∆t, t ) ≈ Pm f Cm (X, t ),
+
+2where X = {xi}Ni=1 is the scattered node set and Pm is a translation inter-polation matrix that transfers the m-th population from X to the departure set Gm = X − em∆t. The matrix Pm is sparse (each row contains only a few nonzero coefficients determined by a local stencil), but not unitary. This last fact is the obstruction that the present paper addresses. To em-bed the flow step into a quantum circuit one must block-encode the streaming matrix, and a generic sparse non-unitary matrix does not admit a cheap em-bedding: its block-encoding subnormalization αPm factor is of the order of the sparsity, and it requires Θ(log N) ancilla qubits [16, 17]. Under the Carleman hierarchy these factors compound, degrading the success probability roughly as α−NC 
+
+> Pm
+
+. We therefore seek a formulation in which the meshless translation is exactly unitary. The key observation is that a translation matrix can be obtained by evolving under a generator given by a linear combination of the derivative matrices Dx and Dy . If Dx and Dy are skew-Hermitian, then the streaming operator is unitary. Therefore, it can be embedded with normal-ization factor α = 1 and no ancilla, and can be time-stepped using standard quantum simulation machinery [18, 16]. The difficulty is that RBF or least-squares derivative matrices built on a scattered set are not skew-Hermitian by construction. The key to restoring unitarity is to give the scattered node set a mimetic structure: following structure-preserving (mimetic) discretizations, which re-produce continuous operator identities such as integration by parts at the discrete level [19, 20], each node carries the area of its Voronoi cell—the discrete counterpart of the diagonal Hodge star in discrete exterior calculus [21]—and these masses define a discrete mass-weighted inner product. Un-der the corresponding similarity transformation, a derivative matrix that is skew-symmetric in this weighted inner product becomes skew-symmetric in the ordinary Euclidean inner product, so that its matrix exponential is an exactly unitary translation. The very same Voronoi weights determine how the distribution functions are encoded as quantum amplitudes, and we show that this encoding leaves the local collision rule intact up to an inconsequen-tial rescaling of its quadratic term. For quasi-uniform node sets the Voronoi areas are mutually comparable, the mass-weighting diagonal then admits a block encoding with unit-order subnormalization and, crucially, a single an-cilla. We validate the resulting mass-weighted meshless quantum LBM on the Taylor-Green vortex against the full meshless LBM, for Carleman truncation orders 1, 2 and 3, and demonstrate the expected improvement in accuracy as the truncation order increases. 3The closest quantum LBM constructions to our setting are the interpolation-supplemented QLBM of [22] and its Taylor-series/least-squares fractional-step variant of [23]. Both, however, operate on a nonuniform Cartesian mesh rather than a genuinely scattered, meshless node set, and both replace the interpolation/derivative matrix by an SVD while assuming that the resulting dense unitary factors can be efficiently implemented, which is not justified for a general dense unitary matrix. Moreover, because a non-unitary collision operator must be reconstructed at every time step, the overall success prob-ability compounds multiplicatively and decays exponentially in the number of steps. Our mass-weighted formulation avoids these bottlenecks: streaming operator is a single, exactly unitary that is reused at every time step, leaving only the local collision step to be embedded. Besides, Carleman lineariza-tion and the resulting history state avoid the formation of a new non-unitary collision operator at each time step. The remainder of the paper is organized as follows. Section 2 recalls the shifted incompressible LBM on uniform Cartesian lattices and its Carleman embedding. In Section 3 we introduce the interpolation-supplemented mesh-less lattice Boltzmann method, expose the non-unitarity of its interpolation matrix, and explain the resulting difficulties for a quantum implementation. Section 4 develops the mimetic, mass-weighted derivative operators and the resulting unitary translation operator, together with the amplitude encoding of the distribution functions. The block-encoding cost is also analyzed. Nu-merical experiments on the Taylor-Green vortex are reported in Section 5, and conclusions are drawn in Section 6. 
+
+2. Preliminaries 
+
+2.1. Lattice Boltzmann method 
+
+Let f (r, t ) = {fm(r, t )}Qm=1 as a vector function, and its component 
+
+fm(r, t ) represents the probability density of finding a fluid particle with a discrete velocity em at time t and position r. Local physical density ρ and momentum ρu are recovered as moments via 
+
+ρ(r, t ) = 
+
+> Q
+
+∑
+
+> m=1
+
+fm(r, t ), ρu(r, t ) = 
+
+> Q
+
+∑
+
+> m=1
+
+fm(r, t )em.fm(r, t ) satisfy the discrete Boltzmann equation (DBE) 
+
+∂f m(r, t )
+
+∂t + em · ∇ fm(r, t ) = Ω m(r, t )
+
+4where Ωm(r, t ) describes collision. The collision term can be given by the Bhatnagar-Gross-Krook operator 
+
+Ωm(r, t ) = − 1
+
+τ [fm(r, t ) − f eq m (r, t )] ,
+
+where τ is the relaxation time. Here f eq m (r, t ) is the local Maxwell equilibrium expanded to second order 
+
+f eq m (r, t ) = ρ(r, t )
+
+(
+
+1 + em · u(r, t )
+
+c2
+
+> s
+
++ (em · u(r, t )) 2
+
+2c4
+
+> s
+
+− |u(r, t )|2
+
+2c2
+
+> s
+
+)
+
+ωm+O(Ma 3),
+
+where cs is the speed of sound, Ma = |u| 
+
+> cs
+
+is the Mach number, and wm
+
+is the component of Maxwell weightings vector w satisfying wm ≥ 0 and ∑ 
+
+> m
+
+wm = 1 .Integrating the discrete Boltzmann equation along its characteristics over one time step ∆t, with the collision term discretized to second-order temporal accuracy, yields the lattice Boltzmann scheme 
+
+¯fm(r + em∆t, t + ∆ t) = ¯fm(r, t ) − ∆t
+
+¯τ [ ¯fm(r, t ) − f eq m (r, t )] ,
+
+where ¯fm(r, t ) = fm(r, t )− ∆t 
+
+> 2
+
+Ωm(r, t ), ¯τ = τ + ∆t 
+
+> 2
+
+. The modified distribution function ¯fm(r, t ) still satisfies the required moment conditions: 
+
+> Q
+
+∑
+
+> m=1
+
+¯fm =
+
+> Q
+
+∑
+
+> m=1
+
+fm = ρ
+
+> Q
+
+∑
+
+> m=1
+
+¯fmem =
+
+> Q
+
+∑
+
+> m=1
+
+fmem = ρu.
+
+In lattice units, the lattice spacing and time step are set to unity, i.e., ∆x =∆t = 1 , resulting in the following lattice Boltzmann scheme: 
+
+¯f Cm (r, t ) = ¯fm(r, t ) − 1¯τ [ ¯fm(r, t ) − f eq m (r, t )] , (1) 
+
+¯fm(r + em, t + 1) = ¯f Cm (r, t ), (2) where Eq. (1) and (2) represent the collision and streaming processes, re-spectively. Furthermore, under the shifted incompressible assumption, we assume that ρ = ρ0 + δρ where ρ0 = 1 is reference density and δρ denotes a small 5density fluctuation. We introduce the shifted distribution function gm(r, t ) := ¯fm(r, t ) − ωm, which satisfies 
+
+> Q
+
+∑
+
+> m=1
+
+gm = δρ, 
+
+> Q
+
+∑
+
+> m=1
+
+gmem = ρu.
+
+The resulting lattice Boltzmann scheme can be written as 
+
+gCm(r, t ) = gm(r, t ) − 1¯τ [gm(r, t ) − geq m (r, t )] , (3) 
+
+gm(r + em, t + 1) = gCm(r, t ). (4) Under the shifted incompressible assumption, macroscopic velocity is express as u = ∑Qm=1 gmem. The corresponding equilibrium distribution is 
+
+geq m (r, t ) = ¯f eq m (r, t ) − ωm ≈
+
+[
+
+δρ + 3 em · u + 92 (em · u)2 − 32 |u|2
+
+]
+
+ωm
+
+= [ 
+
+> Q
+
+∑
+
+> m1=1
+
+(gm1 + 3 gm1 Em,m 1 ) + 
+
+> Q
+
+∑
+
+> m1,m 2=1
+
+(92 Em1,m 1 Em,m 2 − 32Em1 ,m 2 )gm1 gm2 ]ωm,
+
+(5) where cs = 1 /√3 has been used and Em,n := em · en.
+
+2.2. Carleman linearization 
+
+The discrete distribution functions can be encoded into a quantum state. For a D-dimensional flow problem, let N denote the total number of lattice nodes. The flow system at time t can then be represented by a d = NQ -dimensional vector, which is encoded as the quantum state 
+
+g(t) = ∑
+
+> r
+> Q
+
+∑
+
+> m=1
+
+gm(r, t )|r〉 ⊗ | m〉. (6) Here, the first quantum register |r〉 encodes the lattice position, while the second register |m〉 encodes the discrete velocity direction. In lattice units, the shifted incompressible lattice Boltzmann equation can be written as 
+
+gC (t) = ( I + F1)g(t) + F2g(t)⊗2, (7) 
+
+g(t + 1) = SgC (t), (8) 6where the first equation represents the collision step, while the second repre-sents the streaming step. The definitions of F1, F2 and S are given below. The collision step is the source of nonlinearity in the LBM and is spatially local, i.e., it acts independently at each lattice node and depends only on the discrete velocity directions. The corresponding operators F1 and F2 are given by 
+
+F1 = ∑
+
+> r
+
+|r〉〈 r| ⊗ 1¯τ
+
+> Q
+
+∑
+
+> m,m 1=1
+
+[−δm,m 1 + ωm + 3 ωmEm,m 1 ] |m〉〈 m1|, (9) 
+
+F2 = ∑
+
+> r
+
+|r, r〉〈 r| ⊗ 
+
+> Q
+
+∑
+
+> m,m 1,m 2=1
+
+ωm
+
+¯τ
+
+[92 Em,m 1 Em,m 2 − 32Em1 ,m 2
+
+]
+
+|m〉〈 m1, m 2|.
+
+(10) Since these operators are independent of the spatial position r, they can be expressed as 
+
+F1 = Ir ⊗ ˇF1, F2 = Ir,r ⊗ ˇF2,
+
+where Ir ∈ RN ×N is the identity matrix and Ir,r ∈ RN ×N 2
+
+satisfies 
+
+Ir,r(i, j ) = { 1 if j = i2
+
+0 if otherwise .
+
+It is worth noting that ˇF1 and ˇF2 are independent of time and are therefore fixed matrices. Meanwhile, the streaming operator S transports the post-collision distri-bution functions to the corresponding neighboring lattice nodes and is given by 
+
+S = ∑
+
+> r
+> Q
+
+∑
+
+> m=1
+
+|r + em〉〈 r| ⊗ | m〉〈 m|.
+
+The formulation above corresponds to the conventional lattice-based lattice Boltzmann method, in which the flow field is discretized on a regular lattice and the streaming operator transports the distribution functions between neighboring lattice nodes along the discrete velocity directions. In particular, the spatial structure of the streaming operator S explicitly relies on the underlying regular lattice. The Carleman embedding introduces the lifted variables 
+
+yC, ∞(t) := [gC (t), gC (t)⊗2, gC (t)⊗3, . . . ] ,
+
+7and 
+
+y∞(t) := [g(t), g(t)⊗2, g(t)⊗3, . . . ] .
+
+Collision step. For the kth tensor power of the post-collision state, we have 
+
+gC (t)⊗k = [(I + F1)g(t) + F2g(t)⊗2]⊗k
+
+=
+
+> 2k
+
+∑
+
+> l=k
+
+[
+
+(I + F1)⊗(2 k−l) ⊗ F ⊗(l−k)2 + PERMS 
+
+]
+
+g(t)⊗l
+
+:= 
+
+> 2k
+
+∑
+
+> l=k
+
+Ckl g(t)⊗l. (11) Here, PERMS denotes the permutation terms arising from the different pos-sible arrangements of the factors in the tensor product. In particular, it contains ( k
+
+> 2k−l
+
+) terms, since tensor products are generally non-commutative with respect to the ordering of their factors. Therefore, the collision step can be written in matrix-vector form as 
+
+yC, ∞(t) = 
+
+
+
+gC (t)
+
+gC (t)⊗2
+
+gC (t)⊗3
+
+...
+
+ =
+
+
+
+C11 C12 0 0 0 · · · 
+
+0 C22 C23 C24 0 · · · 
+
+0 0 C33 C34 C35 · · · 
+
+... ... ... ... ... . . .
+
+
+
+g(t)
+
+g(t)⊗2
+
+g(t)⊗3
+
+...
+
+ =: C∞y∞(t),
+
+where 
+
+Cij ∈ RN i×N j
+
+, i ≤ j ≤ 2i. 
+
+Streaming step. Since the streaming operator acts linearly on each tensor-product component, 
+
+g(t + 1) ⊗k = S⊗kgC (t)⊗k.
+
+Hence, the streaming step can be expressed in matrix-vector form as 
+
+y∞(t + 1) = 
+
+
+
+g(t + 1) 
+
+g(t + 1) ⊗2
+
+g(t + 1) ⊗3
+
+...
+
+ =
+
+
+
+SS⊗2
+
+S⊗3
+
+. . .
+
+
+
+gC (t)
+
+gC (t)⊗2
+
+gC (t)⊗3
+
+...
+
+ =: S∞yC, ∞(t).
+
+Combining the collision and streaming steps, the shifted incompressible LBM can therefore be reformulated through the Carleman embedding as 
+
+y∞(t + 1) = S∞C∞y∞(t).
+
+8Since S∞ and C∞ are infinite-dimensional matrices, we truncate the Carle-man embedding at order NC by defining 
+
+y(t) := [g(t), g(t)⊗2, . . . , g(t)⊗NC
+
+] .
+
+and 
+
+yC (t) := [gC (t), gC (t)⊗2, . . . , gC (t)⊗NC
+
+] ,
+
+The resulting truncated vector has dimension 
+
+d + d2 + · · · + dNC = d(dNC − 1) 
+
+d − 1 .
+
+Correspondingly, truncating S∞ and C∞ to their first NC block rows and columns gives the finite-dimensional matrices S and C. The resulting dy-namics are approximated by 
+
+y(t + 1) ≈ SC y(t), (12) and hence 
+
+y(T ) ≈ (SC )T y(0) .
+
+History state. To obtain the distribution function at a target time T by directly solving a linear system, all intermediate time states can be collected into a single block linear system: 
+
+
+
+I 0 0 · · · 0 0
+
+−SC I 0 · · · 0 00 −SC I · · · 0 0
+
+... ... ... . . . ... ...
+
+0 0 0 · · · I 00 0 0 · · · −SC I
+
+
+
+y(0) 
+
+y(1) 
+
+y(2) 
+
+...
+
+y(T − 1) 
+
+y(T )
+
+
+
+=
+
+
+
+y(0) 
+
+00
+
+...
+
+00
+
+
+
+. (13) By constructing a unitary embedding of the above linear system, a quan-tum linear system solver can be employed to obtain the history state con-taining the distribution functions at all time steps. The target state y(T )
+
+can then be extracted to recover the discrete distribution functions and, sub-sequently, the macroscopic flow field at time T .93. Quantum meshless LBM 
+
+3.1. Interpolation-based meshless LBM 
+
+The conventional LBM typically relies on a regular lattice to discretize the computational domain, which can limit its applicability to problems in-volving complex geometries. To overcome this limitation, meshless lattice Boltzmann methods have been developed, in which the computational do-main is represented by a set of scattered points rather than a regular lattice. In a meshless spatial discretization, where the computational points may be nonuniformly distributed or randomly scattered, the streaming step trans-ports the distribution function gm(r, t ) at r to the position r + em. However, the resulting position r + em generally does not coincide with any of the scattered points. Therefore, the conventional streaming operator needs to be modified. In contrast, the collision step is local in space and is therefore unaffected by the choice of spatial discretization. For a non-uniform scattered point set X = {xi}Ni=1 , we define a family of ghost point sets {Gm}Qm=1 by Gm = X − em. Here, the scattered points are expressed in lattice units, with the lattice spacing taken as the reference length scale and ∆x = ∆ t = 1 . In the meshless setting, ∆x does not rep-resent the spacing between neighboring computational points; instead, em
+
+specifies the unit lattice displacement associated with the mth discrete ve-locity direction. An interpolation operator Pm : R|X| → R|Gm| is constructed to interpolate the distribution function gm(t), originally defined on X, onto the ghost set Gm. The streaming step can then be rewritten as 
+
+gm(X, t + 1) = gCm(X − em, t ) = gCm(Gm, t ) ≈ Pm gCm(X, t ), (14) where Pm ∈ RN ×N is the interpolation matrix and the distribution function vectors are given by 
+
+gCm(X, t ) = (gCm(x1, t ), g Cm(x2, t ), . . . , g Cm(xN , t ))T , (15) 
+
+gm(X, t ) = (gm(x1, t ), g m(x2, t ), . . . , g m(xN , t ))T . (16) Under the shifted incompressible assumption as before, the streaming step of the meshless LBM can be expressed as 
+
+g(t + 1) = ˜P g(t), (17) 10 where 
+
+˜P =
+
+> Q
+
+∑
+
+> m=1
+
+Pm ⊗ | m〉〈 m| and g(t) = 
+
+> N
+
+∑
+
+> i=1
+> Q
+
+∑
+
+> m=1
+
+gm(xi, t )|xi〉 ⊗ | m〉.
+
+Compared with the streaming step in Eq. (12), the shift matrix S is now replaced by an interpolation matrix P , where P is obtained by truncating 
+
+P ∞ to its first NC block rows and block columns, with 
+
+P ∞ =
+
+
+
+˜P
+
+˜P ⊗2
+
+˜P ⊗3
+
+. . .
+
+ . (18) Furthermore, 
+
+y(t + 1) = P C y(t). (19) The corresponding linear system for solving the history state is modified as follows: 
+
+
+
+I 0 0 · · · 0 0
+
+−P C I 0 · · · 0 00 −P C I · · · 0 0
+
+... ... ... . . . ... ...
+
+0 0 0 · · · I 00 0 0 · · · −P C I
+
+
+
+y(0) 
+
+y(1) 
+
+y(2) 
+
+...
+
+y(T − 1) 
+
+y(T )
+
+
+
+=
+
+
+
+y(0) 
+
+00
+
+...
+
+00
+
+
+
+. (20) There are various interpolation methods for scattered point sets, including RBF-local interpolation, moving least squares (MLS) and natural neighbor interpolation. A detailed discussion of these interpolation methods is pro-vided in Section 4. 
+
+3.2. Data encoding 
+
+The Carleman vector is encoded in the following form: 
+
+|y(t)〉 = 1
+
+√NCNC∑
+
+> s=1
+
+|s〉 ⊗ | g(t)〉⊗s ⊗ | 0〉NC −s.
+
+11 Correspondingly, the collision operator C and streaming operator S can be encoded as follows: 
+
+C =
+
+> NC
+
+∑ 
+
+> k=1 min {2k,N C}
+
+∑
+
+> l=k
+
+|k〉〈 l| ⊗ Ckl ⊗ | 0〉⊗l−k ⊗ I⊗NC −k
+
+:= 
+
+> NC
+
+∑ 
+
+> k=1 min {2k,N C}
+
+∑
+
+> l=k
+
+|k〉〈 l| ⊗ ¯Ckl ⊗ I⊗NC −k,P =
+
+> Nc
+
+∑
+
+> s=1
+
+|s〉〈 s| ⊗ ˜P ⊗s ⊗ I⊗NC −s.
+
+For simplicity, we denote the linear system in Eq. (20) by 
+
+Ay = b,
+
+where A is encoded as 
+
+A =
+
+> T
+
+∑
+
+> t=0
+
+|t〉〈 t| ⊗ I − 
+
+> T−1
+
+∑
+
+> 0
+
+|t + 1 〉〈 t| ⊗ P C, (21) and y is encoded in a quantum state as 
+
+|y〉 = 1
+
+√T + 1 
+
+> T
+
+∑
+
+> t=0
+
+|t〉| y(t)〉.
+
+The number of qubits required to encode |y〉 is qA = ⌈log( T + 1) ⌉+⌈log NC ⌉+
+
+NC ⌈log ⌉ .
+
+3.3. Block-encoding of A 
+
+Our goal is to solve this linear system using a quantum linear system solver. Since A is generally non-unitary, while quantum computers primarily operate on unitary operators, a unitary embedding of A, i.e., a block-encoding of A is required, which is defined as a ( qA +nA)-qubit unitary matrix UA such that 
+
+‖ A − αA(〈0|⊗nA ⊗ I)UA(|0〉⊗nA ⊗ I) ‖≤ ǫ. 
+
+Here, UA is referred to as an (αA, n A, ǫ )-block-encoding of matrix A. The complexity of the quantum linear system solver is closely tied to the param-eters characterizing this unitary embedding. 12 We next provide a brief discussion of the block-encoding parameters of A.For simplicity, the approximation error is neglected by assuming ǫ = 0 . The block-encoding parameters of A can be analyzed by exploiting its recursive structure. To this end, we invoke the (linear combination of unitaries) LCU block-encoding lemma from [24]. Eq. (21) can be further reformulated as 
+
+A = I − T− ⊗ (P C ) (22) where T− is the shift-down operator. There exists a (1 , 1, 0) -block-encoding 
+
+UT− of T−. Suppose that UP is an (αP , n P , 0) -block-encoding of P , and UC
+
+is an (αC , n C , 0) -block-encoding of C. Then, by the composition rule for block-encodings, there exists an (αP αC , n P + nC , 0) -block-encoding UP C of 
+
+P C . Furthermore, using the tensor-product rule for block-encodings, there exists an (αP αC , n P +nC +1 , 0) -block-encoding of T− ⊗P C , where T− admits a (1 , 1, 0) -block-encoding. Finally, by the LCU block-encoding lemma, there exists an 
+
+(αP αC + 1 , n P + nC + 2 , 0) (23) -block-encoding UA of A = I − T− ⊗ P C .The collision operator C is identical to that of the lattice-based LBM. Therefore, based on the analysis of the block-encoding parameters of C
+
+in [10], we have 
+
+αC =
+
+> l=0
+
+∑  
+
+> ⌊NC
+> 2⌋
+
+(NC − ll
+
+)
+
+αNC −2lI+F1 αl¯F2 , (24) 
+
+nC = NC − 2 + log ( ⌊NC
+
+2 ⌋ + 1) + max   
+
+> 0≤l≤⌊ NC
+> 2⌋
+
+[
+
+log 
+
+(NC − ll
+
+)
+
++ l(4 D − 1) 
+
+]
+
+,
+
+(25) where ¯F2 = F2 ⊗ | 0〉 is a square matrix. In the lattice-based LBM, the streaming operator S transports the distribution functions at each lattice node to the neighboring node along the corresponding discrete velocity di-rection. Therefore, under periodic boundary conditions, S is unitary. In contrast, In contrast, interpolation matrices Pm obtained from conventional interpolation methods for scattered point sets are generally non-unitary, and consequently, the resulting streaming operator P is also non-unitary. We next analyze the block-encoding parameters of P .13 Suppose that, for each m = 1 , . . . , Q , there exists an (αPm , n Pm , 0) -block-encoding UPm of the interpolation matrix Pm. Then, by ˜P = ∑Qm=1 Pm ⊗|m〉〈 m|, for block-encodings, there exists an (α ˜P , n ˜P , 0) -block-encoding of ˜P ,where 
+
+α ˜P = max  
+
+> 1≤m≤Q
+
+αPm , n ˜P = max  
+
+> 1≤m≤Q
+
+nPm + 1 .
+
+Furthermore, for each i = 1, . . . , N C , there exists an (αi˜P , in ˜P , 0) -block-encoding of ˜P ⊗i. Similarly, by P = ∑Nc 
+
+> s=1
+
+|s〉〈 s| ⊗ ˜P ⊗s ⊗ I⊗NC −s, we can construct an (αP , n P , 0) -block-encoding of P , with 
+
+αP = max 
+
+> 1≤i≤NC
+
+αi˜P = ( max  
+
+> 1≤m≤q
+
+αPm )NC , (26) 
+
+nP = max 
+
+> 1≤i≤NC
+
+in ˜P + 1 = NC max  
+
+> 1≤m≤q
+
+nPm + NC + 1 . (27) Obviously, due to the non-unitary streaming operate P , compared to the block-encoding parameters (αC + 1 , n C + 2 , 0) of the coefficient matrix ob-tained by the regular lattice-based LBM, the block-encoding of the meshless LBM requires more quantum resources. In particular, the success proba-bility is reduced to the order of 1/α 2 
+
+> P
+
+, where αP grows exponentially with the Carleman truncation order. Meanwhile, the number of required ancillary qubits increases by nP , where nP grows linearly with the Carleman trun-cation order. The resulting quantum linear-system complexity described by the number of queries to UA, U† 
+
+> A
+
+and their controlled versions, depends on both the normalization factor of the block-encoding, the condition number 
+
+κA of the resulting linear system and the related error ǫQ required[25] 
+
+qQ ≤ αA
+
+‖ A ‖
+
+56 κA + 1 .05 κA ln 
+
+√
+
+1 − ǫ2
+
+> Q
+
+ǫQ
+
++ 2 .78 ln κA3 + 3 .17 
+
+ .
+
+Therefore, to reduce the complexity of the quantum linear-system solver, a natural question is whether the properties or structure of the interpola-tion operators Pm can be modified to reduce the overhead associated with their block-encodings. An even more desirable possibility is to construct uni-tary interpolation operators, thereby eliminating the need for block-encoding altogether. 
+
+4. Unitarization of the translation interpolation matrices 
+
+First, it is observed that the interpolation matrix Pm does not represent an interpolation from the set of data points X to any other random set of 14 points. The set of evaluation points Gm = X − em is a global translation of the set of data points X. In other words, the interpolation matrix Pm can be viewed as the finite-dimensional restriction of the continuous translation operator Pm, defined by 
+
+(Pmf )( x) = f (x − em).
+
+And under periodic boundary conditions, the translation operator Pm is uni-tary, which suggests that it is reasonable to seek a unitary interpolation oper-ator Pm. Furthermore, from the Taylor expansion of a multivariate function: 
+
+f (x + e) = exp( e · ∇ )f (x) = exp( 
+
+> D
+
+∑
+
+> i=1
+
+ei∇i)f (x)
+
+where ∇i denotes the derivative operator along the i-th spatial direction. Therefore, letting D = 2 for simplicity and defining the symbol em = ( a, b ),we can construct the interpolation operator using 
+
+Pm = exp( −(aD x + bD y )) 
+
+where Dx and Dy are the discrete derivative operators along the x and y
+
+spatial directions, respectively. We therefore seek a discrete unitary operator that approximates the same flow map, and we obtain it by discretizing the generator rather than by projecting the interpolation matrix onto the unitary group. 
+
+4.1. The Voronoi mass matrix as the canonical metric 
+
+For non-uniform scattered points, the standard equally weighted inner product is generally inappropriate. Instead, a weighted inner product should be employed to account for the non-uniform distribution of the points. For an exponential exp( A) to be unitary, the generator A must be skew-Hermitian with respect to the inner product in which unitarity is measured. This con-dition is not intrinsic to the matrix A: if the space of nodal functions is equipped with the inner product 〈g, f 〉G = g†Gf for a positive definite G,then A is skew-Hermitian if and only if 
+
+GA + A†G = 0 .
+
+If the Euclidean metric G = I is chosen by default, this skew-Hermitian matrix satisfies A† = −A, which is consistent only with a uniform lattice. On scattered nodes is related to the distribution of the scatter points. 15 Voronoi-cell volumes, {mi}Ni=1 , can be used as quadrature weights to ac-count for the non-uniform scattered points X = {xi}Ni=1 ⊆ RD, leading to a more appropriate discrete inner product. They are positive, partition the domain, ∑ 
+
+> i
+
+mi = |Ω| where |Ω| is the total volume of the problem domain, and reduce to the uniform measure mi ≡ hD on a regular lattice, where h is the lattice spacing. This makes 
+
+M = diag( m1, . . . , m N ), 〈g, f 〉M = ∑
+
+> i
+
+mi ¯gifi
+
+the unique discrete inner product that is consistent with the continuum L2(Ω) 
+
+inner product as h → 0. We therefore require the discrete generators to be skew-Hermitian in this metric. 
+
+4.2. Mimetic skew-Hermitian discretization of the generators. 
+
+For each node xi, we define its stencil as the set of its q nearest neighbors under periodic boundary conditions and Euclidean distance, excluding the point itself. The collection of all such stencils induces a directed graph G =(X, E ), where a directed edge e = ( i, j ) ∈ E if and only if xj belongs to the stencil of xi. To obtain a symmetric stencil structure, we augment the edge set by enforcing reciprocity: for every directed edge e = ( i, j ) ∈ E, the reverse edge (j, i ) is also included in E; that is, if xj is in the stencil of xi,then xi is also in the stencil of xj . Therefore, the new stencil size of each node is between q and 2q. For each point xi, we define its stencil point index set Ste( i), where j ∈ Ste( i) if and only if (i, j ) ∈ E. The total number of directed edges in the resulting symmetric graph is denoted by NE = |E|.Below is a step-by-step process for obtaining skew-Hermitian generators: 
+
+Step 1 — skew-Hermitianization of the discrete generators. For every undirected edge e = ( i, j ), i < j , there is a scalar weight wij ∈ R. And the generators Dx, D y ∈ RN ×N are assembled by 
+
+[D]ij = wij 
+
+mi
+
+, [D]ji = −wij 
+
+mj
+
+, [D]kk = 0 .
+
+By construction the row-scaled matrices are exactly skew-symmetric, 
+
+MD + D⊤M = 0 ,
+
+so each D is skew-symmetric in the mass-weighted inner product 〈g, f 〉M =∑ 
+
+> i
+
+migifi. This parameterization guarantees that the skew-symmetry holds 16 identically in the weights {wij }, which are the only free parameters left to optimize. 
+
+Step 2 — weight optimization. Let D be the discrete matrix obtained by taking the derivative along the direction d where d is (1 , 0) or (0 , 1) . First, we require the weights to exactly reproduce the derivatives of constant and linear functions, which leads to the following moment conditions: 
+
+∑
+
+> j∈Ste( i)
+
+wij = 0 ,
+
+∑
+
+> j∈Ste( i)
+
+wij (xj −xi) = mi d, 
+
+where it is worth noting that xj − xi is subtracted under periodic bound-ary conditions. These rows make D 1 = 0 and D(d0 · x) ≡ d0 · d for any constant vector d0; In the implementation the unknowns are stored once per undirected edge, e = {i, j } with i < j , and the oriented value in row i is recovered as wij = sgn( j − i)wmin( i,j ),max( i,j ); this identity is equivalent to 
+
+wji = −wij .Meanwhile, we require the weights to approximately reproduce the deriva-tives of low-frequency Fourier modes, leading to the following moment con-ditions: 
+
+[D cos(2 πp · x)]( xi) ≃ ∂d cos(2 πp · x)∣∣xi ,
+
+[D sin(2 πp · x)]( xi) ≃ ∂d sin(2 πp · x)∣∣xi ,
+
+for p ∈ {− 2, . . . , 2}2 \ { 0}2.All of the above constraints can be formulated as a least-squares problem: 
+
+min 
+
+> w∈RNE /2
+
+ξ2∥∥Amom w − bmom 
+
+∥∥2 + ∥∥Amod w − bmod 
+
+∥∥2 + γ ‖w‖2,
+
+where ξ ≫ 1. The moment conditions are strongly enforced by assigning a large penalty weight ξ2, while the Fourier-mode reproduction conditions are imposed as soft constraints. All rows are normalized before assembly, and the ridge term γ‖w‖2 controls the spectral norm of the generator, i.e. the norm of the quantum Hamiltonian. 
+
+Step 3 — encoded (Euclidean) anti-symmetric generators. Define 
+
+˜D = M1/2DM −1/2.
+
+17 Because MD +D⊤M = 0 , each ˜D is exactly skew-symmetric in the Euclidean metric, i.e. ˜D⊤ = − ˜D.Note that Pm = exp( −(aD x + bD y )) is not Euclidean-unitary. Therefore, the operator executed on the quantum register is its conjugate 
+
+˜Pm = M1/2PmM−1/2 = exp( −(a ˜Dx + b ˜Dy)) , ˜Dj = M1/2Dj M−1/2,
+
+where each ˜Dj is real skew-symmetric and hence −i ˜Dj is Hermitian; equiv-alently ˜Pm = e−iH with Hermitian H = −i(a ˜Dx + b ˜Dy ). Moreover, ˜Pm
+
+can be implemented efficiently by quantum Hamiltonian simulation. For in-stance, qubitization block-encodes H and converts it into the unitary e−iH 
+
+through quantum singular value transformation (QSVT) [16, 17], while a Trotter-Suzuki product eaD x ∆t/r ebD y ∆t/r , raised to the r-th power, offers a direct splitting of the two one-dimensional skew terms [26]. 
+
+4.3. The new amplitude encoding with mass weight 
+
+Accordingly, the same conjugation fixes the amplitude encoding. Recalcu-late the vector of probability distribution functions via amplitude encoding: 
+
+˜g(t) = ( ∑
+
+> m
+
+M1/2 ⊗ | m〉〈 m|)g(t) = ∑
+
+> m
+
+∑
+
+> r
+
+√mr g(r, em)|r〉| m〉,
+
+where the definition of g(t) is given in Eq. (6). Similarly, re-encode post-collision distribution functions vector as: 
+
+˜gC (t) = ( ∑
+
+> m
+
+M1/2 ⊗ | m〉〈 m|)gC (t) = ∑
+
+> m
+
+∑
+
+> r
+
+√mrgC (r, em)|r〉| m〉.
+
+We formulate the collision process between the mass-weighted pre-collision probability density distribution function ˜g and thepost-collision probability density distribution function ˜gC (t) under the shifted incompressible assump-tion. From ˜gm = √mr gm the re-encoded density fluctuation and reference density are 
+
+δ ˜ρ = ∑
+
+> m
+
+˜gm = √mr δρ, ˜ρ0 = √mr ρ0,
+
+while the re-encoded velocity, 
+
+˜u =
+
+∑ 
+
+> m
+
+em ˜gm
+
+˜ρ =
+
+√mr
+
+∑ 
+
+> m
+
+emgm
+
+√mr ρ = u,
+
+18 is unchanged. However, under the shifted incompressible assumption, the re-encoded velocity is recovered as 
+
+˜u = ∑
+
+> m
+
+em ˜gm = √mru.
+
+Substituting these into the collision step formula, we have 
+
+˜gCm(r, t ) = √mrgCm = √mr(gm − 1¯τ [gm − geq m ]) = ˜ gm − 1¯τ [˜ gm − √mrgeq m ]= ˜ gm − 1¯τ [˜ gm − ωm(δ ˜ρ + 3 em · ˜u + 921
+
+√mr
+
+(em · ˜u)2 − 321
+
+√mr
+
+| ˜u|2)] .
+
+As can be seen, compared to the classic LBM format, the quadratic term in the mass-weighted meshless LBM collision operator has a coefficient of 1√mr ,which is related to the mass weight of that point. For a regular lattice, this coefficient is the same at every point, so the formulation degenerates to the classical LBM. Therefore, after mass-weighted encoding of the distribution function val-ues at the scattered points, the resulting encoded distribution functions sat-isfy the rewrote collision formula: 
+
+˜gC (t) = ( I + F1)˜ g(t) + ˜F2 ˜g(t)⊗2. (28) Here, ˜F2 = ( M−1/2 ⊗ I)F2, while F1 and F2 are defined as in Eq. (7). In addition, under this amplitude encoding, the interpolation matrices still form the streaming matrix via ˜P = ∑Qm=1 ˜Pm ⊗ | m〉〈 m|. We have 
+
+˜P ˜gC (t) = ( M1/2 ⊗ I)( ∑
+
+> m
+
+Pm ⊗ | m〉〈 m|)( M−1/2 ⊗ I)( M1/2 ⊗ I)gC (t)= ( M1/2 ⊗ I)( ∑
+
+> m
+
+Pm ⊗ | m〉〈 m|)gC (t)= ( M1/2 ⊗ I)g(t + 1) = ˜ g(t + 1) ,
+
+(29) where ˜Pm is Euclidean-unitary. The unitary streaming step in Eq. (29), com-bined with the collision step in Eq. (28), defines the mass-weighted meshless lattice Boltzmann method (MW-MLBM) proposed in this work. Therefore, the linear system for the re-encoded historical state is 19 ˜A ˜y =
+
+
+
+I 0 0 · · · 0 0
+
+− ˜P ˜C I 0 · · · 0 00 − ˜P ˜C I · · · 0 0
+
+... ... ... . . . ... ...
+
+0 0 0 · · · I 00 0 0 · · · − ˜P ˜C I
+
+
+
+˜y(0) ˜y(1) ˜y(2) 
+
+...
+
+˜y(T − 1) ˜y(T )
+
+
+
+=
+
+
+
+˜y(0) 
+
+00
+
+...
+
+00
+
+
+
+= ˜b. (30) where ˜C is the collision operator obtained by Carleman linearization in the same manner as described in Section 2.2, and ˜y(t) := [˜g(t), ˜g(t)⊗2, . . . , ˜g(t)⊗NC
+
+].Furthermore, the block encoding of the coefficient matrix ˜A is consistent with that in Section 3, yielding the (α ˜A, n ˜A, 0) block encoding U ˜A of matrix ˜A with 
+
+α ˜A = α ˜C + 1 , n ˜A = n ˜C + 2 .
+
+Since the only difference between C and ˜C lies in F2 and ˜F2 during the construction process, we can see from Eq. (24) and (25) that 
+
+α ˜C =
+
+> l=0
+
+∑  
+
+> ⌊NC
+> 2⌋
+
+(NC − ll
+
+)
+
+αNC −2lI+F1 αlˆF2 , (31) 
+
+n ˜C = NC − 2 + log ( ⌊NC
+
+2 ⌋ + 1) + max   
+
+> 0≤l≤⌊ NC
+> 2⌋
+
+[
+
+log 
+
+(NC − ll
+
+)
+
++ ( NC − 2l)nI+F1 + ln ˆF2
+
+]
+
+,
+
+(32) where ˆF2 = ˜F2 ⊗| 0〉 = ( M−1/2 ⊗I ⊗I) ¯F2. Suppose M−1/2 has an (αM , n M , 0) -block-encoding UM ; then there exists an (α ˆF2 , n ˆF2 , 0) -block-encoding U ˆF2 of 
+
+ˆF2 that satisfies 
+
+α ˆF2 = αM α ¯F2 , n ˆF2 = n ¯F2 + nM .
+
+Therefore, the block-encoding parameters of ˜C and C are related as α ˜C ≤
+
+α⌊ NC  
+
+> 2⌋
+> M
+
+αC , n ˜C ≤ nC + ⌊NC 
+
+> 2
+
+⌋nM . It can be seen that the success probability is reduced to the order of 1/α NC 
+
+> M
+
+, which decreases exponentially with the Carleman truncation order. Fortunately, the parameter αM can be kept at the O(1) level by controlling the degree of scatteredness of the scatter points. Note that the absolute magnitude of the mass weights mi carries no physical 20 content: only their ratios do. Therefore, by globally rescaling the weights mi
+
+and redefining them as 
+
+mi ← mi
+
+mean 1≤i≤N {mi} ,
+
+all the weights remain of order O(1) for quasi-uniformly distributed scattered points. And by the one-ancilla unitary dilation, the block-encoding parame-ters of diagonal matrix M−1/2 satisfy αM =‖ M−1/2 ‖∞= max i 1√mi ∼ O (1) 
+
+and nM = 1 . For contrast, consider block-encoding the raw, non-unitary interpolation matrix Pm before mass weighting. Although each row of Pm
+
+carries at most k nonzero entries, sparsity alone does not produce a cheap em-bedding. In the sparse-access or LCU construction, a generic s-sparse matrix with unit maximum entry requires a subnormalization factor α = Θ( s), so here αPm = Θ( k); in particular there is no structural reason for αPm = O(1) ,since αPm must cover ‖Pm‖ and Pm is not unitary. The same constructions also demand Θ(log N) index qubits, and the single-ancilla dilation is available only for diagonal operators, so a general non-unitary sparse matrix cannot be embedded exactly with one ancilla. In short, the mass weighting restores unitarity of the flow step and thereby collapses its block-encoding overhead from Θ( k)NC normalization and NC Θ(log N)
+
+ancillas to O(1) ⌊ NC  
+
+> 2⌋
+
+and ⌊NC 
+
+> 2
+
+⌋ ancillas. 
+
+5. Numerics 
+
+5.1. Accuracy of the unitary translation interpolation matrix 
+
+We first study the interpolation accuracy of the unitarized translation interpolation matrix through numerical experiments. We test the accuracy of the unitary interpolation matrix on the two-dimensional square domain 
+
+[0 , 1] × [0 , 1] . Two types of scattered point sets are considered in this study. The first is generated by perturbing a regular grid. The grid spacing h is used to characterize the density of the scattered points, and the perturbation is given by δh rand , where rand is a uniformly distributed random number in [−1, 1] . While the second consists of Halton points, which are more ir-regularly distributed than the perturbed regular grid. The test function is f (x, y ) = sin(2 πx ) cos(2 πy ), which is periodic over the computational do-main. The evaluation point set is defined as Gm = X+em, where em = ( h, h ).Define f (X) and f (Gm) as the vectors of function values of f evaluated on 21 X and Gm respectively, while ˜f (X) and ˜f (Gm) the corresponding vectors of mass-weighted function values. The interpolation error is defined as 
+
+err = 
+
+∥∥∥Pm ˜f (X) − ˜f (Gm)
+
+∥∥∥2∥∥∥ ˜f (Gm)
+
+∥∥∥2
+
+,
+
+where Pm denotes the unitary interpolation matrix from the point set X to 
+
+Gm obtained from the unitarization of interpolation described above. For comparison, we evaluate the accuracy of the RBF-local interpolation under periodic boundary conditions, where the interpolation is performed directly on the original function-value vector f (X), without mass weighting. We also evaluate the accuracy obtained by directly using the streaming operator S
+
+from the lattice-based LBM. Since the scattered points considered here are not completely random but are generated by perturbing a regular grid, the streaming operator S transports the function values on X to points near the corresponding points in Gm. The experimental results are shown in Table 1 As can be seen, compared to RBF interpolation, our mass-weighted                                 
+
+> Method δh = 0 δh = 0 .1hδh = 0 .2hδh = 0 .3hHalton Unitary Mass Weighted 2.17e-05 2.93e-04 4.90e-04 6.46e-04 9.87e-04 Yes RBF-local 1.19e-04 1.15e-04 1.13e-04 1.16e-04 1.13e-04 No Natural Neighbor 4.44e-16 1.42e-02 2.85e-02 4.27e-02 1.66 Yes Table 1: A comparison of the accuracy of translation interpolation using different interpo-lation methods on scatter sets with varying degrees of irregularity. In these experiments, the number of data points is 2500, corresponding to h= 1 /50 . For both the mass-weighted unitary interpolation method and the RBF method, the stencil size is q= 20 .
+
+interpolation method preserves unitary properties and exhibits a gradual decline in accuracy as the degree of irregularity increases. In contrast, the accuracy of RBF interpolation is insensitive to the degree of irregularity of the point set. However, the overall accuracy of our mass-weighted interpolation method remains on the same order of magnitude as that of RBF interpolation. Meanwhile, using the streaming operator from the regular-grid LBM method as the unitary interpolation matrix yields exact results on regular grids but suffers from a drastic deterioration in accuracy as the degree of irregularity increases. And the accuracy is completely lost on the Halton point set. 22 5.2. Accuracy of the full MW-MLBM 
+
+Regarding our proposed MW-MLBM method, we first test the accuracy of the full MW-MLBM without the Carleman linearization on MATLAB, which follows the collision and streaming step described in Eq. (28) and (29). We simulate the Taylor-Green (TG) flow with the MW-MLBM and, for reference, with the regular-lattice LBM. Both methods share the same shifted incompressible, quadratic collision model introduced above and differ only in the spatial discretization and in the streaming step. The meshless method places the distribution function on a perturbed point cloud X = {xi}Ni=1 ,endows each node with its Voronoi mass mi, and yields the unitary translation operators Sq = exp( a ˜Dx + b ˜Dy ) for the eight moving directions. The lattice baseline uses exact permutation streaming on the regular n × n grid. All physical parameters are identical for the two schemes. We consider the decaying TG vortex in the periodic domain [0 , 1] × [0 , 1] 
+
+with initial velocity field 
+
+u0 = U0
+
+(sin(2 πx ) cos(2 πy ), − cos(2 πx ) sin(2 πy )), (33) whose incompressible Navier-Stokes solution and kinetic energy read 
+
+uth (x, t ) = u0(x) e−8π2νt , Eth (t) = U20
+
+4 e−16 π2νt . (34) The velocity scale and Reynolds number are fixed at U0 = 0 .05 (Ma = 
+
+U0/c s ≈ 0.087 ) and Re = U0L/ν = 50 with L = 1 , so that the kinematic viscosity ν = U0/Re is independent of the resolution. For each resolution n
+
+with h = 1 /n and N = n2 points, the relaxation parameter is set accordingly, 
+
+¯τ = 12 + 3 ν/h . The meshless clouds are jittered lattices ( δh = 0 .1h) with 
+
+k = 12 nearest neighbors, using a single realization per n with fixed random seed. Each simulation advances one advection time, Tend = L/U 0 = 20 , i.e. 
+
+Nt = ⌈Tend /h ⌉ steps. Errors are measured in the mass-weighted relative L2
+
+norm 
+
+εrel (Tend ) = 
+
+√∑ 
+
+> i
+
+mi
+
+∣∣ui(Tend ) − uth  
+
+> i
+
+(Tend )∣∣2
+
+√∑ 
+
+> i
+
+mi
+
+∣∣uth  
+
+> i
+
+(Tend )∣∣2 , (35) while the kinetic energy is evaluated by the Voronoi quadrature 
+
+E = 12
+
+∑
+
+> i
+
+miρi|ui|2/ ∑
+
+> i
+
+mi,
+
+23 and the measured viscosity νmeas is extracted from a linear fit of ln E(t).The numerical results are collected in Fig. 1. The errors of both schemes decrease with h. The lattice baseline converges as εrel ∼ O(h1.9), consistent with the expected second-order accuracy of the LBM, which validates both the discretization and the non-dimensionalization. Over the resolved range 
+
+n ≥ 24 , the meshless scheme decays at approximately O(h2.7) and its error does not exceed that of the lattice baseline at equal resolution; at n = 64 ,for instance, the meshless error is 1.49 × 10 −3, compared with 3.32 × 10 −3 for the lattice scheme (at n = 40 the two are almost equal, 4.45 × 10 −3 versus 
+
+4.34 × 10 −3). In terms of physical recovery, the fitted viscosity ratio of the meshless method increases monotonically from νmeas /ν = 0 .9985 at n = 16 to 0.9992 
+
+at n = 64 , i.e. the measured viscosity exceeds the target by at most 0.2% , in-dicating that the mimetic unitary streaming introduces a small interpolation-type numerical dissipation that vanishes with h. The coarsest case n = 8 
+
+deviates from the asymptotic trend and is therefore excluded from the slope fit; its behavior is attributed to a pre-asymptotic, single-realization effect at low resolution. The lattice baseline reproduces the target viscosity to within 
+
+0.04% (ratios of 0.9996 -0.9997 ).The numerical results show that, the mass-weighted meshless full LBM reproduces the analytic TG decay with accuracy comparable to, and at finer resolutions better than, the regular-lattice LBM at equal physical parameters, while retaining viscosity recovery within 0.1% .  
+
+> 10 -2 10 -1
+> 10 -3
+> 10 -2
+> 10 -1
+> 10 0
+> MW-MLBM regular lattice LBM
+> 10 -2 10 -1
+> 0.995 11.005 1.01 1.015 1.02 1.025 1.03 1.035 1.04 1.045
+> MW-MLBM regular lattice LBM
+
+Figure 1: Convergence of the decaying TG simulation at fixed Re = 50 , U0 = 0 .05 , after one advection time. Left: mass-weighted relative L2 velocity error at the final time versus 
+
+h, with fitted slopes of about 2.7 (meshless, n ≥ 24 ) and 1.9 (regular lattice). Right: fitted viscosity ratio νmeas /ν versus h.
+
+We also investigated how the accuracy of the MW-MLBM method for 24 simulating the Taylor–Green (TG) vortex flow varies with the degree of scat-teredness of the point sets. The numerical results presented in Fig. 2 show that, the effect of point-cloud irregularity was examined at fixed resolution 
+
+n = 40 with jitter amplitudes from 0.01 to 0.20 , averaged over several re-alizations. The relative L2 error varies between 4.2 × 10 −3 and 7.3 × 10 −3
+
+without a systematic trend, and is comparable to the lattice discretization error ( ≈ 4.3 × 10 −3) at this resolution, indicating that the overall accuracy is governed by the underlying LBM discretization rather than by the nodes irregularity. The viscosity ratio decreases slowly and monotonically from 
+
+0.99981 at jitter 0.01 to 0.99748 at jitter 0.30 , i.e. the additional numerical dissipation grows from about 0.019% to 0.25% but remains below 0.3% .                    
+
+> 00.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 4.5 55.5 66.5 710 -3
+> lattice
+> 00.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 0.997 0.9975 0.998 0.9985 0.999 0.9995 1
+> lattice
+
+Figure 2: At a fixed resolution n = 40 , the accuracy of MW-MLBM after one advection time. Left: mass-weighted relative L2 velocity error at the final time versus δh , with the black horizontal line denoting the corresponding error of the regular lattice LBM. Right: fitted viscosity ratio νmeas /ν versus δh , with the black horizontal line denoting the corresponding ratio of the regular lattice LBM. 
+
+Overall, the mass-weighted meshless LBM reproduces the Taylor–Green flow with accuracy comparable to, and at finer resolutions better than, the regular-lattice LBM, while recovering the target viscosity to within 0.3% 
+
+over a wide range of points irregularity. These results establish that the full meshless scheme itself is feasible on scattered clouds and provide a reliable baseline for the Carleman-truncation study below. 
+
+5.3. Accuracy of the truncated Carleman linearized MW-MLBM 
+
+The Carleman linearization is an approximation of the discrete LBM evo-lution, not of the exact Navier-Stokes solution. We therefore assess the trun-cation error against the full mass-weighted meshless LBM computed with 25 the same points set, the same mimetic unitary streaming operators, and the same collision model described in Eq. (28). The point cloud is a perturbed lattice on the periodic domain [0 , 1) 2
+
+with jitter amplitude δh = 0 .1h and k = 12 nearest neighbors, so that each node carries its Voronoi control volume mi. The physical parameters are 
+
+Re = U0L/ν = 50 and U0 = 0 .05 with L = 1 , giving Ma = U0/c s ≈ 0.087 .For the resolution n = 36 (h = 1 /36 , N = 1296 nodes) the relaxation rate follows from ¯τ = 12 + 3 ν/h and Ω = 1 /¯τ . Each simulation advances one advection time, Tend = L/U 0 = 20 , i.e. Nt = 720 time steps. The Carleman systems are advanced with truncation orders NC = 1 , 2, 3
+
+and compared with the full model through the mass-weighted relative L2
+
+velocity error 
+
+εNC (t) = 
+
+√∑ 
+
+> i
+
+mi
+
+∣∣uNC 
+
+> i
+
+(t) − uth  
+
+> i
+
+(t)∣∣2
+
+√∑ 
+
+> i
+
+mi
+
+∣∣uth  
+
+> i
+
+(t)∣∣2 , (36) We also compare the measured viscosities of the truncated Carleman systems and full MW-MLBM. The effective viscosity is estimated cumulatively from the kinetic-energy decay: for every t, νmeas (t) is the slope of a linear fit of 
+
+ln E(t′) over t′ ∈ [t0, t ], with t0 = √3 (approximately one acoustic period) and the truncation is assessed through the ratio νNC
+
+> meas
+
+(t)/ν full meas (t). The numerical results are shown in Fig. 3.                     
+
+> 0246810 12 14 16 18 20 10 -16
+> 10 -14
+> 10 -12
+> 10 -10
+> 10 -8
+> 10 -6
+> 10 -4
+> 10 -2
+> 10 0
+> 0246810 12 14 16 18 20 0.95 0.96 0.97 0.98 0.99 11.01
+
+Figure 3: At a fixed resolution n = 36 , the accuracy of truncated Carleman systems with 
+
+NC = 1 , 2, 3 compared with full MW-MLBM. Left: mass-weighted relative L2 velocity error versus time t. Right: fitted viscosity ratio νNC
+
+> meas
+
+(t)/ν full meas (t) versus time t.
+
+As shown in the left subplot, the truncation error decreases systematically 26 with NC . The first-order truncation exhibits a mean deviation of 1.03 × 10 −2
+
+from the full model. Retaining the quadratic term ( NC = 2 ) reduces the mean error to 1.2 × 10 −3, i.e. by a factor of 8.4. The cubic truncation ( NC = 3 )further reduces the mean error to 4.8 × 10 −4, an additional factor of 2.6, so that the error is smaller than that of the first-order truncation by more than a factor of 20 . In all cases the maximal error occurs during the initial transient, after which the error decays; the residual oscillatory component, associated with the acoustic modes excited by the truncated pressure-advection balance, is strongly suppressed at NC = 3 .The cumulative viscosity ratio is reported in the right subplot. At NC = 3 
+
+the ratio agrees with the full model to within 10 −5 throughout the simula-tion, whereas the first- and second-order truncations differ by about 10 −3
+
+on average. The initial sharp drop visible in the NC = 1 , 2 curves (down to approximately 0.95 ) is an acoustic transient: immediately after t0, the fitting interval [t0, t ] is still short and the residual pressure imbalance of the truncated collision modulates the instantaneous decay rate. As the fitting interval grows, the cumulative estimate converges monotonically to unity. The non-monotonic ordering between NC = 1 and NC = 2 should not be interpreted as a loss of accuracy. The measured viscosity is a largely linear di-agnostic: the leading dissipation is determined by the linear collision operator 
+
+I + F1, which is common to all truncation orders, and νmeas is therefore only weakly sensitive to NC . The quadratic term added at NC = 2 redistributes energy among acoustic and higher-harmonic modes without providing the cubic feedback that first corrects the energy evolution; consequently it may shift the fitted decay rate slightly away from the full-model value, whereas the first-order truncation, being purely linear, remains accidentally close. At 
+
+NC = 3 the leading cubic correction is included and the agreement improves by two to three orders of magnitude. The velocity-field error, which decreases monotonically with NC , is therefore the appropriate metric for assessing the convergence of the Carleman truncation. Overall, for a fixed resolution and physical parameters, increasing the Carleman truncation order produces a systematic reduction of the velocity-field error, while the cumulative viscosity estimate converges to the full-model value, reaching agreement at the 10 −5 level at NC = 3 . The residual acoustic oscillations of the lower-order truncations are a consequence of the incomplete pressure-advection balance and diminish rapidly with NC , whereas their con-tribution to the cumulative viscosity estimate is averaged out by the running fit. 27 5.4. Normalization factor of the mass-weighting diagonal 
+
+To quantify the subnormalization factor induced by the mass-weighting diagonal M = diag( mi), we study the Voronoi cell areas of a jittered periodic lattice. The effect of point-cloud irregularity was examined at fixed resolution 
+
+n = 40 with jitter amplitudes from 0 to 0.5, averaged over 20 independent realizations. For every realization we compute the toroidal Voronoi areas mi,normalize ˆmi = mi/ ¯m, and record 
+
+smin = min 
+
+> i
+
+√ ˆmi, αM =‖ M−1/2 ‖∞= 1
+
+smin 
+
+.           
+
+> 00.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 11.2 1.4 1.6 1.8 22.2
+> normalization factor
+> M= 1/s min
+
+Figure 4: the normalization factor αM = 1 /s min as functions of the jitter amplitude, measured in units of the lattice spacing h. Error bars denote one standard deviation over 20 realizations. 
+
+The data show a monotone decrease of smin from its optimal value 1 on the uniform lattice to 0.539 at δh/h = 0 .5, while αM grows from 1 to 1.88 .28 Throughout the practically relevant scatter range δh/h ≤ 0.3, αM remains below 1.32 , confirming that the mass-weighting normalization factor stays of order one. This behaviour is consistent with the geometric lower bound 
+
+smin ≥ √π (12 − δh/h ): since the minimum pairwise node distance is at least 
+
+(h − 2 δh ), every Voronoi cell contains a disk of radius 12 (h − 2 δh ), so the bound is independent of N. Only in the limit δh/h → 12 , where neighboring nodes may coalesce, does αM start to grow rapidly. Consequently the block-encoding subnormalization of M−1/2, and with it the success probability 
+
+1/α NC 
+
+> M
+
+of the Carleman flow step, degrades only mildly for quasi-uniform point sets. 
+
+6. Conclusion 
+
+In this paper, we propose a quantum interpolation-supplemented mesh-less lattice Boltzmann method based on Carleman embedding. The probabil-ity density function was re-encoded through mass weighting, and a mimetic differential matrix was constructed as the generator of translation interpo-lation matrix, which is also the streaming operator. Its advantage is that the streaming step maintains the same unitary property as classical LBM. Meanwhile, we also demonstrate that the collision step changes caused by re-encoding have a minimal impact on the degradation of matrix block encoding complexity. Numerically, we validated the effectiveness of our proposed algo-rithm and its convergence with Carleman truncation order on Taylor Green problems with full periodic boundary conditions. Due to the requirement of unitary translation interpolation operator, our algorithm is suitable for full periodic boundary conditions, and further research on non-periodic boundary conditions problems will be conducted in the future. 
+
+Acknowledgements References 
+
+[1] X. He, L.-S. Luo, A priori derivation of the lattice Boltz-mann equation, Physical Review E 55 (6) (1997) R6333–R6336. 
+
+doi:10.1103/PhysRevE.55.R6333 .[2] T. Carleman, Application de la théorie des équations intégrales linéaires aux systèmes d’équations différentielles non linéaires, Acta Mathematica 59 (1932) 63–87. doi:10.1007/BF02546499 .29 [3] K. Kowalski, W.-H. Steeb, Nonlinear Dynamical Systems and Carleman Linearization, World Scientific, Singapore, 1991. [4] M. Forets, A. Pouly, Explicit error bounds for carleman linearization (2017). arXiv:1711.02552 .[5] J.-P. Liu, H. Ø. Kolden, H. K. Krovi, N. F. Loureiro, K. Trivisa, A. M. Childs, Efficient quantum algorithm for dissipative nonlinear differential equations, Proceedings of the National Academy of Sciences 118 (35) (2021) e2026805118. doi:10.1073/pnas.2026805118 .[6] H. Krovi, Improved quantum algorithms for linear and nonlinear differential equations, Quantum 7 (2023) 913. 
+
+doi:10.22331/q-2023-02-02-913 .[7] J. Yepez, Quantum lattice-gas model for computational fluid dynamics, Physical Review E 63 (4) (2001) 046702. 
+
+doi:10.1103/PhysRevE.63.046702 .[8] L. Budinski, Quantum algorithm for the Navier–Stokes equations by us-ing the streamfunction–vorticity formulation and the lattice Boltzmann method, International Journal of Quantum Information 20 (2) (2022) 2150039. doi:10.1142/S0219749921500398 .[9] C. Sanavio, W. A. Simon, A. Ralli, P. Love, S. Succi, Carleman-lattice-Boltzmann quantum circuit with matrix access oracles, Physics of Fluids 37 (3) (2025) 037123. [10] D. Jennings, K. Korzekwa, M. Lostaglio, R. Ashworth, E. Marsili, S. Rol-ston, An end-to-end quantum algorithm for nonlinear fluid dynamics with bounded quantum advantage (2025). arXiv:2512.03758 .[11] D. Jennings, K. Korzekwa, M. Lostaglio, P. Mannix, R. Ashworth, E. Marsili, S. Rolston, Simulating non-trivial incompressible flows with a quantum lattice Boltzmann algorithm (2025). arXiv:2512.05781 .[12] X. He, L.-S. Luo, M. Dembo, Some progress in lattice Boltzmann method. Part I. nonuniform mesh grids, Journal of Computational Physics 129 (2) (1996) 357–363. doi:10.1006/jcph.1996.0255 .30 [13] C. Shu, X. D. Niu, Y. T. Chew, Taylor-series expansion and least-squares-based lattice Boltzmann method: two-dimensional formula-tion and its applications, Physical Review E 65 (3) (2002) 036708. 
+
+doi:10.1103/PhysRevE.65.036708 .[14] D. Strzelczyk, M. Matyka, Study of the convergence of the meshless lattice Boltzmann method in Taylor–Green and annular channel flows (2023). arXiv:2306.01525 .[15] B. Fornberg, N. Flyer, A Primer on Radial Basis Functions with Applications to the Geosciences, SIAM, Philadelphia, 2015. 
+
+doi:10.1137/1.9781611974041 .[16] G. H. Low, I. L. Chuang, Hamiltonian simulation by qubitization, Quan-tum 3 (2019) 163. doi:10.22331/q-2019-07-12-163 .[17] A. Gilyén, Y. Su, G. H. Low, N. Wiebe, Quantum singular value trans-formation and beyond: exponential improvements for quantum ma-trix arithmetics, in: Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing (STOC), 2019, pp. 193–204. 
+
+doi:10.1145/3313276.3316366 .[18] S. Lloyd, Universal quantum simulators, Science 273 (5278) (1996) 1073– 1078. doi:10.1126/science.273.5278.1073 .[19] M. Shashkov, Conservative Finite-Difference Methods on General Grids, CRC Press, Boca Raton, 1996. [20] K. Lipnikov, G. Manzini, M. Shashkov, Mimetic finite difference method, Journal of Computational Physics 257 (2014) 1163–1227. 
+
+doi:10.1016/j.jcp.2013.07.031 .[21] M. Desbrun, A. N. Hirani, M. Leok, J. E. Marsden, Discrete exterior calculus (2005). arXiv:math/0508341 .[22] Y. Xiao, L. Yang, H. Dong, Y. Du, Interpolation-supplemented quan-tum lattice Boltzmann method for incompressible flows with nonuni-form mesh and curved boundary, Physical Review E 113 (2026) 045306. 
+
+doi:10.1103/PhysRevE.113.045306 .31 [23] L. Yang, Y. Xiao, C. Shu, Y. Du, Quantum Taylor series expansion and least squares-based fractional-step LBM for incompressible flows on non-uniform meshes, Chinese Journal of Aeronautics 39 (6) (2026) 104176. 
+
+doi:10.1016/j.cja.2026.104176 .[24] H. Xiang, Quantum Numerical Linear Algebra, Tsinghua University Press, Beijing, 2022, in Chinese. [25] A. Dalzell, A shortcut to an optimal quantum linear system solver (06 2024). doi:10.48550/arXiv.2406.12086 .[26] M. Suzuki, Fractal decomposition of exponential operators with applica-tions to many-body theories and monte carlo simulations, Physics Let-ters A 146 (6) (1990) 319–323. doi:10.1016/0375-9601(90)90962-N .32
