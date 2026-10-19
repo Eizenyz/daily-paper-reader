@@ -1,14 +1,14 @@
 {
   "date": "20261019",
   "date_label": "",
-  "generated_at": "2026-10-19 04:35:18 UTC",
+  "generated_at": "2026-10-19 23:23:15 UTC",
   "recommend_exists": true,
-  "run_count": 1,
+  "run_count": 2,
   "papers": [
     {
-      "paper_id": "2610.14943v1",
-      "route": "202610/19/2610.14943v1-a-quantum-algorithm-for-meshless-lattice-boltzmann-method-with-unitary-interpolation",
-      "title": "A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation",
+      "paper_id": "2610.23405v1",
+      "route": "202610/19/2610.23405v1-quantum-circuits-for-variable-coefficient-vlasov-dynamics-via-schrdingerisation",
+      "title": "Quantum Circuits for Variable-Coefficient Vlasov Dynamics via Schrödingerisation",
       "section": "deep",
       "tags": [
         {
@@ -16,10 +16,10 @@
           "label": "quantum-ode"
         }
       ],
-      "score": 8.0,
-      "evidence": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
-      "first_seen_at": "2026-10-19 04:35:18 UTC",
-      "updated_at": "2026-10-19 04:35:18 UTC"
+      "score": 9.0,
+      "evidence": "面向 Vlasov 动力学的显式 Schrödingerisation 量子电路",
+      "first_seen_at": "2026-10-19 23:23:15 UTC",
+      "updated_at": "2026-10-19 23:23:15 UTC"
     },
     {
       "paper_id": "2610.18589v1",
@@ -34,6 +34,54 @@
       ],
       "score": 8.0,
       "evidence": "利用块稀疏哈密顿量模拟提升酉合成的 T 门复杂度",
+      "first_seen_at": "2026-10-19 04:35:18 UTC",
+      "updated_at": "2026-10-19 23:23:15 UTC"
+    },
+    {
+      "paper_id": "2610.22691v1",
+      "route": "202610/19/2610.22691v1-quantum-classical-neural-networks-for-solving-lindblad-master-equations",
+      "title": "Quantum-Classical Neural Networks for Solving Lindblad Master Equations",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "求解 Lindblad 主方程的变分量子算法",
+      "first_seen_at": "2026-10-19 23:23:15 UTC",
+      "updated_at": "2026-10-19 23:23:15 UTC"
+    },
+    {
+      "paper_id": "2610.23429v1",
+      "route": "202610/19/2610.23429v1-cayley-access-models-for-matrix-functions-reachable-class-and-cost",
+      "title": "Cayley access models for matrix functions: reachable class and cost",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用Cayley变换、块编码与广义量子信号处理计算矩阵函数f(A)b",
+      "first_seen_at": "2026-10-19 23:23:15 UTC",
+      "updated_at": "2026-10-19 23:23:15 UTC"
+    },
+    {
+      "paper_id": "2610.14943v1",
+      "route": "202610/19/2610.14943v1-a-quantum-algorithm-for-meshless-lattice-boltzmann-method-with-unitary-interpolation",
+      "title": "A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
       "first_seen_at": "2026-10-19 04:35:18 UTC",
       "updated_at": "2026-10-19 04:35:18 UTC"
     }

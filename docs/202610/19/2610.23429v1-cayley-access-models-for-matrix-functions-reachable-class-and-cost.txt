@@ -1,0 +1,1017 @@
+Title: Cayley access models for matrix functions: reachable class and cost
+
+URL Source: https://arxiv.org/pdf/2610.23429v1
+
+Published Time: Mon, 19 Oct 2026 01:16:18 GMT
+
+Number of Pages: 28
+
+Markdown Content:
+# Cayley access models for matrix functions: reachable class and cost 
+
+Gianna M. Del Corso 
+
+> Department of Computer Science, University of Pisa, Italy
+
+We study how to compute f (A)b on a quantum computer, where A is Hermi-tian. When f is nonsmooth or has localized difficulty in the spectrum, classical numerical linear algebra approximates it with rational functions rather than polynomials. We propose the Cayley transform, parameterized by σ ∈ R and γ > 0, as an alternative to the standard quantum access model. The two parameters let one concentrate accuracy where f is difficult, which standard models can achieve only by raising the polynomial degree globally. This transformation converts Hermitian matrices to unitaries, allowing generalized quantum signal processing to apply Laurent polynomials bounded on the unit circle. We compare three access models (block encoding, matrix exponential, and Cayley encoding) in terms of query complexity and of the cost of their circuit realization. When the difficulty of f is localized in the spectrum, the Cayley encoding reduces the required degree by a factor of three to four, and it repre-sents the shifted resolvent exactly at degree one. For spectral projectors, the standard models cannot reach the target accuracy at fixed degree, because their approximants cannot concentrate resolution near the discontinuity. Realizing the Cayley encoding from a block encoding requires solving a shifted linear system, whose cost offsets its query-complexity gain over the standard models. For structured matrices arising in practice, however, low-depth circuits for the encoding can be constructed directly, and the gain is preserved at the circuit level. 
+
+# 1 Introduction 
+
+Many computational tasks reduce to applying a function of a matrix to a vector. Given a Hermitian A ∈ CN ×N with eigenpairs Av j = λj vj , a scalar function f acts on the eigenvalues as 
+
+f (A) = ∑
+
+> j
+
+f (λj ) vj v∗ 
+
+> j
+
+, (1) 
+
+and the problem we consider in this paper is to compute f (A) b for a given b. Different choices of f give rise to a wide range of tasks: f (λ) = 1 /λ solves the linear system 
+
+Ax = b; a smoothed indicator of an interval gives the spectral projector, which filters b
+
+onto the eigenvectors with eigenvalue in that interval and whose trace counts them; the sign function separates the positive and negative parts of the spectrum; e−iλt , λ−1/2 occur 
+
+> Gianna M. Del Corso: gianna.delcorso@unipi.it
+
+1arXiv:2610.23429v1 [quant-ph] 16 Oct 2026 in dynamics, sampling and preconditioning. For matrices of moderate size several methods are available [1], but when N is very large, forming or diagonalizing A is out of reach and one looks for algorithms whose cost is polynomial in log N . This is the setting of quantum linear algebra, and the one considered in this paper. Computing f (A)b on a quantum computer poses two distinct subproblems. • Approximating f . A quantum computer applies unitary operations and reaches A
+
+only through combinations of a supplied operator, so it cannot evaluate an arbitrary 
+
+f : it applies to the eigenvalues of A an approximant of f rather than f itself, as done in classical computation. That approximant is usually a polynomial, and its degree controls the cost. When f is nonsmooth, or has a discontinuity or a pole near the spectrum, polynomials converge slowly and the degree becomes prohibitive. Classical numerical linear algebra turns to rational approximation in these cases, and we ask here whether the same can be done on a quantum computer. • Encoding A. A quantum algorithm cannot see A directly; it accesses it through an access model, that is a unitary circuit, from which A can be inferred. The reachable functions are dictated jointly by the access model and by the transformation applied to it. Two access models are standard, block encoding [2] and matrix-exponential (also known as Hamiltonian simulation) [3]. In this paper we investigate the Cayley transform as an alternative access model for a Hermitian A when the goal is to compute f (A)b. It is the matrix version of the Möbius map zσ,γ (λ) = ( λ − σ − iγ )/(λ − σ + iγ ) sending the real line to the unit circle, and applied to A it produces a unitary matrix. The logic of the construction is the following; GQSP [4] already applies to a unitary any Laurent polynomial of it bounded by one on the unit circle, with one ancilla qubit. Taking Cσ,γ (A) as that unitary, whose eigenvalues are Möbius images of the eigenvalues of A, the Laurent polynomial becomes, back in λ, a rational function of A.We concentrate our study on the following aspects. We show that the reachable func-tions are the rational functions of type (2 d, 2d) whose poles lie at σ ± iγ , each of order at most d. Unlike polynomials, this class represents exactly functions with poles at σ ±iγ , but it does not coincide with the rational functions of the same degree with freely chosen poles. Multiplying Cayley factors extends it to arbitrary pole configurations, and we show that the resulting family is the only one available, since the finite products of Cayley factors are the rational functions unitary on every Hermitian matrix. Our model has tunable parameters that adapt the encoding to the problem at hand. In the standard access models the unitary is fixed by A alone, the normalization α and the evolution time t depending only on the matrix, and only the polynomial is constructed on f . Here σ and γ decide where in the spectrum the approximation is accurate and how finely, so choosing them already records where f is difficult. As in the matrix-exponential model, one ancilla suffices and no subnormalization constant appears. The cost of the construction depends on how the encoding is realized. In the query model, where Cσ,γ (A) is supplied as an oracle, the degree needed is most of the time far lower than for the two standard models. Building that oracle from a block encoding of A
+
+requires solving a shifted linear system, whose cost has to be weighed against the saving. On a generic matrix, this cost per query cancels the reduction in the number of queries, so the total cost is of the same order as in the standard models. The advantage therefore survives only for matrices whose structure allows the Cayley encoding to be built directly as a low-depth circuit. 
+
+21.1 Contributions 
+
+This paper proposes the Cayley transform as a rational access model for matrix functions on a quantum computer, and examines what it can compute, what it costs, and when it is worth using. At the level of expressive power, we show that processing Cσ,γ (A) by GQSP with a Laurent polynomial of degree d reaches the rational functions of type (2 d, 2d) whose poles lie at σ ± iγ , each of order at most d, with one ancilla and no parity restriction (Theorem 3.1). Approximating f then reduces to trigonometric approximation on the circle (Proposition 3.4), so the classical theory of polynomial approximation carries over to a rational problem through a change of variable. The parameters σ and γ enter the encoding itself, concentrating the accuracy where f is difficult before any polynomial is chosen, which the fixed access models cannot do. The three access models become comparable through the accuracy density, the derivative of the map each of them induces on the spectrum, which measures how much phase a model assigns to a region of the spectrum and therefore how finely a given degree can distinguish eigenvalues there. Products of Cayley factors place the poles at any finite set of points off the real axis, still with a single ancilla. We show that these are exactly the rational functions unitary on every Hermitian matrix (Theorem 4.2), so no other rational unitary encoding exists, and that on the targets considered here the extra poles bring no advantage. On the side of cost we separate the query model from the realization model. In the query model, where the encoding is supplied as an oracle, the number of applications is smaller than for the two standard models on the functions that polynomials approximate slowly. Whether this carries over to circuit cost depends on how the encoding is built. In Section 6 we realize Cσ,γ (A) from a block encoding of A, and we show that the reduction in degree that a narrow γ buys is spent, at the same rate, in the shifted solve that each application then requires: the two parameters do not by themselves lower the cost. What the analysis leaves is a condition on A, namely that the encoding admit a circuit whose cost does not grow with 1/γ , and in Section 6.2 we identify classes of matrices of practical interest that meet it. Finally, we validate the analysis numerically (Section 7) by computing the best approximation in each reachable class, with the free parameter of each model optimized at every degree. The comparison is one of approximating power and of query counts; no circuit is simulated and no gate count is reported. At accuracy 10 −6 the Cayley class is the cheapest on six out of eight functions. The matrix exponential usually lies between the other two. It, too, is applied by processing a unitary, namely e−iAt , so the fact that the Cayley encoding needs fewer queries cannot be attributed to unitarity by itself: the gain instead comes from placing poles near a difficulty of f , which rational functions approximate better than polynomials can. On the family of Sturm–Liouville operators of Section 7.3 we measure the quantities that govern the structured realization. For functions whose variation is concentrated near the smallest eigenvalue, the Cayley class needs a degree independent of N , while the polynomial and the exponential approaches need a degree of order κ; with the encoding realized from the generators of the shifted resolvent, this gives a cost of ˜O(κ1/4) against ˜O(κ).
+
+1.2 Relation to prior work 
+
+Classically, there are many tools one can use to compute f (A)b: shift-and-invert and rational Krylov methods [5], contour-integral eigensolvers [6], Zolotarev’s optimal rational approximants [7], complex-shifted preconditioners for indefinite systems [8], and the Crank– Nicolson propagator [9]. Which of them performs best depends on the spectrum of A and on the regularity of f , and rational approximations have become the standard tool when 
+
+3polynomial ones converge slowly, as happens with singularities close to the spectrum or poorly separated eigenvalues. The quantum setting has followed a similar path. Early algorithms relied on quantum phase estimation, which gives coherent access to the spectral decomposition: the Harrow– Hassidim–Lloyd algorithm implements f (λ) = 1 /λ , and later work extended the idea to fractional powers, exponentials, Gibbs states [10] and linear differential equations [11]. These methods need high-precision phase estimation and long coherent evolutions, which motivated frameworks acting directly on the spectrum. Quantum signal processing [3] showed that polynomial transformations of the eigenvalues of a unitary can be implemented by sequences of single-qubit rotations, and the quantum singular value transformation [2, 12] extended this to the singular values of a block-encoded matrix, unifying Hamiltonian simulation, linear system solvers, matrix inversion and Gibbs-state preparation. Building a block encoding is itself costly, and for a sparse matrix it needs several ancillas and multiqubit controlled operations. This problem was solved by two later frameworks, which take as input the time evolution e−iA , produced directly by a Trotter formula, and use a single ancilla. The first is quantum eigenvalue transformation of unitary matrices [13], which needs no multiqubit control either: writing eiΦ for an eigenvalue of the unitary, the method reaches the functions F (cos(Φ /2)) with F an even real polynomial. The second is the generalized version of signal processing [4, 14], which requires controlled access to the unitary but allows general SU (2) rotations, and reaches every Laurent polynomial bounded by one on the circle, with complex coefficients and no parity restriction. All of these frameworks are polynomial, and a polynomial is the wrong tool when the best approximant of f is rational. Two lines of work have addressed this. Contour-integral algorithms start from Cauchy’s formula and apply a quadrature rule to the integral, so that f (A)b is obtained from a set of shifted linear systems (zkI − A)xk = b weighted by the quadrature coefficients [15]. Shen, Van Buggenhout, Camps, Klymko and Van Beeumen [16] instead implement r(A) = ∑ 
+
+> k
+
+ck(zkI − A)−1 directly, with poles chosen at will and each resolvent built from linear combinations of matrix exponentials, at the price of ⌈log 2 m⌉ ancillas and a subnormalization factor for the combination. Our starting point is different. Rather than combining several resolvents, the Cayley transform turns the computation of a matrix function into a unitary signal-processing problem, with one ancilla and no overhead from a linear combination. It allows arbitrary pole placement, through products of Cayley factors, but the numerator is not free, being tied to the poles by the unitarity of the encoding. The construction therefore lies between the polynomial signal-processing methods and the rational approximations with a free numerator, and this intermediate position is a structural necessity. By Theorem 4.2 the class of rational functions unitary on every Hermitian matrix coincides with the finite products of Cayley factors, so no general rational encoding can be unitary and a method with a free numerator necessarily leaves the single-ancilla setting. Quantum Krylov methods, on the other hand, are still polynomial: the subspace is generated from real-time evolutions [17, 18] and not from resolvents, so their classical rational counterpart has no quantum analogue yet. Tong, An, Wiebe and Lin [19] consider a normal A with an efficiently implementable diagonalizing unitary, and observe that a block encoding of A−1 can then be built directly, by writing the eigenvalue in a register and inverting it with classical arithmetic, at a cost independent of κ(A). They use it as a preconditioner for (A + B)x = b with ∥A∥ ≫ ∥ B∥,and to evaluate e−β(A+B) through a quadrature of Cauchy’s formula, that is again through a linear combination of resolvents. The block encoding of A is thereby never formed, which is also what happens in Section 6.2, under a different structural hypothesis: fast inversion 
+
+4needs a circuit for the eigenvector matrix of A and a formula for its eigenvalues, whereas our construction needs the inverse of the shifted matrix to be one-pair semiseparable, as for every irreducible tridiagonal A, and its generators to be prepared by a low-depth circuit. 
+
+# 2 Preliminary Results and Notation 
+
+Throughout the paper A ∈ CN ×N is Hermitian, so that A = ∑ 
+
+> j
+
+λj vj v∗ 
+
+> j
+
+with λj ∈ R,
+
+{vj } orthonormal. Denote by Λ( A) the spectrum, ∥·∥ the spectral norm, κ(·) the condi-tion number, T the unit circle. Since Λ( A) is not known in practice, functions of A are approximated on a known closed set S ⊇ Λ( A), which we call the spectral set; in the experiments it is a finite union of closed intervals. For w / ∈ Λ( A), Rw(A) = ( A − wI )−1
+
+is the resolvent, and Rw(A)b solves the shifted system (A − wI )x = b. We use one fact. For w = σ + iτ with τ̸ = 0 the matrix A − wI is normal, being a polynomial in A, with eigenvalues (λj − σ) − iτ of modulus between |τ | and √∥A − σI ∥2 + τ 2; since for a normal matrix the singular values are these moduli, 
+
+κ(A − wI ) ≤
+
+> √
+
+∥A − σI ∥2 + τ 2
+
+|τ | ≈ ∥A − σI ∥|τ | ( if |τ | ≪ ∥ A − σI ∥), (2) 
+
+independently of any small eigenvalue of A: the shifted system is well conditioned even when A is singular. This paper is built around the Cayley encoding of A.
+
+Definition 2.1. For A = A∗, σ ∈ R, γ > 0, 1 the Cayley encoding of A with centre σ and width γ is 
+
+Cσ,γ (A) = ( A − σI − iγI )( A − σI + iγI )−1.
+
+Its inverse, defined for a unitary U with 1 /∈ Λ( U ), is C−1 
+
+> σ,γ
+
+(U ) = σI + iγ (I + U )( I − U )−1;the two are mutually inverse bijections between Hermitian matrices and unitaries without the eigenvalue 1. 
+
+Proposition 2.2. Cσ,γ (A) is unitary, commutes with A, and shares its eigenvectors; its eigenvalues are zσ,γ (λj ) = ( λj − σ − iγ )/(λj − σ + iγ ) ∈ T \ { 1}.
+
+The next identity relates the encoding to the resolvent of A, hence to the shift-and-invert operator of classical numerical linear algebra. It is purely algebraic, independent of how the encoding is realized on a quantum computer. 
+
+Proposition 2.3 (resolvent form) . Cσ,γ (A) = I − 2iγ R σ−iγ (A).
+
+In Section 6 we describe how to realize Cσ,γ (A) on a quantum computer and the cost of this realization. As an access model, it is treated as an oracle, similarly to how e−iAt is in the matrix-exponential model. 
+
+Rational functions . A rational function r = p/q , with p, q coprime, has a pole at w when 
+
+q(w) = 0 , of order the multiplicity of that root; it has type (μ, ν ) if deg p ≤ μ and deg q ≤ ν,and then at most ν poles counted with order. For a finite set P ⊂ C we write Rμ,ν (P) for the type-(μ, ν ) rational functions with poles in P.For γ > 0 we write Rd(σ, γ ) = { N (λ)/(( λ − σ)2 + γ2)d : deg N ≤ 2d }, the rational functions of type (2 d, 2d) whose poles lie at σ ± iγ , each of order at most d; it is a linear space of dimension 2d + 1 , and Rd(σ, γ ) ⊂ R 2d, 2d({σ ± iγ }), strictly for d ≥ 1, since the latter also contains functions with a single pole of order 2d, such as (λ − σ + iγ )−2d.       
+
+> 1For γ= 0 the encoding reduces to the identity, and the sign of γis a normalization, since Cσ, −γ(A) =
+> Cσ,γ (A)∗.
+
+52.1 Signal processing 
+
+In this section we describe the generalized quantum signal processing (GQSP) [4], the trans-formation mechanism used with the Cayley encoding and the matrix-exponential model. Given controlled access to a unitary U and to U ∗, one interleaves them with single-qubit 
+
+SU (2) rotations Rk (three Euler angles each) on one ancilla qubit; the alternating circuit realizes, in the ⟨0| · | 0⟩ block, 
+
+P (U ) = 
+
+> d∑
+> k=−d
+
+ck U k,
+
+an arbitrary Laurent polynomial subject only to |P (z)| ≤ 1 on T. When U and A share eigenvectors, if U v = eiφ v then P (U )v = P (eiφ )v: a Laurent polynomial in U applies the scalar map eiφ 7 → P (eiφ ) to each eigenphase. Two features distinguish GQSP from earlier QSP: general SU (2) rotations remove the parity and reality restrictions and the need for a complementary polynomial, leaving only boundedness on T; and the angles are computed by a stable classical routine depending only on P , and hence on the target function f ,and not on A or the dimension N , a portable precomputation obtained by layer-stripping recursions [4] or by direct optimization [20]. Choosing an access model is thus choosing which unitary U carries the eigenvalues of 
+
+A, and with it the classical approximation problem. This paper takes U = Cσ,γ (A), whose eigenphases are Möbius images of λ, so that P (U ) is a rational function of A; the two standard choices, which yield polynomials, are compared with it in Section 5. 
+
+# 3 The Cayley encoding 
+
+Since Cσ,γ (A) is unitary, it can be used as an access model and processed by GQSP. What makes it useful is that it carries two free parameters. This section studies the effect of σ,
+
+γ and the degree d. The derivative of the eigenphase map decides where in the spectrum, and how finely, the encoding acts, and hence how well a given f can be approximated. 
+
+Example. A reference example that we will develop in the paper is the shifted resolvent 
+
+Rw(A), w = σ − iγ : this is what shift-and-invert and rational Krylov methods perform, and the Cayley encoding realizes it at degree one (Section 3.5). 
+
+3.1 The two parameters 
+
+By Proposition 2.2 each eigenvalue λ of A is carried to an eigenphase eiφ σ,γ (λ) of the encoding, with 
+
+φσ,γ (λ) = −2 arccot  
+
+> (λ−σγ
+> )
+
+, λ(φ) = σ − γ cot( φσ,γ /2) , (3) 
+
+a strictly increasing bijection from R onto (−2π, 0) : the whole circle is covered except the point z = 1 , the common image of λ → ±∞ . Distinct eigenvalues therefore receive distinct phases for every γ > 0, so unlike e−iAt there is no aliasing and no need to know ∥A∥. In the following, we write φ for φσ,γ when the parameters are fixed The value assigned to λ is P (eiφ (λ)), where P is a Laurent polynomial of degree d, that is a trigonometric polynomial of degree d in the angle φ. If two eigenvalues λ1, λ 2 are close but f (λ1) and f (λ2) differ by an amount of order one, as happens across a jump or a steep region of f , then any approximant with small error must take values differing by about the same amount at λ1 and λ2. By Bernstein’s inequality [21] a trigonometric polynomial bounded by one cannot change by an amount of order one over an interval of angles shorter 
+
+6than about 1/d . Since φ(λ2) − φ(λ1) = φ′(ˆλ)( λ2 − λ1) for some ˆλ between λ1 and λ2, two eigenvalues can therefore receive substantially different values only if 
+
+|λ1 − λ2| ≳ δ(ˆλ), δ(λ) := 1
+
+d φ ′(λ) , φ′(λ) = 2γ
+
+(λ − σ)2 + γ2 . (4) 
+
+Two eigenvalues closer than δ(ˆλ) are assigned almost the same value, whatever the polyno-mial of degree d. The estimate is of order of magnitude only, since Bernstein’s inequality bounds the derivative of P on the whole circle and not on the arc between φ(λ1) and φ(λ2).The function φ′ is a bell-shaped weight with ∫ 
+
+> R
+
+φ′ = 2 π, peaked at σ with value 2/γ 
+
+and decaying as 2γ/ (λ − σ)2, so δ(σ) equals γ/ (2 d), stays of that order on a band of width about γ around it, and grows quadratically outside. The center σ thus is where the encoding acts finely, the width γ over how large a region, and the degree d improves the resolution by the same factor everywhere. Let ∆ be the scale on which f varies rapidly: the width of a jump or of a steep region of f , or the distance from S of a singularity of f lying close to it. Since δ(σ) = γ/ (2 d) by (4) , distinguishing two eigenvalues ∆ apart near σ requires 
+
+γ/ (2 d) ≲ ∆. Bringing the error below ε requires in addition a degree growing like log(1 /ε ),by the geometric decay of trigonometric approximation for f analytic near S [22]. Com-bining the two requirements, 
+
+d ≳ max  
+
+> {
+
+γ
+
+2∆ , c log 1
+
+ε
+
+> }
+
+, (5) 
+
+with c a constant depending on f . The first term grows with γ and the second does not, which makes the choice of γ an optimization rather than a change of variables; Section 6.1 works out the trade-off once the cost of one application is included. 
+
+Example For the shifted resolvent at σ − iγ the two parameters are obtained from the function itself: σ is the real part of the evaluation point and γ its distance from the real axis. The band of width about γ around σ, where φ′ is largest, then lies where the resolvent varies fastest, and the resolvent is obtained at degree one in closed form in Section 3.5. The smaller γ, the closer the pole to the spectrum and the harder the function is for a polynomial method, which has no pole to place; the encoding instead pays for a small γ in the cost of one application, which grows as 1/γ (Section 6). 
+
+Choosing the parameters in practice. The parameters are set by f and not by the eigenvalues of A, which are usually unknown: σ goes where f needs accuracy and γ is the scale of the region where the closest eigenvalues must be assigned different values. For a window, or for eigenvalues near a point τ , one takes σ = τ and γ about the half-width. The choice is a starting point rather than an optimum, since the cost of a degree-d approximant of width γ also depends on γ through the cost of one application; Section 7 shows that the pair minimizing the effective cost is not the one of smallest degree, a wider γ being often preferable because it lowers the rescaling. 
+
+3.2 Computing f (A)
+
+By Proposition 2.2, U = Cσ,γ (A) can serve as a unitary encoding. We now use it as the GQSP signal to reach f . A single application of GQSP with a Laurent polynomial P
+
+of degree d produces r(A) = P (U ), with r ∈ R d(σ, γ ), and since A is Hermitian and U
+
+commutes with it, 
+
+∥f (A) − P (U )∥ = max 
+
+> λ∈Λ( A)
+> ∣∣
+
+f (λ) − P (zσ,γ (λ)) ∣∣,
+
+7so choosing P is a scalar approximation problem on the spectrum. Recovering r(A)b from the |0⟩ branch of the ancilla requires amplitude amplification (step 6 below). We now assemble the full procedure, analyzed and discussed in the subsequent sections. Its overall flow is 
+
+f choose σ,γ 
+
+−−−−−−→ F on T approximate 
+
+−−−−−−−→ P, {ck} angle-finding 
+
+−−−−−−−−→ {Rk} GQSP 
+
+−−−−−−−→   
+
+> U=Cσ,γ (A)
+
+r(A) b , 
+
+where the first four stages are classical precomputation (independent of N , and of A from the angle-finding on) and only the last runs on the quantum device. In detail: 1. Choose σ where the target function needs accuracy, γ the scale of the sharp region, as discussed at the end of Section 3.1. 2. Set F (φ) = f (σ − γ cot( φ/ 2)) . This F is continuous whenever f is continuous on the spectrum. 3. Approximate F by a degree-d trigonometric polynomial p (Section 3.4) and let η be the supremum of p on T. Dividing the coefficients of p by η gives P (eiφ ) = ∑ 
+
+> k
+
+ckeikφ with 
+
+|P | ≤ 1, as GQSP requires. Note that the constraint acts on the whole circle, whereas 
+
+f prescribes p only on the arc zσ,γ (S), the image of the spectral set; off that arc nothing holds p down, so η can exceed the maximum of f and is not a property of f alone but of how much of the circle the spectral set covers. In Proposition 3.4 we show that this is equivalent to prescribed-pole rational approximation of f , but one works only with the polynomial. 4. Compute the GQSP angles from {ck} obtaining the rotations {Rk}; a matrix-indepen-dent, reusable precomputation. 5. Build the circuit: 2d + 1 single-qubit rotations {Rk} interleaved with 2d controlled applications of Cσ,γ (A)±1 (Section 6 discusses how the encoding is realized). 6. Run on |0⟩ | b⟩ and measure the ancilla. On outcome 0 the system register holds 
+
+P (Cσ,γ (A)) b, which approximates η−1f (A)b, where η is the factor introduced in step 3. The outcome has probability ∥P (Cσ,γ (A)) b∥2, of order (∥f (A)b∥ /η )2, so the vector is extracted by amplitude amplification, at a cost quantified in Corollary 6.3. 
+
+3.3 The class reachable with a Cayley factor 
+
+In this section we describe the main steps for the approximation of f (A)b using Cayley encoding and a Laurent polynomial of degree d.
+
+Theorem 3.1. For a Laurent polynomial P of degree d, P (Cσ,γ (A)) = r(A) with r ∈Rd(σ, γ ). for every r ∈ R d(σ, γ ) bounded by 1 on R there exists a unique Laurent poly-nomial P of degree d with |P | ≤ 1 on T such that r(λ) = P (zσ,γ (λ)) on R. If P is an ordinary polynomial of degree d, the corresponding r lies in Rd,d ({σ − iγ }).Proof. Write t = λ − σ and z = zσ,γ (λ) = ( t − iγ )/(t + iγ ), so that 
+
+zk = ( t − iγ )k(t + iγ )−k = (t − iγ )d+k(t + iγ )d−k
+
+(t − iγ )d(t + iγ )d
+
+for every k, negative k included. Then P (z) = ∑dk=−d ckzk becomes 
+
+P (z(λ)) = N (t)(t2 + γ2)d , N (t) = 
+
+> d∑
+> k=−d
+
+ck (t − iγ )d+k(t + iγ )d−k.
+
+8Note that N (t) is a polynomial of degree at most 2 d, while t2 +γ2 = ( λ−σ −iγ )( λ−σ +iγ )has roots equal to σ ± iγ . Hence r = P (zσ,γ ) ∈ R d(σ, γ ), and the order of each pole drops below d where N vanishes. The map P 7 → r = P (zσ,γ (λ)) is linear, and injective since zσ,γ , a Möbius transfor-mation, is invertible. Note that the space of Laurent polynomials of degree d and that of rational functions with denominator (( λ − σ)2 + γ2)d fixed and numerator of degree at most 2 d have the same dimension, 2 d + 1. An injective linear map between spaces of equal finite dimension is a bijection, so every such r arises from a unique P . Since zσ,γ maps R
+
+onto T \ { 1}, sup R |r| = sup T |P |, hence the bound |P | ≤ 1 and the bound |r| ≤ 1 are the same constraint. If only nonnegative powers appear the denominator is ( t + iγ )d, and each numerator (t − iγ )k(t + iγ )d−k has degree exactly d, giving r ∈ R d,d ({σ − iγ }). 
+
+Remark 3.2. The numerator N in Theorem 3.1 is free of degree up to 2 d. When its leading coefficients in the monomial basis vanish, N has degree strictly less than 2 d and the rational is of type ( j, 2d) with j < 2d. The shifted resolvent is the extreme case: at 
+
+d = 1 the choice c0 = −c1 makes the degree-one term of N cancel, leaving 
+
+c0 + c1 zσ,γ (λ) = 1
+
+λ − (σ − iγ ) up to a constant, a rational of type (0 , 1). More generally every type ( j, d ) over the denominator ( λ−σ+iγ )d,and every type ( j, 2d) over (( λ − σ)2 + γ2)d with j ≤ 2d, is reached up to a positive scaling factor; the numerator is chosen at will, subject only to the normalization |r| ≤ 1 on R that GQSP imposes, which fixes the overall scale but not the shape of r.We remark that the freedom is in the numerator, not in the poles. The two poles are pinned at σ ± iγ ; only their common order and the numerator are at the user’s disposal. A single conjugate pair therefore already gives a rich family: every rational function bounded by one on R whose poles lie at σ ± iγ , each of order at most d.
+
+The following Corollary shows the cost of using Cσ,γ (A) in association with GQSP to realize a rational function with prescribed poles. 
+
+Corollary 3.3. Every r ∈ R d(σ, γ ) with |r| ≤ 1 on R is applied with 2d controlled appli-cations of Cσ,γ (A)±1 and one ancilla, with no parity restriction and no linear-combination overhead. 
+
+3.4 Approximation: reduction to the circle 
+
+Step 3 of the pipeline requires a Laurent polynomial in the eigenphase z = eiφ , that is a trigonometric polynomial in φ, which is what GQSP realizes. We therefore view f on the unit circle rather than on the spectrum, as F : T → C,
+
+F (z) = f (σ − γ cot( φ/ 2) ), z = eiφ ,
+
+the value of f at the real number λ(φ) carried to z. This substitution reduces the problem into one of polynomial approximation on the circle, for which Fourier truncation, Remez, Lawson iteration and linear programming are available [23, 24, 25]. 
+
+Proposition 3.4. Let S ⊇ Λ( A) be an infinite compact set, let f ∈ C0(S), and let 
+
+F (eiφ ) = f (σ − γ cot( φ/ 2)) . Then 
+
+min  
+
+> r∈R d(σ,γ )
+
+max  
+
+> λ∈S
+
+|f (λ) − r(λ)| = min  
+
+> P
+
+max   
+
+> z∈zσ,γ (S)
+
+|F (z) − P (z)|,
+
+where the minimum on the right is over the Laurent polynomials P (z) = ∑dk=−d ckzk.
+
+9If F can be extended analytically to the annulus ρ−1 < |z| < ρ with ρ > 1, a classical Bernstein-type theorem [22, Ch. 8] gives the geometric decay of the error, O(ρ−d), faster as the annulus is wider. Now F is f seen through the Möbius change of variable (3) , so an annulus around the circle corresponds, under that map, to a region around the real axis in the λ-plane, inside which f must be analytic. The widest annulus one may take is therefore limited by the singularity of f closest to the axis, and γ has to be chosen accordingly. Classically, rational approximation outperforms polynomial approximation on functions such as the sign function or 1/λ near the origin because the poles may be placed freely, and the optimal constructions, Zolotarev’s among them, cluster them geometrically towards the singularity. A single Cayley factor pins its poles to the one conjugate pair σ ± iγ , so by Proposition 3.4 the approximation is polynomial in the transformed variable. Placing that pair next to the difficulty already helps, but Zolotarev’s rate, geometric with a ratio that depends only logarithmically on the gap, requires several poles spaced geometrically, not just one. One condition on f is specific to this encoding. The angle map sends both ends of the real axis to z = 1 , so F is continuous on the circle only if the two limits of f at ±∞ agree. For a matrix of finite size this is no restriction: the spectrum is bounded, its image is an arc that stays away from z = 1 , and the values of f outside the spectrum play no role, so any f continuous on the spectrum can be approximated. The condition matters only for spectra that grow without bound, as when a differential operator is discretized on finer and finer grids: the arc then approaches z = 1 and a function whose two ends disagree, as for example the sign function, cannot be followed uniformly. 
+
+3.5 The shifted resolvent 
+
+For w = σ − iγ , a point off the real axis, the resolvent g(λ) = 1 
+
+> λ−σ+iγ
+
+is rational of type 
+
+(0 , 1) with its only pole at w, and applying g(A) to a vector b returns the solution of the shifted system (A − σI + iγI )x = b, the basic step of shift-and-invert and rational Krylov methods. Hence, the shifted resolvent lies in the class of Theorem 3.1 at degree one, and the identity is exact: 
+
+1 − zσ,γ (λ)2iγ = 1
+
+λ − σ + iγ = g(λ).
+
+The Laurent polynomial p(z) = (1 − z)/(2 iγ ) involves only z0 and z1, so no approximation is made and U ∗ is not needed. GQSP requires the polynomial it implements to be bounded by one on T, and ∥p∥∞,T =1/γ , attained at z = −1, the image of λ = σ. The circuit therefore implements P = γp and the |0⟩ branch of the ancilla carries γ g (A)b, so recovering g(A)b takes O(1 /(γ ∥g(A)b∥)) 
+
+rounds of amplitude amplification. Every unitary-based method pays a factor of this kind. The circuit reads a block of a unitary, which is a contraction, so a function of supremum 1/γ can only appear subnormalized by γ; the polynomial approach pays the same through the subnormalization of its own block encoding. Since g is reached exactly at d = 1 , the gain of the Cayley encoding is in the degree, whereas a polynomial method must first approximate it, at a degree growing like 1/γ because the pole lies at distance γ from the spectrum. 
+
+10 4 The complete family of rational encodings: products of Cayley factors 
+
+The construction so far uses a single conjugate pair σ ± iγ . Multiplying Cayley factors places the poles at any finite set of points off the real axis, still with one ancilla and no linear combination. The point of this section is not the extension itself, which on the targets considered here brings no advantage, but the proof that the resulting family is the complete list of rational unitary encodings. 
+
+Definition 4.1. For w1, . . . , w m ∈ C \ R, with q(λ) = ∏ 
+
+> j
+
+(λ − wj ) and q∗(λ) = ∏ 
+
+> j
+
+(λ − ¯wj ), the multi-pole encoding is 
+
+Cq(A) = q∗(A) q(A)−1 =
+
+> m∏
+> j=1
+> (
+
+A − ¯wj I)( A − wj I)−1.
+
+The factors of a Cayley encoding commute and are unitary, so Cq(A) is a single unitary on the system register, with eigenvalues zq(λk) where zq = q∗/q . The next theorem shows that every rational function unitary on every Hermitian matrix has this form, up to a unimodular constant. 
+
+Theorem 4.2. Let r be rational, not identically zero, with r(A) defined and unitary for every Hermitian A. Then r = c q ∗/q for a polynomial q with no real roots and |c| = 1 ; that is, r(A) = c Cq(A). Conversely every such r has this property. Proof. We prove the forward direction; the converse, that every such product is unitary on every Hermitian A, is immediate since each Cayley factor is. Suppose r is unitary on A for every Hermitian A. Evaluating on eigenvalues we have 
+
+|r(λ)| = 1 for every real λ, and r has no pole on R (a real pole would make r(A) unbounded for some A). Write r = p/q with p, q coprime polynomials, and let p∗(λ) = p(¯λ) denote the polynomial over C obtained by conjugating the coefficients. The condition |r| = 1 on R means |p(λ)|2 = |q(λ)|2 there, that is p p ∗ = q q ∗ for all real 
+
+λ; since two polynomials agreeing on all values in R are equal, this identity holds for all λ.Now p divides the left-hand side p p ∗, hence also the right-hand side q q ∗; being coprime to q, it must divide q∗, i.e. p | q∗. The same argument with the roles of p and q exchanged gives q∗ | p. Two polynomials that divide each other are equal up to a constant, so p = c q ∗
+
+with |c| = 1 by the normalization |r| = 1. Therefore r = p/q = c q ∗/q , a unimodular constant times the ratio of a polynomial to its conjugate-reflection. 
+
+Proposition 4.3. Let wj = σj − iγ j with γj > 0 for j = 1 , . . . , m , let q(λ) = ∏ 
+
+> j
+
+(λ − wj )
+
+and zq = q∗/q . The angle map of zq is the sum of the angle maps of its factors, φq = 
+
+> ∑
+> j
+
+φσj ,γ j , so that 1. the accuracy density is 
+
+φ′
+
+> q
+
+(λ) = 
+
+> m∑
+> j=1
+
+2γj
+
+(λ − σj )2 + γ2
+
+> j
+
+,
+
+> ∫
+> R
+
+φ′ 
+
+> q
+
+= 2 πm ;
+
+2. degree-d GQSP on Cq(A) reaches the functions λ 7 → P (zq(λ)) with P a Laurent polynomial of degree d satisfying |P | ≤ 1 on T, using 2d applications of the encoding and 2d+1 angles, both independent of m. These functions lie in the space of rational functions with denominator (qq ∗)d and numerator of degree at most 2md , which has dimension 2md + 1 , and span a subspace of it of dimension 2d + 1 .
+
+11 Proof. Eigenvalues of a product of commuting unitaries multiply, so the phases add: φq = 
+
+> ∑
+> j
+
+φσj ,γ j . Differentiating termwise and using ∫ 
+
+> R
+
+φ′ 
+
+> σ,γ
+
+= 2 π (Section 3.1) for each factor gives item 1. For item 2, write zkq = ( q∗)kq−k and multiply numerator and denominator by qd(q∗)d:the term of index k becomes ( q∗)k+dqd−k, of degree m(k + d) + m(d − k) = 2 md , over the common denominator ( qq ∗)d, also of degree 2 md . Hence P (zq(λ)) has denominator ( qq ∗)d
+
+and numerator of degree at most 2 md . Distinct P give distinct functions of λ, since zq is a nonconstant rational function and therefore takes infinitely many values: if P (zq(λ)) = 0 for all λ, then P has infinitely many roots and vanishes. The reachable functions therefore span a subspace of dimension 2 d + 1 of a space of dimension 2 md + 1. 
+
+The counts of applications and angles are those of GQSP applied to the single unitary 
+
+Cq(A), and do not involve m; the cost of realizing one application does, since Cq(A) is a product of m Cayley factors. The inclusion in item 2 is strict as soon as m ≥ 2, and this is what separates the multi-pole family from the single pair. By Remark 3.2, one conjugate pair already gives every bounded rational function with those poles, each of order at most d, the numerator being free; with several pairs the poles may be placed at will, but the numerator is no longer free, being determined by the denominator through zq. The full type-(2 md, 2md ) class is reached instead by a linear combination of resolvents [16], at the cost of ⌈log 2 m⌉ ancillas and an 
+
+ℓ1 subnormalization factor. By Theorem 4.2 no rational unitary encoding, processed alone by GQSP, reaches a free numerator: the wider class requires either additional ancillas, as in the linear combination of resolvents, or a different way of combining the encodings. These products appear classically as well. For a dense A the standard way of applying 
+
+e−iAτ is not a polynomial method but an implicit one: the Crank–Nicolson propagator is 
+
+−C 0,γ (A)−1 with γ = 2 /τ . Higher-order variants are given by the diagonal Padé approxi-mants of ez , which have modulus one on the real line and are therefore again products of Cayley factors, by Theorem 4.2. The same construction has been proposed on a quantum computer, realizing those approximants through a linear system solver [26]; the present framework contains it as the particular case in which the poles are fixed by the order of the approximant rather than chosen in response to f .
+
+# 5 Comparison with the standard access models 
+
+In this section we compare our Cayley transform with the two standard access models. Table 1 present an overview of the main differences of the three access models. The block-encoding model embeds A/α , with α ≥ ∥ A∥, in the leading block of a unitary UA acting on the system register and a ancillas, and transforms the singular values of the encoded block by QSVT [2, 12]. The matrix-exponential model supplies e−iAt , a unitary on the system register with no ancillas, processed by GQSP with one ancilla to give arbitrary trigono-metric polynomials in λt . Each access model admits a natural transformation mechanism: GQSP for unitaries (acting on eigenvalues), QSVT for block encodings (acting on singular values). QSVT cannot be applied to unitaries because their singular values are all one. The exponential and Cayley models fit the same template: a unitary U commuting with A, with U v = eiφ (λ)v, processed by degree-d signal processing to give P (eiφ ). They differ only in the substitution λ 7 → φ, so that choosing between them is choosing a change of variable, and with it a classical approximation problem and an accuracy density. The block-encoding model does not fit the template, since UA acts on the ancillas as well and does not commute with A, but it enters the same comparison through the Chebyshev 
+
+12 Properties block-encoding mat. exponential Cayley handle UA, A/α in a block e−iAt Cσ,γ (A)ancillas for handle a none none substitution φ = arccos( λ/α ) φ = −λt φ = −2 arccot λ−σγ
+
+transformation QSVT GQSP GQSP reachable class polynomials trig. polynomials Rd(σ, γ ), poles σ ± iγ 
+
+classical analogue Chebyshev Fourier prescribed-pole rational accuracy density φ′ 1/√α2 − λ2 t, t ≤ π/α 2γ/ (( λ − σ)2 + γ2)deg. to distinguish ∆ α/ ∆ away from ±α α/ ∆ γ/ (2∆) near σ
+
+needs ∥A∥ bound yes yes (aliasing) no target condition spectrum in [ −α, α ] periodicity cont. on the spectrum 
+
+Table 1: Comparison of the three access models. 
+
+−1 −0.5 0 0.5 10510 15 window [σ − γ, σ + γ]
+
+λ
+
+> accuracy density  φ′(λ)
+
+Accuracy density for the three access models ( α = 1, σ = 0 .3, γ = 0 .15)    
+
+> Block encoding Matrix exponential, t=π/α
+> Cayley
+
+Figure 1: Accuracy density φ′(λ) for the three access models, each drawn at the parameters its model admits. The exponential density is constant and is drawn at its ceiling t = π/α , which the absence of aliasing imposes; the block-encoding density is fixed by A alone and rises towards the spectral ends 
+
+±α; the Cayley density is peaked at σ with value 2/γ and half-width γ, and is the only one that can be placed. 
+
+change of variable λ = α cos φ, under which the Chebyshev polynomials of the first kind satisfy Tk(λ/α ) = cos kφ .The Cayley column extends to m pole pairs through Cq(A): the substitution becomes a sum of m arc-cotangents, the density a sum of m bells, and the reachable class still has dimension 2d + 1 (Proposition 4.3). The asymmetry between the three models is more profound than the row Table 1 on 
+
+∥A∥ suggests. In the first two models the unitary being processed, UA or e−iAt , is fixed by 
+
+A alone, and all the adaptation to f happens in the choice of P . In fact, α is fixed by A, and 
+
+t, although free, only scales the whole spectrum’s accuracy up or down together; it cannot shift accuracy toward one part of the spectrum, the way σ and γ do. Its range is moreover bounded, since φ = −λt sends the spectrum onto an arc of length at most 2tα , with 
+
+α ≥ ∥ A∥ and distinct eigenvalues receive distinct phases only if that arc fits in the circle, which forces tα ≤ π. The exponential density is therefore uniform and at most π/ ∥A∥,where the Cayley density 2/γ is concentrated and unbounded as γ → 0. The integral of 
+
+φ′ over an interval is the length of the arc onto which that interval is mapped, hence the number of eigenvalues a given degree can separate there. Over the window [σ − γ, σ + γ]
+
+the Cayley encoding assigns half of the circle, against 2γπ/α for the exponential model at its ceiling, a ratio α/ (2 γ) that grows without bound as the width narrows (Figure 1). 
+
+13 6 The cost of realizing the Cayley encoding 
+
+In Sections 3, 4 and 5 we worked in the query model: Cσ,γ (A) is treated as an oracle, and the reachable class and the approximability of f do not depend on how the oracle is built. In that model the cost is the number of queries to the unitary that encodes A and to its inverse, which is proportional to the degree. By (5) , distinguishing eigenvalues at distance ∆ near σ requires a degree of order γ/ ∆ in the Cayley class, against α/ ∆ in the two standard models (Table 1). The Cayley encoding therefore needs a lower degree when the difficulty of f is confined to a region of width comparable to γ, small compared with 
+
+α, and for the shifted resolvent the degree is one, against a degree growing as 1/γ for a polynomial method (Section 3.5). When the variation of f is spread over the whole spectral set there is nothing to concentrate, and the advantage disappears. The realization model accounts instead for the cost of one call. We show that, starting from a block encoding of a Hermitian matrix, we can construct a block encoding of the Cayley encoding at a cost that we make precise below. 
+
+A generic realization from a block-encoding. Given an α-block-encoding UA of A,with α ≥ ∥ A∥, the resolvent identity 
+
+Cσ,γ (A) = I − 2iγR, R = M −1, M = A − σI + iγI, 
+
+expresses the encoding through the shifted resolvent. The shifted matrix M is obtained from UA as a linear combination of A and I, and since ∥M ∥ ≤ ∥ A∥ + |σ| + γ the resulting block encoding has subnormalization αM = α + |σ| + γ. M is normal, with smallest singular value smin (M ) = min j
+
+> √
+
+(λj − σ)2 + γ2 ≥ γ and, by (2) , condition number at most 
+
+> √
+
+∥A − σI ∥2 + γ2/γ , of order ∥A − σI ∥ /γ for γ ≪ ∥ A − σI ∥.
+
+Lemma 6.1. Let UA be an exact (α, a )-block-encoding of A and let αM = α + |σ| + γ. For every δ ∈ (0 , 1) there is a circuit that is a (1 , a + O(1) , δ )-block-encoding of Cσ,γ (A), at a cost of ˜O(αM /γ ) queries to UA and U ∗
+
+> A
+
+.Proof. The construction proceeds in three stages, shown in Figure 2. (i) The inversion of M , obtained by the polynomial approximation of 1 /x of [27], and implemented through QSVT [2, 28], produces a block encoding of R at a cost of 
+
+> ˜
+
+O(αM /γ ) queries to UA. Indeed the degree of the inversion polynomial is pro-portional to the condition number of the normalized matrix B = M/α M , whose smallest singular value smin (M/α M ) is at least γ/α M . The block encoding of R
+
+just constructed has, besides its query cost, a subnormalization of its own, and it is this second quantity that matters next: it alone governs how much amplifica-tion the following stage requires. The inversion polynomial realizes pinv (x) ≈ c/x 
+
+subject to |pinv | ≤ 1, which forces c ≤ smin (B); taking the largest allowed value, 
+
+c = Θ( γ/α M ), gives pinv (B) = Θ( γ)M −1, so the block encodes R with subnormal-ization αR = Θ(1 /γ ): the factor αM , and with it the dependence on α, cancels in the product c B −1. This 1 /γ scaling is the worst case, attained when an eigenvalue of A lies at σ.(ii) Cσ,γ (A) = I − 2iγR is obtained as a linear combination of I and R and gives subnor-malization β = 1 + 2 γ α R = O(1). Indeed, 2 γΘ(1 /γ ) = O(1) .
+
+(iii) The block encoding therefore contains Cσ,γ (A)/β , whose singular values are all equal to 1 /β , Cσ,γ (A) being unitary. A subnormalized block cannot serve directly as the 
+
+14 |0⟩|0⟩⊗a                          
+
+> |b⟩|0⟩
+> ϕ0ϕ1ϕn−1ϕn
+> UAU∗
+> AU∗
+> A
+> · · · · · · · · ·
+> QSVT: resolvent
+> R= ( A−σI +iγI )−1,degree ninv =˜O(αM/γ ), subnorm. αR= Θ(1 /γ )affine
+> I−2iγR
+> subnorm. β=O(1) uniform sing.-value amplification block-enc. of Cσ,γ (A)amplification error δ
+
+Figure 2: Realizing the Cayley transform from a block encoding UA of A. Stage (i), QSVT applied to 
+
+UA with the bounded approximation of 1/x , produces a block encoding of the resolvent R with sub-normalization αR = Θ(1 /γ ). Its degree ninv is proportional to the condition number of the normalized shifted matrix, hence ninv = ˜O(αM /γ ), and this is the query cost of one application of the encoding. Stage (ii) forms I −2iγR , whose subnormalization is β = O(1) . Stage (iii) amplifies the singular values, all equal to 1/β , back to one, returning a genuine unitary at the cost of one flag qubit and a polynomial of degree O(log(1 /δ )) .
+
+GQSP signal, so one further step is needed: applying Theorem 30 of [2] with am-plification factor β maps 1 /β to 1 with a polynomial of degree O(β log(1 /δ )) = 
+
+O(log(1 /δ )), using one additional flag qubit, and returns a genuine unitary block equal to Cσ,γ (A) up to error δ. Since β = O(1), this amplification costs only a con-stant factor and a logarithmic term, giving the stated (1 , a + O(1) , δ )-block-encoding at a total cost of ˜O(αM /γ ) queries. 
+
+The inversion of M carries the whole cost: the affine step adds two queries, and the amplification a factor O(log(1 /δ )) since β = O(1) .We are ready to prove the final result. 
+
+Theorem 6.2 (Block-encoding of f (A)) . Let A be Hermitian with Λ( A) ⊆ S, let UA be an (α, a )-block-encoding of A, and let αM be as in Lemma 6.1. Let ε ∈ (0 , 1) , let η > 0
+
+and let P be a Laurent polynomial of degree d with ∥P ∥∞,T ≤ 1 such that 
+
+max 
+
+> λ∈S
+
+∣∣f (λ) − η P (zσ,γ (λ)) ∣∣ ≤ ε
+
+2 . (6) 
+
+Then the circuit obtained by running degree-d GQSP on the encoding of Lemma 6.1 is an 
+
+(η, a + O(1) , ε )-block-encoding of f (A), at a cost of ˜O(d α M /γ ) queries to UA and U ∗
+
+> A
+
+.Proof. Set δ = ( ε/ (8 dη )) 2 and let W be the circuit supplied by Lemma 6.1 at accuracy δ
+
+at a cost of ˜O(αM /γ ) queries to UA.For a unit vector ψ we have W (|0⟩ ⊗ ψ) = |0⟩ ⊗ ˜Cψ + g,where ˜C = ( ⟨0| ⊗ I)W (|0⟩ ⊗ I) is the block of W , with 
+
+∥∥∥ ˜C − C σ,γ (A)
+
+∥∥∥ ≤ δ, and g satisfies (⟨0| ⊗ I)g = 0 and ∥g∥2 = 1 −
+
+∥∥∥ ˜Cψ 
+
+∥∥∥2
+
+≤ 2δ. Hence 
+
+∥∥W (|0⟩ ⊗ ψ) − | 0⟩ ⊗ C σ,γ (A)ψ∥∥ ≤ δ + √2δ ≤ 2√δ, 
+
+and the same bound holds for W ∗ and Cσ,γ (A)∗, and for the controlled versions of both. Let V be the degree-d GQSP circuit built on W , and V0 the same circuit with W
+
+replaced by a unitary W0 satisfying W0(|0⟩ ⊗ ψ) = |0⟩ ⊗ C σ,γ (A)ψ for every ψ. Then 
+
+15 V0 keeps the ancillas of the lemma in |0⟩ and its block is P (Cσ,γ (A)). Both circuits are products of the same 2 d + 1 rotations and of 2 d controlled applications of the encoding or of its inverse, so a telescoping sum over these applications gives 
+
+> ∥∥
+
+(V − V0)( |0⟩ ⊗ ψ)∥∥ ≤ 2d · 2√δ = ε
+
+2η
+
+for every unit vector ψ. Since the compression onto |0⟩ does not increase the norm, 
+
+∥ηP (Cσ,γ (A)) − η (⟨0| ⊗ I)V (|0⟩ ⊗ I)∥ ≤ ε/ 2. Since Cσ,γ (A) commutes with A and shares its eigenvectors (Proposition 2.2), by (6) 
+
+> ∥∥
+
+f (A) − ηP (Cσ,γ (A)) ∥∥ = max 
+
+> λ∈Λ( A)
+> ∣∣
+
+f (λ) − ηP (zσ,γ (λ)) ∣∣ ≤ ε
+
+2 ,
+
+and the triangle inequality gives ∥f (A) − η (⟨0| ⊗ I)V (|0⟩ ⊗ I)∥ ≤ ε. The ancillas are those of Lemma 6.1 together with the single GQSP ancilla, and the query count is 2 d times that of the lemma, with log(1 /δ ) = 2 log(8 dη/ε ) absorbed in ˜O.
+
+Applying the block encoding of f (A) to |0⟩ | b⟩ gives the outcome 0 on the ancilla with probability ∥f (A)b∥2 /η 2, so the vector is extracted by amplitude amplification, using a lower bound ℓ for ∥f (A)b∥ to fix the number of rounds. 
+
+Corollary 6.3. Assume the hypotheses of Theorem 6.2, let b be a unit vector and let 
+
+ℓ > 0 satisfy ℓ ≤ ∥ f (A)b∥. Then for every ε ∈ (0 , 1) the normalized state f (A)b/ ∥f (A)b∥
+
+is prepared to accuracy ε at a cost of 
+
+> ˜
+
+O 
+
+> (
+
+d α M
+
+γ · ηℓ
+
+> )
+
+queries to UA.Proof. Run the circuit V of Theorem 6.2 at accuracy ε′ = εℓ/ 4, which by the theorem costs 
+
+> ˜
+
+O(d α M /γ ) queries, the dependence on ε′ being logarithmic and absorbed in ˜O. Applied to 
+
+|0⟩ | b⟩, the circuit leaves in the |0⟩ branch a vector w with ∥∥w − η−1f (A)b∥∥ ≤ ε′/η , hence 
+
+∥w∥ ≥ ℓη − ε′ 
+
+> η
+
+≥ ℓ 
+
+> 2η
+
+, using ε < 1. For two nonzero vectors,  
+
+> ∥∥∥
+
+w
+
+∥w∥ − u
+
+∥u∥ 
+
+> ∥∥∥
+
+≤ 2 ∥w − u∥
+
+max {∥ w∥ , ∥u∥} ,
+
+so with u = η−1f (A)b the normalized vectors differ by at most 2( ε′/η )/(ℓ/ (2 η)) = ε.Fixed-point amplitude amplification [29], calibrated on the lower bound ℓ/ (2 η) for the amplitude, brings the |0⟩ branch to weight Θ(1) in O(η/ℓ ) rounds, each one application of 
+
+V and of V ∗, which multiplies the count by that factor. 
+
+A lower bound ℓ is available whenever f does not vanish on the spectrum, since 
+
+∥f (A)b∥ ≥ min λ∈Λ( A) |f (λ)| for a unit vector b. For a spectral projector Π the mini-mum is zero, and ∥Πb∥, the norm of the component of b in the projected subspace, can be arbitrarily small. It is then estimated rather than used to extract Πb
+
+Comparison with the matrix-exponential model. The matrix-exponential model admits the same construction from a block encoding of A, at a cost of ˜O(αt ) queries per application by qubitization [3, 30]. The two costs have the same form, ˜O(αt ) against 
+
+> ˜
+
+O(αM /γ ), whenever |σ| ≤ α and γ ≤ α, so that αM ≤ 3α, which is the case of interest. The evolution time therefore plays the role of the reciprocal of the width: in both models the parameter that concentrates the accuracy is the one that makes one application expensive. The two parameters differ in what they return: the exponential density is uniform and bounded (Section 5), where 2/γ is unbounded and concentrated where it is placed. 
+
+16 6.1 When does the Cayley encoding help? 
+
+In the query model the Cayley class reaches a prescribed accuracy at a degree between three and four times smaller than the polynomial one, on the functions whose difficulty is localized in part of the spectrum. We now weigh that gain against the cost of one application, and find that the two cancel. Let ∆ be the separation fixed by f as in Section 3.1. For 1/λ on [1 /κ, 1] ∆ is 1/κ , the modulus of the smallest eigenvalue: near that point the function halves over an interval of that length, while near λ = 1 it varies far more slowly. Distinguishing two eigenvalues a distance ∆ apart near σ requires a degree d ≳ γ/ (2∆) by (4) , so the width that concentrates the accuracy is also what raises the degree, while by Lemma 6.1 a small width is what makes one application expensive. 
+
+Corollary 6.4. Let ∆ be the separation fixed by f as in Section 3.1, and let the degree be the smallest one meeting the resolution requirement, that is d = Θ( γ/ ∆) . Then the count of Theorem 6.2 is ˜O(αM /∆) , independent of γ, and that of Corollary 6.3 is ˜O(αM η/ (∆ ℓ)) ,in which γ appears only through η.
+
+The result of Corollary 6.4 is negative: what is saved in degree is spent, at the same rate, in the shifted solve that each application requires. When |σ| ≤ α and γ ≤ α, so that 
+
+αM ≤ 3α, the resulting count ˜O(αM /∆) is of the same order as that of the polynomial method, which by Table 1 needs a degree α/ ∆. This is where the quantum setting differs from the classical one. In the classical case the cost of a nearby pole is paid once, since the factorization of A − wI is computed and then reused at every application, so the reduction in degree is a net gain and shift-and-invert is amortized over the iterations. In the quantum setting, on the contrary, each application of the encoding is a fresh solve costing ˜O(αM /γ ),so the nearby pole reduces the degree and raises the cost of one application at the same rate. The question therefore becomes when the encoding can be realized more cheaply than the construction above allows. Writing CCay for the cost of one application in elementary gates, CUA for the cost of one query to UA, the block encoding of A, and d and n for the degrees at which the two classes reach the same accuracy, the Cayley approach is the cheaper one when 2d C Cay < n C UA . Corollary 6.4 says that the generic construction, for which CCay = ˜O(αM /γ ) CUA , makes the two sides agree in order, so the advantage must come from a realization that bypasses it altogether. Tuning γ does not help. For example, for γ > ∥A − σI ∥ the resolvent has a geometrically convergent Neumann series and the solve is cheap, but by (5) such a width requires a degree of order ∥A − σI ∥ /∆, that of the polynomial methods, so the cheap and the useful values of γ do not overlap. The advantage must come from structure in A that makes the shifted solve fast. 
+
+The case f = 1 /λ . Take ∥A∥ = 1 , so that the spectrum lies in [−1, −1/κ ] ∪ [1 /κ, 1] ,and σ = 0 . The pole of 1/λ lies on the real axis, so the function is not in the reachable class; at degree one the encoding gives 1/(λ + iγ ), with relative error at most γκ on the spectrum. A small error therefore requires γ ≲ 1/κ , and each application costs ˜O(κ) CUA .Balancing degree and width in (5) gives a total count of ˜O(κ) CUA , the same order as the polynomial method, as Corollary 6.4 predicts. There are two possible ways of realizing 
+
+Cσ,γ (A) at a lower cost: keeping the resolvent form Cσ,γ (A) = I − 2iγR and encoding R
+
+directly from a structured description of it, so that UA is never formed, which is the subject of Section 6.2; or dropping that form and realizing Cσ,γ (A) as a unitary circuit built from a parametrization of the unitary itself, which is the approach of Section 6.3. 
+
+17 6.2 Structured families 
+
+Encoding the shifted resolvent directly requires two properties of the matrix: that it can be described by few parameters, and that those parameters can be loaded as quantum states in polylogarithmic depth. If A A is real symmetric, tridiagonal and irreducible, the first property always holds, and the second holds in cases of interest that we describe below. Note that M = A − σI + iγI is then is complex symmetric and tridiagonal as well, and by the nullity theorem [31] its inverse R = M −1 is semiseparable of the one-pair kind, that is, can be described by two complex generators u and v as R = triu( uv T ) + tril( vu T , −1) .Although R is dense, a block encoding UR of R can be built from its generators alone, by an explicit circuit of depth O(log 3 N ) + Dsp , where Dsp is the depth of the routines that prepare u and v as quantum states [32]. UA is never formed and the construction of Section 6 is bypassed; the affine step Cσ,γ (A) = I − 2iγR and the amplification that follows do not depend on how UR was obtained. The second property, that the two generators can be prepared as quantum states in polylogarithmic depth, is not automatic, and is what selects the subclass on which this approach is effective. The encoding of [32] gives UR with subnormalization αR = 2 √N ∥u∥2∥v∥2, so the affine step Cσ,γ (A) = I − 2iγR has subnormalization β = 1 + 2 γα R = 1 + 4 γ√N ∥u∥2∥v∥2,and O(β) rounds of amplitude amplification recover the unitary. One application of the encoding therefore has depth O(β(log 3 N + Dsp )) , independent of κ(M ), against O(log 2 N )
+
+for one query to UA when A is tridiagonal [33]. When the generators are prepared at polylogarithmic depth, as discussed below, one application of the Cayley encoding is thus more expensive than one query to UA. The cost of computing f (A)b, however, is the cost of one application multiplied by the number of applications, which is fixed by the degree of the approximant and by the rescaling η. Writing n for the degree at which the polynomial class reaches the target accuracy and d for the degree in the Cayley class, the more expensive applications are compensated by their smaller number, and the Cayley approach is the cheaper one, up to the logarithmic factor, when 2d β η ≲ n η pol , with ηpol the rescaling of the polynomial approximant, which equals 2 for the inversion by QSVT. Decreasing γ
+
+lowers β but raises η, so the product βη attains its minimum at an intermediate value of 
+
+γ, depending on the required accuracy. The critical ingredient is the state preparation of the generators. Loading an arbitrary vector of N entries takes Θ( N ) gates, so Dsp is polylogarithmic only when u and v admit a low-complexity description. For the three-point discretization of the Sturm–Liouville operator −(p(x)w′)′ on (0 , 1) with Dirichlet conditions, the generators of the inverse are discretizations of smooth functions, analytic when p is, and can be prepared at polyloga-rithmic depth by a polynomial transformation of the grid variable [32, Section 5.1]. With the shift γ = O(λmin ) the generators of R = ( A + iγI )−1 are discretizations of the solutions of the shifted problem, and the same construction applies. On the Sturm–Liouville family the Cayley approach is advantageous when the difficulty of f lies at the scale of the smallest eigenvalue, as for f (λ) = ∆ /λ with ∆ = λmin =Θ( N −2). Taking γ = Θ(∆) , the degree is d = O(log(1 /ε )) by (5) , and since ∥R∥ ≤ 1/γ 
+
+the subnormalization satisfies β ≤ 1 + 4 bu,v 
+
+√N , with bu,v = ∥u∥2∥v∥2/ ∥R∥. If bu,v and η
+
+remain bounded, as we verify in Section 7.3, the Cayley approach costs ˜O(√N ), against 
+
+> ˜
+
+O(N 2) for QSVT applied to UA and for the matrix-exponential model, whose uniform accuracy density requires ˜O(1 /∆) applications. 
+
+18 6.3 The reverse direction: structured unitaries 
+
+One can also proceed in the opposite direction: start from a unitary U that is cheap to realize as a circuit and ask which Hermitian A has it as its Cayley transform. A natural candidate is the class of CMV matrices, the pentadiagonal unitaries obtained as the product of two layers of 2 × 2 unitary blocks on consecutive, offset index pairs, parametrized by Schur coefficients αk ∈ C, |αk| < 1 [34]. CMV matrices are a particular instance of the quasiseparable matrices of order one [35], those for which rank M (k : N, 1 : k − 1) = rank M (1 : k − 1, k : N ) = 1 for every k, that is, whose submatrices lying strictly below and strictly above the diagonal have rank one, the diagonal being unconstrained. The class contains the semiseparable-plus-diagonal matrices, obtained by adding a diagonal to a matrix all of whose strictly triangular submatrices come from a single pair of generators. 
+
+Proposition 6.5. Let U = Cσ,γ (A) be a CMV matrix with 1 /∈ Λ( U ). Then A is Hermitian and one-pair semiseparable plus diagonal. 
+
+We use this construction starting from a semiseparable plus diagonal A, and computing the coefficients αk from it by the Szegő recursion [34], and the proposition shows that the matrices reachable in this way are contained in that class. 
+
+Proof. Write U = LM , with L = ⊕  
+
+> keven
+
+Θ( αk) and M = 1 ⊕ ⊕  
+
+> kodd
+
+Θ( αk) ⊕ 1 the two layers of 2 × 2 blocks Θ( α) = ( ¯α ρρ −α
+
+> )
+
+, ρ = √1 − | α|2, and let X = ( I − U )−1, so that by Definition 2.1 
+
+A = σI + iγ (I + U )X = ( σ − iγ )I + 2 iγX. (7) Since L is unitary, I − U = L(L∗ − M ), and T := L∗ − M is tridiagonal: the blocks of L∗ occupy the index pairs of L, those of M the pairs offset by one, and the union of the two families spans all entries satisfying |i − j| ≤ 1. Its off-diagonal entries are the numbers ρk = √1 − | αk|2, all nonzero, so T is irreducible and by the nullity theorem [31] its inverse is one-pair semiseparable: there are x, y with ( T −1)ik = xiyk for i ≥ k. Moreover 
+
+X = T −1L∗.Let i > j and let {p, p + 1 } be the pair of L containing j. Since L∗ is block diagonal, (L∗)kj = 0 unless k ∈ { p, p + 1 }, and i > j ≥ p gives i ≥ p + 1, so i ≥ k for both values of 
+
+k and the one-pair formula applies to each term: 
+
+Xij = ∑
+
+> k
+
+(T −1)ik (L∗)kj = xi
+
+> (
+
+yp(L∗)pj + yp+1 (L∗)p+1 ,j  
+
+> )
+
+=: xi wj .
+
+The entries of X below the diagonal are those of a rank-one matrix, and by (7) the same holds for A, with u = 2 iγx and ¯ v = w, the identity contributing only to the diagonal. Finally A is Hermitian: U unitary gives X∗ = −XU , whence X + X∗ = X(I − U ) = I,so the Hermitian part of X is I/ 2 and 2 iγ (X − I/ 2) = 2 iγX − iγI is Hermitian; adding 
+
+σI gives (7). 
+
+Classically U = LM is a product of two layers of non-overlapping 2 × 2 rotations, a consequence of the Schur parametrization of unitary Hessenberg matrices [36]. Writing 
+
+M = Z∗L′Z, where Z is the cyclic shift |k⟩ 7 → | k + 1 mod N ⟩, realized as an integer incrementer in depth O(log 2 N ) [37], each layer couples index pairs differing in the last bit alone and is therefore a rotation on that qubit whose angle is selected by the remaining 
+
+n − 1: a multiplexed rotation, decomposed into single-qubit rotations and CNOTs by the standard construction [38]. This gives U , as an n-qubit unitary with no ancilla and no subnormalization, without the necessity of the amplification phase. 
+
+19 The cost lies entirely in the angles, and the condition is the one met in Section 6.2 for the generators. A generic sequence {αk} requires Θ( N ) gates, since specifying N independent numbers takes at least that many, so a polylogarithmic circuit requires the sequence to admit a low-complexity description. As for the generators, this holds when the coefficients are samples αk = h(k/N ) of a smooth function h, prepared by a polynomial transformation of the grid variable [32, Section 5.1], or when they are stored in a QRAM [39]. We do not know examples of semiseparable-plus-diagonal matrices of interest in applications whose Cayley transform is a CMV matrix with coefficients of this kind, so this construction is presented as a possible direction rather than as a realized one. 
+
+# 7 Numerical experiments 
+
+In this section we compare the approximations that the three access models can produce. For a function f and a spectral set S ⊇ Λ( A) we compute the best approximation of f
+
+on S in the maximum norm within the class reachable by each model. We measure only the approximating power of the three classes, without performing any quantum simulation, and combine the degrees obtained with the counts of Section 6 to give a cost. All functions are normalized so that ∥f ∥∞,S = 1 , and all spectral sets are contained in [−1, 1] , so that 
+
+α = 1 .
+
+7.1 Method 
+
+Each model approximates f in the span of ν = 2 d + 1 basis functions, 
+
+zσ,γ (λ)k, e−iktλ , k = −d, . . . , d, Tk(λ/α ), k = 0 , . . . , 2d, 
+
+for the Cayley, the exponential and the polynomial model respectively. The spectral set is discretized by max {800 , 8ν} Chebyshev points on each of the intervals whose union is 
+
+S, so that the ratio of nodes to basis functions never falls below eight. For the Cayley model, whose basis functions oscillate rapidly near σ, these nodes are augmented with the preimages of points equispaced in the phase variable; since a maximum over a grid never exceeds the maximum over S, the additional nodes can only make the measured error of this model larger. We denote by λ1, . . . , λ m the nodes and collect in B ∈ Cm×ν the values of the basis functions at them. The approximant is determined by the coefficient vector c such that (Bc )j equals 
+
+P (zσ,γ (λj )) , P (e−itλ j ) and p(λj /α ) for the three models, with P (z) = ∑dk=−d ckzk and 
+
+p(x) = ∑2dk=0 ckTk(x). Hence, minimizing over c is minimizing over the whole class reach-able by the model. The best approximation on S solves 
+
+min  
+
+> c∈Cν
+
+max 
+
+> 1≤j≤m
+> ∣∣
+
+(Bc )j − f (λj )∣∣, (8) 
+
+but the cost also depends on the rescaling 
+
+η = max 
+
+> {
+
+1, max  
+
+> z∈T
+
+|P (z)|
+
+> }
+
+or η = max 
+
+> {
+
+1, max  
+
+> x∈[−1,1]
+
+|p(x)|
+
+> }
+
+,
+
+for the two unitary models and for the polynomial one respectively, which (8) does not control. Indeed, where the image of S does not cover that domain, nothing holds the approximant down, and it can grow. We therefore solve the family 
+
+min 
+
+> c∈Cν
+> ∥∥∥[
+
+Bμ̂ B
+
+> ]
+
+c −
+
+> [
+
+f
+
+0
+
+> ]∥∥∥∞
+
+, μ ≥ 0, (9) 
+
+20 where ̂ B collects the values of the basis functions on a discretization of the domain where the constraint acts, and f the values of f at the nodes. The choice μ = 0 gives (8) , while larger values of μ trade accuracy on S for a smaller η. Among the members we keep the one minimizing the product of the error on S by η; since μ = 0 belongs to the family, the selected approximant costs no more than the solution of (8) , and the criterion does not require the tolerance to be fixed in advance. Each member of (9) is a linear Chebyshev approximation problem with complex coeffi-cients, for which several methods are available, among them exchange algorithms of Remez type [24], linear programming [25] and Lawson’s iteration [23]. We use the latter, because it applies unchanged to the three bases and to spectral sets made of several intervals, and because at every step it provides both a lower and an upper bound for the minimax error, which we use as stopping criterion. For weights w with nonnegative entries of unit sum, let cw minimize ∑ 
+
+> j
+
+wj |rj (c)|2, where r(c) is the residual of the member, and let r = r(cw);then (∑ 
+
+> j
+
+wj |rj |2)1/2
+
+≤ min  
+
+> c
+
+max 
+
+> j
+> ∣∣
+
+rj (c)∣∣ ≤ max  
+
+> j
+
+|rj |,
+
+the lower bound because the weights sum to one, the upper one because cw is admissible. The iteration is stopped when the two bounds agree to within a relative 10 −4, so the computed approximant is within that factor of the best one and the reported degrees do not depend on the accuracy of the iteration. Each step is a weighted least squares problem, solved through a QR factorization with column pivoting of the weighted and column-equilibrated basis matrix; the normal equations are not formed, since the three bases are Vandermonde-like and severely ill conditioned at high degree. By Corollary 6.3 the result is extracted in O(η/ℓ ) rounds of amplitude amplification, where ℓ is a lower bound for ∥f (A)b∥ and depends on f , A and b but not on the encoding. It is therefore the same for the three models and cancels in the comparison, leaving the effective cost 2d η , since an approximant of degree d is applied with 2d queries, by GQSP for the Cayley and exponential models and by QSVT for the polynomial one. QSVT realizes real polynomials of definite parity. For the test functions with no sym-metry we use the mixed formulation, which realizes the even and odd parts separately and combines them at the cost of one further ancilla and a factor two in the subnormalization; for the others the basis is restricted to the Chebyshev polynomials of the corresponding parity. The details of the discretizations and of the selection of μ are documented in the code, which reproduces all the tables and figures of this section [40]. 
+
+7.2 The query model 
+
+We tested eight functions, normalized so that max S |f | = 1 , on spectral sets contained in 
+
+[−1, 1] . Four have a difficulty localized in a small region: the resolvent γ0/(λ−σ0+iγ 0), with 
+
+σ0 = 0 .3 and γ0 = 0 .05 , on [−1, 1] ; the inverse 1/(κλ ), with κ = 20 , on [−1, −1/κ ]∪[1 /κ, 1] ;the sign function on [−1, −0.05] ∪ [0 .05 , 1] ; and the indicator of [0 .15 , 0.45] , for which f (A)
+
+is a spectral projector, on [−1, 1] with a neighbourhood of half-width 0.02 of each endpoint removed. Two have a branch point at the origin: √λ on [0 .02 , 1] , which leaves it outside the spectral set, and √|λ| on [−1, −0.02] ∪ [0 .02 , 1] , which surrounds it. The last two, e−λ
+
+and e−8iλ on [−1, 1] , vary over the whole spectral set and serve as controls. The centre σ
+
+of the Cayley encoding is placed where the difficulty lies: at the real part of the pole for the resolvent, at the centre of the window, at the left end of the spectral set for √λ and 
+
+e−λ, and at the origin for the others. Table 2 reports, for each model, the smallest 2d η 
+
+over the degrees at which the error of the selected approximant falls below 10 −6, with η in 
+
+21 10 −15         
+
+> 10 −10
+> 10 −5
+> 10 0
+> ∥f − p∥∞,S
+> resolvent 1/λ sign λwindow Cayley mat. exp. block enc. 10 110 210 3
+> 10 −15
+> 10 −10
+> 10 −5
+> 10 0
+> 2d η
+> ∥f − p∥∞,S
+> √λ
+> 10 110 210 3
+> 2d η
+
+√|λ|    
+
+> 10 110 210 3
+> 2d η e−λ
+> 10 110 210 3
+> 2d η e−8iλ
+
+Figure 3: Maximum error on the spectral set against the effective cost 2d η ; for the polynomial model the cost includes the factor two of the mixed formulation on the functions of no definite parity. For each model the curve gives the smallest error attained by an approximant of cost at most 2d η . The dashed line marks the tolerance 10 −6: the first point of each curve below it is the entry of Table 2. 
+
+brackets. On the four functions with a localized difficulty the Cayley class is the cheapest, and it reaches the resolvent exactly at 2d = 2 , since it contains it by construction. It is also the cheapest on the two square roots, whether the spectral set lies on one side of the branch point or surrounds it: on √λ it costs less than half of the exponential model and a sixth of the polynomial one, and on √|λ| the polynomial class does not reach the tolerance within the degrees tested. On e−λ the variation is spread over the whole spectral set, so there is nothing to localize, and the polynomial class is the cheapest: Chebyshev approximation of an entire function converges faster than geometrically, whereas the two unitary models approximate on the circle and converge only geometrically. On e−8iλ the exponential model is the cheapest, since its class contains the target, as the Cayley class contains the resolvent. The appropriate model therefore depends on the class to which f belongs and on where its difficulty lies relative to the spectral set. 
+
+functions 2dη Cayley 2dη matrix exp. 2dη block enc. resolvent, pole at 0 .3 − 0.05 i 2 (1 .00) 192 (1 .00) 512 (1 .00) 1/λ , κ = 20 91 (2 .86) 343 (1 .79) –sign λ, gap ±0.05 64 (1 .00) 192 (1 .00) 256 (1 .00) window on [0 .15 , 0.45], gap ±0.02 192 (1 .00) – –√λ on [0 .02 , 1] 61 (2 .54) 97( 1 .01) 380 ( 1 .48) √|λ|, gap ±0.02 175 (1 .82) 258 (1 .01) –
+
+e−βλ , β = 1 56 (2 .32) 26 (1 .62) 16 (1 .00) 
+
+e−itλ , t = 8 101 (1 .05) 12 (1 .00) 48 (1 .00) 
+
+Table 2: Effective cost at tolerance 10 −6, defined in the text, with the rescaling η in brackets. A dash means the tolerance is not reached within the degrees tested. For the polynomial class the cost includes the factor two of the mixed formulation, charged on the functions of no definite parity. 
+
+Figure 3 shows, for each model, the smallest error attainable at a given effective cost 
+
+22 2d η , so that the table can be read off the figure at the tolerance 10 −6 and the figure shows how the comparison changes with the accuracy required. On the functions with a localized difficulty the Cayley curve lies to the left of the other two at every accuracy below 10 −3;on e−λ and e−8iλ the polynomial and the exponential models are the cheapest, as in the table. 
+
+7.3 A family in which the encoding costs polylogarithmically 
+
+In this section we consider the computation of f (A)b for a tridiagonal A. Classically this computation takes Ω( N ) operations, so a quantum approach is of interest only if it costs less than that, when the comparison is made in gates. We take A to be the three-point discretization of the Sturm–Liouville operator −(p(x)w′)′ on (0 , 1) with Dirichlet conditions, normalized so that ∥A∥ = 1 , with four coefficients, p ≡ 1, p(x) = e2x, p(x) = 1+9 x2 and p(x) = 1+sin(2 πx )/2, all positive and bounded on [0 , 1] . Then ∆ = λmin (A) = Θ( N −2) and κ = Θ( N 2). For p ≡ 1 the matrix is the discrete Laplacian, and hnece is diagonalized by the discrete sine transform and fast inversion [19] applies. We consider functions whose variation is concentrated near the smallest eigenvalue, in an interval [∆ , c ∆] with c a moderate constant, and which vary slowly elsewhere. Examples are the spectral projector onto the eigenvalues below a threshold of order ∆, whose trace is the number of those eigenvalues; its smoothed version given by the logistic function 
+
+1/(1 + e(λ−μ)/T ), with μ and T of order ∆; the exponential e−sλ with s of order 1/∆; the resolvent at a complex shift of order ∆; and the inverse ∆/λ .2 Functions that vary on all scales between ∆ and one, such as √λ on [∆ , 1] , or uniformly over the spectrum, such as 
+
+e−βiλ , are excluded. For such functions the comparison is between degrees. The polynomial approach applies QSVT to UA, whose depth is O(log 2 N ) for a tridiagonal A [33], and the exponential approach applies e−iAt at polylogarithmic depth [41]; both have a uniform accuracy density, and distinguishing eigenvalues at distance ∆ requires a degree of order α/ ∆ = κ. The Cayley approach, with σ = 0 and the encoding realized from the generators of R =(A + iγI )−1 as in Section 6.2, needs by (5) a degree of order γ/ ∆, that is O(log(1 /ε )) for 
+
+γ = Θ(∆) , independent of N . The price is paid in the cost of one application, of depth 
+
+O(β(log 3 N + Dsp )) , and since γ ∥R∥ ≤ 1,
+
+β = 1 + 4 γ√N b u,v ∥R∥ ≤ 1 + 4 b√N , bu,v = ∥u∥2∥v∥2
+
+∥R∥ ,
+
+for every width. The Cayley approach is therefore advantageous if the balance bu,v of the generators remains bounded and the generators can be prepared at polylogarithmic depth. The Cayley approach is therefore advantageous if the balance bu,v of the generators remains bounded and the generators can be prepared at polylogarithmic depth. The depth of the state preparation is governed by the degree of a polynomial reproduc-ing the generators: following [32, Section 5.1], if ui = g(ti) on the grid ti = −1 + 2 i/ (N − 1) 
+
+and P is a polynomial of degree dsp approximating g on [−1, 1] , the state proportional to u is prepared by a circuit whose depth is proportional to dsp log N . Table 3 reports 
+
+dsp , the smallest degree, among multiples of four, for which the least squares Chebyshev approximation of the normalized generator has relative error below 10 −12 .     
+
+> 2For the inverse a cheaper route is available: since A−1is itself one-pair semiseparable, it can be block-encoded directly from its generators [32], with effective cost 2 √N∆∥u0∥2∥v0∥2= Θ( √N), of the same order as the Cayley approach and smaller by a constant factor, since the Cayley class reaches the inverse through the resolvent. That route gives the inverse only.
+
+23 bu,v β dsp 
+
+p(x) N γ1 γ2 γ1 γ2 γ1 γ2 κ
+
+1 64 3.21 3.23 1.00 11 .3 4 12 1.7 · 10 3
+
+256 3.27 3.28 1.00 21 .9 4 12 2.7 · 10 4
+
+4096 3.29 3.30 1.00 85 .1 4 12 6.8 · 10 6
+
+e2x 64 3.52 3.53 1.00 12 .3 12 16 4.1 · 10 3
+
+256 3.59 3.61 1.00 24 .0 12 16 7.0 · 10 4
+
+4096 3.61 3.63 1.00 93 .5 12 16 1.9 · 10 7
+
+1 + 9 x2 64 3.77 3.79 1.00 13 .1 28 28 4.9 · 10 3
+
+256 3.86 3.87 1.00 25 .7 28 28 8.3 · 10 4
+
+4096 3.88 3.90 1.00 100 .4 28 28 2.2 · 10 7
+
+1 + sin(2 πx )/2 64 3.57 3.59 1.00 12 .4 44 44 2.6 · 10 3
+
+256 3.64 3.66 1.00 24 .3 52 52 4.2 · 10 4
+
+4096 3.66 3.68 1.00 94 .6 52 52 1.1 · 10 7
+
+Table 3: The three-point discretization of −(p(x)w′)′, with σ = 0 : balance bu,v of the generators of R = ( A + iγI )−1, subnormalization β of the Cayley encoding built from them, and degree dsp 
+
+of the polynomial reproducing a generator, defined in the text, at the two widths γ1 = 10 −6∆ and 
+
+γ2 = 10 −1∆; the last column is the condition number, which is the order of the degree required by the polynomial and the exponential approaches. 
+
+Table 3 shows that both conditions hold on this family. The balance lies between 3.2
+
+and 3.9 for every coefficient, dimension and width, so that β − 1 grows as γ√N , as the two columns of β confirm. The degree dsp depends on the variation of p and on the width, from 4 for the constant coefficient to 52 for the oscillating one, but not on N , so the state preparations remain polylogarithmic. For the functions above, when η is bounded, the effective cost of the Cayley approach is therefore O(bu,v η√N log(1 /ε )) = ˜O(κ1/4), against 
+
+˜O(κ) for the polynomial and the exponential approaches. Since the interval [∆ , c ∆] lies near the smallest eigenvalue, the polynomial approach can reduce its degree to ˜O(√κ) by applying QSVT to 2A − I, whose spectrum fills [−1, 1] , which uses the knowledge that A
+
+is positive definite; the Cayley approach remains cheaper, by a factor κ1/4.The cost below κ does not contradict the Ω( κ) lower bound for quantum linear system solvers [42], which holds when the only access to A is a block encoding of it. Here A enters through a classical description of the generators of its resolvent, and the comparison is between access models rather than between algorithms under a common oracle. The family shows that the condition of Section 6.2 admits solutions: the cost in gates is ˜O(√N ), below the cost of the classical computation, provided b is given as a quantum state and the result is used as one; if b has to be loaded from a classical vector, or f (A)b read out in full, the cost is Ω( N ).
+
+Code availability. The implementation is self-contained, requires no toolboxes, and reproduces every table of this section. The code is available on Zenodo [40]. 
+
+# 8 Conclusions and open problems 
+
+We have proposed the Cayley transform as an access model for computing rational functions of a Hermitian matrix on a quantum computer. Used in association with generalized quantum signal processing, it produces the rational functions of type (2 d, 2d) whose poles lie at σ ± iγ , each of order at most d, with a single ancilla, no parity restriction, and none of the subnormalization incurred when a rational function is implemented as a linear combination of resolvents. Its two parameters σ and γ make the encoding tailored to f ,
+
+24 so that accuracy can be concentrated where it is needed. We proved moreover that the products of Cayley factors are exactly the rational functions unitary on every Hermitian matrix, so the choice is forced rather than merely convenient. Through the change of variable to the circle, the design of the approximant becomes an ordinary trigonometric approximation problem, for which the classical theory is available unchanged. On the side of cost the encoding admits a unitary realization for every Hermitian 
+
+A. In the query model a fixed-pole rational function is reached exactly at degree one, where a polynomial method pays a degree that grows as the pole approaches the spectrum. Whether this is still an advantage in the realization model depends on how the encoding is built. We showed that the generic construction from a block encoding of A cancels the gain (Corollary 6.4), and that structure in A can bypass that construction, exhibiting one family for which the shifted solve is obtained from the generators of the resolvent [32]. The first is the cost of loading the data that describe A. For a tridiagonal A the inverse of the shifted matrix is always one-pair semiseparable, but loading its generators as quantum states at polylogarithmic depth requires a regularity that holds for the discretized Sturm–Liouville operators of Section 7.3, with analytic coefficient, and is not guaranteed in general. The CMV construction of Section 6.3 raises the same question for its coefficients, together with that of characterizing the matrices whose Cayley transform is a CMV matrix. Beyond the tridiagonal case, natural candidates for a structured realization are hierarchical matrices, whose inverses retain a low-rank structure and for which block encodings are available [43], and indefinite operators from partial differential equations, for which the imaginary part of the shift keeps the resolvent well conditioned. The second direction is reaching the full rational class. A product of Cayley factors realizes the functions P (b(λ)) , whose numerator is tied to the denominator by unitarity, while the full class with poles at {wj , ¯wj }, each of order at most d, is reached by a linear combination of m GQSP circuits, at the cost of ⌈log 2 m⌉ further ancillas. Whether the full class can be reached with fewer ancillas, keeping the number of queries proportional to the degree, is a question we leave to future work. Another direction is a gate-level analysis. Theorem 6.2 counts queries, and concrete gate counts for the structured realization of Section 6.2, against QSVT applied to UA
+
+and against QET-U with a Trotterized exponential, would turn the asymptotic statements into quantities one can weigh. On structured families one may also process the block-encoded resolvent directly, which is normal but not Hermitian, through quantum eigenvalue processing [44]: this avoids the amplification that makes the encoding unitary, at the price of a polynomial acting on a smaller spectral region, and the balance between the two remains to be assessed. 
+
+# Acknowledgment 
+
+During the preparation of this work the author used Claude (Anthropic) to assist with drafting and editing the text, running numerical verifications, and clarifying technical points raised by the author. The author reviewed and independently verified all results and takes full responsibility for the content of the paper. 
+
+# Funding 
+
+Partial support was provided by the INdAM - GNCS project “Strutture di matrici e di funzioni per la sintesi di circuiti quantistici efficienti”, CUP E53C23001670001 and by the 
+
+25 U.S. Department of Energy, Office of Science, National Quantum Information Science Re-search Centers, Superconducting Quantum Materials and Systems Center (SQMS), under Contract No. 89243024CSC000002. 
+
+# References 
+
+[1] N. J. Higham. “Functions of matrices: Theory and computation”. SIAM. Philadelphia, PA (2008). [2] A. Gilyén, Y. Su, G. H. Low, and N. Wiebe. “Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics”. In STOC. (2019). arXiv:1806.01838. [3] G. H. Low and I. L. Chuang. “Optimal Hamiltonian simulation by quantum signal processing”. Phys. Rev. Lett. 118 , 010501 (2017). arXiv:1606.02685. [4] D. Motlagh and N. Wiebe. “Generalized quantum signal processing”. PRX Quantum 
+
+5, 020368 (2024). [5] S. Güttel. “Rational Krylov approximation of matrix functions: numerical methods and optimal pole selection”. GAMM-Mitt. 36 , 8–31 (2013). [6] T. Sakurai and H. Sugiura. “A projection method for generalized eigenvalue problems using numerical integration”. J. Comput. Appl. Math. 159 , 119–128 (2003). [7] Y. Nakatsukasa and R. W. Freund. “Computing fundamental matrix decompositions accurately via the matrix sign function in two iterations: the power of Zolotarev’s functions”. SIAM Rev. 58 , 461–493 (2016). [8] Y. A. Erlangga, C. Vuik, and C. W. Oosterlee. “On a class of preconditioners for solving the Helmholtz equation”. Appl. Numer. Math. 50 , 409–425 (2004). [9] E. Hairer, C. Lubich, and G. Wanner. “Geometric numerical integration”. Springer. (2006). 2nd edition. [10] D. Poulin and P. Wocjan. “Sampling from the thermal quantum Gibbs state and evaluating partition functions with a quantum computer”. Phys. Rev. Lett. 103 ,220502 (2009). [11] D. W. Berry, A. M. Childs, A. Ostrander, and G. Wang. “Quantum algorithm for linear differential equations with exponentially improved dependence on precision”. Commun. Math. Phys. 356 , 1057–1081 (2017). [12] J. M. Martyn, Z. M. Rossi, A. K. Tan, and I. L. Chuang. “Grand unification of quantum algorithms”. PRX Quantum 2, 040203 (2021). arXiv:2105.02859. [13] Y. Dong, L. Lin, and Y. Tong. “Ground-state preparation and energy estimation on early fault-tolerant quantum computers via quantum eigenvalue transformation of unitary matrices”. PRX Quantum 3, 040305 (2022). [14] C. Sünderhauf. “Generalized quantum singular value transformation” (2023). arXiv:2312.00723. [15] S. Takahira, A. Ohashi, T. Sogabe, and T. S. Usuda. “Quantum algorithm for matrix functions by Cauchy’s integral formula”. Quantum Inf. Comput. 20 , 14–36 (2020). [16] Y. Shen, N. Van Buggenhout, D. Camps, K. Klymko, and R. Van Beeumen. “Quantum rational transformation using linear combinations of Hamiltonian simulations” (2026). arXiv:2408.07742. 
+
+26 [17] K. Klymko, C. Mejuto-Zaera, S. J. Cotton, F. Wudarski, M. Urbanek, D. Hait, M. Head-Gordon, K. B. Whaley, J. Moussa, N. Wiebe, W. A. de Jong, and N. M. Tubman. “Real-time evolution for ultracompact Hamiltonian eigenstates on quantum hardware”. PRX Quantum 3, 020323 (2022). [18] W. Kirby, M. Motta, and A. Mezzacapo. “Exact and efficient Lanczos method on a quantum computer”. Quantum 7, 1018 (2023). [19] Y. Tong, D. An, N. Wiebe, and L. Lin. “Fast inversion, preconditioned quantum linear system solvers, fast Green’s-function computation, and fast evaluation of matrix functions”. Phys. Rev. A 104 , 032422 (2021). arXiv:2008.13295. [20] Y. Dong, X. Meng, K. B. Whaley, and L. Lin. “Efficient phase-factor evaluation in quantum signal processing”. Phys. Rev. A 103 , 042419 (2021). arXiv:2002.11649. [21] R. A. DeVore and G. G. Lorentz. “Constructive approximation”. Volume 303 of Grundlehren der mathematischen Wissenschaften. Springer. (1993). [22] L. N. Trefethen. “Approximation theory and approximation practice”. SIAM. Philadel-phia, PA (2019). extended edition. [23] S. Ellacott and J. Williams. “Linear Chebyshev approximation in the complex plane using Lawson’s algorithm”. Math. Comp. 30 , 35–44 (1976). [24] P. T. P. Tang. “A fast algorithm for linear complex Chebyshev approximations”. Math. Comp. 51 , 721–739 (1988). [25] G. A. Watson. “Approximation theory and numerical methods”. John Wiley & Sons. Chichester (1980). [26] D. Dong, Y. Li, and J. Xue. “A quantum algorithm for linear autonomous differential equations via Padé approximation”. Quantum 9, 1770 (2025). [27] A. M. Childs, R. Kothari, and R. D. Somma. “Quantum algorithm for systems of linear equations with exponentially improved dependence on precision”. SIAM J. Comput. 
+
+46 , 1920–1950 (2017). arXiv:1511.02306. [28] L. Lin and Y. Tong. “Optimal polynomial based quantum eigenstate filtering with application to solving quantum linear systems”. Quantum 4, 361 (2020). arXiv:1910.14596. [29] T. J. Yoder, G. H. Low, and I. L. Chuang. “Fixed-point quantum search with an optimal number of queries”. Phys. Rev. Lett. 113 , 210501 (2014). [30] G. H. Low and I. L. Chuang. “Hamiltonian simulation by qubitization”. Quantum 3,163 (2019). arXiv:1610.06546. [31] R. Vandebril, M. Van Barel, and N. Mastronardi. “Matrix computations and semisep-arable matrices”. Johns Hopkins University Press. (2008). [32] G. Antonioli, G. M. Del Corso, and R. Van Beeumen. “Block encoding of semiseparable matrices via their generators” (2026). arXiv:2610.13228. [33] C. Sünderhauf, E. Campbell, and J. Camps. “Block-encoding structured matrices for data input in quantum computing”. Quantum 8, 1226 (2024). [34] B. Simon. “Orthogonal polynomials on the unit circle”. Volume 54 of AMS Colloquium Publications. American Mathematical Society. (2005). [35] R. Bevilacqua, G. M. Del Corso, and L. Gemignani. “Fast QR iterations for unitary plus low rank matrices”. Numer. Math. 144 , 23–53 (2020). 
+
+27 [36] W. B. Gragg. “The QR algorithm for unitary Hessenberg matrices”. J. Comput. Appl. Math. 16 , 1–8 (1986). [37] G. Antonioli, P. Boito, G. M. Del Corso, and M. Porcelli. “Quantum block encoding for one-pair semiseparable matrices”. Numerical Algorithms (2026). [38] M. Möttönen, J. J. Vartiainen, V. Bergholm, and M. M. Salomaa. “Transformation of quantum states using uniformly controlled rotations”. Quantum Inf. Comput. 5,467–473 (2005). arXiv:quant-ph/0407010. [39] V. Giovannetti, S. Lloyd, and L. Maccone. “Quantum random access memory”. Phys. Rev. Lett. 100 , 160501 (2008). [40] Gianna M. Del Corso. “Cayley-encoding: code for the numerical experiments”. https: //doi.org/10.5281/zenodo.22146600 (2026). Version 1.0.0. [41] B. Arseniev, D. Guskov, R. Sengupta, J. Biamonte, and I. Zacharov. “Tridiagonal matrix decomposition for Hamiltonian simulation on a quantum computer”. Phys. Rev. A 109 , 052629 (2024). arXiv:2310.00121. [42] P. C. S. Costa, D. An, Y. R. Sanders, Y. Su, R. Babbush, and D. W. Berry. “Optimal scaling quantum linear systems solver via discrete adiabatic theorem”. PRX Quantum 
+
+3, 040303 (2022). arXiv:2111.08152. [43] Q. T. Nguyen, B. T. Kiani, and S. Lloyd. “Block-encoding dense and full-rank ker-nels using hierarchical matrices: applications in quantum numerical linear algebra”. Quantum 6, 876 (2022). [44] G. H. Low and Y. Su. “Quantum eigenvalue processing”. In FOCS. (2024). arXiv:2401.06240. 
+
+28

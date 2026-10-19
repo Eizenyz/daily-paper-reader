@@ -1,17 +1,136 @@
 {
   "mode": "standard",
-  "generated_at": "2026-10-19T04:34:40.802458+00:00",
+  "generated_at": "2026-10-19T23:21:09.341781+00:00",
   "stats": {
     "mode": "standard",
     "tag_count": 2,
-    "deep_divecandidates": 2,
+    "deep_divecandidates": 3,
     "deep_cap": 7,
-    "deep_selected": 2,
-    "quick_candidates": 0,
+    "deep_selected": 3,
+    "quick_candidates": 1,
     "quick_skim_target": 12,
-    "quick_selected": 0
+    "quick_selected": 1
   },
   "deep_dive": [
+    {
+      "id": "2610.23405v1",
+      "source": "arxiv",
+      "title": "Quantum Circuits for Variable-Coefficient Vlasov Dynamics via Schrödingerisation",
+      "abstract": "High-dimensional Vlasov equations present promising use cases for quantum simulation, but their transport coefficients must be implemented coherently in order to preserve a compact quantum representation. We develop explicit Schrödingerised circuits for prescribed external field Vlasov dynamics without classical field updates. In 1D1V, velocity-dependent streaming is compiled directly from the encoded velocity register, while a non-linear cubic field is evaluated using reversible fixed-point arithmetic. For fixed polynomial degree, the field workspace scales linearly with the coordinate register width, while the field evaluation subroutine has polynomial depth. As a proof of concept, we simulate a minimal coupled 3D3V anharmonic Penning system and realise mixed electric-field terms and transverse magnetic coupling on a six-dimensional phase space in agreement with classical calculations. Resource analysis shows approximately linear growth with the number of time steps, while identifying the auxiliary register as the dominant depth bottleneck. Structured preparation and register recovery of the auxiliary state reveal an interplay between loading cost and readout. Together, our algorithm demonstrates a fully coherent quantum simulation of high-dimensional Vlasov dynamics with variable coefficients and identifies the practical resource costs that must be controlled for large-scale quantum implementation.",
+      "authors": [
+        "Fong Yew Leong",
+        "Dax Enshan Koh",
+        "Wei-Bin Ewe",
+        "Qiubo Chen",
+        "Zhun-Yong Ong"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "physics.plasm-ph"
+      ],
+      "published": "2026-10-16T13:01:12+00:00",
+      "link": "https://arxiv.org/pdf/2610.23405v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "explicit Schrödingerised quantum circuits for Vlasov dynamics",
+      "llm_evidence_cn": "面向 Vlasov 动力学的显式 Schrödingerisation 量子电路",
+      "llm_evidence": "面向 Vlasov 动力学的显式 Schrödingerisation 量子电路",
+      "canonical_evidence": "面向 Vlasov 动力学的显式 Schrödingerisation 量子电路",
+      "llm_tldr_en": "Develops explicit Schrödingerised quantum circuits for variable-coefficient Vlasov dynamics, compiling velocity-dependent streaming and nonlinear fields with polynomial-depth subroutines.",
+      "llm_tldr_cn": "该文针对高维 Vlasov 方程量子模拟中输运系数需相干实现的问题，为给定外场下的 Vlasov 动力学构造显式 Schrödingerisation 量子电路，无需经典场更新。方法在一维一速度情形直接把速度相关平流编译到编码速度寄存器，并用可逆定点算术计算非线性立方场。结果表明固定多项式次数下场工作区随坐标寄存器宽度线性增长，场求值子程序具有多项式深度，为 Schrödingerisation 求解 PDE 提供电路级构造。",
+      "llm_tldr": "该文针对高维 Vlasov 方程量子模拟中输运系数需相干实现的问题，为给定外场下的 Vlasov 动力学构造显式 Schrödingerisation 量子电路，无需经典场更新。方法在一维一速度情形直接把速度相关平流编译到编码速度寄存器，并用可逆定点算术计算非线性立方场。结果表明固定多项式次数下场工作区随坐标寄存器宽度线性增长，场求值子程序具有多项式深度，为 Schrödingerisation 求解 PDE 提供电路级构造。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "Schrodingerization, Schrödingerization, Schrodingerisation, and Schrödingerisation transforms for simulating non-unitary dynamics and solving differential equations",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.23429v1",
+      "source": "arxiv",
+      "title": "Cayley access models for matrix functions: reachable class and cost",
+      "abstract": "We study how to compute $f(A)b$ on a quantum computer, where $A$ is Hermitian. When $f$ is nonsmooth or has localized difficulty in the spectrum, classical numerical linear algebra approximates it with rational functions rather than polynomials.   We propose the Cayley transform, parameterized by $σ\\in \\mathbb{R}$ and $γ> 0$, as an alternative to the standard quantum access model. The two parameters let one concentrate accuracy where $f$ is difficult, which standard models can achieve only by raising the polynomial degree globally. This transformation converts Hermitian matrices to unitaries, allowing generalized quantum signal processing to apply Laurent polynomials bounded on the unit circle.   We compare three access models (block encoding, matrix exponential, and Cayley encoding) in terms of query complexity and of the cost of their circuit realization. When the difficulty of $f$ is localized in the spectrum, the Cayley encoding reduces the required degree by a factor of three to four, and it represents the shifted resolvent exactly at degree one. For spectral projectors, the standard models cannot reach the target accuracy at fixed degree, because their approximants cannot concentrate resolution near the discontinuity.   Realizing the Cayley encoding from a block encoding requires solving a shifted linear system, whose cost offsets its query-complexity gain over the standard models. For structured matrices arising in practice, however, low-depth circuits for the encoding can be constructed directly, and the gain is preserved at the circuit level.",
+      "authors": [
+        "Gianna M. Del Corso"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.NA"
+      ],
+      "published": "2026-10-16T13:16:51+00:00",
+      "link": "https://arxiv.org/pdf/2610.23429v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Computing matrix functions f(A)b via Cayley transform, block encoding and generalized QSP",
+      "llm_evidence_cn": "利用Cayley变换、块编码与广义量子信号处理计算矩阵函数f(A)b",
+      "llm_evidence": "利用Cayley变换、块编码与广义量子信号处理计算矩阵函数f(A)b",
+      "canonical_evidence": "利用Cayley变换、块编码与广义量子信号处理计算矩阵函数f(A)b",
+      "llm_tldr_en": "Proposes Cayley access models for computing matrix functions f(A)b, using tunable parameters and generalized quantum signal processing to concentrate accuracy on hard spectral regions and reduce polynomial degree.",
+      "llm_tldr_cn": "针对非光滑或谱上局部困难的矩阵函数f(A)b在标准量子访问模型下需全局提高多项式次数的问题，文章提出以参数σ与γ刻画Cayley变换作为替代访问模型。该变换把Hermitian矩阵转成酉矩阵，从而可用广义量子信号处理作用于单位圆上有界的Laurent多项式，将精度集中于困难谱区。作者比较块编码、矩阵指数等三种访问模型的代价，说明其可降低所需多项式次数。",
+      "llm_tldr": "针对非光滑或谱上局部困难的矩阵函数f(A)b在标准量子访问模型下需全局提高多项式次数的问题，文章提出以参数σ与γ刻画Cayley变换作为替代访问模型。该变换把Hermitian矩阵转成酉矩阵，从而可用广义量子信号处理作用于单位圆上有界的Laurent多项式，将精度集中于困难谱区。作者比较块编码、矩阵指数等三种访问模型的代价，说明其可降低所需多项式次数。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum singular value transformation for matrix functions and polynomial approximation",
+      "matched_requirement_id": "req-14",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.22691v1",
+      "source": "arxiv",
+      "title": "Quantum-Classical Neural Networks for Solving Lindblad Master Equations",
+      "abstract": "Variational quantum algorithms have emerged as a promising approach for simulating open quantum systems, yet their expressive power and trainability remain poorly understood. We propose a variational framework for solving Lindblad master equations by minimizing a residual cost function using a compositional ansatz obtained by combining a classical neural network with a parameterized quantum circuit. The density matrix is represented through a purification on an enlarged Hilbert space, ensuring positivity, Hermiticity, and unit trace by construction, while all gradients are evaluated exactly via the parameter-shift rule. Beyond the algorithmic formulation, we derive an upper bound for the covering number of the proposed compositional model and compare it with that of purely quantum neural networks. Our analysis shows that the classical parametrization enlarges the effective hypothesis class while providing finer control over its complexity, thereby establishing a theoretical connection between expressivity, covering numbers, effective dimension, and the barren plateau phenomenon. Numerical experiments validate both the accuracy of the proposed method for representative Lindblad master equations and the theoretical predictions regarding gradient concentration. These results provide a unified variational and theoretical framework for the simulation of dissipative quantum dynamics using compositional quantum machine learning models.",
+      "authors": [
+        "Rafael Florencio Díaz",
+        "Julio Guerrero García",
+        "Elvira Romera Gutiérrez"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "cs.LG"
+      ],
+      "published": "2026-10-15T21:59:04+00:00",
+      "link": "https://arxiv.org/pdf/2610.22691v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "variational quantum algorithm for Lindblad master equations",
+      "llm_evidence_cn": "求解 Lindblad 主方程的变分量子算法",
+      "llm_evidence": "求解 Lindblad 主方程的变分量子算法",
+      "canonical_evidence": "求解 Lindblad 主方程的变分量子算法",
+      "llm_tldr_en": "Proposes a variational quantum-classical neural network ansatz with density-matrix purification to solve Lindblad master equations and derives a covering-number upper bound.",
+      "llm_tldr_cn": "该文针对开放量子系统模拟中变分量子算法表达能力与可训练性不清的问题，提出用经典神经网络与参数化量子电路组合的变分框架求解 Lindblad 主方程。密度矩阵通过扩展希尔伯特空间上的纯化表示，天然保持正性、厄米性和单位迹，梯度由参数移位规则精确计算。作者还给出该组合模型覆盖数的上界，为耗散动力学求解提供可分析的新 ansatz。",
+      "llm_tldr": "该文针对开放量子系统模拟中变分量子算法表达能力与可训练性不清的问题，提出用经典神经网络与参数化量子电路组合的变分框架求解 Lindblad 主方程。密度矩阵通过扩展希尔伯特空间上的纯化表示，天然保持正性、厄米性和单位迹，梯度由参数移位规则精确计算。作者还给出该组合模型覆盖数的上界，为耗散动力学求解提供可分析的新 ansatz。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for dissipative dynamics and open quantum systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
     {
       "id": "2610.18589v1",
       "source": "arxiv",
@@ -38,61 +157,22 @@
         "query:quantum-algo",
         "query:quantum-ode"
       ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "block-sparse Hamiltonian simulation with improved T-count for unitary synthesis",
-      "llm_evidence_cn": "利用块稀疏哈密顿量模拟提升酉合成的 T 门复杂度",
-      "llm_evidence": "利用块稀疏哈密顿量模拟提升酉合成的 T 门复杂度",
-      "canonical_evidence": "利用块稀疏哈密顿量模拟提升酉合成的 T 门复杂度",
-      "llm_tldr_en": "The paper improves Clifford+T synthesis of arbitrary n-qubit unitaries by simulating a Hermitian logarithm with block-sparse Hamiltonian pieces, reducing worst-case T-count from N^{5/4} to N^{8/7} at constant error.",
-      "llm_tldr_cn": "针对任意 n 量子比特酉算子的 Clifford+T 电路合成，现有最坏情况 T 门数较高。作者将目标酉算子的厄米对数拆分为块稀疏哈密顿量分量，并用 qDRIFT 组合其演化，从而构造高效合成电路。结果表明，在常数算子范数误差下，最坏 T 门数由 N^{5/4} 降至 N^{8/7}，并给出所需辅助比特数。该工作为哈密顿量模拟与门复杂度优化提供了可迁移技术。",
-      "llm_tldr": "针对任意 n 量子比特酉算子的 Clifford+T 电路合成，现有最坏情况 T 门数较高。作者将目标酉算子的厄米对数拆分为块稀疏哈密顿量分量，并用 qDRIFT 组合其演化，从而构造高效合成电路。结果表明，在常数算子范数误差下，最坏 T 门数由 N^{5/4} 降至 N^{8/7}，并给出所需辅助比特数。该工作为哈密顿量模拟与门复杂度优化提供了可迁移技术。",
+      "llm_score": 7.0,
+      "llm_evidence_en": "block-encoding and block-sparse Hamiltonian simulation with rigorous T-count resource analysis",
+      "llm_evidence_cn": "块编码与块稀疏Hamiltonian模拟及严格T计数资源分析",
+      "llm_evidence": "块编码与块稀疏Hamiltonian模拟及严格T计数资源分析",
+      "canonical_evidence": "块编码与块稀疏Hamiltonian模拟及严格T计数资源分析",
+      "llm_tldr_en": "A Clifford+T circuit synthesis method uses block-sparse Hamiltonian simulation, block-encoding and qDRIFT to compile arbitrary n-qubit unitaries, improving the worst-case T-count exponent from 5/4 to 8/7.",
+      "llm_tldr_cn": "现有任意酉算子Clifford+T合成的最坏情形T计数指数较高，资源开销大。本文借助块编码电路处理稀疏块、并用qDRIFT组合各块演化来模拟目标酉算子的Hermitian对数，从而降低查询与门计数。分析给出T计数为Ñ(O)(N^{8/7})，将此前5/4指数改进到8/7，并明确所需清洁辅助比特。该结果为高效酉合成及Hamiltonian模拟类量子算法提供了更优的门复杂度保证。",
+      "llm_tldr": "现有任意酉算子Clifford+T合成的最坏情形T计数指数较高，资源开销大。本文借助块编码电路处理稀疏块、并用qDRIFT组合各块演化来模拟目标酉算子的Hermitian对数，从而降低查询与门计数。分析给出T计数为Ñ(O)(N^{8/7})，将此前5/4指数改进到8/7，并明确所需清洁辅助比特。该结果为高效酉合成及Hamiltonian模拟类量子算法提供了更优的门复杂度保证。",
       "llm_tags": [
         "query:quantum-algo"
       ],
       "matched_query_tag": "query:quantum-algo",
-      "matched_query_text": "efficient Hamiltonian simulation algorithms with rigorous gate and query complexity guarantees",
-      "matched_requirement_id": "req-12",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "id": "2610.14943v1",
-      "source": "arxiv",
-      "title": "A quantum algorithm for meshless lattice Boltzmann method with unitary interpolation",
-      "abstract": "We present a mass-weighted meshless formulation for the shifted incompressible lattice Boltzmann method (LBM) whose streaming step is exactly unitary, combining with the Carleman embedding. In traditional meshless LBM, on a scattered node set the semi-Lagrangian streaming step is an interpolation, which is not unitary; a generic block encoding of this matrix therefore requires a normalization proportional to its sparsity and logarithmically many ancillas. To overcome the non-unitarity, we instead express the interpolation as the exponential exp(a Dx + b Dy) of mimetic derivative operators. Endowing each node with its Voronoi mass and applying a mass-weighted similarity transform renders these derivative operators skew-Hermitian by enforcing moment constraints together with low-wave number trigonometric differentiation conditions, so that the interpolation becomes exactly unitary. Such unitarization of interpolation leave the local collision step unchanged up to a rescaling of its quadratic term, where the same weights define the amplitude encoding of the distribution functions. For quasi-uniform node sets, the mass-weighting diagonal remains within a unit-order normalization that degrades only mildly as the Carleman truncation order grows, thereby mitigating the cost of block encoding. Numerical experiments on the Taylor Green vortex confirm that the method reproduces the full meshless LBM, with the velocity error decreasing as the Carleman order increases.",
-      "authors": [
-        "Chi Zhang",
-        "Hefeng Wang",
-        "Hua Xiang"
-      ],
-      "primary_category": "physics.comp-ph",
-      "categories": [
-        "physics.comp-ph",
-        "math.NA"
-      ],
-      "published": "2026-10-10T14:18:59+00:00",
-      "link": "https://arxiv.org/pdf/2610.14943v1",
-      "tags": [
-        "keyword:quantum-algo",
-        "keyword:quantum-ode",
-        "query:quantum-algo",
-        "query:quantum-ode"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "quantum algorithm for lattice Boltzmann PDE solver via Carleman embedding and unitary streaming",
-      "llm_evidence_cn": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
-      "llm_evidence": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
-      "canonical_evidence": "利用Carleman嵌入与酉化平流步骤的格子玻尔兹曼偏微分方程量子算法",
-      "llm_tldr_en": "A quantum algorithm for meshless lattice Boltzmann solvers is proposed, making the streaming step exactly unitary via mimetic derivative operators and Carleman embedding, avoiding costly non-unitary block encodings for PDE simulation.",
-      "llm_tldr_cn": "无网格格子玻尔兹曼方法的半拉格朗日平流步骤是非酉插值，直接块编码代价高。作者将插值写成模拟导数算子的指数形式，并通过Voronoi质量加权相似变换使其成为斜厄米算子，从而实现精确酉化的平流步骤。再结合Carleman嵌入把非线性问题线性化以适配量子求解。该工作为流体类偏微分方程提供了可行的量子算法构造。",
-      "llm_tldr": "无网格格子玻尔兹曼方法的半拉格朗日平流步骤是非酉插值，直接块编码代价高。作者将插值写成模拟导数算子的指数形式，并通过Voronoi质量加权相似变换使其成为斜厄米算子，从而实现精确酉化的平流步骤。再结合Carleman嵌入把非线性问题线性化以适配量子求解。该工作为流体类偏微分方程提供了可行的量子算法构造。",
-      "llm_tags": [
-        "query:quantum-ode"
-      ],
-      "matched_query_tag": "query:quantum-ode",
-      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
-      "matched_requirement_id": "req-1",
-      "selection_source": "fresh_fetch"
+      "matched_query_text": "efficient implementations of Hamiltonian simulation, block encoding, quantum singular value transformation, and quantum signal processing with rigorous resource analysis",
+      "matched_requirement_id": "req-18",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
     }
-  ],
-  "quick_skim": []
+  ]
 }
