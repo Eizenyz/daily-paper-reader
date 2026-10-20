@@ -1,0 +1,41 @@
+{
+  "date": "20261020",
+  "date_label": "",
+  "generated_at": "2026-10-20 22:17:34 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.26843v1",
+      "route": "202610/20/2610.26843v1-quantum-algorithms-for-optimal-control-large-scale-finite-horizon-linear-quadratic-regulation",
+      "title": "Quantum algorithms for optimal control: large-scale finite-horizon linear-quadratic regulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "用量子线性系统算法求解连续时间线性动力学的重构系统，条件数与时域无关",
+      "first_seen_at": "2026-10-20 22:17:34 UTC",
+      "updated_at": "2026-10-20 22:17:34 UTC"
+    },
+    {
+      "paper_id": "2610.24004v1",
+      "route": "202610/20/2610.24004v1-transient-heat-conduction-on-quantum-hardware-replicated-temperature-field-reconstruction-and-shot-count-sensitivity-with-a-variational-quantum-linear-solver",
+      "title": "Transient Heat Conduction on Quantum Hardware: Replicated Temperature-Field Reconstruction and Shot-Count Sensitivity with a Variational Quantum Linear Solver",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "变分量子线性求解器求解离散化热传导偏微分方程",
+      "first_seen_at": "2026-10-20 22:17:34 UTC",
+      "updated_at": "2026-10-20 22:17:34 UTC"
+    }
+  ]
+}

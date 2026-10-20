@@ -1,0 +1,98 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-20T22:17:16.108912+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 0,
+    "deep_cap": 7,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 12,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2610.26843v1",
+      "source": "arxiv",
+      "title": "Quantum algorithms for optimal control: large-scale finite-horizon linear-quadratic regulation",
+      "abstract": "We develop quantum algorithms for optimal control over a prescribed finite time interval (finite horizon), focusing on continuous-time linear-quadratic regulation (LQR). This foundational control problem often requires solving a nonlinear matrix Riccati equation, which can be costly for large systems and long control durations on conventional classical solvers. We instead work directly with the state-costate optimality equations, reformulating the LQR problem as a multiple-shooting linear system. Importantly, we prove a condition-number bound for the system that is independent of the horizon, under stabilizability and detectability assumptions. By incorporating the initial and final conditions into a single linear system, we can solve the subsequent linear system more efficiently with a quantum linear systems subroutine. For a given initial state, our quantum algorithms return classical estimates of the optimal cost and the optimal control inputs at a selected time, without constructing a Riccati solution operator. Given sparse-matrix block-encodings, an initial-state preparation oracle and a fixed number of control inputs, the query and gate complexities scale polylogarithmically with system size and control duration, provided that sparsity, relevant norms, and stability parameters are bounded. The dependence on the target error is inverse-linear up to logarithmic factors. We establish the required bounds uniformly in system size and duration for a family of damped mass-spring chains with two endpoint controls. Numerical experiments support the analysis.",
+      "authors": [
+        "Xiajie Huang",
+        "Cristina Álvarez Yuste",
+        "Nikita Guseynov",
+        "Nana Liu",
+        "Javier González-Conde"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.OC"
+      ],
+      "published": "2026-10-19T17:58:57+00:00",
+      "link": "https://arxiv.org/pdf/2610.26843v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "quantum algorithm solving a linear system from continuous-time linear dynamics with a horizon-independent condition-number bound",
+      "llm_evidence_cn": "用量子线性系统算法求解连续时间线性动力学的重构系统，条件数与时域无关",
+      "llm_evidence": "用量子线性系统算法求解连续时间线性动力学的重构系统，条件数与时域无关",
+      "canonical_evidence": "用量子线性系统算法求解连续时间线性动力学的重构系统，条件数与时域无关",
+      "llm_tldr_en": "Reformulates finite-horizon LQR as a multiple-shooting linear system with a horizon-independent condition-number bound, enabling quantum linear-system solvers for large-scale control.",
+      "llm_tldr_cn": "有限时域线性二次调节通常需求解非线性Riccati方程，在大规模与长时域情形下经典方法代价高昂。作者改从状态-协态最优性方程出发，将问题重构为多点打靶线性系统，并在可镇定、可检测假设下证明该系统的条件数与控制时域无关。把初末条件并入单一线性系统后可直接调用量子线性系统算法求解，从而为连续时间线性动力学的最优控制提供量子加速路径。",
+      "llm_tldr": "有限时域线性二次调节通常需求解非线性Riccati方程，在大规模与长时域情形下经典方法代价高昂。作者改从状态-协态最优性方程出发，将问题重构为多点打靶线性系统，并在可镇定、可检测假设下证明该系统的条件数与控制时域无关。把初末条件并入单一线性系统后可直接调用量子线性系统算法求解，从而为连续时间线性动力学的最优控制提供量子加速路径。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "quantum algorithms for solving linear systems with improved complexity and condition number dependence",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.24004v1",
+      "source": "arxiv",
+      "title": "Transient Heat Conduction on Quantum Hardware: Replicated Temperature-Field Reconstruction and Shot-Count Sensitivity with a Variational Quantum Linear Solver",
+      "abstract": "Implicit discretizations of transient heat conduction repeatedly generate sparse linear systems, making diffusion problems a natural test bed for quantum linear solvers. This study evaluates how accurately a variational quantum linear solver (VQLS) recovers the temperature field produced by one backward-Euler step of one-dimensional conduction on IBM quantum hardware. A pre-specified confirmatory experiment compares N=4 interior temperatures encoded on two qubits with N=8 temperatures encoded on three qubits using ten paired hardware blocks; a separately defined N=16, four-qubit extension is evaluated in five independently scheduled exploratory blocks. Local VQLS optimization reduces relative temperature-field error to approximately 10^{-8} for all three cases, establishing an essentially exact ideal reference at this scale. On hardware, mean relative L2 temperature-field error is 8.07% for N=4 and 20.14% for N=8, a paired increase of 12.06 percentage points (95% CI, 10.71-13.42; exact paired sign-flip p=0.001953). The exploratory N=16 mean is 24.75+/-1.84%. A pre-specified N=16 shot-count follow-up then evaluates the same locked circuit at 2,048, 8,192, and 32,768 shots in six independently scheduled blocks. Mean field error remains 23.64%, 24.57%, and 24.37%, respectively; the 32,768-minus-2,048-shot contrast is +0.74 percentage points (95% CI, -0.65 to 2.12; p=0.281). In contrast, ideal multinomial sampling predicts a reduction from 2.68% to 0.75%. Higher shot counts reduce block-to-block variability but do not recover the mean cold-side temperature field. The results show that full-field readout of a strongly nonuniform thermal state is limited by more than ordinary finite-shot sampling under the tested hardware conditions, motivating observable-focused quantum formulations for heat flux, stored energy, and selected temperatures.",
+      "authors": [
+        "Yijin Mao",
+        "Yuwen Zhang"
+      ],
+      "primary_category": "physics.comp-ph",
+      "categories": [
+        "physics.comp-ph",
+        "quant-ph"
+      ],
+      "published": "2026-10-15T17:16:25+00:00",
+      "link": "https://arxiv.org/pdf/2610.24004v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "variational quantum linear solver applied to discretized heat conduction PDE",
+      "llm_evidence_cn": "变分量子线性求解器求解离散化热传导偏微分方程",
+      "llm_evidence": "变分量子线性求解器求解离散化热传导偏微分方程",
+      "canonical_evidence": "变分量子线性求解器求解离散化热传导偏微分方程",
+      "llm_tldr_en": "Evaluates a variational quantum linear solver on IBM hardware to recover temperature fields from backward-Euler discretized heat conduction, studying shot-count sensitivity and reconstruction accuracy.",
+      "llm_tldr_cn": "针对瞬态热传导隐式离散反复产生稀疏线性系统的问题，论文把扩散问题作为量子线性求解器的测试平台。作者在IBM量子硬件上用变分量子线性求解器（VQLS）重建一维热传导单步后向欧拉解的温度场，并比较不同规模与采样数下的精度。实验通过配对硬件区块评估确认性结果，并给出采样数敏感性分析，为量子线性求解器求解偏微分方程的实际可行性提供了硬件层面证据。",
+      "llm_tldr": "针对瞬态热传导隐式离散反复产生稀疏线性系统的问题，论文把扩散问题作为量子线性求解器的测试平台。作者在IBM量子硬件上用变分量子线性求解器（VQLS）重建一维热传导单步后向欧拉解的温度场，并比较不同规模与采样数下的精度。实验通过配对硬件区块评估确认性结果，并给出采样数敏感性分析，为量子线性求解器求解偏微分方程的实际可行性提供了硬件层面证据。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum linear system solvers for time-dependent and time-independent linear ordinary differential equations and partial differential equations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

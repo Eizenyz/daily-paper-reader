@@ -1,0 +1,39 @@
+{
+  "label": "2026-10-20",
+  "date": "2026-10-20",
+  "generated_at": "2026-10-20T22:17:36",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202610/20/2610.26843v1-quantum-algorithms-for-optimal-control-large-scale-finite-horizon-linear-quadratic-regulation",
+      "section": "quick",
+      "title_en": "Quantum algorithms for optimal control: large-scale finite-horizon linear-quadratic regulation",
+      "authors": "Xiajie Huang, Cristina Álvarez Yuste, Nikita Guseynov, Nana Liu, Javier González-Conde",
+      "date": "2026-10-19",
+      "pdf": "https://arxiv.org/pdf/2610.26843v1",
+      "score": "7.0",
+      "evidence": "用量子线性系统算法求解连续时间线性动力学的重构系统，条件数与时域无关",
+      "tldr": "针对有限时域连续时间LQR需解非线性Riccati方程、大规模长时控制代价高的问题，本文直接基于状态-协态最优性方程，将LQR重构为多点打靶线性系统，并证明在可稳性与可检测性假设下条件数不随时域增长。结合初末条件后，用量子线性系统子程序求解，返回最优代价与选定时刻控制输入。查询与门复杂度随系统规模和时域呈多对数增长，误差依赖近线性倒数。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "We develop quantum algorithms for optimal control over a prescribed finite time interval (finite horizon), focusing on continuous-time linear-quadratic regulation (LQR). This foundational control problem often requires solving a nonlinear matrix Riccati equation, which can be costly for large systems and long control durations on conventional classical solvers. We instead work directly with the state-costate optimality equations, reformulating the LQR problem as a multiple-shooting linear system. Importantly, we prove a condition-number bound for the system that is independent of the horizon, under stabilizability and detectability assumptions. By incorporating the initial and final conditions into a single linear system, we can solve the subsequent linear system more efficiently with a quantum linear systems subroutine. For a given initial state, our quantum algorithms return classical estimates of the optimal cost and the optimal control inputs at a selected time, without constructing a Riccati solution operator. Given sparse-matrix block-encodings, an initial-state preparation oracle and a fixed number of control inputs, the query and gate complexities scale polylogarithmically with system size and control duration, provided that sparsity, relevant norms, and stability parameters are bounded. The dependence on the target error is inverse-linear up to logarithmic factors. We establish the required bounds uniformly in system size and duration for a family of damped mass-spring chains with two endpoint controls. Numerical experiments support the analysis.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/20/2610.24004v1-transient-heat-conduction-on-quantum-hardware-replicated-temperature-field-reconstruction-and-shot-count-sensitivity-with-a-variational-quantum-linear-solver",
+      "section": "quick",
+      "title_en": "Transient Heat Conduction on Quantum Hardware: Replicated Temperature-Field Reconstruction and Shot-Count Sensitivity with a Variational Quantum Linear Solver",
+      "authors": "Yijin Mao, Yuwen Zhang",
+      "date": "2026-10-15",
+      "pdf": "https://arxiv.org/pdf/2610.24004v1",
+      "score": "6.0",
+      "evidence": "变分量子线性求解器求解离散化热传导偏微分方程",
+      "tldr": "瞬态热传导的隐式离散会反复产生稀疏线性系统，是检验量子线性求解器的自然场景。研究在IBM量子硬件上用变分量子线性求解器VQLS重建一维backward-Euler单步温度场，比较2/3/4比特编码的N=4/8/16问题。理想优化误差约1e-8，硬件平均相对L2误差分别为8.07%、20.14%和24.75%，且提高shots仅降低波动、不恢复均值场。结果表明全温度场读出受限于有限采样之外的因素，需转向热流、储能和选定温度等可观测目标。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Implicit discretizations of transient heat conduction repeatedly generate sparse linear systems, making diffusion problems a natural test bed for quantum linear solvers. This study evaluates how accurately a variational quantum linear solver (VQLS) recovers the temperature field produced by one backward-Euler step of one-dimensional conduction on IBM quantum hardware. A pre-specified confirmatory experiment compares N=4 interior temperatures encoded on two qubits with N=8 temperatures encoded on three qubits using ten paired hardware blocks; a separately defined N=16, four-qubit extension is evaluated in five independently scheduled exploratory blocks. Local VQLS optimization reduces relative temperature-field error to approximately 10^{-8} for all three cases, establishing an essentially exact ideal reference at this scale. On hardware, mean relative L2 temperature-field error is 8.07% for N=4 and 20.14% for N=8, a paired increase of 12.06 percentage points (95% CI, 10.71-13.42; exact paired sign-flip p=0.001953). The exploratory N=16 mean is 24.75+/-1.84%. A pre-specified N=16 shot-count follow-up then evaluates the same locked circuit at 2,048, 8,192, and 32,768 shots in six independently scheduled blocks. Mean field error remains 23.64%, 24.57%, and 24.37%, respectively; the 32,768-minus-2,048-shot contrast is +0.74 percentage points (95% CI, -0.65 to 2.12; p=0.281). In contrast, ideal multinomial sampling predicts a reduction from 2.68% to 0.75%. Higher shot counts reduce block-to-block variability but do not recover the mean cold-side temperature field. The results show that full-field readout of a strongly nonuniform thermal state is limited by more than ordinary finite-shot sampling under the tested hardware conditions, motivating observable-focused quantum formulations for heat flux, stored energy, and selected temperatures.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
