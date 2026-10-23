@@ -1,0 +1,39 @@
+{
+  "label": "2026-10-23",
+  "date": "2026-10-23",
+  "generated_at": "2026-10-23T21:56:51",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202610/23/2610.25260v1-spatial-discretization-error-for-quantum-chemistry-simulation",
+      "section": "quick",
+      "title_en": "Spatial Discretization Error for Quantum Chemistry Simulation",
+      "authors": "Di Fang, Jiaqi Zhang",
+      "date": "2026-10-18",
+      "pdf": "https://arxiv.org/pdf/2610.25260v1",
+      "score": "6.0",
+      "evidence": "量化量子模拟波函数动力学中的空间离散化误差",
+      "tldr": "量子化学模拟需把连续无界空间截断为有限基，离散误差是否可控是核心问题。作者建立Sobolev-Galerkin误差框架，分析多体库仑体系的周期化与Galerkin误差，并区分投影误差与动力学投影误差。结果表明，固定胞元下基态能量可达尖锐的M^{-1}收敛，而实时波函数误差在一般H^2初值下无法统一达到M^{-1}。结合量子算法，首次给出空间误差显式受控的端到端复杂度界，为分子与电子动力学模拟提供严格依据。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "Nonrelativistic quantum chemistry is based on the Schrödinger equation in continuous, unbounded space. Computational approaches on classical and quantum computers often truncate the spatial domain and introduce a finite-dimensional basis, reducing the continuum problem to a finite-dimensional one. There is therefore a fundamental question: to what extent does this approximation capture the original continuum problem? In this work, we develop a general Sobolev-Galerkin framework for estimating spatial discretization errors in quantum simulation with unbounded Hamiltonians. We apply this framework to many-body Coulomb systems and establish both periodization and Galerkin error estimates for wave-function dynamics and ground-state energies. For dynamics, the finite-basis projection error of the exact wave function does not capture the full basis-discretization error: an additional dynamical projection error enters our bound at a different rate, and we introduce an inner-product argument to control this contribution. Interestingly, the spatial convergence rates for wave-function dynamics and ground-state energies differ quantitatively. For ground-state energies, we establish a sharp $M^{-1}$ convergence rate at fixed cell size, where $M$ is the number of one-particle basis functions. We also show that a uniform $M^{-1}$ convergence rate is impossible for the corresponding real-time wave-function error with general $H^2$ initial data. The analysis relies on many-body Sobolev estimates with explicit polynomial dependence on system size. Combining these estimates with state-of-the-art quantum algorithms, we obtain, to our knowledge, the first rigorous end-to-end complexity bounds for quantum simulation of molecular and electronic dynamics with all spatial errors explicitly controlled. The number of basis functions is determined directly from the continuum problem, without regularization.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/23/2610.31330v1-quantum-fokker-planck-solvers-as-trainable-generative-models",
+      "section": "quick",
+      "title_en": "Quantum Fokker-Planck solvers as trainable generative models",
+      "authors": "Tariq Mahassen, Marcin Jastrzebski, Oleksandr Kyriienko",
+      "date": "2026-10-22",
+      "pdf": "https://arxiv.org/pdf/2610.31330v1",
+      "score": "6.0",
+      "evidence": "用QSVT与余弦算子线性组合求解厄米化Fokker-Planck方程",
+      "tldr": "针对传统变分量子生成模型依赖参数化旋转线路、难以兼顾可训练性与物理结构的问题，本文提出以Langevin过程势函数为可训练参数的量子生成模型。方法将Fokker-Planck方程厄米化，利用量子奇异值变换实现余弦算子的线性组合，并通过块编码对角势系数控制采样。模型可匹配经验分布并恢复多变量概率分布参数，且在高维下仍可训练，对分布内目标呈样本高效凸优化。该工作把量子生成学习表述为量子模型发现，为高维强相关科学数据建模提供基础。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "We develop and analyze generative models based on quantum solvers of stochastic differential equations. Unlike the common approach based on layered variational quantum circuits with parameterized rotations, we parameterize the potential of a Langevin process. The associated Fokker-Planck (FP) equations are Hermitianized and solved using a linear combination of cosine operators implemented through quantum singular value transformation. By encoding the square root of the stationary density, the model enables sampling through computational-basis measurements and is efficiently controlled by coefficients of the block-encoded diagonal potential. We train the proposed model to match empirical distributions within the family described by FP equations, demonstrating parameter recovery for multivariate probability distributions. Crucially, the model remains trainable at scale. Sample-efficient and convex optimization for in-distribution targets arises from a physics-informed inductive bias and holds regardless of the dimensionality of the problem. We provide circuit constructions and efficient block encodings of the main components of the algorithm and analyze resource requirements. Our approach frames quantum generative learning as quantum model discovery and provides a foundation for extending this framework to high-dimensional, strongly correlated scientific data.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

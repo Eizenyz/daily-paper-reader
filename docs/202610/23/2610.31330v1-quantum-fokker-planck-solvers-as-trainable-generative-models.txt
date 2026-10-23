@@ -1,0 +1,1308 @@
+Title: Quantum Fokker-Planck solvers as trainable generative models
+
+URL Source: https://arxiv.org/pdf/2610.31330v1
+
+Published Time: Fri, 23 Oct 2026 01:43:12 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+## Quantum Fokker-Planck solvers as trainable generative models 
+
+Tariq Mahassen, Marcin Jastrzebski, and Oleksandr Kyriienko 
+
+School of Mathematical and Physical Sciences, University of Sheffield, Sheffield S3 7RH, United Kingdom 
+
+We develop and analyze generative models based on quantum solvers of stochastic differential equations. Unlike the common approach based on layered variational quantum circuits with pa-rameterized rotations, we parameterize the potential of a Langevin process. The associated Fokker-Planck (FP) equations are Hermitianized and solved using a linear combination of cosine operators implemented through quantum singular value transformation. By encoding the square root of the stationary density, the model enables sampling through computational-basis measurements and is efficiently controlled by coefficients of the block-encoded diagonal potential. We train the proposed model to match empirical distributions within the family described by FP equations, demonstrat-ing parameter recovery for multivariate probability distributions. Crucially, the model remains trainable at scale. Sample-efficient and convex optimization for in-distribution targets arises from a physics-informed inductive bias and holds regardless of the dimensionality of the problem. We provide circuit constructions and efficient block encodings of the main components of the algorithm and analyze resource requirements. Our approach frames quantum generative learning as quan-tum model discovery and provides a foundation for extending this framework to high-dimensional, strongly correlated scientific data. 
+
+I. INTRODUCTION 
+
+Generative modeling relies on learning a probability distribution from data and designing machine learning (ML) models that draw new samples from it [1]. Diffu-sion and flow-based models are now ubiquitous for tasks ranging from image generation to scientific discovery in materials science and high-energy physics [2–5]. Quan-tum machine learning (QML) aims to build models for the same tasks [6–8]. QML typically relies on parame-terized quantum circuits (PQCs) [9, 10], encoding data into quantum states [11] and treating circuit angles as trainable weights. Generative modeling follows naturally from quantum measurement, which is inherently proba-bilistic and obeys the Born rule, x ∼ pθ (x) = |⟨ x|ψθ ⟩| 2.Quantum circuit Born machines (QCBMs) use this di-rectly [12, 13]. An extra motivation comes from the complexity of random circuit sampling [14] and from a predicted quantum advantage for specific generative tasks [15]. Other model families include hybrid adver-sarial networks [16, 17], quantum Boltzmann machines and mixed-state models [18–22]. Spectral models have gained attention for being inherently regularized in the latent space of basis functions [23], with sampling en-abled by a fixed transform to the computational ba-sis [24–27]. Multivariate and correlated distributions have been addressed with joint-distribution circuits [28– 31] and physics-based models motivated by photonic and hybrid platforms [32–36]. The performance of QML models largely depends on architectural choices and their parameterization. The classical recipe of adding depth and parameters [37] does not transfer directly to quantum circuits [38]. Sufficiently expressive, unstructured circuits exhibit barren plateaus, where gradients vanish exponentially in the number of qubits and training from a polynomial number of mea-surements fails [39–41]. The severity depends on the ar-chitecture, on the loss and its estimation [42, 43], and on the initialization [44], while training shallow circuits can suffer from multiple local minima [45]. When training on quantum hardware, gradient estimation from finite samples becomes expensive as the number of parameters grows [46–48]. These barriers have motivated shallow and problem-informed circuits [49, 50], modified train-ing approaches [48], and protocols that train classically and reserve the quantum device for sampling [27, 51–54]. The tension between trainability guarantees and classi-cal simulability [55] further suggests changing the model parameterization and untying the number of parameters from the number of qubits [56]. Quantum algorithms for differential equations offer an-other route to preparing states and probability distribu-tions. This can be done at a cost polylogarithmic in the grid size, under assumptions on operator access, condi-tioning, and state preparation [57–60]. Non-unitary dy-namics can be treated by linear combinations of Hamil-tonian simulation or by Schr¨ odingerization [61–64]. Non-linear problems have been approached through Carle-man and Kolmogorov linearization [65, 66], latent-space physics-informed learning [67, 68], and effective Hamil-tonians whose ground state encodes the solution [69– 71]. Stochastic differential equations are a natural target, since the density of their trajectories obeys a Fokker– Planck equation [72]. Quantum algorithms for stochastic dynamics and Fokker–Planck equations have been devel-oped [24, 73–81]. While reading out a full amplitude-encoded solution can consume the speedup [82], sampling is a natural target that avoids full reconstruction. At the same time, a solver for a given operator is not yet a learned generative model. In this work we construct such a model. The trainable parameters are the coefficients of the potential of an over-damped Langevin process, and the circuit is a quantum solver that prepares the stationary distribution of the associated Fokker–Planck equation. Hermitianization of the Fokker–Planck generator gives a positive semidefinite arXiv:2610.31330v1 [quant-ph] 22 Oct 2026 2Uχ ⊗ UH           
+
+> QSVT
+> −−−−→ e−tA 2
+> |ψ〉S
+> · · · · · · · · · · · · · · · · · · · · · · · · · · · |0〉⊗nPREP PREP wj
+> UχU†
+> χ
+> PREP †
+> wj
+> 0
+> |0〉aχ
+> 0
+> |0〉aH
+> UHU†
+> H
+> 0
+> |0〉⊗2
+> aA
+> 0
+> |0〉aqsvt
+> 0
+> |0〉aG
+> 0
+> |ψ〉S
+> |0〉p
+> Φ0Φ1Φd
+> 0
+> |0〉sgn HH
+> 0
+
+dataset quantum model generated dataset 
+
+optimization                        
+
+> 
+> V′
+> α,β c0· · · −c
+> −cV′
+> α,β c. . .00−c. . .. . ........ . .. . .Vα,β cc0· · · −cV′
+> α,β
+> 
+
+parameterization txd tx1x1
+
+> p1
+> xd pd
+
+underlying physical model 
+
+x x xd 
+
+x x xd 
+
+loss 
+
+> α
+
+β
+
+FIG. 1. Overview of the proposed approach for physics-informed parameterization of quantum generative models and matching empirical distributions. A target physical model leads to stationary-state samples, which constitute a dataset. The trainable architecture uses a highly structured circuit with a small number of trainable parameters (indicated by α, β), which are naturally reuploaded multiple times throughout the QSVT sequence. The loss is evaluated to minimize the distance between generated and empirical distributions, effectively representing quantum model discovery. 
+
+operator whose ground state is the square root of the sta-tionary density. We prepare this state with an imaginary-time filter implemented as a linear combination of cosine operators through quantum singular value transforma-tion (QSVT) [61, 83, 84]. The potential enters through a parameterized block encoding, so the number of trainable parameters is fixed by the chosen dictionary of potential terms and is independent of the grid resolution, while the prepared state spans an exponentially large configuration space. We show that the model recovers the parameters of multivariate, correlated distributions within its family. The stationary density belongs to an exponential fam-ily, and its training reduces to matching a small number of expectation values. The learned coefficients define a stochastic model consistent with the data, which places the approach alongside classical and quantum model dis-covery [85–88]. 
+
+II. FOKKER–PLANCK GENERATIVE MODEL 
+
+We start by considering a d-dimensional overdamped Langevin process with additive, isotropic noise, dXt =
+
+−∇ V (Xt) dt + σ d Wt, where Wt is a standard d-dimensional Wiener process, σ > 0 is a noise strength, and V : Rd → R is a confining potential. The determin-istic drift −∇ V pushes trajectories toward local minima of V . The noise adds fluctuations and allows particles to cross barriers. The probability density p(x, t ) of an ensemble of such trajectories obeys the Fokker–Planck equation [89] 
+
+∂tp = ∇ ·  p ∇V  + σ2 
+
+> 2
+
+∆p = −∇ · J, (1) where J = −p∇V − σ2 
+
+> 2
+
+∇p is the probability current. Imposing the equilibrium condition J = 0 gives 
+
+∇ log pss = −2∇V /σ 2 and hence the stationary den-sity pss (x) = Z−1 exp  −2V (x)/σ 2, where Z =
+
+R e−2V (x)/σ 2
+
+dx. The stationary distribution concen-trates near the minima of V , with σ controlling both its width and the rate at which probability crosses barriers between minima. We now let the potential carry the trainable parame-ters. We take V (x; θ) = PKj=1 θj vj (x) with a fixed dic-tionary of basis functions {vj }, in this work monomials in the coordinates, and coefficients θ ∈ RK . Substituting into the stationary density pss , the model distribution is 
+
+pθ (x) = 1
+
+Z(θ) exp 
+
+
+
+− 2
+
+σ2 V (x; θ)
+
+
+
+. (2) This is a generative model in the usual sense: given θ
+
+it defines a distribution, and given samples from an un-known distribution we can fit θ so that pθ matches them. It is also a physical model: the fitted θ are the coefficients of the drift of a stochastic differential equation consistent with the data, which is why we link the training task to model discovery. If the data are indeed generated by an overdamped Langevin process with a potential in the span of the dictionary, the potential is identifiable from 
+
+pss up to an additive constant, V = − σ2 
+
+> 2
+
+log pss + C. We assume throughout that σ is known or estimated sepa-rately from trajectory data. Equivalently, if unknown, we can absorb σ into the definition of the trainable pa-rameters θ and interpret it as aiming to fit the natural parameters η∗ 
+
+> j
+
+= −2θ∗ 
+
+> j
+
+/σ 2. These cannot, on their own, identify the process in full, but can form a crucial part of an extended model-discovery pipeline. Two features of Eq. (2) are crucial for this model. First, it belongs to an exponential family with natural parameters −2θj /σ 2 and sufficient statistics vj (x) [90]. 3This fixes the geometry of likelihood-based training (Sec. IV). Second, a small K does not mean a simple distribution. A quartic V (x) = θ1 
+
+> 2
+
+x2 + θ2 
+
+> 4
+
+x4 with θ1 < 0is bimodal. In several dimensions, coupling terms such as 
+
+x1x2 or x21x22 correlate the coordinates, and the station-ary density is in general neither a product nor a Gaus-sian. Adding more dimensions and coupling them with nonlinear terms can lead to complicated probability dis-tributions. Once discretized, the model distribution becomes a probability mass vector over a grid. We consider the trainable potential V (x; θ) of Eq. (2) with K coefficients. Each of the d coordinates is discretized on N = 2 n grid points. The generative model therefore has exactly K
+
+trainable parameters, and its output pθ is a probability vector with N d entries. The quantum register encoding 
+
+√pθ as amplitudes contains dn = d log 2 N qubits. The parameter count K is independent of N . For a dictio-nary of monomials of total degree at most r, it satisfies 
+
+K ≤  d+rr
+
+ − 1. Our approach separates two resources: the number of trainable parameters and the size of the represented probability vector. In a conventional quantum circuit Born machine with comparable expressivity, these re-sources are coupled through the ansatz depth. Here, the trainable-parameter count is determined by the dic-tionary defining the potential, while the probability-vector size is determined by the discretization. The solver connects this compact parameterization to quan-tum state preparation, with a computational cost dis-cussed in Sec. VI. Throughout this paper, “efficient pa-rameterization” refers to the trainable-parameter count. At the same time, the gate count and circuit complexity of our approach are higher than for a QCBM, and hence it is more suitable for fault-tolerant devices. Finally, sampling from Eq. (2) classically requires ei-ther evaluating Z(θ) on the N d grid, which is exponential in d, or running a Markov chain, whose mixing time grows when σ is small and V has several well-separated minima [91, 92]. A quantum register of d log 2 N qubits holds the discretized √pθ as amplitudes, and computational-basis measurement produces a sample from the joint distribu-tion in one shot, with marginals obtained by discarding registers. The task of the quantum algorithm is therefore to prepare the stationary state of the discretized Fokker– Planck operator for a given θ. Because Eq. (1) is a non-Hermitian relaxation, we solve the problem by Hermi-tianizing the operator and applying an imaginary-time filter built from cosine operators (see Sec. III). We emphasize that the model generates stationary-state solutions. Imaginary-time evolution (ITE) expo-nentially suppresses excited-state contributions, project-ing onto the ground state of a Hamiltonian that encodes the stationary Fokker–Planck distribution. In contrast, Fokker–Planck dynamics describe the physical time evo-lution of a probability distribution associated with an en-semble of stochastic trajectories (see Fig. 2), so transient ITE dynamics are not considered.  
+
+> III. QUANTUM IMPLEMENTATION
+
+The quantum model takes θ as input and prepares a state with the discretized Born-rule distribution pθ
+
+of Eq. (2) embedded into amplitudes. To build such a model, we split the workflow into four stages: (A) trans-formation of the Fokker–Planck generator into a positive semidefinite operator H = A†A whose ground state is 
+
+√pθ ; (B) a block encoding of the discretized A in which 
+
+θ enters only through the diagonal potential term; (C) preparation of the ground state by an imaginary-time fil-ter e−tH implemented as a linear combination of cosine operators (LCCO); and (D) measurement and a loss that drives the update of θ. 
+
+> A. Hermitianization
+
+The Fokker–Planck generator in Eq. (1) is generally non-Hermitian, so its propagator is non-unitary and can-not be applied directly on a quantum device. The standard remedy is the similarity transformation by the square root of the stationary density [89, 93] p(x, t ) = 
+
+e−V (x)/σ 2
+
+ψ(x, t ), which Hermitianizes the equation by casting Eq. (1) into imaginary-time Schr¨ odinger form, 
+
+∂tψ = −Hψ , with H = − σ2 
+
+> 2
+
+∇2 + Veff (x) and Veff (x) = 
+
+|∇ V |2/(2 σ2) − ∆V / 2 (see App. B for the derivation). Note that H is self-adjoint, and hence solving for ψ(x, t )requires ITE with the operator exp( −Ht ), which remains non-unitary. t0 t1 t2 t∞
+
+> p(x, t )
+
+t0
+
+> Classical FP ITE
+> pss
+
+t1
+
+xp(x, t )
+
+t2
+
+x
+
+t∞             
+
+> FIG. 2. Classical Fokker–Planck evolution (solid blue curves) vs imaginary-time evolution (ITE) (dashed red curves) for the distribution generated by the double-well potential V(x) =
+> λ x2−a22(dotted gray curve). Both start from the same narrow Gaussian at t0. At the intermediate times t1and t2the two distributions differ, since the dynamics are not equivalent away from stationarity. At late times ( t∞) both relax to the same stationary distribution pss .
+
+4
+
+B. Imaginary-time evolution via a linear combination of cosines 
+
+We aim to find the stationary state solution of the Hermitianized Fokker–Planck equation ∂t |ψss ⟩ =
+
+−H |ψss ⟩ = 0. Expressing the Hamiltonian in its spectral decomposition H = P 
+
+> i
+
+Ei |Ei⟩⟨ Ei|, we see that the imaginary-time propagator is exp( −Ht ) =P 
+
+> i
+
+e−Eit |Ei⟩⟨ Ei|. For an initial state with non-zero over-lap with the ground state we have |ψ(0) ⟩ = P 
+
+> i
+
+ci |Ei⟩
+
+such that ITE prepares an (unnormalized) state of the form |ψ(t)⟩ = P 
+
+> i
+
+cie−Eit |Ei⟩. Since H ⪰ 0, higher energy eigenstates are exponentially suppressed relative to the ground state at rates determined by the spec-tral gap ∆ = E1 − E0 and after t = O(log(1 /ϵ )/∆) time the final state is an ϵ-accurate approximation to the ground state |E0⟩, up to the dependence on the initial ground state overlap. Therefore, retrieving the station-ary state solution to the Fokker–Planck equation is equiv-alent to ground state preparation of the imaginary-time Schr¨ odinger equation. To guarantee H ⪰ 0 we factorize it as H = A†A, where, in one dimension, 
+
+A = σ
+
+√2 ∂x + 1
+
+√2σ V ′(x). (3) The non-unitarity of the imaginary-time propagator necessitates the use of the Hubbard–Stratonovich trans-formation to express the operator as a linear combina-tion of unitaries (LCU) [94]. For a Hermitian matrix B
+
+it reads 
+
+e−B2t = 1
+
+√π
+
+Z ∞−∞ 
+
+e−χ2
+
+e−i2√t χB dχ. (4) We can construct D quadrature nodes χ and weights w
+
+using the Stieltjes procedure and the Golub–Welsch al-gorithm [95] to discretize Eq. (4) as 
+
+e−B2t ≈ 1
+
+√π
+
+> D
+
+X
+
+> j=1
+
+wj e−i2√t χ j B , (5) which can, in general, be implemented with a linear com-bination of Hamiltonian simulations. We use the even and odd symmetries of the quadrature weights and nodes wj = w−j and χj = −χ−j to remove imaginary terms from the summation, resulting in a lin-ear combination of cosines of the Hermitian matrix B,
+
+e−B2t ≈ 2
+
+√π
+
+X 
+
+> j:χj>0
+
+wj cos 
+
+
+
+2√tχ j B
+
+
+
+. (6) The cosines, being real, even functions, are precisely what standard QSVT is able to implement without costly ex-tensions of the protocol, and the symmetry essentially halves the number of LCU branches needed. In our con-struction B is the Hermitian dilation of A, B = |0⟩⟨ 1| ⊗ 
+
+A† + |1⟩⟨ 0| ⊗ A, so that B2 = |0⟩⟨ 0| ⊗ A†A + |1⟩⟨ 1| ⊗ AA †
+
+and e−tB 2
+
+acts as e−tH on the |0⟩ block. We discuss how                    
+
+> A=σ
+> 2√2 ∆ x(S+−S−) + 1
+> √2σ V′(x)−→ UA=
+> A∗∗∗
+> 
+> |0⟩aA, 1
+> PREP APREP †
+> A
+> |0⟩aA, 2
+> |0⟩aqsvt
+> UV′
+> |ψ⟩SQFT U+(eiπ )U−QFT †
+
+
+
+UA
+
+FIG. 3. LCU block encoding UA of the discretized operator 
+
+A. The ancilla register aA = ( aA, 1, a A, 2) and |0⟩a2 prepare the LCU amplitudes through PREP A. Shift operators U+ and (eiπ )U− are implemented in the Fourier basis, giving S+ −S−.Ancillary register aqsvt is used to perform QSVT to construct 
+
+UV ′ , a block encoding of the non-unitary potential V ′(x). The final PREP † 
+
+> A
+
+coherently uncomputes the LCU register, yielding A/α A in the all-zero ancilla block of UA.
+
+the approximation of Eq. (6) is applied to H within the circuit construction in Sec. III C. Gauss–Hermite nodes and weights are symmetric for any D, with χ−j = −χj and w−j = wj , so the imaginary parts cancel exactly. For odd D, the rule also contains the node χ = 0, which contributes w0 cos(0) = w0I. This identity contribution is included automatically in the co-sine implementation, provided that the approximating polynomial equals one at zero signal. We take D even for convenience, such that every branch of Eq. (6) carries weight 2 wj .
+
+C. Discretization and block encoding for the quantum circuit 
+
+1. Block encoding A
+
+To encode A into a quantum circuit we use the central-difference discretization scheme to approximate deriva-tives as quantum shift operators S± (see Ref. [96] for further details). The discretized version of A then be-comes a periodic tridiagonal operator, 
+
+A = σ
+
+√2
+
+S+ − S−
+
+2∆ x + V ′(xi)
+
+√2σ
+
+= 1
+
+√2σ
+
+
+
+V ′(x0) c 0 · · · −c
+
+−c V ′(x1) c . . . 00 −c . . . . . . ...... . . . . . . V ′(xN −2) cc 0 · · · −c V ′(xN −1)
+
+
+
+(7) where c = σ2/(2∆ x). To construct this non-unitary op-erator we first discretize the domain [ −L, L ] into N grid 5points G = ( x0, . . . , x N −1) such that xi = x0 + i∆x
+
+where ∆ x = 2 L/N . We then promote the discretized coordinate vector to the diagonal operator such that 
+
+G = diag( x0, . . . , x N −1). The block encoding UG is syn-thesized using an LCU sequence (see Figs. 13 and 14) [97]. We apply a QSVT sequence onto UG to implement a poly-nomial transformation of the diagonal entries, thereby mapping xi to the desired potential derivative V ′(xi), obtaining UV ′ . The coefficients θ of the parameterized potential V (x; θ) are trainable, with the QSVT phase an-gles {ϕk} updated accordingly to realize the correspond-ing polynomial transformation. The circuits for block encoding UG as well as the QSVT sequence to obtain 
+
+UV ′ can be found in App. F. Next, we implement the quantum shift operators S+
+
+and S− in Fourier space by conjugating U+ and U−, re-spectively, with the quantum Fourier transform (QFT). The negation of the second term requires multiplying U−
+
+by the phase factor eiπ . Details of this construction, to-gether with circuit implementations of U±, are given in Ref. [96]. We then construct an LCU of the encoded operators S± and UV ′ to obtain the block encoding UA,shown in Fig. 3. 
+
+2. Constructing the signal operator US = Uχ ⊗ UH
+
+The block encoding UA is embedded into a Hermi-tian dilation, yielding the Hermitian operator UH =
+
+|0⟩⟨ 1| ⊗ U † 
+
+> A
+
++ |1⟩⟨ 0| ⊗ UA (shown in App. F). We then block encode the nodes χ by classically constructing and injecting them into the phases of controlled-RY rotation gates using LCU (see App. F), giving Uχ. Finally, we perform a fixed QSVT sequence, shown in Fig. 4, that implements Eq. (6). 
+
+D. Training and readout 
+
+Given a data set Y = {ym}nm 
+
+> m=1
+
+drawn from an unknown stationary distribution p∗, training consti-tutes choosing θ such that an empirical loss function 
+
+L(Y, X , θ) is minimized for samples X = {xs}ns
+
+> s=1
+
+obtained by measuring the prepared state e−tH |ψ⟩S .Throughout the paper we discuss two losses. The first loss is the Kullback–Leibler divergence KL( p∗∥pθ ) [98], which we evaluate on the discretized grid in the emu-lated experiments, where p∗ and pθ are both available as vectors. This loss is not sample-accessible on hardware and as such cannot be used by most generative models in practice. As shown in Sec. IV, however, KL divergence gradients can be efficiently evaluated by our model from samples. The second loss is the squared maximum mean dis-crepancy (MMD 2), MMD 2(P, Q ) = Ex,x ′∼P [k (x, x ′)] + 
+
+Ey,y ′∼Q [k (y, y ′)] − 2Ex∼P,y ∼Q[k(x, y )] [99], a standard choice for implicit quantum generative models [12, 13]. Minimization is carried out by a classical optimizer act-
+
+Uχ ⊗ UH
+
+> QSVT
+
+−−−−→ e−tH |ψ⟩S         
+
+> · · · · · · · · · · · · · · · · · · · · · · · · · · · |0⟩⊗nPREP PREP wj
+> UχU†
+> χ
+> PREP †
+> wj
+> 0
+> |0⟩aχ
+> 0
+> |0⟩aH
+> UHU†
+> H
+> 0
+> |0⟩⊗2
+> aA
+> 0
+> |0⟩aqsvt
+> 0
+> |0⟩⊗maG
+> 0
+> |ψ⟩S
+> |0⟩p
+> Φ0Φ1Φd
+> 0
+> |0⟩sgn HH
+> 0
+
+FIG. 4. QSVT implementation of the weighted cosine trans-formation. The block encodings Uχ and UH are alternated with their adjoints between projector-controlled phase oper-ations Φ k . Each Φ k acts on the phase ancilla p and sign an-cilla sgn, with projector Π = |0⟩⟨ 0|aχ ⊗ | 0⟩⟨ 0|aqsvt ⊗ | 0⟩⟨ 0|aA ⊗|0⟩⟨ 0|aG . Conjugating the sign ancilla by Hadamard gates and post-selecting on sgn = 0 coherently extracts the real part,  
+
+> 12
+
+(eiϕ k Π + e−iϕ k Π), thereby implementing the desired cosine polynomial (see Fig. 12 for further details). Post-selection on aqsvt = 0 selects the QSVT success subspace (see Fig. 10). Finally, PREP † 
+
+> wj
+
+and post-selection of the PREP register pro-duce the weighted sum. 
+
+ing on θ. For either loss, each evaluation of the gradient requires one (KL) or two (MMD 2) sample batches (see Sec. VI) and one state preparation per sample. Details of the numerical experiments are given in App. D. 
+
+IV. TRAINABILITY 
+
+The optimization problem of Sec. III D differs from training a generic parameterized quantum circuit. The optimizer sees K variables regardless of the coarseness of the grid set by N or the data dimensionality d. A change of θ is passed to the circuit through O(dr ) QSVT an-gles, while the remainder of the compound circuit is set by the discretization and the solver. There is no ansatz-layer count to tune in the usual sense. The only mod-eling choice is the dictionary {vj }, which encodes prior knowledge about the physical system in the same way that a dictionary does in sparse identification of dynamics [85, 86]. Barren plateau arguments for random or highly expressive PQCs [39, 40] do not apply directly because 
+
+θ does not parameterize a unitary drawn from an ap-proximate design. On the contrary, adding qubits in our construction refines the problem grid and improves the continuum approximation, with the gradient converging to an n-independent value. As explained below, assum-ing close approximation from Eq. (6) can be achieved, the problem admits a convex loss landscape owing to the 60.0 0.5 1.0 
+
+θ1           
+
+> 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4
+> θ2
+> Loss landscape
+> traced valley perpendicular path target (0.5, 0.5)
+> 1.0 0.5 0.0 0.5
+> distance from target
+> 10 8
+> 10 7
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> MMD 2 (log)
+> Loss along paths
+> traced valley perpendicular path target
+
+FIG. 5. MMD 2 landscape for a 9-qubit one-dimensional quar-tic model V (x) = θ1 
+
+> 2
+
+x2 + θ2 
+
+> 4
+
+x4 around the true parameters (θ1, θ 2) = (0 .5, 0.5). Left: contour map with the path along the soft Hessian eigendirection (the valley, red) and the per-pendicular stiff direction (cyan). Right: loss along each path as a function of distance from the target. The stiff direction rises by orders of magnitude within a short distance while the valley is shallow, so the landscape is strongly anisotropic. Nevertheless, the loss along the valley still has a well-defined minimum at the target, so the two parameters are not degen-erate and the optimum is identifiable. 
+
+parameterization of the state prepared by the model. The model in Eq. (2) corresponds to a subset of the exponential family [90] with natural parameters ηj =
+
+−2θj /σ 2 and sufficient statistics vj . Writing l(θ) =P 
+
+> m
+
+log pθ (ym) for the log-likelihood of the data, crucial standard results follow (see App. E). First, the station-arity condition ∂θj l = 0 is equivalent to matching the sufficient statistics, 
+
+Epθ [vj (x)] = 1
+
+nmnmX
+
+> m=1
+
+vj (ym), j = 1 , . . . , K, (8) which coincides with the stationarity condition of KL( p∗∥pθ ) and for monomial vj becomes the standard moment matching. In our implementation, the left-hand side of this equation also becomes the empirical mean from the ns samples. Second, −l and KL( p∗∥pθ ) are con-vex in θ, and strictly convex whenever the vj are linearly independent on the support of pθ . Parameter recovery by maximum likelihood or KL minimization is therefore a convex problem with a unique optimum, and that op-timum is characterized by K moments of the data. On the quantum side this means the circuit need only be sampled enough times to estimate K expectation values 
+
+Epθ [vj ], rather than to reconstruct pθ itself. Using stan-dard results from statistics, ns ∼ nm balances the statis-tical errors of the model and data (see App. E). We note that score matching [100] provides a sample-free alterna-tive for training, which could seemingly sidestep the need for the use of quantum hardware during training, but sample-based maximum likelihood estimation has been shown to outperform score matching precisely for the tar-get distributions of interest for our method [101]. The MMD 2 loss is not in general convex in θ, even for an exponential family. It is, however, a standard loss used throughout the literature and one that can be es-timated directly from samples without the need to esti-mate moments, which could be useful when the data may lie outside the family spanned by the dictionary {vj }Kj=1 ,when high-degree statistics are needed, or when direct comparability with other models is required. As such, we provide additional training results for the MMD 2 loss in Sec. V and show empirically that it shares the qualitative features of the KL landscapes for the problems presented in this work. Once again, standard results show that 
+
+ns ∼ nm balances the model and data sampling error contributions [99]. 
+
+V. NUMERICAL RESULTS 
+
+Next, we present numerical studies investigating the convergence of the learning algorithm to the target, the trainability behavior with a growing number of poten-tial terms vj (x), the approximation effects of the quan-tum solver, and whether the construction extends to correlated, higher-dimensional targets. All results were obtained by classical emulation of the construction of Sec. III. Numerical settings are listed in App. D. 1 2               
+
+> θ1
+> 0.2 0.4 0.6 0.8 1.0
+> θ2
+> t= 1 ,D= 3
+> Target Minimum
+> 12
+> θ1
+> t= 55 ,D= 55
+> 12
+> θ1
+> t= 75 ,D= 200 ×10 1×10 2
+> MMD 2 (log)
+> ×10 3
+
+FIG. 6. MMD 2 landscapes obtained with the finite-order filter of Eq. (6) for the quartic model with V ′(x) = θ1x + θ2x3 and true parameters ( θ∗ 
+
+> 1
+
+, θ ∗ 
+
+> 2
+
+) = (1 .0, 0.4), for increasing imaginary time t and quadrature order D from left to right. The red cross marks the minimum found on the grid. At small t or D,the filter has not converged and the minimum is displaced. At t = 75, D = 200, the landscape and its minimum coincide with the exact one. 
+
+First, we consider a one-dimensional quartic potential 
+
+V (x) = θ1 
+
+> 2
+
+x2 + θ2 
+
+> 4
+
+x4 with two coefficients ( θ1, θ 2) and study the convergence of MMD 2 minimization using the proposed solver. Fig. 5 maps the MMD 2 landscape in the ( θ1, θ 2) plane around the target. The landscape has a single basin whose curvature differs by orders of magni-tude between the direction of the largest curvature of the loss at θ∗ and the valley (lowest curvature). Anisotropy of this kind can be explained by the quartic potential, where the two coefficients affect the stationary density in partially compensating ways (a larger quadratic term and a smaller quartic term produce similar widths), so a combination of them is weakly constrained by the data. Importantly, the landscape is not flat. The right-hand panel in Fig. 5 shows that the loss along the valley direc-tion still has a clear minimum at the target, the two coef-ficients are individually identifiable, and the true stochas-tic model is recovered. 75                 
+
+> 05
+> y
+> 5
+> 05
+> y
+> MMD 2=6.4e-24 MMD 2=2.8e-19 MMD 2=1.3e-17
+> 505
+> x
+> 5
+> 05
+> y
+> KL=0.0e+00
+> 2.5 0.0 2.5
+> x
+> KL=0.0e+00
+> 2.5 0.0 2.5
+> x
+> KL=0.0e+00
+> ×10 5
+> ×10 16
+> ×10 14
+> ×10 5
+> ×10 13
+> ×10 12
+> p(x, y )
+> ×10 4
+> p ∗ (x, y ) − p(x, y )
+> ×10 12
+> p ∗ (x, y ) − p(x, y )
+> ×10 12
+
+FIG. 7. Two-dimensional targets and residuals after training. Columns: an elongated, correlated single-well target (left), a multimodal target with several separated wells (center), and a curved crescent-shaped target (right). Top row: target den-sity p∗(x, y ). Middle and bottom rows: residual p∗ − pˆθ after training with MMD 2 and with KL, respectively, with the final loss. Red corresponds to positive-valued residuals and blue to negative. Residuals are several orders of magnitude below the target amplitude for both losses, so the coupled potential coef-ficients that generate the correlations are recovered. Training converged within 10–150 iterations for all potentials. 
+
+The results in Fig. 5 are shown for the exact ground state of the discretized operator. On a quantum device, the state is instead prepared by the finite-order filter of Fig. 4, raising the question of trainability under fi-nite approximation error. Fig. 6 shows the MMD 2 land-scape produced by the LCCO-prepared state for increas-ing imaginary time and quadrature order. For small t the filter has not removed the excited states and the mini-mum is displaced from the true parameters. For t and D
+
+large enough, the landscape converges to the exact one and the minimum coincides with the target. As discussed in Sec. VII, the success of the proposed architecture over classical methods is most promising for correlated multidimensional distributions. Figs. 7 and 8 show six such targets, in two and three dimensions, generated by potentials with coupling terms between the coordinates, namely a correlated single well, multi-well potentials with minima on a lattice, and curved targets in which the location of one coordinate’s minimum de-pends on the value of another. In each case the potential is specified by a handful of coefficients, while the dis-cretized distribution has N 2 or N 3 entries. Training with either MMD 2 or KL reduces the residual errors to several orders of magnitude below the target amplitude, and the two losses reach optima of comparable quality, with KL typically requiring fewer iterations. The targets here are small enough to emulate exactly. Extending them to the LCCO-prepared state and to higher d is a natural next step and is discussed in Sec. VII. 1 0 1x 1                       
+
+> 01
+> y
+> 1
+> 01z
+> 4
+> 2
+> 024
+> y
+> MMD 2=1.3e-19 ×10 11
+> 2.5 0.0 2.5
+> x
+> 4
+> 2
+> 024
+> y
+> KL=0.0e+00 ×10 11
+> 202x2
+> 02
+> y
+> 2
+> 02
+> z
+> MMD 2=1.3e-19 ×10 11
+> 2.5 0.0 2.5
+> x
+> KL=0.0e+00 ×10 11
+> 202x024
+> y
+> 4
+> 2
+> 024
+> z
+> MMD 2=1.2e-16
+> ∑
+> z
+> |p∗ − p|
+> ×10 9
+> 2.5 0.0 2.5
+> x
+> KL=0.0e+00
+> ∑
+> z
+> |p∗ − p|
+> ×10 9
+
+FIG. 8. Three-dimensional targets and residuals after train-ing. Columns: a single spherical well (left), a multi-well po-tential with minima arranged on the vertices of a cube (cen-ter), and a helical target (right). Top row: isosurfaces of the target density. Middle and bottom rows: absolute value of the residual |p∗ − pˆθ |, summed over z, after MMD 2 and KL training, with the final loss. As in two dimensions, both losses converge to residuals many orders of magnitude below the tar-get amplitude within 40–150 iterations, demonstrating that a few coupled coefficients suffice to define, and to recover, non-separable three-dimensional distributions. 
+
+VI. RESOURCE ESTIMATION 
+
+The construction of Sec. III is a nested chain of fault-tolerant primitives, and a single evaluation of the loss requires it to be executed many times. In this section, we provide a summary of quantum resources required to perform the training algorithm in full on a quantum device, in the simplified case where no cross terms are present, i.e., each ∂xi V depends only on xi. Cross terms affect only the potential oracle: since ∂xi V = P 
+
+> j
+
+θj ∂xi vj
+
+is linear in θ with fixed monomials ∂xi vj , the diagonal operator diag( ∂xi V ) can be block encoded as a linear combination of products of QSVT polynomials of posi-tion operators, one per coordinate [83], with θ entering through the amplitudes of the combination. A discus-sion of the extension to correlated potentials, like those shown in Figs. 7 and 8, is included in App. A, where we argue that modest additional overheads are required. We collect all resource requirements discussed in this section in Table I. 8During the training, the cost per optimization step is 
+
+Ctrain = Neval × ns
+
+Psucc 
+
+× Cprep , (9) where Neval is the number of sample batches per step, ns
+
+the number of accepted samples per batch, Psucc the post-selection success probability, and Cprep = q C A the cost of one attempted state preparation, with the number of queries q and the cost per query CA given below. The to-tal training cost is Niter Ctrain for Niter optimization steps. For both losses, ns ∼ nm samples balance the model and data sampling errors (Sec. IV, App. E). Because the score of the model is known in closed form, each optimization step needs only a small constant number of batches of samples Neval = 1 for KL (App. E), and Neval = 2 for MMD 2, one for each argument of the model-only kernel. Regular QCBM implementations require parameter-shift evaluations, i.e. two additional circuit batches per train-able parameter. For KL, the convexity of the problem suggests that, at least in the case where a good approx-imation of the desired stationary state is prepared, the total number of optimization steps is unlikely to domi-nate the cost. At each optimization step, a classical optimizer up-dates K ≤  d+rr
+
+ − 1 parameters, independent of N , and recomputes the r QSVT phases of each potential oracle (one oracle per coordinate), using efficient existing algo-rithms [102, 103]. These phases are the only θ-dependent gates: they enter the block encoding UA of Fig. 3 through the QSVT ancilla of the potential oracle UV ′ , which acts on the n qubits of its coordinate. The circuit width is as follows. The system register holds dn qubits. The position-operator block encoding 
+
+UG uses a PREP register aG of m = ⌈log 2(n + 1) ⌉ qubits-for its n+1 Pauli terms, and the QSVT that turns it into 
+
+UV ′ uses one further ancilla. The LCU of the kinetic and potential terms of UA uses two ancillas, and for d > 1 the stacking of the coordinate operators described in App. A uses an index register of ⌈log 2 d⌉ qubits. The Hermitian dilation UA → UH adds one qubit. The cosine QSVT of Fig. 4 adds one ancilla for the quadrature-node encod-ing, one phase ancilla and one sign ancilla, and for an even number D of quadrature nodes the outer LCU over the D+ = D/ 2 positive nodes adds ⌈log 2 D+⌉ qubits for PREP wj . The total is 
+
+nqubits = dn + ⌈log 2(n + 1) ⌉ + ⌈log 2 d⌉ + ⌈log 2 D+⌉ + 7 ,
+
+(10) which is logarithmic in the grid size and in the quadrature order. If V ′ has mixed parity, its even and odd parts are implemented separately and combined by an LCU, which adds one more ancilla. Having established the required circuit width, we turn to the depth. In one dimension, one query to UA requires two QFTs on n qubits, O(n2) gates [104] (or O(n log n)approximately [105]), as well as one QSVT of degree r−1on the O(n)-gate block encoding of G, i.e. O(rn ) gates [97], giving CA = O(n2 + rn ) gates per query. The sub-normalization of UA is αA = σ/ (√2∆ x) + αV ′ /(√2σ).                                                             
+
+> TABLE I. Resource summary for the training algorithm, for potentials in which each ∂xiVdepends only on xi.d: number of coordinates; n= log 2N:qubits per coordinate; r:de-gree of V;K: number of trainable coefficients; D: number of Gauss–Hermite nodes; χmax ≈ √2D: largest node; t: imagi-nary time; ϵ: target precision; ∆ = E1−E0: spectral gap of
+> H;ζ: overlap of the initial state with the ground state; nm,
+> ns: data and accepted model samples. ¯ αA: multidimensional subnormalization (see App. A). Quantity Scaling Trainable parameters K≤ d+rr
+> −1Qubits Eq. (10) Gates per query to UA,CAO d(n2+rn )
+> Subnormalization ¯ αA
+> √d σ√2∆ x+αV′
+> √2σ
+> ∝ √d N
+> Queries per state preparation, qO √t χ max ¯αA+ log(1 /ϵ )
+> θ-dependent gates per preparation O(drq )Imaginary time t=O ∆−1log(1 /(ϵζ )) 
+> Success probability Psucc ≥ζ2
+> Accepted samples per step ns∼nm
+> Sample batches per step Neval = 1 (KL), 2 (MMD 2)
+
+Because ∆ x = 2 L/N , the kinetic contribution grows lin-early with the number of grid points, αA ∝ N , and this is how the grid resolution enters the depth below. We fix 
+
+αV ′ to a bound on |V ′| that holds over the whole param-eter range explored during training. In this case αA and the filter in Fig. 4 do not change with θ.The block encoding Uχ ⊗ UH encodes diag( χj /χ max ) ⊗
+
+B/ ¯αA, where B is the Hermitian dilation of A (Sec. III), so a single QSVT sequence implements all cosine terms of Eq. (6) at once, and additional nodes add qubits to PREP wj rather than separate query sequences. In the variable y ∈ [−1, 1] of the block encoding, the largest term is cos  2√t χ max ¯αA y, which the Jacobi–Anger ex-pansion approximates to precision ϵ by a polynomial of degree [83] 
+
+q = O √t χ max ¯αA + log(1 /ϵ ), (11) which is the number of queries to UA per state prepara-tion. Here χmax is the largest quadrature node. For a 
+
+D-point quadrature rule, χmax ≈ √2D.Each query to UA contains d potential oracles UV ′ ,one per coordinate, each carrying r phases, so the θ-dependent gates appear O(drq ) times per state prepara-tion (cf. Fig. 1). The imaginary time itself is t = O ∆−1 log(1 /(ϵζ )) ,where ζ = | ⟨ ψ0|ψinit ⟩ | is the overlap of the initial state with the ground state. The gap depends on θ and σ.All block-encoding ancillas are post-selected on |0⟩. For even D the quadrature weights of the positive nodes sum to √π/ 2. The LCU over nodes introduces no additional subnormalization, and the (unnormalized) post-selected state is e−tH |ψinit ⟩ up to the filter error. Since H ⪰ 0with E0 = 0, the success probability satisfies Psucc ≥
+
+ζ2, and fixed-point amplitude amplification reduces the number of repetitions from O(1 /ζ 2) to O(1 /ζ ) [83]. In summary, the circuit width is logarithmic in the grid and in the quadrature order, and the cost of one 9state preparation, Cprep = qC A, is polynomial in N ,
+
+d, t, D and log(1 /ϵ ) rather than in the N d grid size. We note that some quantities can still grow exponen-tially as the number of coordinates grows, namely the in-verse gap ∆ −1 (potentially in the small-noise multi-well regime) and the inverse overlap ζ−1. Identifying the pre-cise regime of advantage, as well as the classical sampling limits, sets a goal for future work.  
+
+> VII. DISCUSSION AND CONCLUSIONS
+
+We have proposed a quantum generative model in which the trainable variables are coefficients of the poten-tial of a stochastic differential equation and the circuit is a quantum solver for the associated Fokker–Planck prob-lem. The construction avoids the usual pitfalls of scaling variational quantum machine learning models: the circuit is fixed and algorithmically structured, and the model is parameterized at the level of the differential operator it block encodes. The number of trainable parameters is set by the physics, is independent of the grid, and can remain small while the prepared state occupies an ex-ponentially large configuration space. The optimization problem is closer to model discovery than to distribu-tion fitting: the optimum is a drift field, likelihood-based training is convex in the natural parameters because the stationary state is an exponential family, and the opti-mum is characterized by K moments of the data. The approximations of the solver (discretization, finite imagi-nary time, finite quadrature order) are controllable, with the learned model converging to the exact one as they are refined. The numerical results support each of these points in one dimension and, with coupled potentials, in two and three dimensions, within classical emulation. The regime in which the architecture is most attractive is that of many coupled stochastic degrees of freedom, for which a d-dimensional grid with N points per axis is out of reach for classical grid-based methods but occupies 
+
+d log 2 N qubits. The two- and three-dimensional exam-ples of Sec. V already use coupling terms, and the block encoding construction does not incur qubit or gate costs exponential in the problem dimension. Couplings of this kind are well established on the classical side. Quartic couplings x2 
+
+> i
+
+x2 
+
+> j
+
+and Ginzburg–Landau potentials produce multimodal, non-Gaussian correlated states in coarse-grained molecular [86] and field-theoretic models [106]. More generally, non-Gaussian pairwise Markov random fields have the same polynomial exponential-family form, and identifying their non-zero couplings is a central task in statistical learning [107]. A PQC-based quantum circuit Born machine trained with the same data would return a set of gate angles with no direct physical meaning. Here the target param-eters θ∗ make up the coefficient vector of a drift field, and the associated overdamped Langevin equation with 
+
+V (·; ˆθ) is a stochastic model of the data that can be sim-ulated forward, perturbed, or inspected. Identifiability is inherited from the exponential-family structure: if the data-generating potential lies in the span of the dictio-nary and σ is known, the maximum-likelihood estimator 
+
+ˆθ converges to the true coefficients θ∗ as nm → ∞ . If the dictionary is misspecified, ˆθ is the moment projec-tion of p∗ onto the model family, which is still the best stochastic model of the given form. Regarding classical simulation hardness, the Hilbert space dimension alone does not establish a quantum ad-vantage. Identifying the boundary of classical simulation requires an end-to-end comparison with state-of-the-art classical sampling methods for the same family of dis-tributions. On the quantum side, this comparison must account for the state-preparation cost of Sec. VI, includ-ing the gap dependence of t and the post-selection suc-cess probability (App. C). It needs to include the sam-ple complexity of the loss and the number of optimiza-tion steps. On the classical side, the relevant bench-mark is the best available sampler for the same fam-ily. In the small-noise, multi-well regime, mixing can be the main bottleneck, rather than grid size [91, 92]. The present work provides a model architecture for this comparison: a physics-informed generative model with a low-dimensional trainable parameter space and a struc-tured state-preparation circuit inherited from quantum differential equation solvers. The framework hence opens a route to identifying regimes in which quantum state preparation offers an advantage over classical sampling. 
+
+> ACKNOWLEDGMENTS
+
+The authors acknowledge discussions with the Haiqu team on the subject of differential equation solvers. M. J. and O. K. acknowledge support from the UK EP-SRC award under Agreement No. EP/Z53318X/1 (QCi3 Hub). O. K. acknowledges support from the UK EPSRC Open Plus Fellowship award “Quantum Generative Mod-elling: from Foundations to Applications”. 
+
+AI statement. The original idea was proposed and de-veloped by humans. AI tools were used to aid with coding and writing parts of the manuscript. The authors take responsibility for results and presentation.             
+
+> [1] I. Goodfellow, Y. Bengio, and A. Courville,
+> Deep Learning (MIT Press, 2016) http://www.deeplearningbook.org. [2] J. Ho, A. Jain, and P. Abbeel, in Advances in Neu-ral Information Processing Systems , Vol. 33 (2020) pp. 6840–6851, arXiv:2006.11239. [3] Y. Song, J. Sohl-Dickstein, D. P. Kingma, A. Kumar, S. Ermon, and B. Poole, in International Conference on
+
+10 
+
+Learning Representations (2021). [4] D. J. Rezende and S. Mohamed, in Proceedings of the 32nd International Conference on Machine Learning ,Proceedings of Machine Learning Research, Vol. 37 (PMLR, 2015) pp. 1530–1538. [5] M. S. Albergo, G. Kanwar, and P. E. Shanahan, Physi-cal Review D 100 , 034515 (2019). [6] J. Biamonte, P. Wittek, N. Pancotti, P. Rebentrost, N. Wiebe, and S. Lloyd, Nature 549 , 195 (2017). [7] M. Benedetti, E. Lloyd, S. Sack, and M. Fiorentini, Quantum Science and Technology 4, 043001 (2019). [8] M. Schuld and N. Killoran, PRX Quantum 3, 030101 (2022). [9] K. Mitarai, M. Negoro, M. Kitagawa, and K. Fujii, Physical Review A 98 , 032309 (2018). [10] M. Cerezo, A. Arrasmith, R. Babbush, S. C. Benjamin, S. Endo, K. Fujii, J. R. McClean, K. Mitarai, X. Yuan, L. Cincio, and P. J. Coles, Nature Reviews Physics 3,625 (2021). [11] M. Schuld and N. Killoran, Physical Review Letters 
+
+122 , 040504 (2019). [12] J.-G. Liu and L. Wang, Physical Review A 98 , 062324 (2018). [13] B. Coyle, D. Mills, V. Danos, and E. Kashefi, npj Quan-tum Information 6, 60 (2020). [14] D. Hangleiter and J. Eisert, Reviews of Modern Physics 
+
+95 , 035001 (2023). [15] H.-Y. Huang, M. Broughton, N. Eassa, H. Neven, R. Babbush, and J. R. McClean, Generative quantum advantage for classical and quantum problems (2025), arXiv:2509.09033. [16] C. Zoufal, A. Lucchi, and S. Woerner, npj Quantum Information 5, 103 (2019). [17] T. Sedrakyan and A. Salavrakos, Optica Quantum 2,458 (2024). [18] M. H. Amin, E. Andriyash, J. Rolfe, B. Kulchytskyy, and R. Melko, Physical Review X 8, 021050 (2018). [19] C. Zoufal, A. Lucchi, and S. Woerner, Quantum Ma-chine Intelligence 3, 7 (2021). [20] M. Demidik, C. T¨ uys¨ uz, N. Piatkowski, M. Grossi, and K. Jansen, Communications Physics 8, 413 (2025). [21] M. M. Wilde, Generative modeling using evolved quan-tum Boltzmann machines (2025), arXiv:2512.02721 [quant-ph]. [22] M. M. Wilde, Fundamentals of quantum Boltzmann machine learning with visible and hidden units (2025), arXiv:2512.19819. [23] V. Belis, J. Bowles, R. Gupta, E. Peters, and M. Schuld, Spectral methods: crucial for machine learning, natural for quantum computers? (2026), arXiv:2603.24654. [24] O. Kyriienko, A. E. Paine, and V. E. Elfving, Physical Review Research 6, 033291 (2024). [25] C. A. Williams, A. E. Paine, H.-Y. Wu, V. E. Elfv-ing, and O. Kyriienko, Quantum Chebyshev transform: Mapping, embedding, learning and sampling distribu-tions (2023), arXiv:2306.17026 [quant-ph]. [26] H.-Y. Wu, V. E. Elfving, and O. Kyriienko, Advanced Quantum Technologies 8, 2400337 (2025). [27] C. T¨ uys¨ uz, O. Kyriienko, and M. Grossi, Quantum Fourier generative models trainable at large scale (2026), arXiv:2606.28483 [quant-ph]. [28] E. Y. Zhu, S. Johri, D. Bacon, M. Esencan, J. Kim, M. Muir, N. Murgai, J. Nguyen, N. Pisenti, A. Schouela, K. Sosnova, and K. Wright, Physical Review Research 
+
+4, 043092 (2022). [29] A. Barthe, M. Grossi, S. Vallecorsa, J. Tura, and V. Dunjko, npj Quantum Information 11 , 121 (2025). [30] F. Rehm, S. Vallecorsa, M. Grossi, K. Borras, and D. Kr¨ ucker, Journal of Physics: Conference Series 3206 ,012073 (2026). [31] J. J. Mart´ ınez de Lejarza, H.-Y. Wu, O. Kyriienko, G. Rodrigo, and M. Grossi, Communications Physics 
+
+8, 448 (2025). [32] F. Gottlieb, C. Faraji, R. Mezher, B. Ventura, S. Mans-field, and A. Salavrakos, Efficient training of photonic quantum generative models (2026), arXiv:2603.08793 [quant-ph]. [33] A. Kurkin, U. Chabaud, Z. Kolarovszki, B. Bak´ o, Z. Zimbor´ as, and V. Dunjko, Universality of Classically Trainable, Quantum-Deployed Boson-Sampling Gener-ative Models (2026), arXiv:2603.11014. [34] Z. Kolarovszki, B. Bak´ o, M. Oszmaniec, C. Oh, and Z. Zimbor´ as, Generative modeling with Gaussian Boson Sampling: classically trainable Bosonic Born Machines (2026), arXiv:2603.11195. [35] B. Bak´ o, Z. Kolarovszki, and Z. Zimbor´ as, Fermionic Born Machines: Classical training of quantum gen-erative models based on Fermion Sampling (2025), arXiv:2511.13844. [36] Y. Wang, M. Muszynski, A. Dash, R. Kaurav, V. M. Menon, and O. Kyriienko, Generative modelling powered by room-temperature polariton condensates (2026), arXiv:2606.15344 [cond-mat.dis-nn]. [37] M. Belkin, D. Hsu, S. Ma, and S. Mandal, Proceedings of the National Academy of Sciences 116 , 15849 (2019). [38] M. Larocca, N. Ju, D. Garc´ ıa-Mart´ ın, P. J. Coles, and M. Cerezo, Nature Computational Science 3, 542 (2023). [39] J. R. McClean, S. Boixo, V. N. Smelyanskiy, R. Bab-bush, and H. Neven, Nature Communications 9, 4812 (2018). [40] Z. Holmes, K. Sharma, M. Cerezo, and P. J. Coles, PRX Quantum 3, 010313 (2022). [41] M. Larocca, S. Thanasilp, S. Wang, K. Sharma, J. Bia-monte, P. J. Coles, L. Cincio, J. R. McClean, Z. Holmes, and M. Cerezo, Nature Reviews Physics 7, 174 (2025). [42] M. Cerezo, A. Sone, T. Volkoff, L. Cincio, and P. J. Coles, Nature Communications 12 , 1791 (2021). [43] M. S. Rudolph, S. Lerch, S. Thanasilp, O. Kiss, O. Shaya, S. Vallecorsa, M. Grossi, and Z. Holmes, npj Quantum Information 10 , 116 (2024). [44] S. Lerch, J. Bowles, R. Puig, E. Armengol, Z. Holmes, and S. Thanasilp, IQP Born Machines under Data-dependent and Agnostic Initialization Strategies (2026), arXiv:2603.14576. [45] E. R. Anschuetz and B. T. Kiani, Nature Communica-tions 13 , 7760 (2022). [46] M. Schuld, V. Bergholm, C. Gogolin, J. Izaac, and N. Killoran, Physical Review A 99 , 032331 (2019). [47] O. Kyriienko and V. E. Elfving, Physical Review A 104 ,052417 (2021). [48] M. Demidik, C. T¨ uys¨ uz, M. Grossi, and K. Jansen, Sample-based training of quantum generative models (2025), arXiv:2511.11802. [49] M. Benedetti, D. Garcia-Pintos, O. Perdomo, V. Leyton-Ortega, Y. Nam, and A. Perdomo-Ortiz, npj Quantum Information 5, 45 (2019). [50] B. Bak´ o, D. T. R. Nagy, P. H´ aga, Z. Kallus, and Z. Zim-11 
+
+bor´ as, Quantum Science and Technology 11 , 035012 (2026). [51] S. Kasture, O. Kyriienko, and V. E. Elfving, Physical Review A 108 , 042406 (2023). [52] E. Recio-Armengol, S. Ahmed, and J. Bowles, Train on classical, deploy on quantum: scaling generative quantum machine learning to a thousand qubits (2025), arXiv:2503.02934. [53] A. Huang, W. Maxwell, V. Belis, E. Peters, J. Pye, S. Jahangiri, and J. Bowles, Spectral Born machines: classically trainable quantum generative models for dis-crete data (2026), arXiv:2607.06675. [54] M. Herrero-Gonzalez, B. Coyle, K. McDowall, R. Grassie, S. Beentjes, A. Khamseh, and E. Kashefi, The Born Ultimatum: Conditions for Classical Surro-gation of Quantum Generative Models with Correlators (2025), arXiv:2511.01845. [55] M. Cerezo, M. Larocca, D. Garc´ ıa-Mart´ ın, N. L. Diaz, P. Braccia, E. Fontana, M. S. Rudolph, P. Bermejo, A. Ijaz, S. Thanasilp, E. R. Anschuetz, and Z. Holmes, Nature Communications 16 , 7907 (2025). [56] O. Kyriienko, C. Umeano, and Z. Holmes, Advantage for Discrete Variational Quantum Algorithms in Circuit Recompilation (2025), arXiv:2510.01154. [57] M. E. S. Morales, L. Pira, P. Schleich, K. Koor, P. C. S. Costa, D. An, A. Aspuru-Guzik, L. Lin, P. Rebentrost, and D. W. Berry, Reviews of Modern Physics 98 , 025005 (2026). [58] D. W. Berry, Journal of Physics A: Mathematical and Theoretical 47 , 105301 (2014). [59] A. M. Childs, J.-P. Liu, and A. Ostrander, Quantum 5,574 (2021). [60] C. A. Williams, A. A. Gentile, V. E. Elfving, D. Berger, and O. Kyriienko, Advanced Quantum Technologies 9,e00618 (2026). [61] D. An, J.-P. Liu, and L. Lin, Physical Review Letters 
+
+131 , 150603 (2023). [62] D. An, A. M. Childs, and L. Lin, Communications in Mathematical Physics 407 , 19 (2026). [63] S. Jin, N. Liu, and Y. Yu, Physical Review Letters 133 ,230602 (2024). [64] S. Jin, N. Liu, and Y. Yu, Physical Review A 108 ,032603 (2023). [65] J.-P. Liu, H. Ø. Kolden, H. K. Krovi, N. F. Loureiro, K. Trivisa, and A. M. Childs, Proceedings of the Na-tional Academy of Sciences 118 , e2026805118 (2021). [66] S. Bravyi, A. Byrne, M. Zayats, and S. Zhuk, Quantum algorithms for stochastic nonlinear differential equations (2026), arXiv:2606.08349. [67] O. Kyriienko, A. E. Paine, and V. E. Elfving, Physical Review A 103 , 052416 (2021). [68] A. E. Paine, V. E. Elfving, and O. Kyriienko, Physics-informed quantum machine learning: Solving nonlin-ear differential equations in latent spaces without costly grid evaluations (2023), arXiv:2308.01827. [69] Y. Suba¸ sı, R. D. Somma, and D. Orsucci, Physical Re-view Letters 122 , 060504 (2019). [70] D. Jennings, M. Lostaglio, S. Pallister, A. T. Sorn-borger, and Y. Suba¸ sı, PRX Quantum 6, 040373 (2025). [71] H.-Y. Wu, A. E. Paine, E. Philip, A. A. Gentile, and O. Kyriienko, Quantum algorithm for solving nonlinear differential equations based on physics-informed effec-tive Hamiltonians (2025), arXiv:2504.13174 [quant-ph]. [72] B. Øksendal, Stochastic Differential Equations: An In-troduction with Applications , 5th ed. (Springer-Verlag, Berlin, Heidelberg, 1998). [73] K. Kubo, Y. O. Nakagawa, S. Endo, and S. Nagayama, Physical Review A 103 , 052425 (2021). [74] H. Alghassi, A. Deshmukh, N. Ibrahim, N. Robles, S. Woerner, and C. Zoufal, Quantum 6, 730 (2022). [75] D. An, N. Linden, J.-P. Liu, A. Montanaro, C. Shao, and J. Wang, Quantum 5, 481 (2021). [76] P. Garc´ ıa-Molina, J. Rodr´ ıguez-Mediavilla, and J. J. Garc´ ıa-Ripoll, Physical Review A 105 , 012433 (2022). [77] S. Jin, N. Liu, and Y. Yu, Communications in Compu-tational Physics 39 , 969 (2026), arXiv:2404.13585. [78] F. Tennie and L. Magri, Proceedings of the Royal Soci-ety A: Mathematical, Physical and Engineering Sciences 
+
+481 , 20250016 (2025). [79] T. Kharazi, A. M. Alkadri, K. K. Mandadapu, and K. B. Whaley, Provable quantum speedups for reaction-rate estimation in high-dimensional Fokker-Planck dynamics (2026), arXiv:2601.15523 [quant-ph]. [80] A. E. Paine, V. E. Elfving, and O. Kyriienko, Advanced Quantum Technologies 6, 2300065 (2023). [81] Y. Wang, R. Jiang, Y. Fan, X. Jia, J. Eisert, J. Liu, and J.-P. Liu, Towards efficient quantum algorithms for diffusion probabilistic models (2025), arXiv:2502.14252 [quant-ph]. [82] S. Aaronson, Nature Physics 11 , 291 (2015). [83] A. Gily´ en, Y. Su, G. H. Low, and N. Wiebe, in Proceed-ings of the 51st Annual ACM SIGACT Symposium on Theory of Computing (2019) pp. 193–204. [84] J. M. Martyn, Z. M. Rossi, A. K. Tan, and I. L. Chuang, PRX Quantum 2, 040203 (2021). [85] S. L. Brunton, J. L. Proctor, and J. N. Kutz, Proceed-ings of the National Academy of Sciences 113 , 3932 (2016). [86] L. Boninsegna, F. N¨ uske, and C. Clementi, The Journal of Chemical Physics 148 , 241723 (2018). [87] G. E. Karniadakis, I. G. Kevrekidis, L. Lu, P. Perdikaris, S. Wang, and L. Yang, Nature Reviews Physics 3, 422 (2021). [88] N. Heim, A. Ghosh, O. Kyriienko, and V. E. Elfving, Quantum model-discovery (2021), arXiv:2111.06376 [quant-ph]. [89] H. Risken, The Fokker-Planck Equation: Methods of So-lution and Applications , 2nd ed., Springer Series in Syn-ergetics (Springer-Verlag, Berlin, Heidelberg, 1989). [90] L. D. Brown, Fundamentals of Statistical Exponential Families: With Applications in Statistical Decision The-ory , IMS Lecture Notes–Monograph Series, Vol. 9 (In-stitute of Mathematical Statistics, Hayward, CA, 1986). [91] M. B. Giles, Acta Numerica 24 , 259 (2015). [92] J. L. Beck and K. M. Zuev, in Handbook of Uncertainty Quantification (Springer, 2016) pp. 1–26. [93] M. Bernstein and L. S. Brown, Physical Review Letters 
+
+52 , 1933 (1984). [94] S. Chakraborty, Quantum 8, 1496 (2024). [95] G. H. Golub and J. H. Welsch, Mathematics of Compu-tation 23 , 221 (1969). [96] M. A. Schalkers and M. M¨ oller, Journal of Computa-tional Physics 502 , 112816 (2024). [97] T. Kharazi, A. M. Alkadri, J.-P. Liu, K. K. Mandadapu, and K. B. Whaley, Quantum 9, 1764 (2025). [98] S. Kullback and R. A. Leibler, The Annals of Mathe-matical Statistics 22 , 79 (1951). [99] A. Gretton, K. M. Borgwardt, M. J. Rasch, 12 
+
+B. Sch¨ olkopf, and A. Smola, Journal of Machine Learn-ing Research 13 , 723 (2012). [100] A. Hyv¨ arinen, Journal of Machine Learning Research 6,695 (2005). [101] F. Koehler, A. Heckett, and A. Risteski, in The Eleventh International Conference on Learning Representations 
+
+(2023). [102] Y. Dong, X. Meng, K. B. Whaley, and L. Lin, Physical Review A 103 , 042419 (2021). [103] L. Ying, Quantum 6, 842 (2022). [104] M. A. Nielsen and I. L. Chuang, Quantum Computa-tion and Quantum Information , 10th ed. (Cambridge University Press, Cambridge, 2010) Chap. 5, pp. 216– 248. [105] Y. Nam, Y. Su, and D. Maslov, npj Quantum Informa-tion 6, 26 (2020). [106] P. C. Hohenberg and B. I. Halperin, Reviews of Modern Physics 49 , 435 (1977). [107] E. Yang, P. Ravikumar, G. I. Allen, and Z. Liu, Journal of Machine Learning Research 16 , 3813 (2015). [108] M. Rosenkranz, E. Brunner, G. Marin-Sanchez, N. Fitzpatrick, S. Dilkes, Y. Tang, Y. Kikuchi, and M. Benedetti, Quantum 9, 1703 (2025). 
+
+Appendix A: Circuit considerations for correlated multidimensional potentials 
+
+The main text constructs the circuit for a single coor-dinate and, in Sec. VI, for d coordinates when each ∂xi V
+
+depends on xi only. Here we describe what changes when the potential couples the coordinates, as for the targets of Figs. 7 and 8, and as is required for constructing problems of interest. In d dimensions the operator to be filtered is 
+
+H = Pdi=1 A† 
+
+> i
+
+Ai, with Ai = σ√2 ∂xi + 1√2 σ ∂xi V . Each Ai
+
+is block encoded as UA in Fig. 3, with the shift operators acting on the register of xi, and only the potential oracle changes: for each i we need a block encoding U∂iV of the diagonal operator diag  ∂xi V (x)/α ∂iV on the full grid. For a separable potential U∂iV is the circuit UV ′ of Fig. 10 acting on register i. For a correlated potential it acts on several registers. The kinetic terms, the Hermitian dila-tion (Fig. 11), the filter (Fig. 4, up to its projector, see below) and the exponential-family structure of App. E are unchanged, since V (x; θ) remains linear in θ.With the monomial dictionary of Sec. II, each com-ponent of the gradient is a polynomial ∂xi V (x; θ) =
+
+PTi 
+
+> t=1
+
+ct(θ) Qdk=1 xat,k  
+
+> k
+
+, whose coefficients ct are linear in 
+
+θ and whose exponents at are fixed by the dictionary. On the grid we write xk = αG yk, where αG = max j |xj |
+
+is the subnormalization of UG , such that yk ∈ [−1, 1]. Each monomial is then a product of univariate factors 
+
+yak , and each factor is a fixed circuit on register k with the polynomial P (y) = ya. Factors acting on different registers are applied side by side, each with its own an-cillas, and post-selecting all of these ancillas on |0⟩ block encodes the product of the factors. The Ti monomials are then combined by an LCU with weights wt = |ct| α|at|G ,
+
+|at| = P 
+
+> k
+
+at,k , on a selector register of ⌈log 2 Ti⌉ qubits, with the signs of ct applied as phases on the selector. Since the branches are mutually exclusive, the factor an-cillas are shared between terms: the oracle needs kmax 
+
+PREP registers of UG and kmax QSVT ancillas, where 
+
+kmax ≤ d is the largest number of coordinates in a single monomial. The parameters enter the circuit differently from the construction described in the main text. The QSVT phases of the factors are fixed for the whole training run, and θ enters only through the amplitudes of the selector state preparation, which follow in closed form from the weights wt. The same construction could also be used in one dimension. Other routes to multivariate diagonal block encodings exist, for instance an LCU of Fourier components [108] or Chebyshev feature maps [68]. The construction above has the advantage of reusing UG and the QSVT circuit of Fig. 10 without modification. The d operators Ai are combined into A =
+
+Pdi=1 |i⟩⟨ 0|aidx ⊗ Ai on an index register aidx of ⌈log 2 d⌉
+
+qubits, so that A†A = |0⟩⟨ 0|aidx ⊗H. A state preparation PREP idx of the uniform superposition over the d index states, followed by a SELECT over the UAi , with aidx 
+
+retained rather than uncomputed, block encodes A/ ¯αA
+
+with ¯ αA = √d α A. All UAi share the same subnormaliza-tion αA, fixed in advance as a bound over the coordinates and the training range. One query to the stacked opera-tor costs one query to each UAi .This block encoding is rectangular: its input is re-stricted to aidx = 0, while its output is not. A sin-gle flag qubit af that records whether aidx ̸ = 0 be-fore PREP idx is applied (a CNOT for d = 2, a multi-controlled NOT in general) resolves this. The modified oracle U ′ 
+
+> A
+
+= SELECT (PREP idx ⊗ I) C aidx →af satisfies 
+
+⟨0|af U ′
+
+> A
+
+|0⟩af = A/ ¯αA as a square operator on aidx and the system, with all other ancillas of the UAi projected on |0⟩. The filter of Fig. 4 therefore applies unchanged, with af added to Π and aidx treated as part of the system. Relative to Eq. (10), the correlated oracle adds ( kmax −
+
+1)( mG + 1) + ⌈log 2 T ⌉ qubits, with T = max i Ti, mG
+
+the size of the PREP register of UG (⌈log 2(n + 1) ⌉ in Eq. (10)). The number of terms limits the approach: a dense polynomial ∂xi V of degree r − 1 in d variables has up to  d+r−1
+
+> r−1
+
+ monomials, so the construction is suited to sparse couplings. The main cost of correlations is there-fore the normalization α∂iV , which enters q through ¯ αA,rather than the circuit width. 
+
+Appendix B: Hermitianization of the Fokker–Planck operator 
+
+We write Eq. (1) as ∂tp = Lp with Lp = ∇ · (p∇V ) +  
+
+> σ2
+> 2
+
+∆p, and substitute p = e−V /σ 2
+
+ψ. Using ∇p =
+
+e−V /σ 2
+
+(∇ψ − ψ∇V /σ 2) and collecting terms, the first-order derivatives of ψ cancel and one obtains ∂tψ = −Hψ 
+
+with H as in Sec. III. The same H is obtained by the pos-13 itive semidefinite factorization 
+
+H =
+
+> d
+
+X
+
+> i=1
+
+A† 
+
+> i
+
+Ai,Ai = σ
+
+√2 ∂xi + ∂xi V
+
+√2 σ , A† 
+
+> i
+
+= − σ
+
+√2 ∂xi + ∂xi V
+
+√2 σ ,
+
+(B1) since A† 
+
+> i
+
+Ai = − σ2 
+
+> 2
+
+∂2 
+
+> xi
+
++ (∂xi V )2 
+
+> 2σ2
+
+− 12 ∂2 
+
+> xi
+
+V , the cross terms 
+
+± 12 [∂xi , ∂ xi V ] combining into − 12 ∂2 
+
+> xi
+
+V . This is a super-symmetric form of the Fokker–Planck operator [89, 93]. 
+
+H ⪰ 0, with Aiψ0 = 0 for all i when ψ0 ∝ e−V /σ 2
+
+, so the ground energy is exactly zero and the ground state is the square root of the stationary density. Note that we block encode the first-order operators Ai and not H
+
+directly, since they contain ∂xi V (degree r − 1) rather than ( ∂xi V )2 (degree 2 r − 2). 
+
+> Appendix C: Approximation errors
+
+The distance between the distribution sampled from the circuit and the exact stationary density pss is bounded by the sum of the following contributions, listed in the order in which they enter the construction. The discretization terms dominate in the present experiments and we discuss them first. 
+
+a. Grid discretization. The central-difference oper-ator has truncation error O(∆ x2) in ∂x, and the dis-cretized ground state differs from the sampled continuum 
+
+√pss by O(∆ x2 ∥∂3
+
+> x
+
+ψ0∥). 
+
+b. Finite-domain truncation and boundary condi-tions. Restricting to [−L, L ] neglects the stationary mass outside the interval, R 
+
+> outside
+
+pss , and the periodic (QFT) boundary couples the two ends. For a confining polynomial potential both are exponentially small in the domain half-width L measured in units of the width of 
+
+pss , but they are independent of ∆ x and can set the floor if L is too small. 
+
+c. Block-encoding subnormalization. UA encodes 
+
+A/α A with αA = σ/ (√2∆ x) + αV ′ /(√2σ). This is exact but rescales the spectrum, so the imaginary time enter-ing the circuit is tα 2 
+
+> A
+
+and the required t and D scale accordingly. 
+
+d. Polynomial (QSVT) approximation. Each cosine and the potential polynomial are implemented to preci-sion ϵpoly . The error in the encoded block is at most ϵpoly 
+
+per query and accumulates additively over the O(deg) queries. In the emulations of Sec. V the polynomials are exact and this term is zero. 
+
+e. Quadrature order. The error is that of the D-point quadrature rule applied to cos  2√tλχ  for each eigenvalue λ of H and is non-monotone in D.
+
+f. Finite imaginary time. After time t the unnor-malized state is P 
+
+> k
+
+cke−tE k |Ek⟩, so after normalization the total variation distance (TVD) to the ground-state distribution decays as e−t∆, with a prefactor inversely proportional to the initial overlap ζ. The required t is set by the gap ∆ of H.
+
+g. Sampling and post-selection. The loss is esti-mated from ns circuit samples and nm data samples. The statistical error of MMD 2 is O(1 /pmin( ns, n m)) [99], and unsuccessful post-selection reduces the effective ns
+
+by the success probability. An attempt succeeds when all ancillas are measured in |0⟩. The subnormalizations ¯ αA
+
+(see App. A) and χmax are absorbed into the argument of the QSVT polynomial, f (y) = cos  2√tχ max ¯αAy, so they increase the number of queries q in Eq. (11) but cause no post-selection loss. The post-selected state is 
+
+f (H) |ψinit ⟩ ≈ e−tH |ψinit ⟩. Hence 
+
+Psucc = X
+
+> k
+
+|ck|2e−2tE k + O(ϵfilt ) ≥ ζ2e−2tE 0 + O(ϵfilt ),
+
+(C1) with ck = ⟨Ek|ψinit ⟩ and ζ = |c0|. Here E0 = 0 for the continuum operator; on the grid H = A†A remains positive semidefinite and E0 ≥ 0 arises only from the fi-nite domain and the derivative approximation, and ϵfilt =
+
+∥f (H) |ψinit ⟩ − e−tH |ψinit ⟩ ∥ is the combined quadrature and polynomial error described above. 
+
+> Appendix D: Training details
+
+In Fig. 5, the target and trial distributions are evalu-ated analytically on a 512-point (9-qubit) grid. The loss function L is then evaluated using the standard radial ba-sis function (RBF) kernel Kij = exp −(xi − xj )2/2h2,with h = 0 .6, such that L = P512 
+
+> i=1
+
+P512 
+
+> j=1
+
+(p∗ 
+
+> i
+
+−qi)Kij (p∗ 
+
+> j
+
+−
+
+qj ). Here, p∗ denotes the target distribution parame-terized by the monomial coefficients ( θ∗ 
+
+> 1
+
+, θ ∗ 
+
+> 2
+
+) = (0 .5, 0.5) (see Table II). Exact probabilities are used throughout, so shot noise is absent. In Fig. 6, the positive-semidefinite Hamiltonian H =
+
+A†A is constructed on a 256-point (8-qubit) periodic grid. The operator A is defined as A = σ√2 D +
+
+> 1√2σ
+
+ θ1x + θ2x3, where D = F † diag( ik )F is the pe-riodic spectral derivative operator and F is the dis-crete Fourier transform. The Hamiltonian is diagonal-ized as H = W ΛW †, giving the singular values of 
+
+A as σi(A) = pλi(A†A). The finite-order Hubbard– Stratonovich filter ft,D is then applied to this singular-value spectrum (details of constructing ft,D are given in Sec. III), approximating imaginary-time evolution as 
+
+|ψt,D ⟩ = W f t,D (√Λ) W † |ψ0⟩. The initial state is cho-sen such that |ψ0⟩ ∝ P 
+
+> i
+
+ψ0(xi) |xi⟩, with |ψ0(x)|2 ∼N (0 , 0.22). The resulting 256-component probability dis-tribution qi = |⟨ xi | ψt,D ⟩| 2 is then compared with the ex-act 256-component target distribution using MMD 2 with the RBF kernel bandwidth h = 0 .6, producing one scalar loss for each ( θ1, θ 2). The dominant approximation error arises from the finite-order Hubbard–Stratonovich repre-sentation, since the oscillatory terms cos  2√tχσ max (A)
+
+become increasingly difficult to resolve as the evolution time, domain range, or spectral range increases, requiring a correspondingly larger quadrature order D.14 
+
+Coefficient vector Monomial dictionary 1D 
+
+(0 .50 , 0.50)  (2) , (4) 
+
+2D 
+
+(0 .50 , 0.50 , 0.90)  (2 , 0) , (0 , 2) , (1 , 1) 
+
+( − 0.20 , 0.30 , 0.90 ,
+
+0.50 , 0.50 , 0.20) 
+
+ (2 , 0) , (0 , 2) , (1 , 1) ,
+
+(4 , 0) , (0 , 4) , (2 , 2) 
+
+(6 .00 , 0.37 , 0.26 , −5.35 ,
+
+9.32 , −8.74 , 1.19 , −4.15 ,
+
+7.51 , −6.79 , 3.18) 
+
+ (0 , 0) , (1 , 0) , (0 , 1) , (2 , 0) ,
+
+(1 , 1) , (0 , 2) , (4 , 0) , (3 , 1) ,
+
+(2 , 2) , (1 , 3) , (0 , 4) 
+
+3D 
+
+(0 .50 , 0.60 , 0.40 , 0.08 , 0.10 ,
+
+0.07 , 0.15 , 0.10 , 0.12) 
+
+ (2 , 0, 0) , (0 , 2, 0) , (0 , 0, 2) ,
+
+(4 , 0, 0) , (0 , 4, 0) , (0 , 0, 4) ,
+
+(2 , 2, 0) , (2 , 0, 2) , (0 , 2, 2) 
+
+(4 .65 , −1.80 , −1.52 , −1.37 ,
+
+− 0.10 , −0.08 , −0.12 ,
+
+0.40 , 0.45 , 0.35) 
+
+ (0 , 0, 0) , (2 , 0, 0) , (0 , 2, 0) ,
+
+(0 , 0, 2) , (1 , 1, 0) , (1 , 0, 1) ,
+
+(0 , 1, 1) , (4 , 0, 0) ,
+
+(0 , 4, 0) , (0 , 0, 4) 
+
+(15 .0, 24 .0, −12 .0, −15 .5,
+
+12 .0, 12 .0, 3.0, −15 .6,
+
+5.07 , −6.00 , 0.75) 
+
+ (0 , 0, 0) , (0 , 1, 0) , (0 , 0, 1) ,
+
+(2 , 0, 0) , (0 , 2, 0) , (0 , 0, 2) ,
+
+(3 , 0, 0) , (2 , 1, 0) ,
+
+(4 , 0, 0) , (3 , 0, 1) , (6 , 0, 0)        
+
+> TABLE II. Coefficient vectors and corresponding monomial dictionaries for Figs. 5, 7, and 8. Each monomial is repre-sented by its exponent tuple. For example, (1 ,2) represents
+> xy 2and (1 ,2,3) represents xy 2z3.
+
+In Figs. 7 and 8, analytical target distributions are fit-ted using MMD 2 and KL divergence. Each potential is evaluated on a uniform 1024 × 1024 ( ×1024) grid using finite-difference discretization over [ −6, 6] 2, with σ = 1. MMD 2 uses a Gaussian bandwidth h = 0 .6 for d = 2 and h = 0 .4 for d = 3 distributions. Optimization is per-formed using L-BFGS-B with analytical gradients and a history of 20 correction pairs. To preserve the required structure of the d = 2 potentials during optimization, constrained coefficients are reparameterized using uncon-strained variables. For the elliptical potential, a Cholesky parameterization enforces a > 0, b > 0, and c2 < 4ab for the coefficients ( a, b, c ) of ( x2, y 2, xy ). For the bimodal potential, the quartic coefficients are parameterized as 
+
+λx = e2ηp , λ y = e2ηq , κ = η2 
+
+> s
+
+− 2eηp+ηq , which guarantees a non-negative quartic contribution. The d = 2 crescent and d = 3 potentials do not require reparameterization. 
+
+> Appendix E: Exponential-family properties of the model
+
+The model density of Eq. (2) has the exponential-family form pθ (x) = exp   P  
+
+> j
+
+ηj vj (x) − log Z(θ) with natural parameters ηj = −2θj /σ 2 and sufficient statis-tics vj [90]. We record the properties stated in Sec. IV. For a sample {ym}nm 
+
+> m=1
+
+the log-likelihood is l(θ) = 
+
+− 2
+
+> σ2
+
+P 
+
+> j
+
+θj
+
+P 
+
+> m
+
+vj (ym) − nm log Z(θ). The maximum likelihood estimator (MLE) corresponds to ∇θ l = 0. Dif-ferentiating log Z(θ), with Z(θ) = R e−(2 /σ 2) P  
+
+> aθava
+
+dx,gives 
+
+∂θj log Z(θ) = − 2
+
+σ2 Epθ [vj (x)] . (E1) Thus, ∂θj l = 0 gives exactly Eq. (8). Likewise KL( p∗∥pθ ) = R p∗ log p∗ 
+
+> pθ
+
+dx = R p∗ log p∗ dx−
+
+P 
+
+> a
+
+ηaEp∗ [va] + log Z(θ). Setting ∂θj KL( p∗∥pθ ) = 0 and utilizing Eq. (E1) again, we arrive at Eq. (8) with the empirical average replaced by Ep∗ [vj ]. Thus we show that minimizing KL, maximizing likelihood and matching the K moments of the sufficient statistics are the same problem. The convexity of the log-likelihood (and, equivalently, KL loss via moment-matching) is shown below. The only term of −l that is nonlinear in θ (and thus could make it non-convex) is nm log Z(θ). Differentiating Eq. (E1) once more to obtain entries of the Hessian gives, 
+
+∂θk ∂θj log Z(θ) = 4
+
+σ4
+
+
+
+Epθ [vj vk] − Epθ [vj ] Epθ [vk]
+
+
+
+= 4
+
+σ4 Cov pθ [vj , v k], (E2) a covariance matrix, which is positive semidefinite. Apositive semidefinite Hessian means log Z is convex in θ
+
+and as such −l and KL( p∗∥pθ ) are convex as well. As mentioned in the main text, although KL is an ex-plicit loss, training by moment matching requires only sample access to the data and to the model. Reconstruct-ing the full probability mass function from model sam-ples, as an explicit loss would generally require, means estimating the probability of each of the N d grid points. Moment matching instead requires only the K moments 
+
+E[vj ] of the data and of the model. For independent samples, the empirical mean of vj has standard error pVar[ vj ]/n m for the nm data samples and pVar[ vj ]/n s
+
+for the ns model samples, where near convergence Var[ vj ]is the same for both. Since the two estimates are inde-pendent, their errors add in quadrature, and the error in matching them is pVar[ vj ] (1 /n m + 1 /n s). The data term is fixed, so taking ns ≳ nm gives diminishing re-turns. 
+
+> Appendix F: Additional circuit diagrams
+
+The following figures give the remaining circuit-level building blocks referenced throughout the main text and previous appendices. The quadrature-node encod-ing circuit and the potential-oracle circuits mentioned in Sec. III are shown in Figs. 9 and 10. Hermitian dilation is shown in Fig. 11 and the real-part extraction gadget in Fig. 12. Additionally, we show the PREP (Fig. 13) and position-operator (Fig. 14) circuits. The quadrature-node encoding circuit and the potential-oracle circuits mentioned in Sec. III are shown in Figs. 9 15 
+
+Uχ = X
+
+> j
+
+|j⟩⟨ j|PREP wj
+
+⊗ RY (ϕj )
+
+· · · · · · 
+
+PREP wj
+
+|0⟩aχ RY (ϕ0) RY (ϕD+−1)0
+
+FIG. 9. The unitary construction Uχ of the quadrature nodes 
+
+χj using RY gates with angles ϕj = 2 arccos 
+
+ χj
+
+> χmax
+
+
+
+such that RY (ϕj ) |0⟩aχ = χj 
+
+> χmax
+
+|0⟩aχ +
+
+r
+
+1 −
+
+ χj
+
+> χmax
+
+2
+
+|1⟩aχ . Post-selecting on aχ = 0 projects onto the correctly encoded, nor-malized quadrature nodes. The signal operator is then the joint block encoding US = Uχ ⊗ UH .
+
+UG
+
+> QSVT
+
+−−−−−→ UV ′(G)             
+
+> · · · · · · · · · |0⟩aqsvt HRZ(ϕ0)RZ(ϕ1)RZ(ϕ2)RZ(ϕd)H
+> |0⟩⊗maG
+> UGU†G
+> |ψ⟩x
+> 
+> UV′
+
+FIG. 10. QSVT transformation of the block encoding UG of 
+
+G into a block encoding UV ′ of the degree-( r − 1) polyno-mial V ′(G). QSVT uses O(r − 1) alternating queries to UG
+
+and U †G . The block-encoding signal ancilla aG open-controls the CNOTs targeting the QSVT ancilla, which sandwich the phase rotations RZ (ϕj ). Post-selecting aqsvt = aG = 0 pro-vides the correct polynomial transformation on G.
+
+UH =
+
+ 0 U †
+
+> A
+
+UA 0
+
+
+
+|0⟩aH X
+
+|ψ⟩UA U † 
+
+> A
+
+UA
+
+FIG. 11. Hermitian dilation of UA −→ UH .
+
+· · · · · · · · · · · · · · · · · · |0⟩aχ
+
+0
+
+|0⟩aA
+
+0
+
+|0⟩aqsvt 
+
+0
+
+|0⟩⊗maG
+
+0
+
+|0⟩p
+
+Φ0 Φd
+
+0
+
+|0⟩sgn H H
+
+0
+
+> aχ
+> aA
+> aqsvt
+> aG
+> p
+
+Φk
+
+> sgn
+
+=
+
+> aχ
+> aA
+> aqsvt
+> aG
+> p
+
+RZZ (2 ϕk)
+
+> sgn
+
+FIG. 12. Correct polynomial extraction of the QSVT block using the sgn ancilla. Bottom: the phase gadget Φ k flips p to 
+
+|1⟩ only on the success subspace aχ = aA = aqsvt = aG = 0, applies R ZZ (2 ϕk ) = e−iϕ k Z⊗Z between p and sgn, and then uncomputes p. Thus sgn = 0 applies phase + ϕk and sgn = 1 applies −ϕk . Top: reusing the same sgn qubit across all Φ k
+
+coherently implements the QSVT sequences with phases + ϕk
+
+and −ϕk , producing UΦ = P (A) + iQ (A) and U−Φ = P (A) −
+
+iQ (A). Preparing sgn in |+⟩ and applying the final Hadamard gives the sgn = 0 branch UΦ+U−Φ 
+
+> 2
+
+= P (A) = Re( UΦ). Post-selecting sgn = 0 together with aχ = aA = aqsvt = aG = p = 0 therefore removes the imaginary component Q(A) and yields the desired real QSVT polynomial block P (A). 
+
+PREP |0⟩⊗maG = 1
+
+√αG
+
+> n−1
+
+X
+
+> k=0
+
+r
+
+2k ∆x
+
+2 |k⟩aG ,ϕj = 2 arctan( rj ),rj = 2 2m−1−j /2.
+
+|0⟩⊗maG PREP = ... ... ...
+
+|0⟩aG RY (ϕ0)
+
+|0⟩aG RY (ϕm−1)
+
+FIG. 13. Preparation of the grid coefficient state using RY
+
+rotations. Shown for the special case cI = 0 and n = 2 m (e.g. the cell-centred grid x0 = −L + ∆ x/ 2), where the identity term of Fig. 14 vanishes, αG = ( N − 1)∆ x/ 2, and the PREP register has m = log 2 n qubits; in general the identity term adds one branch and the register has ⌈log 2(n + 1) ⌉ qubits (Sec. VI). 16 
+
+G =
+
+
+
+x0 + (N − 1)∆ x
+
+2
+
+
+
+I − ∆x
+
+2
+
+> n−1
+
+X
+
+> k=0
+
+2kZk.
+
+· · · 
+
+... ... ...
+
+|0⟩⊗maG PREP PREP †
+
+|q0⟩ −Z0
+
+|qn−1⟩ −Zn−1
+
+FIG. 14. LCU block encoding of the discretized position oper-ator G using the PREP-SELECT-PREP † construction, with subnormalization αG = |cI |+( N −1)∆ x/ 2 = max j |xj |, where 
+
+cI = x0 + ( N − 1)∆ x/ 2. Branch k < n of the PREP register applies −Zk ; the remaining branch applies sgn( cI ) I, which acts only as a phase on the PREP register. In general the PREP register has m = ⌈log 2(n + 1) ⌉ qubits, one branch per Pauli term; Fig. 13 shows PREP for the special case cI = 0.
