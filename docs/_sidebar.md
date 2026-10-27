@@ -1,6 +1,11 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-10-27 <!--dpr-date:20261027-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202610/27/2610.33095v1-an-efficient-quantum-spectral-galerkin-method-for-linear-elliptic-equations" data-sidebar-item="{&quot;title&quot;: &quot;An Efficient Quantum Spectral-Galerkin Method for Linear Elliptic Equations&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2610.33095v1-an-efficient-quantum-spectral-galerkin-method-for-linear-elliptic-equations&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;量子谱伽辽金方法求解线性椭圆偏微分方程，复杂度为 poly(d, log(1/ε))&quot;}">An Efficient Quantum Spectral-Galerkin Method for Linear Elliptic Equations</a>
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202610/27/2610.33800v1-efficient-block-encodings-of-vibrational-hamiltonians" data-sidebar-item="{&quot;title&quot;: &quot;Efficient Block Encodings of Vibrational Hamiltonians&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2610.33800v1-efficient-block-encodings-of-vibrational-hamiltonians&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-algo&quot;}], &quot;evidence&quot;: &quot;振动哈密顿量的LCU块编码与电路&quot;}">Efficient Block Encodings of Vibrational Hamiltonians</a>
   * 2026-10-23 <!--dpr-date:20261023-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202610/23/2610.25260v1-spatial-discretization-error-for-quantum-chemistry-simulation" data-sidebar-item="{&quot;title&quot;: &quot;Spatial Discretization Error for Quantum Chemistry Simulation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2610.25260v1-spatial-discretization-error-for-quantum-chemistry-simulation&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;量化量子模拟波函数动力学中的空间离散化误差&quot;}">Spatial Discretization Error for Quantum Chemistry Simulation</a>

@@ -1,0 +1,39 @@
+{
+  "label": "2026-10-27",
+  "date": "2026-10-27",
+  "generated_at": "2026-10-27T22:45:05",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202610/27/2610.33095v1-an-efficient-quantum-spectral-galerkin-method-for-linear-elliptic-equations",
+      "section": "deep",
+      "title_en": "An Efficient Quantum Spectral-Galerkin Method for Linear Elliptic Equations",
+      "authors": "Dongjie Wang, Sheng Chen",
+      "date": "2026-10-22",
+      "pdf": "https://arxiv.org/pdf/2610.33095v1",
+      "score": "9.0",
+      "evidence": "量子谱伽辽金方法求解线性椭圆偏微分方程，复杂度为 poly(d, log(1/ε))",
+      "tldr": "针对常系数二阶线性椭圆方程，论文提出一种高效量子谱-Galerkin方法。该方法采用边界自适应Jacobi张量积基，将边界条件嵌入近似空间，得到条件数多项式有界且稀疏的Galerkin系统。对满足一致正则性的解析解，谱收敛使归一化Galerkin系数态的制备复杂度为poly(d,log(1/ε))，在标准稀疏访问与态制备假设下优于固定阶有限差分/有限元。进一步可估计解的指定线性泛函，但需额外O(1/ε)因子。",
+      "tags": "query:quantum-ode",
+      "abstract_en": "This paper presents an efficient quantum spectral-Galerkin method for constant-coefficient second-order linear elliptic equations. The method employs a boundary-adapted Jacobi tensor-product basis that incorporates the boundary condition into the approximation space and produces Galerkin systems with polynomially bounded condition numbers and sparsity. For analytic solutions satisfying a suitable uniform regularity condition, spectral convergence allows the normalized Galerkin coefficient state to be prepared with complexity $\\mathrm{poly}(d,\\log(1/ε))$, where $d$ is the spatial dimension and $ε$ is the error tolerance, under standard sparse-access and state-preparation assumptions. At the state-preparation level, this improves the precision dependence over fixed-order finite-difference and finite-element discretizations. We further show how to estimate prescribed linear functionals of the solution, with an additional $O(1/ε)$ factor arising from norm and inner-product estimation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/27/2610.33800v1-efficient-block-encodings-of-vibrational-hamiltonians",
+      "section": "quick",
+      "title_en": "Efficient Block Encodings of Vibrational Hamiltonians",
+      "authors": "Shashank G. Mehendale, Ignacio Loaiza, Shreyas Malpathak, Stepan Fomichev, Danial Motlagh, Artur F. Izmaylov",
+      "date": "2026-10-24",
+      "pdf": "https://arxiv.org/pdf/2610.33800v1",
+      "score": "7.0",
+      "evidence": "振动哈密顿量的LCU块编码与电路",
+      "tldr": "分子振动模拟是量子计算在量子化学中的重要应用，但振动哈密顿量的高效块编码仍具挑战。本文基于Pauli分解与张量超收缩（THC）构建LCU表示及对应电路，并将BLISS技术推广到振动体系以降低1-范数和电路成本。对测试分子，BLISS-THC使量子相位估计的Toffoli成本较现有块编码降低逾两个数量级，较Trotter方法T门数最多降九倍。该工作凸显哈密顿量分解与Toffoli-量子比特权衡对降低振动模拟成本的价值。",
+      "tags": "query:quantum-algo",
+      "abstract_en": "Simulation of molecular vibrations is emerging as a promising application of quantum computing in quantum chemistry. In this work, we develop new strategies for block-encoding the second-quantized $n$-mode representation of the vibrational Hamiltonian, whose algebraic structure closely parallels that of the second-quantized electronic Hamiltonian. We derive linear-combination-of-unitaries (LCU) representations of this Hamiltonian based on Pauli decomposition and tensor hypercontraction (THC) and construct efficient circuits for the corresponding block encodings. We also extend the Block-Invariant Symmetry Shift (BLISS) technique to vibrational Hamiltonians, yielding a lower LCU 1-norm and, consequently, a lower overall circuit cost. For the molecules considered here, BLISS-THC reduces the Toffoli cost of quantum phase estimation by more than two orders of magnitude relative to existing block-encoding approaches. In comparison with recent Trotter-based methods, it shows up to a ninefold reduction in the T-gate count, with the relative savings tending to increase with system size. Asymptotically, and up to polylogarithmic factors, both the Pauli and THC LCUs trade additional ancillas for a quadratic improvement in scaling with the number of modes, while THC provides an additional quadratic improvement in scaling with the number of modals. These results highlight the importance of Hamiltonian factorizations and Toffoli-qubit tradeoffs for reducing the computational cost of quantum simulations of molecular vibrations.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

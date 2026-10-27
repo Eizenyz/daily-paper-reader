@@ -1,0 +1,98 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-27T22:42:48.790855+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 1,
+    "deep_cap": 7,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 12,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2610.33095v1",
+      "source": "arxiv",
+      "title": "An Efficient Quantum Spectral-Galerkin Method for Linear Elliptic Equations",
+      "abstract": "This paper presents an efficient quantum spectral-Galerkin method for constant-coefficient second-order linear elliptic equations. The method employs a boundary-adapted Jacobi tensor-product basis that incorporates the boundary condition into the approximation space and produces Galerkin systems with polynomially bounded condition numbers and sparsity. For analytic solutions satisfying a suitable uniform regularity condition, spectral convergence allows the normalized Galerkin coefficient state to be prepared with complexity $\\mathrm{poly}(d,\\log(1/ε))$, where $d$ is the spatial dimension and $ε$ is the error tolerance, under standard sparse-access and state-preparation assumptions. At the state-preparation level, this improves the precision dependence over fixed-order finite-difference and finite-element discretizations. We further show how to estimate prescribed linear functionals of the solution, with an additional $O(1/ε)$ factor arising from norm and inner-product estimation.",
+      "authors": [
+        "Dongjie Wang",
+        "Sheng Chen"
+      ],
+      "primary_category": "physics.comp-ph",
+      "categories": [
+        "physics.comp-ph"
+      ],
+      "published": "2026-10-22T09:45:03+00:00",
+      "link": "https://arxiv.org/pdf/2610.33095v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "quantum spectral-Galerkin solver for linear elliptic PDEs with poly(d, log(1/epsilon)) complexity",
+      "llm_evidence_cn": "量子谱伽辽金方法求解线性椭圆偏微分方程，复杂度为 poly(d, log(1/ε))",
+      "llm_evidence": "量子谱伽辽金方法求解线性椭圆偏微分方程，复杂度为 poly(d, log(1/ε))",
+      "canonical_evidence": "量子谱伽辽金方法求解线性椭圆偏微分方程，复杂度为 poly(d, log(1/ε))",
+      "llm_tldr_en": "A quantum spectral-Galerkin method is proposed for linear elliptic PDEs, using boundary-adapted Jacobi bases to yield sparse well-conditioned Galerkin systems and poly(d,log(1/epsilon)) state-preparation complexity.",
+      "llm_tldr_cn": "该文针对常系数二阶线性椭圆方程的高精度量子求解问题，提出量子谱伽辽金方法。方法采用边界自适应的 Jacobi 张量积基，将边界条件嵌入近似空间，使伽辽金系统具有多项式条件数与稀疏性。对于满足一致正则性的解析解，系数态制备复杂度为 poly(d, log(1/ε))。这一结果在态制备层面改善了精度依赖，为量子偏微分方程求解提供了可证明的复杂度优势。",
+      "llm_tldr": "该文针对常系数二阶线性椭圆方程的高精度量子求解问题，提出量子谱伽辽金方法。方法采用边界自适应的 Jacobi 张量积基，将边界条件嵌入近似空间，使伽辽金系统具有多项式条件数与稀疏性。对于满足一致正则性的解析解，系数态制备复杂度为 poly(d, log(1/ε))。这一结果在态制备层面改善了精度依赖，为量子偏微分方程求解提供了可证明的复杂度优势。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "quantum algorithms for solving ordinary differential equations, partial differential equations, and time-dependent linear differential equations",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2610.33800v1",
+      "source": "arxiv",
+      "title": "Efficient Block Encodings of Vibrational Hamiltonians",
+      "abstract": "Simulation of molecular vibrations is emerging as a promising application of quantum computing in quantum chemistry. In this work, we develop new strategies for block-encoding the second-quantized $n$-mode representation of the vibrational Hamiltonian, whose algebraic structure closely parallels that of the second-quantized electronic Hamiltonian. We derive linear-combination-of-unitaries (LCU) representations of this Hamiltonian based on Pauli decomposition and tensor hypercontraction (THC) and construct efficient circuits for the corresponding block encodings. We also extend the Block-Invariant Symmetry Shift (BLISS) technique to vibrational Hamiltonians, yielding a lower LCU 1-norm and, consequently, a lower overall circuit cost. For the molecules considered here, BLISS-THC reduces the Toffoli cost of quantum phase estimation by more than two orders of magnitude relative to existing block-encoding approaches. In comparison with recent Trotter-based methods, it shows up to a ninefold reduction in the T-gate count, with the relative savings tending to increase with system size. Asymptotically, and up to polylogarithmic factors, both the Pauli and THC LCUs trade additional ancillas for a quadratic improvement in scaling with the number of modes, while THC provides an additional quadratic improvement in scaling with the number of modals. These results highlight the importance of Hamiltonian factorizations and Toffoli-qubit tradeoffs for reducing the computational cost of quantum simulations of molecular vibrations.",
+      "authors": [
+        "Shashank G. Mehendale",
+        "Ignacio Loaiza",
+        "Shreyas Malpathak",
+        "Stepan Fomichev",
+        "Danial Motlagh",
+        "Artur F. Izmaylov"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "physics.chem-ph"
+      ],
+      "published": "2026-10-24T17:00:54+00:00",
+      "link": "https://arxiv.org/pdf/2610.33800v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LCU-based block encodings and circuits for vibrational Hamiltonians",
+      "llm_evidence_cn": "振动哈密顿量的LCU块编码与电路",
+      "llm_evidence": "振动哈密顿量的LCU块编码与电路",
+      "canonical_evidence": "振动哈密顿量的LCU块编码与电路",
+      "llm_tldr_en": "Addresses costly block encodings of vibrational Hamiltonians by deriving LCU representations from Pauli decomposition and tensor hypercontraction, constructing efficient circuits and extending BLISS to reduce the LCU 1-norm and circuit cost.",
+      "llm_tldr_cn": "针对分子振动哈密顿量块编码成本高的问题，该文基于泡利分解与张量超收缩给出线性组合幺正表示，并构造高效块编码电路。作者还将块不变对称移位技术推广到振动哈密顿量，以降低LCU一范数和整体电路代价。对相关分子，该方案减少了实现振动量子模拟所需的资源。这项工作为量子化学中的振动模拟提供了更实用的哈密顿量访问方法。",
+      "llm_tldr": "针对分子振动哈密顿量块编码成本高的问题，该文基于泡利分解与张量超收缩给出线性组合幺正表示，并构造高效块编码电路。作者还将块不变对称移位技术推广到振动哈密顿量，以降低LCU一范数和整体电路代价。对相关分子，该方案减少了实现振动量子模拟所需的资源。这项工作为量子化学中的振动模拟提供了更实用的哈密顿量访问方法。",
+      "llm_tags": [
+        "query:quantum-algo"
+      ],
+      "matched_query_tag": "query:quantum-algo",
+      "matched_query_text": "block encoding techniques for accessing matrices in quantum algorithms",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

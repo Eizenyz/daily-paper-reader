@@ -1,0 +1,3946 @@
+Title: An Efficient Quantum Spectral-Galerkin Method for Linear Elliptic Equations
+
+URL Source: https://arxiv.org/pdf/2610.33095v1
+
+Published Time: Tue, 27 Oct 2026 00:03:37 GMT
+
+Number of Pages: 38
+
+Markdown Content:
+# An Efficient Quantum Spectral-Galerkin Method for Linear Elliptic Equations 
+
+Dongjie Wang 1 and Sheng Chen 2
+
+> 1School of Mathematical Sciences, Beijing Normal University, Beijing, 100875, China
+> 2Department of Mathematics, Faculty of Arts and Sciences, Beijing Normal University, Zhuhai, China
+
+This paper presents an efficient quantum spectral-Galerkin method for constant-coefficient second-order linear elliptic equations. The method em-ploys a boundary-adapted Jacobi tensor-product basis that incorporates the boundary condition into the approximation space and produces Galerkin sys-tems with polynomially bounded condition numbers and sparsity. For analytic solutions satisfying a suitable uniform regularity condition, spectral conver-gence allows the normalized Galerkin coefficient state to be prepared with complexity poly( d, log(1 /ϵ )) , where d is the spatial dimension and ϵ is the error tolerance, under standard sparse-access and state-preparation assump-tions. At the state-preparation level, this improves the precision dependence over fixed-order finite-difference and finite-element discretizations. We further show how to estimate prescribed linear functionals of the solution, with an additional O(1 /ϵ ) factor arising from norm and inner-product estimation. 
+
+2020 Mathematics Subject Classification. Primary 65N35; Secondary 65N30, 68Q12, 81P68. 
+
+Key words and phrases. Quantum spectral methods, spectral-Galerkin methods, elliptic partial differential equations, quantum linear systems algorithms. 
+
+# 1 Introduction 
+
+Partial differential equations (PDEs) provide fundamental mathematical models for diffu-sion, elasticity, electromagnetism, fluid mechanics, and quantum mechanics [1–5]. Despite their ubiquity, their numerical solution remains computationally challenging, especially in high dimensions. Two central difficulties are the curse of dimensionality [6] and the cost of high-precision approximation. For a d-dimensional problem discretized with N degrees of freedom per coordinate direction, the total number of unknowns scales as N d, so even storing the full solution vector requires resources exponential in d. Moreover, for low-order discretization schemes, the approximation error typically decays only algebraically with 
+
+N ; hence achieving accuracy ϵ requires N = poly(1 /ϵ ) before the cost of solving the linear system is considered. Quantum computation offers a fundamentally different representation. Instead of stor-ing all entries of a discretized solution vector, a quantum algorithm may prepare a nor-malized state whose amplitudes encode the solution coefficients. For a tensor-product discretization with N one-dimensional degrees of freedom in each coordinate direction, 
+
+1arXiv:2610.33095v1 [physics.comp-ph] 22 Oct 2026 the coefficient vector has length N d, whereas the corresponding quantum state requires only O(d log N ) qubits. This compact representation is one of the main motivations for quantum algorithms for PDEs. At the same time, it changes the computational objec-tive: reading out many individual entries may be costly, so one typically extracts global quantities such as expectation values or linear functionals of the solution [7]. Quantum linear systems algorithms (QLSAs) provide a natural route from PDE dis-cretizations to quantum algorithms [8, 9]. Many discretizations of linear PDEs reduce the computation of the expansion coefficients of an approximate solution to solving a finite-dimensional linear system Lc = f . Given suitable access to L and f , a QLSA can prepare a quantum state proportional to the coefficient vector c. The efficiency of this approach is governed by three basic quantities: the approximation error of the dis-cretization, the condition number κ(L), and the sparsity s(L). The approximation error determines how large the discretization parameter N must be to reach a prescribed tol-erance ϵ; the condition number controls the complexity and stability of the linear-system step; and the sparsity controls the cost of sparse matrix access. Therefore, a high-precision discretization suitable for QLSA-based algorithms should ideally combine spectral accu-racy, N = poly(log(1 /ϵ )) , with polynomially bounded condition number and sparsity, 
+
+κ(L) = poly( N, d ) and s(L) = poly( N, d ).
+
+1.1 Related work 
+
+Several quantum frameworks for solving differential equations have been developed that are conceptually distinct from QLSA-based approaches. Schr¨ odingerization reformulates general linear differential equations as Schr¨ odinger-type dynamics through a warped phase transformation, thereby enabling their solution by Hamiltonian simulation [10]. Another approach is the linear combination of Hamiltonian simulation (LCHS), which represents nonunitary dynamics as a linear combination of Hamiltonian simulations without relying on a reduction to a dilated linear-system problem [11]. These approaches provide alterna-tive routes to quantum differential equation solvers. In the following discussion of quantum PDE algorithms, we focus on QLSA-based methods, which are most directly related to the framework developed in this work. 
+
+QLSA-based quantum algorithms for PDEs. Low-order discretizations such as fi-nite difference and finite element methods are well suited to sparse linear algebra, and quantum algorithms based on these discretizations have been studied in several works. For finite difference methods, quantum algorithms and explicit block encodings have been developed for various elliptic boundary value problems [12, 13]. For finite element meth-ods, Montanaro and Pallister [7] analyzed quantum algorithms for estimating functionals of PDE solutions, building on classical finite element conditioning estimates such as those in [14]. These approaches naturally produce sparse and structured linear systems. How-ever, for fixed-order finite difference and finite element schemes, the approximation error decays only algebraically with the discretization parameter N . Consequently, achieving accuracy ϵ generally requires N = poly(1 /ϵ ), so the resulting quantum complexity retains a polynomial dependence on 1/ϵ .Spectral methods offer a natural way to overcome the algebraic accuracy barrier. For smooth or analytic solutions, they can converge exponentially fast, so high accuracy may be achieved with only N = poly(log(1 /ϵ )) degrees of freedom per coordinate direction [15]. This makes spectral discretizations particularly attractive for high-precision quan-tum algorithms. However, extending quantum spectral methods to non-periodic bound-ary conditions introduces additional structural challenges. The Chebyshev pseudospectral 
+
+2method in [12] exploits the high-order convergence of Chebyshev expansions for Dirich-let problems, but the resulting differentiation matrices are generally non-Hermitian and non-normal. Consequently, their QLSA-relevant two-norm condition number is not de-termined by eigenvalue information alone, and analyzing it requires additional care. Arecent alternative imposes Dirichlet boundary conditions through an antisymmetric ex-tension followed by a Fourier-type periodic spectral method [16]. This approach requires additional boundary compatibility conditions, including the vanishing of the relevant even-order derivatives at the boundary, which are not generally satisfied for a generic Dirichlet problem. Thus, obtaining a quantum spectral discretization that is simultaneously high-precision, well-conditioned, and sparse remains nontrivial. 
+
+Classical spectral-Galerkin methods. On the classical side, spectral-Galerkin meth-ods based on Jacobi and Legendre polynomials are well established [15, 17]. Shen [17] introduced efficient Legendre-Galerkin bases for second- and fourth-order problems using difference bases such as Lk+2 − Lk. These constructions retain spectral accuracy and lead to efficient one-dimensional discretizations. In multidimensional tensor-product settings, however, the presence of a nontrivial mass matrix can substantially increase the sparsity of the resulting system matrix and may also deteriorate its conditioning as the dimension grows. These features are less favorable for QLSA-based algorithms, whose complexity depends directly on the sparsity and condition number of the linear system. 
+
+Summary of gaps. Low-order methods provide sparse linear systems but only algebraic accuracy, while existing spectral approaches face additional challenges in conditioning, boundary treatment, or high-dimensional tensor-product structure. This motivates the search for a spectral discretization that combines spectral accuracy with polynomially bounded condition number and sparsity. 
+
+1.2 Our contributions 
+
+In this paper, we propose a quantum spectral-Galerkin method for d-dimensional constant-coefficient second-order linear elliptic boundary value problems with homogeneous Dirich-let boundary conditions. Rather than building the quantum algorithm on a collocation or pseudospectral discretization, we work with the weak formulation and construct a Dirichlet-compatible Jacobi-based spectral basis. The one-dimensional basis functions are 
+
+L2-orthonormal and vanish at the boundary, so the mass matrix is the identity, thereby avoiding the exponential-in-d sparsity growth that can arise from nontrivial mass matri-ces in tensor-product spectral discretizations. The d-dimensional approximation space is obtained by taking tensor products of these basis functions, thereby incorporating the boundary condition directly into the approximation space. This construction leads to symmetric positive-definite Galerkin systems whose con-dition numbers can be controlled through energy estimates. For analytic solutions sat-isfying a suitable uniform regularity condition, we prove spectral convergence, so that 
+
+N = poly(log(1 /ϵ )) degrees of freedom per coordinate direction are sufficient. At the alge-braic level, the Galerkin matrix satisfies κ(L) = O(κ(A)N 4) and s(L) = O(d2N 2), where 
+
+A denotes the constant symmetric positive-definite coefficient matrix of the elliptic oper-ator; when A is diagonal, the sparsity improves to O(dN ). More generally, we observe that the underlying sparsity and conditioning mechanisms are not specific to homoge-neous Dirichlet boundary conditions: they extend to other boundary conditions whenever a suitable L2-orthonormal polynomial basis is available, the associated variational prob-lem remains coercive, and the corresponding approximation space satisfies appropriate 
+
+3Method Error scaling Condition number Sparsity Complexity                       
+
+> FDM [12, 13] N−pO(N2)O(pd )poly( d, 1/ϵ )FEM [7, 14] N−pO(N2)O(1) poly( d, 1/ϵ )Spectral-Galerkin method [this paper] (C/N )NO(N4)O(dN )poly( d, log(1 /ϵ ))
+
+Table 1: Comparison of discretization properties relevant to QLSA-based algorithms for the d-dimensional Poisson equation with homogeneous Dirichlet boundary conditions. Here N denotes the number of degrees of freedom in each coordinate direction, p denotes the order of a fixed-order finite difference or finite element scheme, and the last column gives the complexity of the state-preparation part of the quantum algorithm. For FEM, the sparsity O(1) reported in [7] is understood under the standard convention that the spatial dimension d is fixed; if the dependence on d is tracked explicitly, the sparsity generally depends on d.
+
+Figure 1: Numerical comparison of the QLSA-relevant two-norm condition numbers of the Cheby-shev pseudospectral coefficient matrix [12] and our Jacobi-based spectral-Galerkin coefficient ma-trix for the d-dimensional Poisson equation, with d = 3 and d = 4. Here N denotes the number of one-dimensional degrees of freedom. The fitted exponent p corresponds to the power-law model 
+
+κ2 ≈ CN p over the indicated range of N . These results are intended as an illustrative finite-dimensional comparison rather than an asymptotic estimate. 
+
+inverse estimates. We further introduce a rotated Jacobi-based basis that preserves the approximation space and condition number while reducing the sparsity to O(dN + d2) in the general case and to 1 when A is diagonal. Combining these properties with a sparse-input QLSA yields a quantum algorithm for preparing the normalized Galerkin coefficient state with complexity poly( d, log(1 /ϵ )) ,under standard sparse-access and state-preparation assumptions. At the state-preparation level, this improves the precision dependence over fixed-order finite-difference and finite-element discretizations. We further show how to estimate prescribed linear functionals of the PDE solution from the prepared state, with an additional O(1 /ϵ ) factor arising from norm and inner-product estimation. Table 1 summarizes the approximation accuracy, condition number, sparsity, and quantum state-preparation complexity of representative low-order discretizations and the spectral-Galerkin method proposed in this paper. Figure 1 compares the two-norm condition-number growth of the Chebyshev pseudospectral and Jacobi-based spectral-Galerkin dis-cretizations for d = 3 and d = 4 , showing substantially milder growth for the latter over the tested range of N .The remainder of this paper is organized as follows. Section 2 states the model problem 
+
+4and the algorithmic objectives. Section 3 derives the Galerkin discretization and discusses the challenges associated with conventional basis functions. Section 4 presents our new Jacobi-based spectral-Galerkin method and analyzes its properties and classical complex-ity. Section 5 develops the corresponding quantum algorithm. Finally, Section 6 concludes with a discussion of the limitations and open problems. 
+
+# 2 Model problem and algorithmic objectives 
+
+This section introduces the model elliptic problem and its weak formulation, and then specifies the sparse-input QLSA framework and the algorithmic objectives that guide our discretization. 
+
+2.1 Model problem and weak formulation 
+
+In this paper, we consider the following model problem. 
+
+Problem 1. Given a d-dimensional second-order linear elliptic boundary value problem with homogeneous Dirichlet boundary conditions, 
+
+L u = −
+
+> d∑
+> p,q =1
+
+Apq ∂xp ∂xq u = f in Ω := ( −1, 1) d, u|∂Ω = 0 , (2.1) 
+
+where f ∈ C∞(Ω) , and A = ( Apq )dp,q =1 ∈ Rd×d is a constant symmetric positive-definite matrix. Our goal is to design a quantum algorithm to estimate a linear functional of u:for a given function ρ ∈ L2(Ω) , estimate 
+
+⟨ρ, u ⟩ := 
+
+> ∫
+> Ω
+
+ρ(x)u(x) d x. (2.2) 
+
+The weak formulation of (2.1) seeks u ∈ H10 (Ω) such that 
+
+a(u, v ) = F (v), ∀ v ∈ H10 (Ω) , (2.3) 
+
+where the bilinear form a(·, ·) is defined by 
+
+a(u, v ) := 
+
+> d∑
+> p,q =1
+> ∫
+> Ω
+
+Apq ∂xp u ∂ xq v dx =
+
+> ∫
+> Ω
+
+(∇u)T(A∇v) d x, (2.4) 
+
+and the linear functional F (·) is defined by 
+
+F (v) := ⟨f, v ⟩ =
+
+> ∫
+> Ω
+
+f (x)v(x) d x. (2.5) 
+
+Since A is symmetric positive definite, the bilinear form a(·, ·) is continuous and coercive on 
+
+H10 (Ω) . By the Lax–Milgram theorem [1], (2.1) admits a unique weak solution u ∈ H10 (Ω) .
+
+Remark 1. Following [7], we take the estimation of a linear functional of the solution to be the target computational task. A quantum algorithm for a PDE typically provides access to the solution in an encoded form rather than to all pointwise values of u. Therefore, recovering the full solution is generally not the natural computational objective, whereas linear functionals represent natural global quantities of interest. In addition, this choice is consistent with the standard L2 error criterion. Indeed, if ˜u
+
+is an approximation to u, then the Cauchy–Schwarz inequality gives 
+
+> ∣∣
+
+⟨ρ, ˜u⟩ − ⟨ ρ, u ⟩∣∣ = ∣∣⟨ρ, ˜u − u⟩∣∣ ≤ ∥ ρ∥L2(Ω) ∥˜u − u∥L2(Ω) . (2.6) 
+
+5In contrast to [12], we do not require the above PDE to satisfy the global strict diagonal dominance condition 
+
+C := 1 −
+
+> d∑
+> p=1
+
+1
+
+|App |
+
+> ∑
+> q∈[d]\{ p}
+
+|Apq | > 0, (2.7) 
+
+where [d] := {1, 2, . . . , d }. This assumption is not needed in our subsequent condition number analysis. For simplicity, we focus on the homogeneous Dirichlet case. The nonho-mogeneous Dirichlet problem with boundary data 
+
+u|∂Ω = γ, γ ∈ C∞(∂Ω) , (2.8) 
+
+can be reduced to the homogeneous case by a standard change of variables, with the boundary contribution absorbed into the right-hand side. 
+
+2.2 Sparse-input QLSA and algorithmic objectives 
+
+A numerical discretization of (2.1) leads to a finite-dimensional linear system. Since the complexity of a quantum linear systems algorithm depends on how the coefficient matrix and the right-hand side are accessed, we adopt the sparse-input model rather than assuming that a block encoding of the coefficient matrix is given directly. We recall the corresponding QLSA result below. 
+
+Lemma 1 (Sparse-input QLSA, adapted from [9]) . Let H ∈ CN ×N be a Hermitian, invertible matrix with condition number κ = ∥H∥ ∥ H−1∥, and suppose that H is s-sparse, namely, each row and each column of H contains at most s nonzero entries. Let b ∈ CN
+
+be a nonzero vector, and define x = H−1b. Let 
+
+|b⟩ = b
+
+∥b∥ , |x⟩ = x
+
+∥x∥ . (2.9) 
+
+Assume that we are given an oracle PH which, on input (r, ℓ ), returns the column index together with the value of the ℓth nonzero entry in row r, and an oracle Pb that prepares the state |b⟩. Then, for any ϵ > 0, there exists a quantum algorithm that prepares a state 
+
+ϵ-close to |x⟩ in ℓ2 norm, with success probability Ω(1) , using 
+
+O(sκ poly(log( sκ/ϵ ))) (2.10) 
+
+queries to PH and Pb. Moreover, the gate complexity exceeds the query complexity by at most a factor of poly(log N ).
+
+Guided by Lemma 1, our complexity analysis focuses on three quantities: the di-mension of the linear system, which is determined by the approximation accuracy of the discretization; the condition number of the coefficient matrix; and its sparsity. Accord-ingly, we seek a discretization with rapid convergence , a polynomially bounded condition number , and polynomial sparsity .
+
+# 3 Galerkin method and challenges 
+
+In this section, we first formulate a general tensor-product Galerkin discretization of (2.1) 
+
+and express the resulting coefficient matrix in terms of the one-dimensional mass, stiff-ness, and mixed derivative matrices. We then examine two illustrative choices of basis functions. These examples reveal the trade-offs among approximation accuracy, condition number, and sparsity, and motivate the search for a basis that simultaneously achieves rapid convergence, a polynomially bounded condition number, and polynomial sparsity. 
+
+63.1 Tensor-product Galerkin discretization 
+
+We discretize the weak formulation of (2.1) by restricting it to a finite-dimensional sub-space of H10 (Ω) . More precisely, for a finite-dimensional subspace VN ⊂ H10 (Ω) , the Galerkin approximation uN ∈ VN is defined by 
+
+a(uN , v N ) = F (vN ), ∀vN ∈ VN . (3.1) 
+
+We choose VN to be a tensor-product subspace of H10 (Ω) . Let [N ]0 := {0, 1, . . . , N −1},and let {ϕk}k∈[N ]0 ⊂ H10 (−1, 1) be a family of one-dimensional basis functions. For each multi-index k = ( k1, . . . , k d) ∈ [N ]d
+
+> 0
+
+, define 
+
+Φk(x) = 
+
+> d
+
+∏
+
+> j=1
+
+ϕkj (xj ), x = ( x1, . . . , x d) ∈ Ω. (3.2) 
+
+We then set 
+
+VN := span {Φk | k ∈ [N ]d
+
+> 0
+
+} ⊂ H10 (Ω) . (3.3) 
+
+To facilitate the quantum implementation, we assume that N = 2 n, so that dim( VN ) = 
+
+N d = 2 nd . With this choice of basis, the Galerkin solution admits the expansion 
+
+uN (x) = ∑ 
+
+> k∈[N]d
+> 0
+
+ck Φk(x), (3.4) 
+
+where the coefficients {ck} are determined by (3.1) .To derive the algebraic system for the coefficients {ck}k∈[N ]d 
+
+> 0
+
+, we substitute the expan-sion (3.4) into (3.1) and choose the test function vN = Φ l for each l ∈ [N ]d
+
+> 0
+
+. Then (3.1) is equivalent to 
+
+> d
+
+∑
+
+> p,q =1
+
+Apq 
+
+∑ 
+
+> k∈[N]d
+> 0
+
+ck
+
+〈∂xp Φk, ∂ xq Φl
+
+〉 = ⟨f, Φl⟩, ∀ l ∈ [N ]d
+
+> 0
+
+. (3.5) 
+
+To write this system in a compact form, we introduce the coefficient vector and the load vector by 
+
+c := ∑ 
+
+> k∈[N]d
+> 0
+
+ck|k⟩, f := ∑ 
+
+> l∈[N]d
+> 0
+
+⟨f, Φl⟩| l⟩, (3.6) 
+
+and define the one-dimensional matrices 
+
+M := ∑ 
+
+> j,k ∈[N]0
+
+⟨ϕk, ϕ j ⟩| j⟩⟨ k|, S := ∑ 
+
+> j,k ∈[N]0
+
+⟨ϕ′
+
+> k
+
+, ϕ ′ 
+
+> j
+
+⟩| j⟩⟨ k|, T := ∑ 
+
+> j,k ∈[N]0
+
+⟨ϕ′
+
+> k
+
+, ϕ j ⟩| j⟩⟨ k|.
+
+(3.7) 
+
+Here M , S, and T are respectively the mass matrix, the stiffness matrix, and the mixed derivative matrix associated with the one-dimensional basis {ϕk}k∈[N ]0 .By the tensor-product structure of the basis functions, (3.5) is equivalent to the linear system 
+
+Lc = f , (3.8) 
+
+where L = L1 + L2 with 
+
+L1 =
+
+> d
+
+∑
+
+> p=1
+
+App 
+
+(M ⊗(p−1) ⊗ S ⊗ M ⊗(d−p)), (3.9) 
+
+L2 = −2 ∑
+
+> 1≤p<q ≤d
+
+Apq 
+
+(M ⊗(p−1) ⊗ T ⊗ M ⊗(q−p−1) ⊗ T ⊗ M ⊗(d−q)). (3.10) 
+
+The detailed derivation of (3.9) –(3.10) is given in Appendix A. Solving (3.8) yields the coefficient vector c and hence the Galerkin approximation uN .
+
+73.2 Two illustrative choices of basis functions 
+
+In view of Lemma 1, two properties of the coefficient matrix L are particularly important for the QLSA complexity: its condition number κ(L) and its sparsity s(L), where s(L)
+
+denotes the maximum number of nonzero entries in any row or column of L. Since the QLSA complexity depends essentially linearly on these quantities, it is important to un-derstand how they are affected by the choice of basis. To illustrate this dependence, we consider two classical examples. Throughout this subsection, we restrict ourselves to the case A = Id, for which the off-diagonal part vanishes and the system matrix reduces to 
+
+L = L1 =
+
+> d∑
+> p=1
+
+M ⊗(p−1) ⊗ S ⊗ M ⊗(d−p). (3.11) 
+
+Example 1: piecewise polynomial basis [14]. Suppose that the one-dimensional basis functions {ϕk}k∈[N ]0 are chosen to be continuous piecewise polynomials on a partition of (−1, 1) . Then the resulting tensor-product Galerkin discretization is precisely a finite element method. Since low-order finite element bases only provide algebraic convergence, in order to achieve an approximation error of order ϵ, one generally needs 
+
+N = poly(1 /ϵ ). (3.12) 
+
+For such finite element bases, the condition number of the coefficient matrix satisfies 
+
+κ(L) = O((dim VN )2/d ) = O(N 2). (3.13) 
+
+In particular, if ϕk are piecewise linear functions, then the one-dimensional mass matrix 
+
+M and stiffness matrix S are both tridiagonal. Consequently, each tensor-product term in (3.11) has at most 3d nonzero entries in each row and column, and hence 
+
+s(L) = O(d 3d). (3.14) 
+
+Therefore, by (3.13) , (3.14) , and Lemma 1, the query complexity of solving (3.8) by QLSA is 
+
+O
+
+> (
+
+d 3dN 2 poly 
+
+> (
+
+log( d 3dN 2/δ )
+
+> ))
+
+, (3.15) 
+
+where δ is the target precision of the quantum linear solver. Thus, in this finite element setting, the QLSA complexity remains polynomial in 1/ϵ and, under the present sparse-matrix model, grows exponentially with the dimension d because of the factor 3d.
+
+Example 2: Legendre difference basis [17]. Consider the one-dimensional basis 
+
+ϕk(x) = ck
+
+> (
+
+Lk+2 (x) − Lk(x)), k ∈ [N ]0, (3.16) 
+
+where Lk is the Legendre polynomial of degree k, and the normalization constants ck are chosen such that S = I. This is the classical Legendre–Galerkin basis introduced in [17]. Moreover, for smooth solutions, the associated approximation enjoys spectral accuracy, so that to achieve an approximation error of order ϵ, one may take 
+
+N = poly(log(1 /ϵ )) . (3.17) 
+
+In this case, the coefficient matrix is 
+
+L =
+
+> d∑
+> p=1
+
+M ⊗(p−1) ⊗ I ⊗ M ⊗(d−p). (3.18) 
+
+8Since M is symmetric positive definite, 
+
+κ(L) = λmax (L)
+
+λmin (L) = dλ max (M )d−1
+
+dλ min (M )d−1 = κ(M )d−1. (3.19) 
+
+Moreover, the mass matrix M is symmetric positive definite and satisfies Mij ̸ = 0 only when i = j or i = j ± 2. Consequently, each tensor-product term in (3.18) has at most 
+
+3d−1 nonzero entries in each row and column, and hence 
+
+s(L) = O(d 3d−1) = O(d 3d). (3.20) 
+
+Therefore, by (3.19) , (3.20) , and Lemma 1, the query complexity of solving (3.8) by QLSA is 
+
+O
+
+> (
+
+d 3d κ(M )d−1 poly 
+
+> (
+
+log( d 3d κ(M )d−1/δ )
+
+> ))
+
+, (3.21) 
+
+where δ is the target precision of the quantum linear solver. Thus, although this Legendre basis can achieve spectral accuracy and hence requires only N = poly(log(1 /ϵ )) , under the present sparse-matrix model the QLSA complexity still grows exponentially with the di-mension d, through both the sparsity factor 3d and the condition-number factor κ(M )d−1.The above two examples show that the choice of basis is crucial. Local low-order bases may lead to better-conditioned systems, but their approximation power is limited, so achieving high accuracy requires a large value of N . On the other hand, spectrally accurate bases can significantly reduce the required value of N , but the resulting matrices may become poorly conditioned as the dimension grows. Moreover, in both examples, the sparsity of the resulting coefficient matrix grows exponentially with the dimension d.This motivates the following question: can one construct a family of basis functions such that the resulting Galerkin method simultaneously has the following three properties? 1. The approximation error decays rapidly with N , ideally so that achieving accuracy 
+
+ϵ only requires N = poly(log(1 /ϵ )) , rather than N = poly(1 /ϵ ).2. The condition number of the coefficient matrix satisfies κ(L) = poly( N, d ).3. The sparsity of the coefficient matrix satisfies s(L) = poly( N, d ).
+
+# 4 An L2-orthonormal Jacobi-based spectral-Galerkin method 
+
+Motivated by the difficulties identified in Section 3.2, we now introduce a Jacobi-based spectral-Galerkin method for (2.1) . The proposed basis incorporates the homogeneous Dirichlet boundary condition directly while preserving orthonormality in the standard L2
+
+inner product. We show that the resulting discretization has a condition number and sparsity polynomial in N and d, while spectral accuracy is obtained for analytic solutions satisfying a suitable uniform regularity condition. We first present the Jacobi-based basis construction in Section 4.1 and establish its main approximation, condition number, and sparsity properties in Lemma 4. We then introduce a rotated Jacobi-based basis in Section 4.2, which preserves the approximation space and condition number while further reducing the sparsity of the coefficient matrix. Finally, in Section 4.3, we analyze the classical complexity of solving the resulting linear systems by the conjugate gradient method. Basic properties of Jacobi polynomials used in the analysis are collected in Appendix B, while a concrete example and numerical results are presented in Appendix D. 
+
+94.1 Jacobi-based basis and its properties 
+
+Motivated by the three properties stated above, we now explain how our basis is con-structed. To achieve property 1, namely, spectral accuracy, it is natural to look for basis functions related to orthogonal polynomials on (−1, 1) . A natural candidate is provided by Jacobi polynomials, which include Legendre and Chebyshev polynomials as special cases. For parameters α, β > −1, the Jacobi polynomials {P (α,β ) 
+
+> k
+
+}k≥0 are orthogonal with respect to the weight ω(α,β )(x) = (1 − x)α(1 + x)β , and satisfy  
+
+> ∫1
+> −1
+
+P (α,β ) 
+
+> k
+
+(x) P (α,β ) 
+
+> l
+
+(x) ω(α,β )(x) dx = γ(α,β ) 
+
+> k
+
+δkl , (4.1) 
+
+where 
+
+γ(α,β ) 
+
+> k
+
+= 2α+β+1 Γ( k + α + 1)Γ( k + β + 1) (2 k + α + β + 1) k! Γ( k + α + β + 1) . (4.2) 
+
+The main difficulty is to impose the homogeneous Dirichlet boundary condition while keeping the resulting coefficient matrix well structured. In Example 2, this was done by taking the Legendre difference basis Lk+2 − Lk. Although that choice preserves spectral accuracy, it leads to a nontrivial mass matrix M , and the sparsity of the resulting tensor-product system is then dominated by M , which in turn causes exponential growth with the dimension d.This observation suggests a different strategy. Instead of enforcing the boundary con-dition by taking differences of orthogonal polynomials, we incorporate the boundary factor directly into the basis functions and define 
+
+ϕk(x) := 1
+
+> √
+
+γ(2 ,2) 
+
+> k
+
+(1 − x2)P (2 ,2)  
+
+> k
+
+(x), k ∈ [N ]0. (4.3) 
+
+Then each ϕk vanishes at x = ±1, so the homogeneous Dirichlet boundary condition is satisfied automatically. Moreover, by (4.1) , the family {ϕk}k∈[N ]0 is orthonormal in 
+
+L2(−1, 1) , and therefore 
+
+M = I. (4.4) 
+
+Consequently, the matrices L1 and L2 take the form 
+
+L1 =
+
+> d∑
+> p=1
+
+App 
+
+> (
+
+I⊗(p−1) ⊗ S ⊗ I⊗(d−p)), (4.5) 
+
+L2 = −2 ∑
+
+> 1≤p<q ≤d
+
+Apq 
+
+> (
+
+I⊗(p−1) ⊗ T ⊗ I⊗(q−p−1) ⊗ T ⊗ I⊗(d−q)). (4.6) 
+
+Hence the sparsity of the full coefficient matrix L = L1 + L2 is determined entirely by the one-dimensional matrices S and T , rather than by tensor powers of a nontrivial mass matrix M . This removes the main source of exponential sparsity growth in the previous examples and is therefore the key step toward achieving property 3. Finally, we emphasize that our Galerkin formulation is based on the standard un-weighted inner product, that is, the weight is 1. One may also consider weighted Galerkin formulations associated with other Jacobi weights. In such settings, it is still possible to construct bases with M = I. However, the resulting one-dimensional matrices S and T
+
+are in general no longer symmetric and skew-symmetric, respectively, and consequently the full coefficient matrix L = L1 + L2 may lose its favorable structure and become poorly conditioned in high dimensions. By contrast, in the present unweighted setting, S is sym-metric and T is skew-symmetric. Since A is symmetric, it follows that both L1 and L2
+
+10 are symmetric, and hence so is L. This structural property will be crucial for proving the favorable condition number bound later. To establish property 2, we first estimate the condition number of the one-dimensional stiffness matrix S associated with the basis (4.3) .
+
+Lemma 2. Let {ϕk}k∈[N ]0 be the one-dimensional basis defined in (4.3) , and let S be the associated stiffness matrix defined in (3.7) . Then 
+
+λmin (S) ≥ π2
+
+4 , λmax (S) ≤ 14 (N + 2) 2(N + 3) 2. (4.7) 
+
+Consequently, κ(S) = O(N 4).Proof. Let XN := span {ϕ0, ϕ 1, . . . , ϕ N −1}. Since {ϕk}k∈[N ]0 is an orthonormal basis of 
+
+XN in L2(−1, 1), for any 
+
+vN = 
+
+> N−1
+
+∑
+
+> k=0
+
+ckϕk ∈ XN (4.8) with coefficient vector c = ( c0, . . . , c N −1)T, we have 
+
+∥vN ∥2 
+
+> L2(−1,1)
+
+= cTc, ∥v′ 
+
+> N
+
+∥2 
+
+> L2(−1,1)
+
+= cTSc. (4.9) Therefore, 
+
+λmin (S) = min  
+
+> 0̸=vN∈XN
+
+∥v′ 
+
+> N
+
+∥2
+
+> L2(−1,1)
+
+∥vN ∥2
+
+> L2(−1,1)
+
+, λmax (S) = max  
+
+> 0̸=vN∈XN
+
+∥v′ 
+
+> N
+
+∥2
+
+> L2(−1,1)
+
+∥vN ∥2
+
+> L2(−1,1)
+
+. (4.10) Since vN ∈ H10 (−1, 1), the Poincar´ e inequality [18] yields 
+
+∥vN ∥L2(−1,1) ≤ 2
+
+π ∥v′ 
+
+> N
+
+∥L2(−1,1) . (4.11) Therefore, 
+
+λmin (S) ≥ π2
+
+4 . (4.12) On the other hand, each vN is a polynomial of degree at most N + 1. Thus, by the inverse inequality for algebraic polynomials on [ −1, 1] [15], 
+
+∥v′ 
+
+> N
+
+∥L2(−1,1) ≤ 12 (N + 2)( N + 3) ∥vN ∥L2(−1,1) . (4.13) Therefore, 
+
+λmax (S) ≤ 14 (N + 2) 2(N + 3) 2. (4.14) Combining the above bounds, we obtain 
+
+κ(S) = λmax (S)
+
+λmin (S) ≤ 1
+
+π2 (N + 2) 2(N + 3) 2 = O(N 4), (4.15) which proves the claim. 
+
+The next lemma shows that, for the Kronecker-sum structure arising here, the con-dition number of the multidimensional matrix is completely determined by that of the one-dimensional stiffness matrix. 
+
+11 Lemma 3. Let S ∈ RN ×N be symmetric positive definite, and define 
+
+L0 := 
+
+> d
+
+∑
+
+> p=1
+
+I⊗(p−1) ⊗ S ⊗ I⊗(d−p). (4.16) 
+
+Then 
+
+λmax (L0) = d λ max (S), λmin (L0) = d λ min (S), (4.17) 
+
+and hence 
+
+κ(L0) = κ(S). (4.18) 
+
+Proof. Let {vi}i∈[N ]0 be an orthonormal eigenbasis of S, and let {λi}i∈[N ]0 be the corre-sponding positive eigenvalues, so that Sv i = λivi, i ∈ [N ]0. Then for any i1, . . . , i d ∈ [N ]0,the tensor-product vector vi1 ⊗ · · · ⊗ vid is an eigenvector of L0 with eigenvalue 
+
+λi1 + · · · + λid . (4.19) Since each λi is positive, it follows that 
+
+λmax (L0) = d λ max (S), λmin (L0) = d λ min (S). (4.20) Therefore, 
+
+κ(L0) = λmax (L0)
+
+λmin (L0) = d λ max (S)
+
+d λ min (S) = κ(S). (4.21) This completes the proof. 
+
+Combining the two lemmas above, we obtain the following lemma, which shows that the proposed basis indeed satisfies the three desired properties. 
+
+Lemma 4. Consider an instance of Problem 1, namely, the d-dimensional second-order linear elliptic boundary value problem with homogeneous Dirichlet boundary conditions 
+
+(2.1) . Let the approximation space be generated by the tensor-product basis associated with the one-dimensional basis (4.3) . Then this basis satisfies the three properties stated above in the following sense: 1. Suppose that the exact solution is analytic and satisfies the uniform regularity con-dition 
+
+Cd := sup  
+
+> N∈N
+
+CN < ∞, (4.22) 
+
+where 
+
+CN := 
+
+
+
+> d
+
+∑
+
+> i=1
+
+
+
+> d
+
+∑
+
+> j=1
+
+∥∂ N +1  
+
+> xj
+
+∂xi u∥W (N +2) 
+
+> i,j
+
+
+
+> 2
+
+
+
+> 12
+
+, (4.23) 
+
+and 
+
+W (N +2)  
+
+> i,j
+
+:= 
+
+{(1 − x2 
+
+> i
+
+)N +1 ∏
+
+> 1≤k≤i−1
+
+(1 − x2
+
+> k
+
+)−1, j = i, 
+
+(1 − x2 
+
+> j
+
+)N ∏ 
+
+> 1≤k≤j−1,k ̸=i
+
+(1 − x2
+
+> k
+
+)−1, j̸ = i. (4.24) 
+
+Then achieving approximation accuracy ϵ in the L2(Ω) norm only requires 
+
+N = O
+
+( log( Cdκ(A)1/2d−1/2/ϵ )log log( Cdκ(A)1/2d−1/2/ϵ )
+
+)
+
+, (4.25) 
+
+12 2. The condition number of the coefficient matrix satisfies 
+
+κ(L) ≤ κ(A)κ(S) = O(κ(A)N 4). (4.26) 
+
+3. The sparsity of the coefficient matrix satisfies 
+
+s(L) = O(d2N 2). (4.27) 
+
+In particular, if A is diagonal, then 
+
+s(L) = O(dN ). (4.28) 
+
+Proof. The first claim follows directly from Corollary 1 in Appendix C. More precisely, that corollary gives 
+
+∥uN − u∥L2(Ω) ≲ CN κ(A) 12 d− 12
+
+( √ e/ 2
+
+N + 1 
+
+)N + 54
+
+, (4.29) with CN defined above. Solving this estimate for N yields (4.25). For the second claim, let c be an arbitrary coefficient vector and define 
+
+vN = ∑ 
+
+> k∈[N]d
+> 0
+
+ckΦk. (4.30) By the construction of the Galerkin matrix in Section 3.1, we have 
+
+Lc = ∑ 
+
+> l∈[N]d
+> 0
+
+a(vN , Φl)|l⟩. (4.31) Therefore, 
+
+cTLc = ∑ 
+
+> k∈[N]d
+> 0
+
+ck a(vN , Φk) = a(vN , v N ). (4.32) Using (2.4), we obtain 
+
+cTLc =
+
+∫
+
+> Ω
+
+(∇vN )T(A∇vN ) dx. (4.33) Moreover, since A is symmetric positive definite, we have 
+
+λmin (A)
+
+∫
+
+> Ω
+
+|∇ vN |2 dx ≤ cTLc ≤ λmax (A)
+
+∫
+
+> Ω
+
+|∇ vN |2 dx. (4.34) Let 
+
+L0 := 
+
+> d
+
+∑
+
+> p=1
+
+I⊗(p−1) ⊗ S ⊗ I⊗(d−p), (4.35) which is precisely the coefficient matrix corresponding to the special case A = Id. Then 
+
+cTL0c =
+
+∫
+
+> Ω
+
+|∇ vN |2 dx. (4.36) Hence 
+
+λmin (A) cTL0c ≤ cTLc ≤ λmax (A) cTL0c. (4.37) By Lemma 3, 
+
+λmin (L0) = d λ min (S), λmax (L0) = d λ max (S). (4.38) 
+
+13 Therefore, 
+
+d λ min (A)λmin (S) ∥c∥2 ≤ cTLc ≤ d λ max (A)λmax (S) ∥c∥2. (4.39) This implies 
+
+λmin (L) ≥ d λ min (A)λmin (S), λmax (L) ≤ d λ max (A)λmax (S). (4.40) Consequently, 
+
+κ(L) = λmax (L)
+
+λmin (L) ≤ d λ max (A)λmax (S)
+
+d λ min (A)λmin (S) = κ(A)κ(S). (4.41) For the third claim, each term in L1 has at most N nonzero entries in each row and column, and there are d such terms. Thus s(L1) ≤ dN . Similarly, each term in L2 has at most N 2 nonzero entries in each row and column, and there are at most ( d2 − d)/2 such terms. Thus s(L2) ≤ (d2 − d)N 2/2. Therefore, 
+
+s(L) ≤ s(L1) + s(L2) ≤ dN + ( d2 − d)N 2/2 = O(d2N 2). (4.42) If A is diagonal, then L2 = 0, and hence s(L) ≤ dN . This completes the proof. 
+
+Remark 2 (Extension to more general boundary conditions) . The favorable sparsity and conditioning mechanisms established above are not specific to the homogeneous Dirichlet condition. The essential ingredient is the availability of an L2(−1, 1) -orthonormal polyno-mial basis adapted to the prescribed one-dimensional boundary conditions. For any such basis, the mass matrix remains M = I, and the bulk terms of the Galerkin matrix retain an analogous tensor-product representation involving only one-dimensional operator ma-trices. Consequently, even if these one-dimensional matrices are dense, the sparsity of the multidimensional matrix remains polynomial in N and d.Moreover, provided that the corresponding variational problem is coercive and the poly-nomial approximation space satisfies appropriate inverse estimates, the same energy argu-ment as above yields a polynomial condition-number bound. If, in addition, the approxi-mation space retains spectral approximation properties, the main mechanism of the present spectral-Galerkin method extends to more general boundary conditions. 
+
+4.2 Rotated Jacobi-based bases 
+
+We briefly discuss a basis rotation technique that can further reduce the sparsity of the coefficient matrix. This rotation does not change the approximation space, the approxi-mation accuracy, or the condition number. Let 
+
+U = ∑ 
+
+> i,k ∈[N]0
+
+Uik |i⟩⟨ k| ∈ RN ×N (4.43) 
+
+be an orthogonal matrix, and define a new one-dimensional basis by 
+
+˜ϕk(x) := ∑ 
+
+> i∈[N]0
+
+Uik ϕi(x), k ∈ [N ]0. (4.44) 
+
+Then 
+
+span { ˜ϕk}k∈[N ]0 = span {ϕk}k∈[N ]0 . (4.45) 
+
+Thus the approximation space is unchanged, and hence the approximation accuracy remains the same. 
+
+14 Let ˜M , ˜S, and ˜T denote the mass matrix, the stiffness matrix, and the mixed derivative matrix associated with the rotated basis. A direct computation gives 
+
+˜M = U TM U, ˜S = U TSU, ˜T = U TT U. (4.46) 
+
+Since the Jacobi-based basis (4.3) satisfies M = I, we still have ˜M = I. For the corre-sponding d-dimensional tensor-product basis, using the same rotation in each coordinate gives ˜L = ( U ⊗d)TL U ⊗d. (4.47) 
+
+Therefore, ˜L is orthogonally similar to L, and hence 
+
+κ( ˜L) = κ(L). (4.48) 
+
+Thus the rotation does not affect the condition number. We now consider its effect on sparsity. Since T is real skew-symmetric, by the canonical form of real skew-symmetric matrices [19], there exists an orthogonal matrix UT such that 
+
+U T 
+
+> T
+
+T U T = Λ T , (4.49) 
+
+where 
+
+ΛT = diag 
+
+> ([
+
+0 λ1
+
+−λ1 0
+
+> ]
+
+, . . . , 
+
+> [
+
+0 λN/ 2
+
+−λN/ 2 0
+
+> ])
+
+, λj > 0. (4.50) 
+
+Taking U = UT , we have ˜T = Λ T , and the rotated coefficient matrix can be written as 
+
+˜L = ˜L1 + ˜L2, (4.51) 
+
+where 
+
+˜L1 =
+
+> d∑
+> p=1
+
+App 
+
+> (
+
+I⊗(p−1) ⊗ ˜S ⊗ I⊗(d−p)), (4.52) ˜L2 = −2 ∑
+
+> 1≤p<q ≤d
+
+Apq 
+
+> (
+
+I⊗(p−1) ⊗ ΛT ⊗ I⊗(q−p−1) ⊗ ΛT ⊗ I⊗(d−q)). (4.53) 
+
+For the sparsity estimate, each term in ˜L1 has at most N nonzero entries in each row and column, and there are d such terms. Thus s( ˜L1) ≤ dN . Similarly, each term in 
+
+> ˜
+
+L2 has at most one nonzero entry in each row and column, because ΛT has at most one nonzero entry in each row and column. Since there are (d2 − d)/2 such terms, we have 
+
+s( ˜L2) ≤ (d2 − d)/2. Therefore, 
+
+s( ˜L) ≤ s( ˜L1) + s( ˜L2) ≤ dN + ( d2 − d)/2 = O(dN + d2). (4.54) 
+
+In the special case where A is diagonal, the off-diagonal part vanishes. In this case, one may instead diagonalize the symmetric stiffness matrix S. Let US be an orthogonal matrix such that 
+
+U T 
+
+> S
+
+SU S = Λ S . (4.55) 
+
+Taking U = US , the rotated coefficient matrix becomes 
+
+˜L =
+
+> d∑
+> p=1
+
+App 
+
+> (
+
+I⊗(p−1) ⊗ ΛS ⊗ I⊗(d−p)). (4.56) 
+
+Thus ˜L is diagonal. In particular, 
+
+s( ˜L) = 1 . (4.57) 
+
+The preceding discussion can be summarized as the following lemma. 
+
+15 Lemma 5. Consider an instance of Problem 1, namely, the d-dimensional second-order linear elliptic boundary value problem with homogeneous Dirichlet boundary conditions 
+
+(2.1) . Let the approximation space be generated by the tensor-product basis associated with the rotated one-dimensional basis (4.44) . Then the rotated basis has the same approxima-tion property and the same condition number bound as in Lemma 4. More precisely: 1. If the exact solution is analytic and satisfies the uniform regularity condition (4.22) ,then the same approximation estimate as in item 1 of Lemma 4 holds. In particular, achieving approximation accuracy ϵ in the L2(Ω) norm requires the same asymptotic choice of N as in (4.25) .2. The condition number of the rotated coefficient matrix satisfies 
+
+κ( ˜L) = κ(L) ≤ κ(A)κ(S) = O(κ(A)N 4). (4.58) 
+
+3. If U = UT is chosen so that U T 
+
+> T
+
+T U T = Λ T has the block diagonal form (4.50) , then the sparsity of the rotated coefficient matrix satisfies 
+
+s( ˜L) = O(dN + d2). (4.59) 
+
+In particular, if A is diagonal and U = US is chosen so that U T 
+
+> S
+
+SU S = Λ S , then ˜L
+
+is diagonal, and hence 
+
+s( ˜L) = 1 . (4.60) 
+
+4.3 Classical complexity of the spectral-Galerkin method 
+
+For comparison, we briefly discuss the classical complexity of the spectral-Galerkin method based on both the Jacobi-based basis (4.3) and its rotated counterpart (4.44) . Let u be the exact solution of (2.1) , and let 
+
+uN (x) = ∑ 
+
+> k∈[N]d
+> 0
+
+ckΦk(x) (4.61) 
+
+be the Galerkin approximation determined by the linear system 
+
+Lc = f . (4.62) 
+
+Suppose that this linear system is solved approximately by the conjugate gradient method, yielding an approximate coefficient vector 
+
+˜c = ∑ 
+
+> k∈[N]d
+> 0
+
+˜ck|k⟩, (4.63) 
+
+and hence the numerical solution 
+
+˜uN (x) = ∑ 
+
+> k∈[N]d
+> 0
+
+˜ckΦk(x). (4.64) 
+
+Then the total L2(Ω) error satisfies 
+
+∥u − ˜uN ∥L2(Ω) ≤ ∥ u − uN ∥L2(Ω) + ∥uN − ˜uN ∥L2(Ω) =: ϵSG + ϵCG , (4.65) 
+
+where ϵSG := ∥u − uN ∥L2(Ω) is the spectral-Galerkin discretization error, and 
+
+ϵCG := ∥uN − ˜uN ∥L2(Ω) = ∥c − ˜c∥2 (4.66) 
+
+16 is the error of the conjugate gradient method. Under the standard sparse-matrix cost model for conjugate gradient, solving the N d ×
+
+N d linear system to coefficient accuracy ϵCG requires 
+
+O
+
+> (
+
+N d s(L) κ(L) 12 log  
+
+> (
+
+1
+
+> √
+
+λmin (L) ϵCG 
+
+> ))
+
+(4.67) 
+
+arithmetic operations. Applying Lemma 4 and Lemma 5, and choosing ϵSG , ϵ CG = O(ϵ),we obtain the following classical complexity estimates. Here, for simplicity, we suppress the log log denominator in (4.25) , lower-order logarithmic factors coming from the CG tolerance, and inessential factors inside the logarithm, and take 
+
+N = O(log( Cdκ(A)/ϵ )) . (4.68) 
+
+Theorem 1. Consider an instance of Problem 1, namely, the d-dimensional second-order linear elliptic boundary value problem with homogeneous Dirichlet boundary conditions 
+
+(2.1) . Assume that the exact solution is analytic and satisfies the uniform regularity condition (4.22) . The classical complexity of achieving overall L2(Ω) accuracy ϵ by the conjugate gradient method satisfies the following bounds. 1. For the Jacobi-based basis (4.3) , the complexity is 
+
+O
+
+> (
+
+κ(A) 12 d2 (log( Cdκ(A)/ϵ )) d+5 )
+
+. (4.69) 
+
+If A is diagonal, then the bound improves to 
+
+O
+
+> (
+
+κ(A) 12 d (log( Cdκ(A)/ϵ )) d+4 )
+
+. (4.70) 
+
+2. For the rotated Jacobi-based basis (4.44) , the complexity is 
+
+O
+
+> (
+
+κ(A) 12
+
+> (
+
+d log( Cdκ(A)/ϵ ) + d2)
+
+log( Cdκ(A)/ϵ )d+3 )
+
+. (4.71) 
+
+If A is diagonal, then the rotated coefficient matrix is diagonal, and the CG-based complexity becomes 
+
+O
+
+> (
+
+κ(A) 12 (log( Cdκ(A)/ϵ )) d+3 )
+
+. (4.72) 
+
+Here Cd is defined in (4.22) . In particular, for the Poisson equation A = Id, the diagonal-case bounds apply, and the factors involving κ(A) disappear. 
+
+Remark 3. For consistency, we use the conjugate gradient method throughout the classical complexity analysis. When A is diagonal, however, the rotated Galerkin matrix is diagonal, so the linear system can be solved directly by componentwise division in O(N d) operations. Thus, the CG bound above is not sharp in this special case. 
+
+# 5 Quantum spectral-Galerkin method 
+
+In this section, we present a quantum algorithm for solving the spectral-Galerkin linear system (3.8) . The key idea is to use a quantum linear systems algorithm to prepare the quantum state corresponding to the Galerkin coefficient vector, and then estimate the target linear functional from that state by suitable post-processing. Throughout this 
+
+17 section, we work in the sparse-access model of Lemma 1 and assume that the corresponding Galerkin matrix admits efficient sparse access. We first describe, in Section 5.1, how to prepare the input state associated with the right-hand side of (3.8) using the Grover–Rudolph state-preparation method. Next, in Section 5.2, we explain how to estimate the linear functional ⟨ρ, u ⟩ from the quantum output and analyze the resulting complexity. Finally, in Section 5.3, we compare the complexity of the quantum spectral-Galerkin method with that of its classical counterpart. 
+
+5.1 State preparation 
+
+We begin by discussing how to prepare the quantum state corresponding to the right-hand side of the linear system (3.8) . Our goal is to prepare the normalized state 
+
+|f ⟩ = 1
+
+∥f ∥ 
+
+> ∑
+> l∈[N]d
+> 0
+
+⟨f, Φl⟩| l⟩. (5.1) 
+
+To this end, we use the state-preparation method of Grover and Rudolph [20]. 
+
+Lemma 6. Let 
+
+|b⟩ = 1
+
+∥b∥
+
+> N − 1∑
+> j=0
+
+bj |j⟩, b = ( b0, . . . , b N − 1)T ∈ RN , (5.2) 
+
+where N = 2 m. For each bit string x ∈ { 0, 1}k, with k = 0 , 1, . . . , m , define 
+
+Wk(x) := ∑ 
+
+> y∈{ 0,1}m−k
+
+|bxy |2, (5.3) 
+
+where xy denotes the concatenation of the prefix x and the suffix y. For k = 0 , we write 
+
+W0(∅) = ∥b∥2. Assume that the following conditions hold: 1. For every x ∈ { 0, 1}k and every k = 0 , 1, . . . , m , one can efficiently compute Wk(x).2. The sign of each coefficient bj can be efficiently determined. More precisely, there exists an efficiently implementable diagonal unitary U ± 
+
+> b
+
+such that for all j ∈ [N ]0,
+
+U ± 
+
+> b
+
+|j⟩ = sgn( bj )|j⟩, sgn( x) = 
+
+> {
+
+1, x ≥ 0,
+
+−1, x < 0. (5.4) 
+
+Then |b⟩ can be prepared using O(m) state-preparation stages. 
+
+By Lemma 6, the efficient preparation of |f ⟩ requires the following assumptions: 1. One can efficiently compute arbitrary partial sums of the squared magnitudes of the coefficients of f , namely, 
+
+S(a, b) := ∑
+
+> a≲l≲b
+> ∣∣
+
+⟨f, Φl⟩∣∣2, ∀ a, b ∈ [N ]d
+
+> 0
+
+, (5.5) 
+
+where a ≲ b means that the integer encoded by a is no greater than that encoded by b.
+
+18 2. The sign of each coefficient can be efficiently determined. More precisely, there exists an efficiently implementable diagonal unitary U ± 
+
+> f
+
+such that 
+
+U ± 
+
+> f
+
+|l⟩ = sgn (⟨f, Φl⟩)|l⟩, ∀ l ∈ [N ]d
+
+> 0
+
+. (5.6) 
+
+As in [7], for a general input function f , the first state-preparation condition is challeng-ing to satisfy efficiently. In particular, even if each individual coefficient can be computed efficiently, evaluating the corresponding partial sums may still be difficult in general. This assumption is typically justified only in special structured settings, for example when the coefficients admit a tensor-product form, or when the coefficient vector is sufficiently sparse and its nonzero entries can be efficiently located and summed. For simplicity in the subsequent analysis, we henceforth assume that the state |f ⟩ can be prepared perfectly in time poly(log( N d)) . Under this state-preparation assumption and the sparse-access assumption stated above, Lemma 1, together with the spectral-convergence, sparsity, and condition-number bounds established in Section 4, implies that an O(ϵ)-approximation to the normalized Galerkin coefficient state |c⟩ can be prepared with complexity 
+
+poly( d, log(1 /ϵ )) , (5.7) 
+
+where we suppress the dependence on κ(A), Cd, and lower-order logarithmic factors. 
+
+5.2 Estimating the linear functional and its complexity 
+
+We now explain how to estimate ⟨ρ, u ⟩ for a given ρ ∈ L2(Ω) . Let 
+
+|c⟩ = 1
+
+∥c∥ 
+
+> ∑
+> k∈[N]d
+> 0
+
+ck|k⟩, |ρ⟩ = 1
+
+α 
+
+> ∑
+> k∈[N]d
+> 0
+
+⟨ρ, Φk⟩| k⟩, (5.8) 
+
+where α := (∑   
+
+> k∈[N]d
+> 0
+
+|⟨ ρ, Φk⟩| 2)1/2. The state |ρ⟩ can be prepared by the same method as in Section 5.1, and we assume that it can be prepared perfectly in time poly(log( N d)) .Then 
+
+⟨ρ, u ⟩ ≈ ⟨ ρ, u N ⟩ = ∑ 
+
+> k∈[N]d
+> 0
+
+ck⟨ρ, Φk⟩ = α∥c∥⟨ ρ|c⟩ ≈ αC ⟨ρ|˜c⟩ ≈ αCR, (5.9) 
+
+where |˜c⟩ ≈ | c⟩ is the approximate output state produced by the QLSA, C ≈ ∥ c∥ is the output of the norm-estimation procedure, and R ≈ ⟨ ρ|˜c⟩ is obtained via the Hadamard test [21]. The following theorem gives the running time for estimating the linear functional 
+
+⟨ρ, u ⟩ via the estimator αCR .
+
+Theorem 2. Consider an instance of Problem 1, namely, the d-dimensional second-order linear elliptic boundary value problem with homogeneous Dirichlet boundary conditions 
+
+(2.1) . Assume that the exact solution is analytic and satisfies the uniform regularity con-dition (4.22) . Then there exists a quantum algorithm that outputs an estimate of the linear functional ⟨ρ, u ⟩ with additive error at most ϵ∥ρ∥L2(Ω) , together with a flag indicating suc-cess, and succeeds with probability bounded below by a positive constant. Under the standing assumptions that the states |f ⟩ and |ρ⟩ can be prepared perfectly in time poly(log( N d)) ,the running time satisfies the following bounds. 1. For the Jacobi-based basis (4.3) , the running time is 
+
+O 
+
+> (
+
+d2κ(A)∥u∥
+
+ϵ poly(log( Cdκ(A)/ϵ )) poly( d log( Cddκ (A)∥u∥/ϵ )) 
+
+> )
+
+. (5.10) 
+
+19 If A is diagonal, then the bound improves to 
+
+O
+
+( dκ (A)∥u∥
+
+ϵ poly(log( Cdκ(A)/ϵ )) poly( d log( Cddκ (A)∥u∥/ϵ )) 
+
+)
+
+. (5.11) 
+
+2. For the rotated Jacobi-based basis (4.44) , the running time is 
+
+O
+
+( ( d log( Cdκ(A)/ϵ ) + d2)κ(A)∥u∥
+
+ϵ poly(log( Cdκ(A)/ϵ )) poly( d log( Cddκ (A)∥u∥/ϵ )) 
+
+)
+
+.
+
+(5.12) 
+
+If A is diagonal, then, with the choice of rotation described in Lemma 5, the bound improves to 
+
+O
+
+( κ(A)∥u∥
+
+ϵ poly(log( Cdκ(A)/ϵ )) poly( d log( Cdκ(A)∥u∥/ϵ )) 
+
+)
+
+. (5.13) 
+
+Here ∥u∥ = ∥u∥L2(Ω) , Cd is defined in (4.22) . In particular, for the Poisson equation 
+
+A = Id, the diagonal-case bounds apply, and the factors involving κ(A) disappear. Proof. For the approximation in (5.9), we write 1. ⟨ρ, u N ⟩ = ⟨ρ, u ⟩ + ϵ′
+
+> SG
+
+, where |ϵ′
+
+> SG
+
+| ≤ ∥ ρ∥L2(Ω) ϵSG and ϵSG := ∥u − uN ∥L2(Ω) .2. C = ∥c∥ + ϵC .3. ϵQLSA := ∥| ˜c⟩ − | c⟩∥ .4. R = ⟨ρ|˜c⟩ + ϵH .Then 
+
+R = ⟨ρ|c⟩ + ⟨ρ|(|˜c⟩ − | c⟩) + ϵH = 1
+
+α∥c∥ ⟨ρ, u N ⟩ + ϵ′ 
+
+> QLSA
+
++ ϵH , (5.14) for some ϵ′ 
+
+> QLSA
+
+satisfying |ϵ′
+
+> QLSA
+
+| ≤ ϵQLSA by the Cauchy–Schwarz inequality. Hence 
+
+αCR = α(∥c∥ + ϵC
+
+)( 1
+
+α∥c∥ ⟨ρ, u N ⟩ + ϵ′ 
+
+> QLSA
+
++ ϵH
+
+)
+
+(5.15) = (⟨ρ, u ⟩ + ϵ′
+
+> SG
+
+)(
+
+1 + ϵC
+
+∥c∥
+
+)
+
++ α(∥c∥ + ϵC
+
+)( ϵ′ 
+
+> QLSA
+
++ ϵH
+
+). (5.16) Therefore, 
+
+αCR − ⟨ ρ, u ⟩ = ϵ′
+
+> SG
+
+(
+
+1 + ϵC
+
+∥c∥
+
+)
+
++ ϵ′
+
+> C
+
+∥ρ∥L2(Ω) ∥u∥L2(Ω) 
+
+∥c∥ + α(∥c∥ + ϵC
+
+)( ϵ′ 
+
+> QLSA
+
++ ϵH
+
+), (5.17) for some ϵ′ 
+
+> C
+
+satisfying |ϵ′ 
+
+> C
+
+| ≤ ϵC by the Cauchy–Schwarz inequality. It suffices to make each term on the right-hand side of (5.17) of order O(ϵ∥ρ∥L2(Ω) ). Thus we choose 
+
+ϵSG = O(ϵ), (5.18) 
+
+ϵC = O
+
+(
+
+min 
+
+{
+
+∥c∥, ϵ∥c∥∥u∥L2(Ω) 
+
+}) 
+
+, (5.19) 
+
+ϵQLSA , ϵ H = O
+
+( ϵ∥ρ∥L2(Ω) 
+
+α∥c∥
+
+)
+
+. (5.20) 
+
+20 For simplicity, assume ϵ ≤ ∥ u∥L2(Ω) . Then 
+
+ϵC = O 
+
+> (
+
+ϵ∥c∥∥u∥L2(Ω) 
+
+> )
+
+. (5.21) Since {Φk} is an orthonormal basis, we have α ≤ ∥ ρ∥L2(Ω) , and 
+
+∥c∥ = ∥uN ∥L2(Ω) ≤ ∥ u∥L2(Ω) + ϵSG = O(∥u∥L2(Ω) ). (5.22) Therefore, it suffices to choose 
+
+ϵQLSA , ϵ H = O
+
+> (
+
+ϵ∥u∥−1
+
+> L2(Ω)
+> )
+
+. (5.23) Since ϵSG = O(ϵ), both Lemma 4 and Lemma 5 lead to the same asymptotic choice 
+
+N = O(log( Cdκ(A)/ϵ )) . (5.24) Here, we suppress the log log denominator and inessential lower-order logarithmic factors. Next we estimate the cost of approximating ∥c∥. We use the norm-estimation algorithm from [22]. After accounting for the known normalization factors in the block encoding of L
+
+and the preparation of the normalized right-hand side state |f ⟩, estimating ∥c∥ to relative error δ has total running time 
+
+O 
+
+> (
+
+sκ δ poly 
+
+> (
+
+log 
+
+> (
+
+N dsκ/δ 
+
+> )) )
+
+, (5.25) where s := s(L) and κ := κ(L). These normalization factors only rescale the solution norm by a known constant and therefore do not affect the relative error δ or the asymptotic complexity. Here the complexity in [22] is stated in terms of queries to a block encoding, and we absorb the block-encoding cost into the overall complexity bound. By (5.21), we need 
+
+δ = O 
+
+> (
+
+ϵ
+
+∥u∥L2(Ω) 
+
+> )
+
+. (5.26) Therefore, the total running time for estimating ∥c∥ is 
+
+O 
+
+> (
+
+sκ ∥u∥L2(Ω) 
+
+ϵ poly 
+
+> (
+
+log 
+
+> (
+
+N dsκ ∥u∥L2(Ω) /ϵ 
+
+> )) )
+
+. (5.27) We now estimate the total cost of the Hadamard-test step. By Lemma 1, preparing one copy of |˜c⟩ requires time 
+
+O
+
+> (
+
+sκ poly 
+
+> (
+
+log 
+
+> (
+
+N dsκ/ϵ QLSA 
+
+> )))
+
+. (5.28) Combining the Hadamard-test circuit with amplitude estimation [23], the quantity ⟨ρ|˜c⟩
+
+can be estimated to additive accuracy ϵH using O(1 /ϵ H ) controlled uses of the state-preparation routines for |˜c⟩ and |ρ⟩. Therefore, the total running time of the Hadamard-test step is 
+
+O 
+
+> (
+
+sκ ∥u∥L2(Ω) 
+
+ϵ poly 
+
+> (
+
+log 
+
+> (
+
+N dsκ ∥u∥L2(Ω) /ϵ 
+
+> )) )
+
+. (5.29) This has the same asymptotic order as the total running time in (5.27). Finally, we substitute the bounds on the sparsity and condition number of the coeffi-cient matrix into the complexity estimates above. 
+
+21 For the Jacobi-based basis (4.3), Lemma 4 gives 
+
+κ(L) = O(κ(A)N 4), s(L) = O(d2N 2), (5.30) and, if A is diagonal, then s(L) = O(dN ). Substituting these bounds, together with 
+
+N = O(log( Cdκ(A)/ϵ )), into (5.27) and (5.29), we obtain (5.10) and (5.11). For the rotated Jacobi-based basis (4.44), Lemma 5 gives 
+
+κ( ˜L) = O(κ(A)N 4), s( ˜L) = O(dN + d2), (5.31) and, if A is diagonal, then s( ˜L) = 1. Substituting these bounds, together with N =
+
+O(log( Cdκ(A)/ϵ )), into (5.27) and (5.29), we obtain (5.12) and (5.13). 
+
+5.3 Comparison with classical complexity 
+
+To put the above results into perspective, we briefly compare the quantum complexity with that of the corresponding classical spectral-Galerkin methods. For simplicity, in this subsection we focus on the comparison for general A, and suppress the dependence on Cd,
+
+κ(A), and lower-order logarithmic factors. The diagonal case can be analyzed similarly by using the improved bounds in Theorem 1 and Theorem 2. We first note that this comparison depends on what is regarded as the output. If the goal is to compute the full coefficient vector c, then the classical algorithm outputs c itself, whereas the quantum algorithm based on the QLSA only prepares the quantum state |c⟩
+
+associated with c. Thus, these two tasks are not directly equivalent. Nevertheless, the comparison is still informative at the level of solving the underlying linear system. For the classical algorithm , Theorem 1 gives the following bounds. For the Jacobi-based basis (4.3) , the complexity of computing the full coefficient vector is of order 
+
+O
+
+> (
+
+d2(log(1 /ϵ )) d+5 )
+
+, (5.32) 
+
+whereas for the rotated Jacobi-based basis (4.44) , it becomes 
+
+O
+
+> ((
+
+d log(1 /ϵ ) + d2)
+
+(log(1 /ϵ )) d+3 )
+
+. (5.33) 
+
+In both cases, the classical complexity still grows exponentially with the dimension d.By contrast, for the quantum algorithm , the cost of preparing the corresponding solution state is determined by (5.28) . In particular, for the Jacobi-based basis (4.3) , this cost is of order 
+
+O
+
+> (
+
+d2 poly( d, log(1 /ϵ )) 
+
+> )
+
+, (5.34) 
+
+while for the rotated Jacobi-based basis (4.44) , it becomes 
+
+O
+
+> (
+
+(d log(1 /ϵ ) + d2) poly( d, log(1 /ϵ )) 
+
+> )
+
+. (5.35) 
+
+Therefore, at the level of solving for the Galerkin coefficients, the quantum algorithm avoids the exponential growth in the dimension d that appears in the classical complexity. However, the quantum state |c⟩ only provides an encoded representation of the solution, and in general one cannot efficiently extract all coefficients ck from it. For this reason, we use the estimation of linear functionals as the complexity measure for the quantum algorithm. In this setting, Theorem 2 shows that the complexity is 
+
+O 
+
+> (
+
+d2
+
+ϵ poly( d, log(1 /ϵ )) 
+
+> )
+
+(5.36) 
+
+22 for the Jacobi-based basis, and 
+
+O 
+
+> (
+
+d log(1 /ϵ ) + d2
+
+ϵ poly( d, log(1 /ϵ )) 
+
+> )
+
+(5.37) 
+
+for the rotated Jacobi-based basis. Under this output model, the advantage of the quantum spectral-Galerkin method over its classical counterpart is less pronounced in low dimen-sions, since the dominant cost comes from norm estimation and Hadamard-test-based estimation, which introduce the factor 1/ϵ . Nevertheless, for high-dimensional problems, the quantum spectral-Galerkin method still offers a significant advantage, since its depen-dence on d remains polynomial rather than exponential. 
+
+# 6 Conclusion and open problems 
+
+In this paper, we presented a quantum spectral-Galerkin method for the d-dimensional second-order linear elliptic boundary value problem (2.1) with homogeneous Dirichlet boundary conditions. By combining Jacobi-based tensor-product bases, including a ro-tated variant, with a sparse-input QLSA, we obtained Galerkin coefficient matrices whose sparsity and condition number grow only polynomially with the discretization parameter and the dimension. As a result, for analytic solutions satisfying the uniform regularity con-dition (4.22) , the complexity of preparing the quantum state associated with the Galerkin coefficient vector is poly( d, log(1 /ϵ )) , improving the precision dependence over fixed-order finite-difference and finite-element discretizations, where we suppress the additional de-pendence on κ(A), Cd, and lower-order logarithmic factors. When the output is taken to be a linear functional of the solution, the overall complexity acquires an additional factor 
+
+1/ϵ through norm estimation and Hadamard-test-based estimation. Our analysis leaves several natural questions for future work. 1. State preparation for general data. State preparation remains a major bottleneck. As in the existing literature on quantum finite element methods [7, 24, 25], we assume that the relevant input states |f ⟩ and |ρ⟩ can be prepared efficiently. For general right-hand sides and observables, however, it remains unclear when this assumption is justified. A better understanding of the structural conditions that enable efficient state preparation for PDE-related data is therefore an important direction for future work. 2. Variable-coefficient problems. It is natural to ask whether the present framework can be extended to variable-coefficient equations. In this setting, the simple tensor-product structure exploited in the present analysis is generally lost, potentially lead-ing to denser matrices and less favorable condition numbers. A possible approach is to use the constant-coefficient part as a preconditioner, although it remains unclear whether the resulting preconditioned system admits an efficient sparse representation and quantum implementation. 3. Weaker regularity assumptions and broader PDE classes. The complexity of our algorithm depends on the regularity quantity Cd in (4.22) , which encodes the size of certain high-order derivatives of the solution. It is natural to ask whether similar quantum complexity guarantees can be obtained under weaker regularity assump-tions or without explicit dependence on such high-order derivative information. More broadly, one may ask whether the ideas developed here can be extended to other classes of PDEs, such as convection-diffusion equations, time-dependent equations, higher-order elliptic equations, or nonlinear problems. 
+
+23 These questions touch on fundamental structural and analytical constraints that deter-mine whether a spectral discretization is compatible with efficient quantum linear algebra. Answering them will help clarify the ultimate scope of quantum spectral methods for partial differential equations. 
+
+# Acknowledgments 
+
+The authors acknowledge support from the National Natural Science Foundation of China under Grant No. 12471341. 
+
+# References 
+
+[1] L. C. Evans, Partial Differential Equations , 2nd ed., Graduate Studies in Mathemat-ics, vol. 19, American Mathematical Society, Providence, RI, 2010. [2] P. G. Ciarlet, Mathematical Elasticity, Volume I: Three-Dimensional Elasticity , Stud-ies in Mathematics and its Applications, vol. 20, North-Holland, Amsterdam, 1988. [3] P. Monk, Finite Element Methods for Maxwell’s Equations , Numerical Mathematics and Scientific Computation, Oxford University Press, Oxford, 2003. [4] R. Temam, Navier–Stokes Equations: Theory and Numerical Analysis , AMS Chelsea Publishing, American Mathematical Society, Providence, RI, 2001. [5] G. Teschl, Mathematical Methods in Quantum Mechanics: With Applications to Schr¨ odinger Operators , Graduate Studies in Mathematics, vol. 99, American Mathe-matical Society, Providence, RI, 2009. [6] R. Bellman, Dynamic Programming , Princeton University Press, Princeton, NJ, 1957. [7] Ashley Montanaro and Sam Pallister, Quantum algorithms and the finite element method , Physical Review A 93 (2016), no. 3, 032324,doi:10.1103/PhysRevA.93.032324. [8] A. W. Harrow, A. Hassidim, and S. Lloyd, Quantum algorithm for linear systems of equations , Physical Review Letters 103 (2009), no. 15, 150502, doi:10.1103/PhysRevLett.103.150502. [9] A. M. Childs, R. Kothari, and R. D. Somma, Quantum algorithm for systems of linear equations with exponentially improved dependence on precision , SIAM Journal on Computing 46 (2017), no. 6, 1920–1950, doi:10.1137/16M1087072. [10] S. Jin, N. Liu, and Y. Yu, Quantum simulation of partial differential equa-tions via Schr¨ odingerization , Physical Review Letters 133 (2024), 230602, doi:10.1103/PhysRevLett.133.230602. [11] D. An, J.-P. Liu, and L. Lin, Linear combination of Hamiltonian simulation for nonunitary dynamics with optimal state preparation cost , Physical Review Letters 
+
+131 (2023), 150603, doi:10.1103/PhysRevLett.131.150603. [12] Andrew M. Childs, Jin-Peng Liu, and Aaron Ostrander, High-precision quantum algo-rithms for partial differential equations , Quantum 5(2021), 574,doi:10.22331/q-2021-11-10-574. [13] Tyler Kharazi, Ahmad M. Alkadri, Jin-Peng Liu, Kranthi K. Mandadapu, and K. Birgitta Whaley, Explicit block encodings of boundary value problems for many-body elliptic operators , Quantum 9 (2025), 1764, doi:10.22331/q-2025-06-04-1764. [14] Randolph E. Bank and L. Ridgway Scott, On the conditioning of finite element equa-tions with highly refined meshes , SIAM Journal on Numerical Analysis 26 (1989), no. 6, 1383–1394, doi:10.1137/0726080. 
+
+24 [15] Jie Shen, Tao Tang, and Li-Lian Wang, Spectral methods: algorithms, analysis and applications , vol. 41, Springer Science & Business Media, 2011, doi:10.1007/978-3-540-71041-7. [16] E. Febrianto, Y. Wang, B. Liu, M. Ortiz, and F. Cirak, A quantum spectral method for non-periodic boundary value problems , Computer Methods in Applied Mechanics and Engineering 457 (2026), 118934, doi:10.1016/j.cma.2026.118934. [17] Jie Shen, Efficient Spectral-Galerkin Method I. Direct Solvers for the Second and Fourth Order Equations Using Legendre Polynomials , SIAM Journal on Scientific Computing 15 (1994), no. 6, 1489–1505, doi:10.1137/0915089. [18] L. E. Payne and H. F. Weinberger, An optimal Poincar´ e inequality for con-vex domains , Archive for Rational Mechanics and Analysis 5 (1960), 286–292, doi:10.1007/BF00252910. [19] R. A. Horn and C. R. Johnson, Matrix Analysis , 2nd ed., Cambridge University Press, 2013, doi:10.1017/CBO9781139020411. [20] L. Grover and T. Rudolph, Creating superpositions that correspond to efficiently integrable probability distributions , arXiv:quant-ph/0208112, 2002, arXiv:quant-ph/0208112. [21] D. Aharonov, V. Jones, and Z. Landau, A Polynomial Quantum Algorithm for Approximating the Jones Polynomial , Algorithmica 55 (2009), no. 3, 395–421, doi:10.1007/s00453-008-9168-0. [22] A. M. Dalzell, A shortcut to an optimal quantum linear system solver ,arXiv:2406.12086, 2024, arXiv:2406.12086. [23] G. Brassard, P. Høyer, M. Mosca, and A. Tapp, Quantum amplitude amplification and estimation , in Quantum Computation and Information , Contemp. Math. 305 ,American Mathematical Society, 2002, pp. 53–74, arXiv:quant-ph/0005055. [24] M. Deiml and D. Peterseim, Quantum Realization of the Finite Element Method ,arXiv:2403.19512, 2024, arXiv:2403.19512. [25] A. M. Alkadri, T. D. Kharazi, K. B. Whaley, and K. K. Mandadapu, A Quantum Algorithm for the Finite Element Method , arXiv:2510.18150, 2025, arXiv:2510.18150. [26] B.-y. Guo, J. Shen, and L.-l. Wang, Generalized Jacobi polynomials/functions and their applications , Appl. Numer. Math. 59 (2009), no. 5, 1011–1028, doi:10.1016/j.apnum.2008.03.021. [27] B.-y. Guo and L.-l. Wang, Jacobi approximations in non-uniformly Jacobi-weighted Sobolev spaces , J. Approx. Theory 128 (2004), no. 1, 1–41, doi:10.1016/j.jat.2004.03.003. 
+
+25 A Derivation of the Galerkin system 
+
+In this appendix, we derive the tensor-product representation (3.9) –(3.10) of the Galerkin coefficient matrix. Starting from (3.5) , we decompose the discrete operator according to the diagonal terms p = q and the off-diagonal terms p̸ = q.For the diagonal contribution, define 
+
+L1c := ∑ 
+
+> l∈[N]d
+> 0
+
+
+
+> d
+
+∑
+
+> p=1
+
+App 
+
+∑ 
+
+> k∈[N]d
+> 0
+
+ck
+
+〈∂xp Φk, ∂ xp Φl
+
+〉|l⟩. (A.1) 
+
+By the tensor-product structure of the basis functions, we obtain 
+
+L1c =
+
+> d
+
+∑
+
+> p=1
+
+App 
+
+∑ 
+
+> l,k∈[N]d
+> 0
+
+ck⟨ϕ′ 
+
+> kp
+
+, ϕ ′ 
+
+> lp
+
+⟩ ∏
+
+> j∈[d]\{ p}
+
+⟨ϕkj , ϕ lj ⟩| l⟩
+
+=
+
+> d
+
+∑
+
+> p=1
+
+App 
+
+∑ 
+
+> l,k∈[N]d
+> 0
+
+ckSlp,k p
+
+∏
+
+> j∈[d]\{ p}
+
+Mlj ,k j |l⟩
+
+=
+
+> d
+
+∑
+
+> p=1
+
+App 
+
+∑ 
+
+> k∈[N]d
+> 0
+
+ck
+
+
+
+> p−1
+
+⊗
+
+> j=1
+
+∑  
+
+> lj∈[N]0
+
+Mlj ,k j |lj ⟩
+
+ ⊗
+
+ ∑ 
+
+> lp∈[N]0
+
+Slp,k p |lp⟩
+
+ ⊗
+
+
+
+> d
+
+⊗
+
+> j=p+1
+
+∑  
+
+> lj∈[N]0
+
+Mlj ,k j |lj ⟩
+
+
+
+=
+
+> d
+
+∑
+
+> p=1
+
+App 
+
+∑ 
+
+> k∈[N]d
+> 0
+
+ck
+
+
+
+> p−1
+
+⊗
+
+> j=1
+
+M |kj ⟩
+
+ ⊗ (S|kp⟩) ⊗
+
+
+
+> d
+
+⊗
+
+> j=p+1
+
+M |kj ⟩
+
+
+
+=
+
+> d
+
+∑
+
+> p=1
+
+App 
+
+(M ⊗(p−1) ⊗ S ⊗ M ⊗(d−p))c. (A.2) 
+
+For the off-diagonal contribution, define 
+
+L2c := ∑ 
+
+> l∈[N]d
+> 0
+
+∑
+
+> p̸=q
+
+Apq 
+
+∑ 
+
+> k∈[N]d
+> 0
+
+ck
+
+〈∂xp Φk, ∂ xq Φl
+
+〉|l⟩. (A.3) 
+
+A similar calculation applies to the off-diagonal terms. Pairing the contributions indexed by (p, q ) and (q, p ), using the identity ⟨ϕk, ϕ ′ 
+
+> j
+
+⟩ = −⟨ ϕ′
+
+> k
+
+, ϕ j ⟩, and invoking the symmetry 
+
+Apq = Aqp , we obtain 
+
+L2c = −2 ∑
+
+> 1≤p<q ≤d
+
+Apq 
+
+(M ⊗(p−1) ⊗ T ⊗ M ⊗(q−p−1) ⊗ T ⊗ M ⊗(d−q))c. (A.4) 
+
+# B Jacobi polynomials 
+
+This appendix collects several basic facts about Jacobi polynomials that are used in our analysis. More details can be found in [15]. For parameters α, β > −1, the Jacobi polynomial P (α,β ) 
+
+> n
+
+(x) of degree n can be written explicitly as 
+
+P (α,β ) 
+
+> n
+
+(x) = Γ( n + α + 1) 
+
+n! Γ( n + α + β + 1) 
+
+> n
+
+∑
+
+> k=0
+
+(nk
+
+) Γ( n + k + α + β + 1) Γ( k + α + 1) 
+
+( x − 12
+
+)k
+
+. (B.1) 
+
+26 Although the explicit formula (B.1) is available, it is not the most convenient form for numerical computation. In practice, Jacobi polynomials can be evaluated efficiently by the three-term recurrence 
+
+P (α,β ) 
+
+> n+1
+
+(x) = (a(α,β ) 
+
+> n
+
+x − b(α,β )
+
+> n
+
+)P (α,β ) 
+
+> n
+
+(x) − c(α,β ) 
+
+> n
+
+P (α,β ) 
+
+> n−1
+
+(x), n ≥ 1, (B.2) 
+
+with initial values 
+
+P (α,β )0 (x) = 1 , P (α,β )1 (x) = α + β + 2 2 x + α − β
+
+2 , (B.3) 
+
+and coefficients 
+
+a(α,β ) 
+
+> n
+
+= (2 n + α + β + 1)(2 n + α + β + 2) 2( n + 1)( n + α + β + 1) , (B.4) 
+
+b(α,β ) 
+
+> n
+
+= (β2 − α2)(2 n + α + β + 1) 2( n + 1)( n + α + β + 1)(2 n + α + β) , (B.5) 
+
+c(α,β ) 
+
+> n
+
+= (n + α)( n + β)(2 n + α + β + 2) (n + 1)( n + α + β + 1)(2 n + α + β) . (B.6) 
+
+Therefore, once the two initial polynomials are known, all higher-order Jacobi polynomials can be generated recursively. Jacobi polynomials form an orthogonal polynomial system on [−1, 1] with respect to the weight 
+
+ω(α,β )(x) = (1 − x)α(1 + x)β . (B.7) 
+
+More precisely, they satisfy 
+
+∫ 1
+
+> −1
+
+P (α,β ) 
+
+> n
+
+(x) P (α,β ) 
+
+> m
+
+(x) ω(α,β )(x) dx = γ(α,β ) 
+
+> n
+
+δnm , (B.8) 
+
+where 
+
+γ(α,β ) 
+
+> n
+
+= 2α+β+1 Γ( n + α + 1)Γ( n + β + 1) (2 n + α + β + 1) n! Γ( n + α + β + 1) . (B.9) 
+
+When α = β = 0 , P (0 ,0)  
+
+> n
+
+(x) coincides with the Legendre polynomial of degree n. When 
+
+α = β = −1/2, P (−1/2,−1/2)  
+
+> n
+
+(x) is proportional to the Chebyshev polynomial of the first kind of degree n.Next, we introduce an important derivative formula. The derivative of a Jacobi poly-nomial is still a Jacobi polynomial with shifted parameters. More generally, for n ≥ k,
+
+dk
+
+dx k P (α,β ) 
+
+> n
+
+(x) = d(α,β ) 
+
+> n,k
+
+P (α+k,β +k) 
+
+> n−k
+
+(x), (B.10) 
+
+where 
+
+d(α,β ) 
+
+> n,k
+
+= Γ( n + k + α + β + 1) 2k Γ( n + α + β + 1) . (B.11) 
+
+This property is especially useful in spectral methods, because derivatives can still be eval-uated through Jacobi polynomials and hence can be computed efficiently by the recurrence relation (B.2) .Jacobi polynomials are also complete in L2 
+
+> ω(α,β )
+
+(−1, 1) . Hence, {P (α,β ) 
+
+> n
+
+(x)}n≥0 forms a complete orthogonal basis of L2 
+
+> ω(α,β )
+
+(−1, 1) . Therefore, any function u ∈ L2 
+
+> ω(α,β )
+
+(−1, 1) 
+
+admits a unique Jacobi series expansion 
+
+u(x) = 
+
+> ∞
+
+∑
+
+> n=0
+
+ˆu(α,β ) 
+
+> n
+
+P (α,β ) 
+
+> n
+
+(x), (B.12) 
+
+27 where the coefficients are given by 
+
+ˆu(α,β ) 
+
+> n
+
+= 1
+
+γ(α,β )
+
+> n
+
+∫ 1
+
+> −1
+
+u(x)P (α,β ) 
+
+> n
+
+(x)ω(α,β )(x) dx. (B.13) 
+
+Finally, we define the L2 
+
+> ω(α,β )
+
+-orthogonal projection π(α,β ) 
+
+> N
+
+: L2 
+
+> ω(α,β )
+
+(−1, 1) → PN such that (π(α,β ) 
+
+> N
+
+u − u, v N
+
+) 
+
+> ω(α,β )
+
+= 0 , ∀ vN ∈ PN , (B.14) 
+
+or equivalently, 
+
+(π(α,β ) 
+
+> N
+
+u)( x) = 
+
+> N
+
+∑
+
+> n=0
+
+ˆu(α,β ) 
+
+> n
+
+P (α,β ) 
+
+> n
+
+(x), (B.15) 
+
+where ˆu(α,β ) 
+
+> n
+
+is given by (B.13) . The following proposition summarizes the approximation property of this projection. 
+
+Proposition 1. Let α, β > −1 and m ∈ N. Define 
+
+Bmα,β (−1, 1) := 
+
+{
+
+u | ∂kx u ∈ L2 
+
+> ω(α+k,β +k)
+
+(−1, 1) , k = 0 , 1, . . . , m 
+
+}
+
+. (B.16) 
+
+For any u ∈ Bmα,β (−1, 1) , the following hold: 1. If 0 ≤ l ≤ m ≤ N + 1 , then 
+
+∥∥∥∂lx
+
+(π(α,β ) 
+
+> N
+
+u − u)∥∥∥ω(α+l,β +l) ≲ N l−m∥∂mx u∥ω(α+m,β +m) . (B.17) 
+
+2. If m > N + 1 and 0 ≤ l ≤ N + 1 , then 
+
+∥∥∥∂lx
+
+(π(α,β ) 
+
+> N
+
+u − u)∥∥∥ω(α+l,β +l) ≲
+
+( √ e/ 2
+
+N
+
+)N −l+ 54 ∥∥∥∂N +1  
+
+> x
+
+u
+
+∥∥∥ω(α+N +1 ,β +N +1) . (B.18) 
+
+Remark 4. In the proof of Proposition 1, [15] actually established the more precise esti-mate 
+
+∥∥∥∂lx
+
+(π(α,β ) 
+
+> N
+
+u − u)∥∥∥ω(α+l,β +l) ≤ c
+
+√
+
+(N − ˜m + 1)! (N − l + 1)! (N + ˜ m)(l− ˜m)/2∥∥∥∂ ˜mx u
+
+∥∥∥ω(α+ ˜ m,β + ˜ m) , (B.19) 
+
+where ˜m = min {m, N + 1 }, and c ≈ 1 for N ≫ 1. Proposition 1 follows from this estimate by Stirling’s formula. In the subsequent analysis, we shall need the case ˜m = N . Let r := N − l + 1 . Then, by Stirling’s formula, 
+
+√
+
+(N − ˜m + 1)! (N − l + 1)! (N + ˜ m)(l− ˜m)/2 = (2 N )(l−N )/2
+
+√(N − l + 1)! = (2 N )(1 −r)/2
+
+√r! (B.20) 
+
+∼(2 N )(1 −r)/2(2 πr )−1/4
+
+( er
+
+)r/ 2
+
+= (2 N )1/2(2 πr )−1/4
+
+( e
+
+2N r 
+
+)r/ 2
+
+∼
+
+( √ e/ 2
+
+N
+
+)N −l+ 34
+
+. (B.21) 
+
+Therefore, for each fixed l and N ≫ 1, if u ∈ BNα,β (−1, 1) , then 
+
+∥∥∥∂lx
+
+(π(α,β ) 
+
+> N
+
+u − u)∥∥∥ω(α+l,β +l) ≲
+
+( √ e/ 2
+
+N
+
+)N −l+ 34 ∥∥∥∂Nx u
+
+∥∥∥ω(α+N,β +N ) . (B.22) 
+
+28 C Error estimation of spectral-Galerkin methods 
+
+In this section, we study the error of the spectral-Galerkin approximation. Recall that we consider the boundary value problem 
+
+−
+
+> d
+
+∑
+
+> p,q =1
+
+Apq ∂xp ∂xq u = f in Ω := ( −1, 1) d, u|∂Ω = 0 , (C.1) 
+
+where A = ( Apq )dp,q =1 ∈ Rd×d is a constant symmetric positive-definite matrix. The weak solution u ∈ H10 (Ω) satisfies 
+
+a(u, v ) := 
+
+∫
+
+> Ω
+
+(∇u)T(A∇v) d x = ( f, v )L2 , ∀ v ∈ H10 (Ω) . (C.2) 
+
+Consider the finite-dimensional subspace 
+
+VN := span 
+
+Φk(x) = 
+
+> d
+
+∏
+
+> j=1
+
+ϕkj (xj )
+
+∣∣∣∣∣∣ k ∈ [N ]d
+
+> 0
+
+, (C.3) 
+
+where the one-dimensional basis functions {ϕk}k∈[N ]0 are defined in (4.3) . Equivalently, 
+
+VN = ( P0 
+
+> N+1
+
+)⊗d, P0  
+
+> N+1
+
+:= {u ∈ PN +1 | u(±1) = 0 }. (C.4) 
+
+The Galerkin solution uN ∈ VN is defined by 
+
+a(uN , v N ) = ( f, v N )L2 , ∀ vN ∈ VN . (C.5) 
+
+Our goal is to estimate the error between uN and the exact solution u.Define the energy norm by ∥v∥a := √a(v, v ), ∀ v ∈ H10 (Ω) . By (C.2) and (C.5) , we have the Galerkin orthogonality 
+
+a(uN − u, v N ) = 0 , ∀ vN ∈ VN . (C.6) 
+
+Hence uN is the best approximation to u in the energy norm over VN , namely, 
+
+∥uN − u∥a = inf  
+
+> vN∈VN
+
+∥vN − u∥a. (C.7) 
+
+Indeed, for any vN ∈ VN ,
+
+∥uN − u∥2 
+
+> a
+
+= a(uN − u, u N − u) = a(uN − u, v N − u) ≤ ∥ uN − u∥a ∥vN − u∥a. (C.8) 
+
+Moreover, by the positive definiteness of A,
+
+√
+
+λmin (A) ∥∇ v∥L2 ≤ ∥ v∥a ≤
+
+√
+
+λmax (A) ∥∇ v∥L2 , ∀ v ∈ H10 (Ω) . (C.9) 
+
+Combining (C.7) and (C.9) , we obtain 
+
+∥∇ (uN − u)∥L2 ≤
+
+√
+
+κ(A) inf  
+
+> vN∈VN
+
+∥∇ (vN − u)∥L2 . (C.10) 
+
+Since uN − u ∈ H10 (Ω) , the Poincar´ e inequality further gives 
+
+∥uN − u∥H1 ≲ ∥∇ (uN − u)∥L2 ≤
+
+√
+
+κ(A) inf  
+
+> vN∈VN
+
+∥∇ (vN − u)∥L2 . (C.11) 
+
+Therefore, the error analysis of the Galerkin solution is reduced to the problem of constructing a suitable approximation vN ∈ VN for u. In the following subsections, we introduce several orthogonal projection operators, because their approximation errors can be analyzed explicitly and can therefore be used to control the error of the spectral-Galerkin solution. 
+
+29 C.1 Generalized Jacobi polynomials 
+
+In this subsection, we briefly recall the generalized Jacobi polynomials needed for the error analysis of our spectral-Galerkin method. More details can be found in [26, 27]. We consider the generalized Jacobi polynomials associated with the parameters α =
+
+β = −1, defined by 
+
+P (−1,−1)  
+
+> n
+
+(x) = (1 − x2)P (1 ,1)  
+
+> n−2
+
+(x), n ≥ 2. (C.12) 
+
+They form an orthogonal polynomial system on [−1, 1] with respect to the weight 
+
+ω(−1,−1) (x) = (1 − x2)−1. (C.13) 
+
+More precisely, for m, n ≥ 2, they satisfy 
+
+∫ 1
+
+> −1
+
+P (−1,−1)  
+
+> n
+
+(x)P (−1,−1)  
+
+> m
+
+(x)ω(−1,−1) (x) d x =
+
+∫ 1
+
+> −1
+
+P (1 ,1)  
+
+> n−2
+
+(x)P (1 ,1)  
+
+> m−2
+
+(x)ω(1 ,1) (x) d x = γ(1 ,1)  
+
+> n−2
+
+δmn .
+
+(C.14) 
+
+The generalized Jacobi polynomials {P (−1,−1)  
+
+> n
+
+(x)}n≥2 form a complete orthogonal ba-sis of L2 
+
+> ω(−1,−1)
+
+(−1, 1) . Therefore, any function u ∈ L2 
+
+> ω(−1,−1)
+
+(−1, 1) admits the unique expansion 
+
+u(x) = 
+
+> ∞
+
+∑
+
+> n=2
+
+ˆu(−1,−1)  
+
+> n
+
+P (−1,−1)  
+
+> n
+
+(x), (C.15) 
+
+where the coefficients are given by 
+
+ˆu(−1,−1)  
+
+> n
+
+= (u, P (−1,−1)  
+
+> n
+
+)ω(−1,−1) 
+
+∥P (−1,−1)  
+
+> n
+
+∥2
+
+> ω(−1,−1)
+
+. (C.16) 
+
+We define the L2 
+
+> ω(−1,−1)
+
+-orthogonal projection 
+
+π(−1,−1)  
+
+> N
+
+: L2 
+
+> ω(−1,−1)
+
+(−1, 1) → P0 
+
+> N
+
+, (C.17) 
+
+such that (π(−1,−1)  
+
+> N
+
+u − u, v N
+
+) 
+
+> ω(−1,−1)
+
+= 0 , ∀ vN ∈ P0 
+
+> N
+
+, (C.18) 
+
+or equivalently, 
+
+(π(−1,−1)  
+
+> N
+
+u)( x) = 
+
+> N
+
+∑
+
+> n=2
+
+ˆu(−1,−1)  
+
+> n
+
+P (−1,−1)  
+
+> n
+
+(x), (C.19) 
+
+where ˆu(−1,−1)  
+
+> n
+
+is given by (C.16) .The projection π(−1,−1)  
+
+> N
+
+has the following basic properties. 
+
+Proposition 2. For any u ∈ L2 
+
+> ω(−1,−1)
+
+(−1, 1) , the following hold: 1. π(−1,−1)  
+
+> N
+
+u is the best approximation to u in L2 
+
+> ω(−1,−1)
+
+(−1, 1) over P0 
+
+> N
+
+, namely, 
+
+∥π(−1,−1)  
+
+> N
+
+u − u∥ω(−1,−1) = inf  
+
+> vN∈P0
+> N
+
+∥vN − u∥ω(−1,−1) . (C.20) 
+
+2. The projection is contractive in the L2 
+
+> ω(−1,−1)
+
+(−1, 1) norm, and moreover 
+
+∥π(−1,−1)  
+
+> N
+
+u∥L2 ≤ ∥ π(−1,−1)  
+
+> N
+
+u∥ω(−1,−1) ≤ ∥ u∥ω(−1,−1) . (C.21) 
+
+30 3. If u ∈ H10 (−1, 1) , then 
+
+∂xπ(−1,−1)  
+
+> N
+
+u = π(0 ,0)  
+
+> N−1
+
+(∂xu), (C.22) 
+
+and consequently 
+
+∥∂xπ(−1,−1)  
+
+> N
+
+u∥L2 ≤ ∥ ∂xu∥L2 . (C.23) 
+
+Moreover, 
+
+(π(−1,−1)  
+
+> N
+
+u)( x) = 
+
+∫ x
+
+> −1
+
+π(0 ,0)  
+
+> N−1
+
+(∂su(s)) ds. (C.24) 
+
+Proof. (1) For any vN ∈ P0 
+
+> N
+
+, by (C.18), we have 
+
+∥π(−1,−1)  
+
+> N
+
+u − u∥2 
+
+> ω(−1,−1)
+
+= (π(−1,−1)  
+
+> N
+
+u − u, π (−1,−1)  
+
+> N
+
+u − u) 
+
+> ω(−1,−1)
+
+(C.25) = (π(−1,−1)  
+
+> N
+
+u − u, v N − u) 
+
+> ω(−1,−1)
+
+(C.26) 
+
+≤ ∥ π(−1,−1)  
+
+> N
+
+u − u∥ω(−1,−1) ∥vN − u∥ω(−1,−1) . (C.27) This proves the first assertion. (2) Taking vN = π(−1,−1)  
+
+> N
+
+u in (C.18), we obtain 
+
+∥π(−1,−1)  
+
+> N
+
+u∥2 
+
+> ω(−1,−1)
+
+= (π(−1,−1)  
+
+> N
+
+u, u ) 
+
+> ω(−1,−1)
+
+≤ ∥ π(−1,−1)  
+
+> N
+
+u∥ω(−1,−1) ∥u∥ω(−1,−1) . (C.28) Thus 
+
+∥π(−1,−1)  
+
+> N
+
+u∥ω(−1,−1) ≤ ∥ u∥ω(−1,−1) . (C.29) Moreover, since (1 − x2)−1 ≥ 1 on ( −1, 1), we also have 
+
+∥π(−1,−1)  
+
+> N
+
+u∥L2 ≤ ∥ π(−1,−1)  
+
+> N
+
+u∥ω(−1,−1) . (C.30) This proves the second assertion. (3) Now assume that u ∈ H10 (−1, 1). According to [26], 
+
+ddx P (−1,−1)  
+
+> n
+
+(x) = −2( n − 1) P (0 ,0)  
+
+> n−1
+
+(x). (C.31) On the other hand, by (B.10), 
+
+d2
+
+dx 2 P (−1,−1)  
+
+> n
+
+(x) = −n(n − 1) P (1 ,1)  
+
+> n−2
+
+(x) = −n(n − 1) P (−1,−1)  
+
+> n
+
+(x)1 − x2 . (C.32) Hence, since u(±1) = 0, integration by parts gives (u, P (−1,−1)  
+
+> n
+
+)ω(−1,−1) =
+
+∫ 1
+
+> −1
+
+u(x) P (−1,−1)  
+
+> n
+
+(x)1 − x2 dx (C.33) = − 1
+
+n(n − 1) (u, ∂ 2
+
+> x
+
+P (−1,−1)  
+
+> n
+
+)L2 = 1
+
+n(n − 1) (∂xu, ∂ xP (−1,−1)  
+
+> n
+
+)L2 . (C.34) By taking u = P (−1,−1)  
+
+> n
+
+in the above identity, we obtain 
+
+∥P (−1,−1)  
+
+> n
+
+∥2 
+
+> ω(−1,−1)
+
+= 1
+
+n(n − 1) ∥∂xP (−1,−1)  
+
+> n
+
+∥2 
+
+> L2
+
+. (C.35) Therefore, ˆu(−1,−1)  
+
+> n
+
+= (∂xu, ∂ xP (−1,−1)  
+
+> n
+
+)L2
+
+∥∂xP (−1,−1)  
+
+> n
+
+∥2
+
+> L2
+
+. (C.36) 
+
+31 It follows that 
+
+∂xπ(−1,−1)  
+
+> N
+
+u =
+
+> N
+
+∑
+
+> n=2
+
+ˆu(−1,−1)  
+
+> n
+
+∂xP (−1,−1)  
+
+> n
+
+=
+
+> N
+
+∑
+
+> n=2
+
+(∂xu, ∂ xP (−1,−1)  
+
+> n
+
+)L2
+
+∥∂xP (−1,−1)  
+
+> n
+
+∥2
+
+> L2
+
+∂xP (−1,−1)  
+
+> n
+
+. (C.37) Using (C.31), this implies 
+
+(∂xπ(−1,−1)  
+
+> N
+
+u − ∂xu, P (0 ,0) 
+
+> m
+
+) 
+
+> L2
+
+= 0 , m = 1 , . . . , N − 1. (C.38) For the remaining constant mode, we also have 
+
+(∂xπ(−1,−1)  
+
+> N
+
+u − ∂xu, 1) 
+
+> L2
+
+= 0 , (C.39) because both u and π(−1,−1)  
+
+> N
+
+u vanish at x = ±1. Consequently, 
+
+(∂xπ(−1,−1)  
+
+> N
+
+u − ∂xu, p ) 
+
+> L2
+
+= 0 , ∀ p ∈ PN −1. (C.40) This proves the commuting property 
+
+∂xπ(−1,−1)  
+
+> N
+
+u = π(0 ,0)  
+
+> N−1
+
+(∂xu). (C.41) The stability estimate then follows immediately from the L2-stability of the Legendre projection: 
+
+∥∂xπ(−1,−1)  
+
+> N
+
+u∥L2 = ∥π(0 ,0)  
+
+> N−1
+
+(∂xu)∥L2 ≤ ∥ ∂xu∥L2 . (C.42) Finally, since π(−1,−1)  
+
+> N
+
+u(−1) = 0, integrating the commuting property from −1 to x gives (π(−1,−1)  
+
+> N
+
+u)( x) = 
+
+∫ x
+
+> −1
+
+∂s(π(−1,−1)  
+
+> N
+
+u)( s) d s =
+
+∫ x
+
+> −1
+
+π(0 ,0)  
+
+> N−1
+
+(∂su(s)) ds. (C.43) This completes the proof of the third assertion. 
+
+Remark 5. It can be shown that u ∈ L2 
+
+> ω(−1,−1)
+
+(−1, 1) , ∂ xu ∈ L2(−1, 1) if and only if 
+
+u ∈ H10 (−1, 1) . Therefore, in item 3, we state the assumption as u ∈ H10 (−1, 1) .
+
+The generalized Jacobi orthogonal projection satisfies an error estimate analogous to that in Proposition 1. 
+
+Proposition 3. For any u ∈ Bm
+
+> −1,−1
+
+(−1, 1) , the following hold: 1. If 1 ≤ l ≤ m ≤ N + 1 , then 
+
+∥∥∥∂lx
+
+(π(−1,−1)  
+
+> N
+
+u − u)∥∥∥ω(l−1,l −1) ≲ N l−m∥∂mx u∥ω(m−1,m −1) . (C.44) 
+
+2. If m > N + 1 and 1 ≤ l ≤ N + 1 , then 
+
+∥∥∥∂lx
+
+(π(−1,−1)  
+
+> N
+
+u − u)∥∥∥ω(l−1,l −1) ≲
+
+( √ e/ 2
+
+N
+
+)N −l+ 54 ∥∥∥∂N +1  
+
+> x
+
+u
+
+∥∥∥ω(N,N ) . (C.45) 
+
+Proof. By item 3 of Proposition 2, we have 
+
+∥∥∥∂lx
+
+(π(−1,−1)  
+
+> N
+
+u − u)∥∥∥ω(l−1,l −1) =
+
+∥∥∥∂l−1
+
+> x
+
+(π(0 ,0)  
+
+> N−1
+
+∂xu − ∂xu)∥∥∥ω(l−1,l −1) . (C.46) Noting that ∂xu ∈ Bm−10,0 (−1, 1), the conclusion then follows immediately from Proposi-tion 1, applied to ∂xu with α = β = 0, N replaced by N − 1, l replaced by l − 1, and m
+
+replaced by m − 1. 
+
+32 Remark 6. According to (C.46) , and analogously to the remark after Proposition 1, if 
+
+u ∈ BN
+
+> −1,−1
+
+(−1, 1) , then for 1 ≤ l ≤ N we have 
+
+∥∥∥∂lx
+
+(π(−1,−1)  
+
+> N
+
+u − u)∥∥∥ω(l−1,l −1) ≲
+
+( √ e/ 2
+
+N
+
+)N −l+ 34 ∥∥∥∂Nx u
+
+∥∥∥ω(N −1,N −1) . (C.47) 
+
+Finally, we derive an improved L2-error estimate for the generalized Jacobi orthogonal projection. 
+
+Proposition 4. Let u ∈ H10 (−1, 1) . Then 
+
+∥π(−1,−1)  
+
+> N
+
+u − u∥L2 ≲ N −1∥∂x(π(−1,−1)  
+
+> N
+
+u − u)∥L2 . (C.48) 
+
+Proof. Let 
+
+vN := π(−1,−1)  
+
+> N
+
+u =
+
+∫ x
+
+> −1
+
+π(0 ,0)  
+
+> N−1
+
+(∂su(s)) ds. (C.49) Consider the boundary value problem 
+
+−∂2
+
+> x
+
+z = vN − u, z(±1) = 0 . (C.50) Then 
+
+∥vN − u∥2 
+
+> L2
+
+= ( vN − u, −∂2
+
+> x
+
+z)L2 = ( ∂x(vN − u), ∂ xz)L2 (C.51) =( π(0 ,0)  
+
+> N−1
+
+∂xu − ∂xu, ∂ xz)L2 = ( π(0 ,0)  
+
+> N−1
+
+∂xu − ∂xu, ∂ xz − π(0 ,0)  
+
+> N−1
+
+∂xz)L2 (C.52) =( ∂xvN − ∂xu, ∂ xz − ∂xπ(−1,−1)  
+
+> N
+
+z)L2 (C.53) where the penultimate equality follows from the orthogonality property of the projection 
+
+π(0 ,0)   
+
+> N−1
+
+in L2, and in the last equality we used item 3 of Proposition 2, namely, ∂xπ(−1,−1)  
+
+> N
+
+z =
+
+π(0 ,0)  
+
+> N−1
+
+∂xz. Applying Proposition 3 with l = 1 , m = 2, we obtain 
+
+∥∂xz − ∂xπ(−1,−1)  
+
+> N
+
+z∥L2 ≲ N −1∥∂2
+
+> x
+
+z∥ω(1 ,1) ≤ N −1∥∂2
+
+> x
+
+z∥L2 = N −1∥vN − u∥L2 . (C.54) It follows that 
+
+∥vN − u∥2 
+
+> L2
+
+≤ ∥ ∂x(vN − u)∥L2 ∥∂xz − π(0 ,0)  
+
+> N−1
+
+∂xz∥L2 (C.55) 
+
+≲ N −1∥∂x(vN − u)∥L2 ∥vN − u∥L2 . (C.56) Dividing both sides by ∥vN − u∥L2 , we conclude that 
+
+∥vN − u∥L2 ≲ N −1∥∂x(vN − u)∥L2 . (C.57) Since vN = π(−1,−1)  
+
+> N
+
+u, the proof is complete. 
+
+Remark 7. If one applies the Cauchy–Schwarz inequality directly, then 
+
+∥π(−1,−1)  
+
+> N
+
+u − u∥2 
+
+> L2
+
+=
+
+∫ 1
+
+> −1
+
+(∫ x
+
+> −1
+
+(π(0 ,0)  
+
+> N−1
+
+∂su − ∂su) ds
+
+)2
+
+dx (C.58) 
+
+≤
+
+∫ 1
+
+> −1
+
+(x + 1) 
+
+∫ x
+
+> −1
+
+(π(0 ,0)  
+
+> N−1
+
+∂su − ∂su)2 ds dx (C.59) 
+
+≤
+
+∫ 1
+
+> −1
+
+(x + 1) 
+
+∫ 1
+
+> −1
+
+(π(0 ,0)  
+
+> N−1
+
+∂su − ∂su)2 ds dx (C.60) = 2 ∥π(0 ,0)  
+
+> N−1
+
+∂xu − ∂xu∥2 
+
+> L2
+
+. (C.61) 
+
+By item 3 of Proposition 2, we have 
+
+∥π(−1,−1)  
+
+> N
+
+u − u∥L2 ≲ ∥∂x(π(−1,−1)  
+
+> N
+
+u − u)∥L2 . (C.62) 
+
+This estimate is weaker than that given in Proposition 4. 
+
+33 C.2 Error estimates for the tensor-product generalized Jacobi projection 
+
+We now extend the generalized Jacobi orthogonal projection to the d-dimensional tensor-product setting and derive corresponding approximation estimates, which will be used in the error analysis of the spectral-Galerkin solution. 
+
+Proposition 5. Let 
+
+Π(−1,−1)  
+
+> N
+
+:= π(−1,−1)  
+
+> N, 1
+
+π(−1,−1)  
+
+> N, 2
+
+· · · π(−1,−1)  
+
+> N,d
+
+, (C.63) 
+
+where π(−1,−1)  
+
+> N,j
+
+denotes the generalized Jacobi orthogonal projection acting on the jth vari-able. For each i, j ∈ { 1, . . . , d }, define 
+
+Wi,j (x) := ∏ 
+
+> 1≤k≤j−1
+> k̸=i
+
+ω(−1,−1) (xk), (C.64) 
+
+and for each integer s ≥ 2, define 
+
+W (s) 
+
+> i,j
+
+(x) := 
+
+
+
+Wi,i (x) ω(s−1,s −1) (xi), j = i, Wi,j (x) ω(s−2,s −2) (xj ), j̸ = i. (C.65) 
+
+Assume that all weighted norms appearing on the right-hand sides below are finite. Then the following hold: 1. If 2 ≤ m ≤ N + 1 , then 
+
+∥∇ (Π (−1,−1)  
+
+> N
+
+u − u)∥L2 ≲ N 1−m
+
+
+
+> d
+
+∑
+
+> i=1
+
+
+
+> d
+
+∑
+
+> j=1
+
+∥∂ m−1 
+
+> xj
+
+∂xi u∥W (m)
+
+> i,j
+
+
+
+> 2
+
+
+
+> 12
+
+. (C.66) 
+
+2. If m > N + 1 , then 
+
+∥∇ (Π (−1,−1)  
+
+> N
+
+u − u)∥L2 ≲
+
+( √ e/ 2
+
+N
+
+)N + 14
+
+
+
+> d
+
+∑
+
+> i=1
+
+
+
+> d
+
+∑
+
+> j=1
+
+∥∂ Nxj ∂xi u∥W (N +1) 
+
+> i,j
+
+
+
+> 2
+
+
+
+> 12
+
+. (C.67) 
+
+Proof. For simplicity, write Ij := π(−1,−1)  
+
+> N,j
+
+, j = 1 , . . . , d . Fix i ∈ { 1, . . . , d }. Since ∂xi
+
+commutes with Ij for j < i , we have 
+
+∂xi (Π (−1,−1)  
+
+> N
+
+u − u) = 
+
+> i−1
+
+∑
+
+> j=1
+
+I1 · · · Ij−1(Ij − I)∂xi u + I1 · · · Ii−1∂xi (Ii − I)u
+
++
+
+> d
+
+∑
+
+> j=i+1
+
+I1 · · · Ii−1∂xi Ii Ii+1 · · · Ij−1(Ij − I)u. (C.68) Using item 2 and item 3 of Proposition 2, together with Fubini’s theorem, we obtain 
+
+∥∂xi (Π (−1,−1)  
+
+> N
+
+u − u)∥L2 ≤ ∥ ∂xi (Ii − I)u∥Wi,i + ∑ 
+
+> j̸=i
+
+∥(Ij − I)∂xi u∥Wi,j . (C.69) For j̸ = i, Proposition 4 gives 
+
+∥(Ij − I)∂xi u∥Wi,j ≲ N −1∥∂xj (Ij − I)∂xi u∥Wi,j . (C.70) 
+
+34 Hence 
+
+∥∂xi (Π (−1,−1)  
+
+> N
+
+u − u)∥L2 ≲ ∥∂xi (Ii − I)u∥Wi,i + N −1 ∑ 
+
+> j̸=i
+
+∥∂xj (Ij − I)∂xi u∥Wi,j . (C.71) If 2 ≤ m ≤ N + 1, then, by Proposition 3, we obtain 
+
+∥∂xi (Π (−1,−1)  
+
+> N
+
+u − u)∥L2 ≲ N 1−m∥∂mxi u∥W (m)
+
+> i,i
+
++ N −1 ∑ 
+
+> j̸=i
+
+N 1−(m−1) ∥∂ m−1 
+
+> xj
+
+∂xi u∥W (m)
+
+> i,j
+
+= N 1−md∑
+
+> j=1
+
+∥∂ m−1 
+
+> xj
+
+∂xi u∥W (m)
+
+> i,j
+
+. (C.72) Therefore, 
+
+∥∇ (Π (−1,−1)  
+
+> N
+
+u − u)∥L2 =
+
+( d∑
+
+> i=1
+
+∥∂xi (Π (−1,−1)  
+
+> N
+
+u − u)∥2
+
+> L2
+
+) 12
+
+(C.73) 
+
+≲ N 1−m
+
+
+
+> d
+
+∑
+
+> i=1
+
+
+
+> d
+
+∑
+
+> j=1
+
+∥∂ m−1 
+
+> xj
+
+∂xi u∥W (m)
+
+> i,j
+
+
+
+> 2
+
+
+
+> 12
+
+. (C.74) If m > N + 1, then one proceeds similarly. More precisely, the first term is estimated by the second estimate in Proposition 3, whereas the remaining terms are estimated by the remark after Proposition 3. Thus 
+
+∥∂xi (Π (−1,−1)  
+
+> N
+
+u − u)∥L2 ≲
+
+( √ e/ 2
+
+N
+
+)N + 14
+
+∥∂N +1  
+
+> xi
+
+u∥W (N +1) 
+
+> i,i
+
++ N −1 ∑ 
+
+> j̸=i
+
+( √ e/ 2
+
+N
+
+)N − 14
+
+∥∂Nxj ∂xi u∥W (N +1) 
+
+> i,j
+
+≲
+
+( √ e/ 2
+
+N
+
+)N + 14 d∑
+
+> j=1
+
+∥∂Nxj ∂xi u∥W (N +1) 
+
+> i,j
+
+. (C.75) Therefore, 
+
+∥∇ (Π (−1,−1)  
+
+> N
+
+u − u)∥L2 ≲
+
+( √ e/ 2
+
+N
+
+)N + 14
+
+
+
+> d
+
+∑
+
+> i=1
+
+
+
+> d
+
+∑
+
+> j=1
+
+∥∂ Nxj ∂xi u∥W (N +1) 
+
+> i,j
+
+
+
+> 2
+
+
+
+> 12
+
+. (C.76) This completes the proof. 
+
+As a consequence of (C.11) and Proposition 5, we obtain the following error estimate for the spectral-Galerkin solution. 
+
+Corollary 1. Consider an instance of Problem 1, namely, the d-dimensional second-order linear elliptic boundary value problem with homogeneous Dirichlet boundary conditions 
+
+(2.1) . Let the approximation space be generated by the tensor-product basis associated with the one-dimensional basis (4.3) . Assume that the exact solution u is analytic, and define 
+
+CN := 
+
+
+
+> d
+
+∑
+
+> i=1
+
+
+
+> d
+
+∑
+
+> j=1
+
+∥∂ N +1  
+
+> xj
+
+∂xi u∥W (N +2) 
+
+> i,j
+
+
+
+> 2
+
+
+
+> 12
+
+(C.77) 
+
+35 where W (s) 
+
+> i,j
+
+is defined in (C.65) . Then the spectral-Galerkin solution uN satisfies 
+
+∥uN − u∥H1 ≲ CN κ(A) 12
+
+( √ e/ 2
+
+N + 1 
+
+)N + 54
+
+. (C.78) 
+
+Moreover, 
+
+∥uN − u∥L2 ≲ CN κ(A) 12 d− 12
+
+( √ e/ 2
+
+N + 1 
+
+)N + 54
+
+. (C.79) 
+
+Proof. Since the approximation space satisfies VN = ( P0 
+
+> N+1
+
+)⊗d, we may choose 
+
+vN := Π (−1,−1)   
+
+> N+1
+
+u ∈ VN (C.80) in (C.11). Proposition 5 then yields 
+
+∥∇ (vN − u)∥L2 ≲ CN
+
+( √ e/ 2
+
+N + 1 
+
+)N + 54
+
+, (C.81) and hence 
+
+∥uN − u∥H1 ≲ CN κ(A) 12
+
+( √ e/ 2
+
+N + 1 
+
+)N + 54
+
+. (C.82) The L2-estimate follows from the Poincar´ e inequality applied to uN − u ∈ H10 (Ω). 
+
+# D An illustrative example of the quantum spectral-Galerkin method 
+
+In Section 4, we introduced the spectral-Galerkin discretization for the model problem in Section 2, and in Section 5 we developed the corresponding quantum algorithm. In this appendix, we present a concrete instance of this construction and report numerical results that illustrate the behavior of the method and corroborate our theoretical analysis. We consider the boundary value problem 
+
+L u = −
+
+> d
+
+∑
+
+> p,q =1
+
+Apq ∂xp ∂xq u = f in Ω := ( −1, 1) d, u|∂Ω = 0 , (D.1) 
+
+where A = ( Apq )dp,q =1 ∈ Rd×d is a constant symmetric positive-definite matrix. The Galerkin approximation is written as 
+
+uN (x) = ∑ 
+
+> k∈[N]d
+> 0
+
+ck Φk(x), (D.2) 
+
+where the basis functions are 
+
+Φk(x) = 
+
+> d
+
+∏
+
+> j=1
+
+ϕkj (xj ), k = ( k1, . . . , k d) ∈ [N ]d
+
+> 0
+
+, (D.3) 
+
+and 
+
+ϕk(x) = 1
+
+√
+
+γ(2 ,2) 
+
+> k
+
+(1 − x2)P (2 ,2)  
+
+> k
+
+(x), k ∈ [N ]0, (D.4) 
+
+36 where γ(2 ,2)  
+
+> k
+
+is the normalization constant in (B.9) . The corresponding load vector is 
+
+f = ∑ 
+
+> l∈[N]d
+> 0
+
+⟨f, Φl⟩| l⟩. (D.5) 
+
+We assume access to an oracle that prepares its normalized quantum state |f ⟩ = f /∥f ∥.We then apply the quantum linear systems algorithm to solve the linear system 
+
+Lc = f , (D.6) 
+
+where the solution vector is 
+
+c = ∑ 
+
+> k∈[N]d
+> 0
+
+ck|k⟩. (D.7) 
+
+Moreover, L = L1 + L2, with 
+
+L1 =
+
+> d
+
+∑
+
+> p=1
+
+App 
+
+(I⊗(p−1) ⊗ S ⊗ I⊗(d−p)), (D.8) 
+
+L2 = −2 ∑
+
+> 1≤p<q ≤d
+
+Apq 
+
+(I⊗(p−1) ⊗ T ⊗ I⊗(q−p−1) ⊗ T ⊗ I⊗(d−q)), (D.9) 
+
+where 
+
+S = ∑ 
+
+> j,k ∈[N]0
+
+⟨ϕ′
+
+> k
+
+, ϕ ′ 
+
+> j
+
+⟩| j⟩⟨ k|, T = ∑ 
+
+> j,k ∈[N]0
+
+⟨ϕ′
+
+> k
+
+, ϕ j ⟩| j⟩⟨ k|. (D.10) 
+
+Solving (D.6) yields the coefficient vector c, and hence the Galerkin approximation uN .We next illustrate the condition number bound in Lemma 2 for the one-dimensional stiffness matrix S. Recall that Lemma 2 implies 
+
+κ(S) ≤ 1
+
+π2 (N + 2) 2(N + 3) 2. (D.11) 
+
+Figure 2 compares the computed condition number κ(S) for 50 ≤ N ≤ 300 with the upper bound. In all tested cases, the computed values remain below the theoretical bound. Moreover, a least-squares fit of the form CN p yields an exponent p close to 4, indicating that the growth of κ(S) is consistent with the estimate κ(S) = O(N 4).Finally, we present numerical experiments for the Galerkin system associated with the basis (D.4) . We consider the model problem (D.1) in dimensions d = 2 , 3, and test several symmetric positive-definite matrices A with different condition numbers. As the exact solution, we take 
+
+u(x) = exp 
+
+( d∑
+
+> j=1
+
+xj
+
+)( 
+
+1 + ∑
+
+> 1≤p<q ≤d
+
+xpxq
+
+) d∏
+
+> j=1
+
+(1 − x2 
+
+> j
+
+). (D.12) 
+
+This function satisfies the homogeneous Dirichlet boundary condition. Moreover, for d ≥ 2,it is not separable in the spatial variables. The right-hand side f is then determined from 
+
+(D.1) by direct substitution. The left panels of Figures 3–4 show the relative L2 error of the numerical solution as a function of N . The right panels show the ratio κ(L)/(κ(A)κ(S)) , which is used to examine the bound 
+
+κ(L) ≤ κ(A)κ(S). (D.13) 
+
+proved in Lemma 4. The results show rapid error decay as N increases, and the ratio 
+
+κ(L)/(κ(A)κ(S)) stays below 1 in all tested cases, in agreement with the theoretical bound. 
+
+37 Figure 2: Condition number of the one-dimensional stiffness matrix S as a function of N for 50 ≤ N ≤ 300. The dashed curve is the theoretical upper bound 1 
+
+> π2
+
+(N + 2) 2(N + 3) 2, and the dash-dotted curve is a least-squares fit of the form CN p.
+
+Figure 3: Numerical results for the case d = 2. Left: relative L2 error versus N . Right: the ratio 
+
+κ(L)/(κ(A)κ(S)) versus N .
+
+Figure 4: Numerical results for the case d = 3. Left: relative L2 error versus N . Right: the ratio 
+
+κ(L)/(κ(A)κ(S)) versus N .
+
+38

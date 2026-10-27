@@ -1,0 +1,5027 @@
+Title: Efficient Block Encodings of Vibrational Hamiltonians
+
+URL Source: https://arxiv.org/pdf/2610.33800v1
+
+Published Time: Tue, 27 Oct 2026 00:50:23 GMT
+
+Number of Pages: 42
+
+Markdown Content:
+## Efficient Block Encodings of Vibrational Hamiltonians 
+
+Shashank G. Mehendale, 1, 2 Ignacio Loaiza, 3 Shreyas Malpathak, 1, 2 
+
+Stepan Fomichev, 3 Danial Motlagh, 3 and Artur F. Izmaylov 1, 2 
+
+> 1
+
+Chemical Physics Theory Group, Department of Chemistry, University of Toronto, Toronto, Ontario M5S 3H6, Canada 
+
+> 2
+
+Department of Physical and Environmental Sciences, University of Toronto Scarborough, Toronto, Ontario M1C 1A4, Canada 
+
+> 3
+
+Xanadu, Toronto, Ontario M5G 2C8, Canada 
+
+Simulation of molecular vibrations is emerging as a promising application of quantum computing in quantum chemistry. In this work, we develop new strategies for block-encoding the second-quantized n-mode representation of the vibrational Hamiltonian, whose algebraic structure closely parallels that of the second-quantized electronic Hamiltonian. We derive linear-combination-of-unitaries (LCU) representations of this Hamiltonian based on Pauli decomposition and tensor hy-percontraction (THC) and construct efficient circuits for the corresponding block encodings. We also extend the Block-Invariant Symmetry Shift (BLISS) technique to vibrational Hamiltonians, yielding a lower LCU 1-norm and, consequently, a lower overall circuit cost. For the molecules considered here, BLISS-THC reduces the Toffoli cost of quantum phase estimation by more than two orders of magnitude relative to existing block-encoding approaches. In comparison with recent Trotter-based methods, it shows up to a ninefold reduction in the T-gate count, with the relative savings tending to increase with system size. Asymptotically, and up to polylogarithmic factors, both the Pauli and THC LCUs trade additional ancillas for a quadratic improvement in scaling with the number of modes, while THC provides an additional quadratic improvement in scaling with the number of modals. These results highlight the importance of Hamiltonian factorizations and Toffoli–qubit tradeoffs for reducing the computational cost of quantum simulations of molecular vibrations. 
+
+I. INTRODUCTION 
+
+Understanding molecular dynamics from first principles has many applications across chemistry, including molecular identification from vibrational spectra [1, 2] and prediction of reaction pathways [3, 4]. For example, the infrared spectrum not only functions as a molecular fingerprint for identifying unknown species, but it also dictates a molecule’s ability to absorb thermal radiation, which can be used to evaluate its broader atmospheric and environmental impact [5, 6]. Within the Born–Oppenheimer approximation, nuclear and electronic motion are separated, allowing the construction of a molecular vibrational Hamiltonian from the electronic potential energy surface (PES) evaluated at various nuclear geometries. Accurate construction of electronic PESs has long been a central goal of ab initio 
+
+molecular simulations. While achieving accurate PESs is essential, the subsequent vibrational structure problem remains a formidable computational challenge for many systems of interest. Indeed, for floppy systems such as water clusters, the key bottleneck in obtaining accurate vibrational spectra often lies not in the quality of the PES but rather in solving the vibrational Schr¨ odinger equation [7, 8]. This bottleneck motivates the need for further development of efficient algorithms for vibrational structure calculations. Assuming a PES has been obtained to sufficient accuracy, various classical computational methods exist to describe the evolution of nuclei on the PES [9, 10] or to obtain the associated vibrational spectra [11–13]. However, as the number of vibrational modes and the strength of their coupling grow, these techniques become prohibitively expensive [2]. While quantum computing has been proposed and studied extensively for the electronic structure problem [14, 15], its application to the vibrational problem remains comparatively underexplored. Encoding the bosonic representation of the vibrational Hamiltonian natively on a bosonic quantum computer has been explored in Refs. [16–18]. While such an approach enables encoding the underlying Hilbert space without truncation, bosonic quantum hardware is still in the early stages of development. In this work, we focus instead on simulating vibrational systems on qubit-based digital quantum devices. Over the last few years, numerous proposals for utilizing near-term quantum computers to calculate vibrational spectra have emerged [19–24]. Most of these methods rely on the variational principle or subspace expansion tech-niques and are limited to small molecules. They inherit the well-known difficulties of near-term methods [25] and struggle as the density of states and anharmonicity increase deeper in the spectrum. More recently, sample-based quantum diagonalization methods have also been proposed for vibrational problems [26, 27]. Interest in fault-tolerant proposals has been on the rise as well, with the majority of work [2, 28–31] focusing on utilizing the Trotter ap-proximation for Hamiltonian time evolution within quantum phase estimation (QPE) [32]. Although the Trotter approximation is space-efficient, using it for energy estimation or dynamics with guaranteed error bounds [33] often yields resource estimates that are overly pessimistic by many orders of magnitude [34]. The authors of Refs. [2, 31] arXiv:2610.33800v1 [quant-ph] 24 Oct 2026 2utilize a perturbative estimate of Trotter error [35] to evaluate the resources required for vibrational time evolution. While such estimates are known to be tighter than commutator-based upper bounds, evaluating and validating them for large vibrational systems remains computationally demanding. Despite the recent appearance of highly optimized computational approaches for estimating such errors [36], a more fundamental question remains: are Trotter methods the most efficient route for vibrational simulations? Qubitization [37], on the other hand, encodes the energies of a Hamiltonian exactly, up to rotation synthesis errors that are common to any digital quantum simulation approach. It works by transforming a block-encoded Hamiltonian expressed as a linear combination of unitaries (LCU) [38] into a Szegedy walk operator [39], whose eigenphases encode the arccosine of the rescaled eigenvalues of the Hamiltonian. This enables estimating the energies by directly extracting the phase of the walk operator, achieving Heisenberg-limited scaling [40]. Moreover, given access to an efficient block-encoding oracle, quantum signal processing [41] achieves better asymptotic scaling than Trotterization for approximating time evolution. Consequently, there is an increasing need to develop efficient techniques for block-encoding vibrational Hamiltonians. A recent study in Ref. [31] highlighted how different representations of the vibrational Hamiltonian enable distinct strategies for encoding vibrational problems on quantum computers. One of these is the real-space representation that encodes a discretized real-space grid for the vibrational coordinates into the computational basis states of the qubits. Resource estimates for block-encoding such real-space vibrational Hamiltonians have recently been analyzed in Refs. [42, 43]. In this work, we focus on an alternative representation, the second-quantized n-mode representation of the vibrational Hamiltonian [44]. It exploits an n-mode expansion of the PES along with a finite number of basis functions, often called modals, to discretize each mode. Its complexity scales with the number of modes that are allowed to be explicitly coupled to each other (discussed in detail in Section II A), making it appealing for systems that allow for an accurate description at low mode-coupling levels. This makes the use of localized modes particularly beneficial, as they have been shown to significantly reduce the need to include higher-order mode couplings [45–48]. Simulating experimental IR spectra is an interesting application of quantum simulation that can be realized by performing QPE on an initial state obtained by applying the dipole operator to a reference state [7]. The near-IR regime is a particularly interesting target because of its dense manifold of excited states and the greater prevalence of combination bands, overtones, and anharmonic effects. Since the dominant computational cost in this procedure arises from QPE, reducing the underlying Hamiltonian block-encoding cost is important for lowering the overall resource requirements. Therefore, here we consider block encodings of second-quantized vibrational Hamiltonians and assess their QPE resource requirements using ground-state energy estimation as a representative benchmark. In Ref. [49], such block-encoding-based QPE costs were evaluated using LCUs derived from the factorization of Hamiltonian tensors. The approach proposed there expresses the Hamiltonian as a sum-of-products (SOP) of one-mode operators, yielding the block encoding of the full Hamiltonian as an SOP of one-mode block encodings. While this construction is space-efficient and straightforward to generalize, it relies on repeating the block-encoding primitive for every one-mode operator. Because each primitive loads a separate, relatively short data table, it cannot fully exploit quantum read-only memory (QROM) constructions that utilize additional ancillas [50–52], whose benefit grows with table size. However, Ref. [49] explored a tradeoff between qubits and T-depth by implementing block-encoding primitives for different modes in parallel, enabled by the commutativity of disjoint mode operators. While T-depth plays an important role in the total execution time of a quantum algorithm, T-gate parallelization requires multiple magic-state factories operating simultaneously on the quantum chip alongside storage and teleportation, and is therefore tied to the specific fault-tolerant architecture. Consequently, reducing the total T-gate count serves as a direct measure of total magic state cost, while still preserving the option for subsequent parallelization if permissible under specific architectural constraints. In this work, we propose more efficient block encodings for second-quantized vibrational Hamiltonians that require fewer Toffoli gates, and consequently fewer T gates, than prior approaches for QPE-based energy estimation. We first introduce a vibrational Pauli LCU that does not involve tensor factorizations, similar to the approach in Ref. [50]. By utilizing the swap networks proposed in Ref. [53], we overcome the need for repeated application of one-mode block-encoding primitives and show that the Pauli LCU achieves a quadratic reduction in the asymptotic Toffoli cost (up to polylogarithmic factors) with respect to the number of modes compared to the best method presented in Ref. [49]. Moreover, by exploiting the permutational symmetries of the mode-coupling tensors, we extend the tensor hypercontraction (THC) [54, 55] formalism to the second-quantized form of the vibrational Hamiltonian. We explicitly formulate this for two- and three-mode-coupling interactions, while noting that the underlying factorization is generalizable to an arbitrary n-mode expansion. Under the assumption that the average THC rank scales linearly with the number of modals, and up to polylogarithmic factors, THC further reduces the asymptotic Toffoli count quadratically with respect to the number of modals. Notably, we show that modal rotations (i.e., basis rotations in the modal space) can be used to optimize vibrational block-encoding resources despite their overhead in the earlier architecture of Ref. [49]. Finally, as the total algorithmic cost scales as O(λLCU ), where λLCU is the LCU 1-norm, we extend the Block-Invariant Symmetry Shift (BLISS) technique [56] to systematically minimize λLCU . By exploiting the symmetries of the target eigenstates, BLISS modifies the Hamiltonian strictly outside the relevant symmetry 3sector to minimize λLCU without altering the desired eigenvalues. To evaluate the methods proposed here, we compare the resources required for QPE with those of the method proposed in Ref. [49] for a series of polycyclic aromatic hydrocarbon (PAH) Hamiltonians ranging from 30 to 138 vibrational modes. These systems employ a PES truncated at the two-mode-coupling level. Additionally, we test our methods on three-mode-coupling Hamiltonians for two small molecules. We show that vibrational THC combined with BLISS achieves a reduction of more than two orders of magnitude in Toffoli count for many systems compared to prior art. For the systems studied in Ref. [31], we also demonstrate the advantages of the methods developed here over Trotterized QPE. The remainder of the paper is organized as follows. Section II establishes the necessary theoretical background. Section III introduces the new vibrational Hamiltonian LCUs and details the BLISS technique. Section IV derives the asymptotic resource estimates for the vibrational LCUs, followed by the presentation of our numerical results in Section V. Finally, Section VI concludes the paper with a discussion of open challenges and future research directions in the quantum simulation of vibrational Hamiltonians. 
+
+II. THEORETICAL BACKGROUND 
+
+In this section, we provide some theoretical background for the techniques developed in this work. We describe the 
+
+n-mode expansion of the PES and the second-quantized form of vibrational Hamiltonians. We also provide a brief overview of costs associated with QPE and qubitization. 
+
+A. The Vibrational Hamiltonian 
+
+Under the Born–Oppenheimer approximation, a vibrational Hamiltonian with M modes is ˆHreal = − 12 
+
+> M−1
+
+X
+
+> i=0
+
+Ωi
+
+∂2
+
+∂Q2
+
+> i
+
++ V (Q), (1) where the Qi are the mass-weighted dimensionless normal modes, Ω i are the corresponding harmonic frequencies, and 
+
+V (Q) is the electronic PES. Q = 0 is the equilibrium geometry of the molecule. The second-quantized representation [44] is then obtained by first expanding the PES in an n-mode expansion as 
+
+V (Q) = V (0) +  
+
+> M−1
+
+X
+
+> i=0
+
+V (1)  
+
+> i
+
+(Qi) +  
+
+> M−1
+
+X
+
+> i<j =0
+
+V (2)  
+
+> i,j
+
+(Qi, Qj ) +  
+
+> M−1
+
+X
+
+> i<j<k =0
+
+V (3) 
+
+> i,j,k
+
+(Qi, Qj , Qk) + . . . , (2) where 
+
+V (1)  
+
+> i
+
+(Qi) = V (0 , . . . , Qi, . . . , 0) − V (0),V (2)  
+
+> i,j
+
+(Qi, Qj ) = V (0 , . . . , Qi, . . . , Qj , . . . , 0) − V (1)  
+
+> i
+
+(Qi) − V (1)  
+
+> j
+
+(Qj ) − V (0),
+
+and so on. This representation expresses the PES as contributions obtained by displacing selected subsets of modes from equilibrium. The next step is to perform Galerkin discretization [57] of the vibrational Schr¨ odinger equation. While the exact vibrational state is a function of continuous variables Qi, an approximation is constructed by using a set of N real orthonormal single-mode basis states |ϕ(i) 
+
+> pi
+
+⟩, often called modals, for each mode i. A full-space basis state is then constructed by a direct product of modals as |ϕ(0)  
+
+> p0
+
+ϕ(1)  
+
+> p1
+
+. . . ϕ (M −1)   
+
+> pM−1
+
+⟩, and a general vibrational state is represented as a linear combination of these basis states. This allows one to project the Hamiltonian onto the discretized basis as ˆHdisc = 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p,q =0
+
+hi,p,q |ϕ(i) 
+
+> pi
+
+⟩⟨ ϕ(i) 
+
+> qi
+
+| + 
+
+> M−1
+
+X 
+
+> i<j =0
+> N−1
+
+X 
+
+> p,q, r,s =0
+
+gi,p,q,j,r,s |ϕ(i) 
+
+> pi
+
+⟩⟨ ϕ(i) 
+
+> qi
+
+| ⊗ | ϕ(j) 
+
+> rj
+
+⟩⟨ ϕ(j) 
+
+> sj
+
+|
+
++ 
+
+> M−1
+
+X 
+
+> i<j<k =0
+> N−1
+
+X 
+
+> p,q,r, s,t,u =0
+
+vi,p,q,j,r,s,k,t,u |ϕ(i) 
+
+> pi
+
+⟩⟨ ϕ(i) 
+
+> qi
+
+| ⊗ | ϕ(j) 
+
+> rj
+
+⟩⟨ ϕ(j) 
+
+> sj
+
+| ⊗ | ϕ(k) 
+
+> tk
+
+⟩⟨ ϕ(k) 
+
+> uk
+
+| ,
+
+(3) 4where 
+
+hi,p,q =
+
+Z ∞−∞ 
+
+ϕ(i) 
+
+> pi
+
+(Qi)
+
+
+
+− Ωi
+
+2
+
+∂2
+
+∂Q2
+
+> i
+
++ V (1)  
+
+> i
+
+(Qi)
+
+
+
+ϕ(i) 
+
+> qi
+
+(Qi) dQi,
+
+gi,p,q,j,r,s =
+
+Z ∞−∞ 
+
+Z ∞−∞ 
+
+ϕ(i) 
+
+> pi
+
+(Qi) ϕ(j) 
+
+> rj
+
+(Qj ) V (2)  
+
+> i,j
+
+(Qi, Qj ) ϕ(i) 
+
+> qi
+
+(Qi) ϕ(j) 
+
+> sj
+
+(Qj ) dQidQj ,
+
+vi,p,q,j,r,s,k,t,u =
+
+Z ∞−∞ 
+
+Z ∞−∞ 
+
+Z ∞−∞ 
+
+ϕ(i) 
+
+> pi
+
+(Qi) ϕ(j) 
+
+> rj
+
+(Qj )ϕ(k) 
+
+> tk
+
+(Qk) V (3) 
+
+> i,j,k
+
+(Qi, Qj , Qk) ϕ(i) 
+
+> qi
+
+(Qi) ϕ(j) 
+
+> sj
+
+(Qj )ϕ(k) 
+
+> uk
+
+(Qk) dQidQj dQk.
+
+(4) We extend these tensors by setting their elements to zero outside the index ranges specified in Eq. (3). Note that we have restricted ourselves to three-mode couplings for the sake of brevity; the construction extends formally to higher-order couplings as well. Since each vibrational mode occupies exactly one of the N modals in any given basis state, and there are M modes in total, the Hilbert space of the wavefunction has dimension N M . A binary encoding of the modal space requires only M ⌈log 2(N )⌉ qubits, but maps the Hamiltonian operators |ϕ(i) 
+
+> pi
+
+⟩⟨ ϕ(i) 
+
+> qi
+
+| to a sum of O(N ) Pauli strings, each of length up to ⌈log 2(N )⌉. Alternatively, a unary encoding requires N qubits per mode, restricting physical states to a subspace where exactly one of those N qubits is in the |1⟩ state (indicating modal occupation). We refer to this as the subspace with a single excitation per mode. While this expands the total computational Hilbert space to 2 N M , it drastically simplifies the operators |ϕ(i) 
+
+> pi
+
+⟩⟨ ϕ(i) 
+
+> qi
+
+| to at most four Pauli strings acting on just two qubits. This unary approach naturally motivates a second-quantized representation. By defining (hard-core bosonic) creation (ˆ a† 
+
+> pi
+
+) and annihilation (ˆ aqi ) operators for the modals, we replace the operators |ϕ(i) 
+
+> pi
+
+⟩⟨ ϕ(i) 
+
+> qi
+
+|
+
+with the excitation operators ˆEpi 
+
+> qi
+
+:= ˆ a† 
+
+> pi
+
+ˆaqi . The resulting Hamiltonian bears significant structural similarities to a second-quantized electronic Hamiltonian, allowing us to leverage existing quantum simulation tools. Traditionally, one uses bosons instead of hard-core bosons, but this distinction can be ignored since their action on the physically meaningful subspace of single excitation per mode is identical: no physical process can take a modal’s occupation number above 1. The second-quantized form of the Hamiltonian in Eq. (3) follows as ˆH = 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p,q =0
+
+hi,p,q ˆEpi 
+
+> qi
+
++ 
+
+> M−1
+
+X 
+
+> i<j =0
+> N−1
+
+X 
+
+> p,q, r,s =0
+
+gi,p,q,j,r,s ˆEpi
+
+> qi
+
+ˆErj 
+
+> sj
+
++ 
+
+> M−1
+
+X 
+
+> i<j<k =0
+> N−1
+
+X 
+
+> p,q,r, s,t,u =0
+
+vi,p,q,j,r,s,k,t,u ˆEpi
+
+> qi
+
+ˆErj
+
+> sj
+
+ˆEtk 
+
+> uk
+
+. (5) This procedure for obtaining a second-quantized Hamiltonian can easily become computationally expensive as the number of modes and the mode-coupling level increase. The problem stems from having to evaluate multi-dimensional integrals that require sampling the electronic PES at many points. Sampling the surface on a predefined grid requires a large number of grid points to obtain a sufficiently accurate Hamiltonian representation. The adaptive density-guided approach (ADGA) [58] is a method that determines the grid points adaptively and provides a Hamiltonian that can be expressed as an SOP of one-mode operators. With this approach, a three-mode-coupling Hamiltonian is obtained as ˆH = X
+
+> i
+
+X
+
+> oi
+
+cioi ˆhi,o i
+
++ X
+
+> i<j
+
+X
+
+> oi,o j
+
+cij oioj ˆhi,o i ˆhj,o j
+
++ X
+
+> i<j<k
+
+X 
+
+> oi,o j,o k
+
+cijk oioj ok ˆhi,o i ˆhj,o j ˆhk,o k
+
+, (6) where the coefficients c correspond to tensors of different order. The operators ˆhi,o i
+
+are one-mode operators; the indices i and oi label the specific operator among the set of one-mode operators of mode i used to fit the Hamiltonian. They can be expressed as ˆhi,o i
+
+= P 
+
+> p,q
+
+hi,o i 
+
+> p,q
+
+ˆEpi 
+
+> qi
+
+. By expanding these one-mode operators and contracting the tensor indices, we can recast the Hamiltonian of Eq. (6) into the form of Eq. (5). This involves approximating the associated integrals as 
+
+hi,p,q ≈ X
+
+> oi
+
+cioi hi,o i 
+
+> p,q
+
+,
+
+gi,p,q,j,r,s ≈ X
+
+> oi,o j
+
+cij oioj hi,o i 
+
+> p,q
+
+hj,o j 
+
+> r,s
+
+,
+
+vi,p,q,j,r,s,k,t,u ≈ X 
+
+> oi,o j,o k
+
+cijk oi,o j ,o k hi,o i 
+
+> p,q
+
+hj,o j 
+
+> r,s
+
+hk,o k 
+
+> t,u
+
+.
+
+(7) The block-encoding procedures developed in this work apply, in general, to the standard second-quantized Hamil-tonian of Eq. (5) and are independent of the exact method used to approximate the tensors. However, to benchmark 5against the method developed in Ref. [49], which requires an SOP representation of the Hamiltonian, we utilize the integrals approximated as in Eq. (7). Although the second-quantization framework was derived starting from the Hamiltonian represented in terms of normal modes, one can apply a unitary mode-localization transformation to maximize the spatial locality of the displacement vectors, yielding new coordinates ˜Qi. This localization procedure has been shown to enable significantly faster convergence of the n-mode expansion [45–48]. Furthermore, for molecules exhibiting large-amplitude torsional motion, curvilinear coordinates may be required, while complete rovibrational Hamiltonians additionally include rotational and Coriolis couplings. More general curvilinear and rovibrational Hamiltonians can also be represented in a finite modal basis, but their detailed treatment is beyond the scope of this work.  
+
+> B. Energy Estimation via Quantum Phase Estimation
+
+Most fault-tolerant applications of energy estimation on a quantum computer rely on the QPE algorithm [32, 59] or its iterative variants [60–62]. Given a unitary ˆU with eigenpairs ˆU |ϕj ⟩ = e2πiϕj |ϕj ⟩ (where ϕj ∈ [0 , 1]), QPE applied to an input state |ψ⟩ = P 
+
+> k
+
+ck |ϕk⟩ effectively allows us to sample from the probability distribution 
+
+P (ω) = X
+
+> k
+
+|ck|2L(ω − ϕk). (8) Here, L(ω) is a lineshape function that typically converges to a Dirac delta function δ(ω) as the algorithmic precision is increased. While standard QPE yields a squared sinc function lineshape, convergence can be accelerated by using windowing techniques such as Kaiser lineshapes [63–65]. This technique can then be used for ground-state energy estimation or, with an appropriate initial state, for vibrational spectroscopy. Typically, the unitary ˆU is chosen as the time-evolution operator e−i ˆH∆t. In this case, the time step ∆ t and the total number of unitary queries directly dictate the overall accuracy of the QPE procedure through standard Fourier grid relationships [2]. An alternative approach is offered by qubitization [37], which utilizes the linear combination of unitaries (LCU) query model [38] to encode the arccosine of the scaled eigenvalues of the Hamiltonian in the eigenphases of the unitary ˆU .A Hamiltonian can be decomposed as an LCU, ˆH = PL−1 
+
+> l=0
+
+al ˆUl, where ˆUl is a unitary and the coefficients al are strictly positive reals (any phases are absorbed into ˆUl). The induced 1-norm is then defined as λLCU = PL−1 
+
+> l=0
+
+al.Note that such an LCU expansion is not unique for a given Hamiltonian. Given the operation PREPARE (PREP), defined as PREP |0⟩ = |PREP ⟩ = 1
+
+√λLCU 
+
+> L−1
+
+X
+
+> l=0
+
+√al |l⟩ ,
+
+and the operation SELECT (SEL), defined as SEL = 
+
+> L−1
+
+X
+
+> l=0
+
+|l⟩⟨ l| ⊗ ˆUl,
+
+it follows that 
+
+⟨0| PREP † · SEL · PREP |0⟩ = ˆHλLCU 
+
+.
+
+In the matrix representation of the operator PREP † · SEL · PREP, this corresponds to encoding the operator ˆH/λ LCU 
+
+in its top-left corner, which is known as a block encoding. By construction, PREP only acts on ancilla qubits whereas SEL acts on both ancilla and system qubits. This embedding of the Hamiltonian into a larger unitary is necessary because Hamiltonians are generally non-unitary and hence cannot be directly implemented as quantum gates. An associated (Szegedy) walk operator can be constructed from the Hamiltonian block encoding as ˆW = (2 |PREP ⟩⟨ PREP | ⊗ ˆI − ˆIF) · SEL , (9) where ˆI and ˆIF denote the identity operators on the system register and the full ancilla–system Hilbert space, respec-tively. When the unitaries ˆUl in the Hamiltonian LCU are also Hermitian, this walk operator admits a two-dimensional irreducible representation in the subspace spanned by |PREP ⟩ | E⟩ and a state orthogonal to it [40], with eigenvalues 6
+
+e±i arccos( E/λ LCU ), where ˆH |E⟩ = E |E⟩. Thus, we can directly perform QPE on ˆW in order to recover our target property, with the only difference being a need to post-process the measured phase ϕ to recover the associated energy as E = λLCU cos(2 πϕ ). The cost of constructing the walk operator equals the sum of the costs of performing PREP, SEL, and PREP †, denoted as CPREP LCU , C SEL LCU , and CPREP † 
+
+> LCU
+
+, and the cost of the reflection on the encoding qubits in Eq. (9). To estimate the energy to an accuracy of ϵ, the walk operator needs to be applied ⌈πλ LCU /2ϵ⌉ times [54]. Hence, assuming access to the exact eigenstate, the total gate cost of estimating an eigenvalue to accuracy ϵ using qubitization is given by [54] 
+
+CLCU =
+
+ πλ LCU 
+
+2ϵ
+
+  CBE LCU + log( L) + O(1)  , (10) where CBE LCU = CPREP LCU + CSEL LCU + CPREP † 
+
+> LCU
+
+is the cost of block-encoding the Hamiltonian and the subscript LCU denotes that these costs depend on the choice of the LCU decomposition utilized. In this work, we leverage different LCU decompositions of the vibrational Hamiltonian to build efficient circuits for qubitization. For fault-tolerant architectures based on the surface code and the universal Clifford+T gate set, executing T gates is the most resource-intensive operation. Because the circuits developed in this work are heavily dominated by Toffoli gates, each of which can be realized using four T gates assuming access to an ancilla qubit and feedforward operations [66], we report our non-Clifford costs in terms of Toffoli count. For comparison with the Trotter-approximation results, we convert the Toffoli counts to the corresponding T-gate counts. 
+
+III. LCU DECOMPOSITIONS OF VIBRATIONAL HAMILTONIANS 
+
+Many methods for decomposing a Hamiltonian into an LCU rely on factorizing the constituent Hamiltonian tensors. The Triangular LCU proposed in Ref. [49] utilizes the Hamiltonian representation of Eq. (6) and factorizes the cij oioj and 
+
+cijk oioj ok tensors for every set of mode indices. The Hamiltonian is then block-encoded by forming SOPs of one-mode operator block encodings. We revisit this procedure in Appendix A, where we also discuss additional algorithmic modifications. Specifically, we derive the Triangular LCU starting from the Hamiltonian in Eq. (5) rather than Eq. (6) because this was observed to yield slightly lower 1-norms, and we utilize alternative three-mode-coupling tensor factorization routines to simplify the optimization problem. In this section, we derive two new LCUs inspired by electronic Hamiltonian block-encoding techniques that result in smaller 1-norms and more efficient block-encoding circuits. In Ref. [49], another LCU called the Diagonal LCU was also proposed, which relied on diagonalizing each one-mode operator in the Hamiltonian. That work concluded that the Diagonal LCU required substantially more resources than the Triangular LCU owing to the need to apply modal rotations every time a one-mode operator is implemented. While this observation is correct in that context, we show that by limiting the architecture to at most n basis transformations for a Hamiltonian of mode-coupling level 
+
+n, one-mode diagonalization can indeed be used to achieve more efficient block encodings. We start by rewriting the Hamiltonian of Eq. (5) as ˆH = 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p,q =0
+
+hi,p,q ˆEpi 
+
+> qi
+
++ 
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X 
+
+> p,q, r,s =0
+
+gi,p,q,j,r,s ˆEpi
+
+> qi
+
+ˆErj 
+
+> sj
+
++ 
+
+> M−1
+
+X 
+
+> i,j,k =0
+> N−1
+
+X 
+
+> p,q,r, s,t,u =0
+
+vi,p,q,j,r,s,k,t,u ˆEpi
+
+> qi
+
+ˆErj
+
+> sj
+
+ˆEtk 
+
+> uk
+
+, (11) where we have relaxed the restriction on the sums over the mode indices and introduced new tensors g and v, which correspond to the symmetrized versions of the g and v tensors, respectively. The symmetrization is done as follows: 
+
+gi,p,q,j,r,s = (g i,p,q,j,r,s + g j,r,s,i,p,q )/2,vi,p,q,j,r,s,k,t,u =  vi,p,q,j,r,s,k,t,u + v k,t,u,i,p,q,j,r,s + v j,r,s,k,t,u,i,p,q 
+
++ v j,r,s,i,p,q,k,t,u + v k,t,u,j,r,s,i,p,q + v i,p,q,k,t,u,j,r,s 
+
+/6,
+
+and the tensors are zero whenever any two mode indices are identical. This definition, along with the fact that the excitation operators on different modes commute, allows for rewriting the Hamiltonian of Eq. (5) as given in Eq. (11). Notice that the g and v tensors are invariant under the exchange of modal indices within a mode, as well as under swapping a mode-modal composite index ( i, p, q ) with another set ( j, r, s ). For example, g satisfies the eightfold symmetry 
+
+gi,p,q,j,r,s = gi,q,p,j,r,s = gi,p,q,j,s,r = gi,q,p,j,s,r = gj,r,s,i,p,q = gj,r,s,i,q,p = gj,s,r,i,p,q = gj,s,r,i,q,p .
+
+Similarly, v satisfies a 48-fold symmetry. These symmetries enable easy manipulation of the tensors. After arriving at an LCU, we will return to restricting the sums over mode indices to remove the redundancy in the LCU terms. 7
+
+A. Pauli LCU 
+
+A straightforward LCU can be obtained by expressing the excitation operators, ˆEpi 
+
+> qi
+
+= ˆ a† 
+
+> pi
+
+ˆaqi , in terms of Pauli operators, analogous to the Pauli LCU for electronic Hamiltonians [50]. Since these creation and annihilation operators are equivalent to Pauli spin raising/lowering operators, we have ˆa† 
+
+> pi
+
+= ˆXpi − i ˆYpi
+
+2 , ˆapi = ˆXpi + i ˆYpi
+
+2 ,
+
+where ˆXpi and ˆYpi are Pauli X and Y operators acting on the qubit corresponding to modal p of mode i, and acting as the identity everywhere else. The symmetries of the Hamiltonian tensors allow us to rewrite the Hamiltonian in Eq. (11) as an SOP of symmetric combinations, ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+. We provide the exact expression and more details in Appendix B 1. Expanding this symmetric term using Pauli operators yields ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+= ˆIδp,q + (−1) δp,q 
+
+2
+
+> 1
+
+X
+
+> b1=0
+
+ˆQ(b1) 
+
+> i,p,q
+
+, (12) where we have defined the operators ˆQ(0)  
+
+> i,p,q
+
+=
+
+( ˆXpi
+
+ˆXqi p̸ = q
+
+ˆZpi p = q , ˆQ(1)  
+
+> i,p,q
+
+=
+
+( ˆYpi
+
+ˆYqi p̸ = q
+
+ˆZpi p = q . (13) Because the operators ˆQ(b1) 
+
+> i,p,q
+
+are unitary, Eq. (12) constitutes an LCU decomposition of ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+. Substituting this into the Hamiltonian, which is expanded as an SOP of these excitation operators, yields an LCU of the full Hamiltonian. Note, however, that when forming products such as ( ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+)( ˆErj 
+
+> sj
+
++ ˆEsj 
+
+> rj
+
+), the identity term in Eq. (12) generates terms that contain fewer than two ˆQ(b1) 
+
+> i,p,q
+
+operators. Consequently, the two-mode-coupling terms in the Hamiltonian generate new one-mode-coupling and constant terms in the LCU. Similarly, the three-mode couplings lead to new two-mode, one-mode, and constant terms. Because of this, the resulting coefficients of the unitaries no longer correspond to the original tensors in Eq. (11), but rather to new tensors formed by partial resummations. The final Pauli LCU of the Hamiltonian takes the form ˆHPauli = CPauli + 12 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p≤q=0 1
+
+X
+
+> b1=0
+
+hi,p,q ˆQ(b1) 
+
+> i,p,q
+
++ 14 
+
+> M−1
+
+X 
+
+> i<j =0
+> N−1
+
+X 
+
+> p≤q, r≤s=0 1
+
+X
+
+> b1,b 2=0
+
+gi,p,q,j,r,s ˆQ(b1) 
+
+> i,p,q
+
+ˆQ(b2)
+
+> j,r,s
+
++ 18 
+
+> M−1
+
+X 
+
+> i<j<k =0
+> N−1
+
+X
+
+> p≤q, r≤s, t ≤u=0 1
+
+X
+
+> b1,b 2,b 3=0
+
+vi,p,q,j,r,s,k,t,u ˆQ(b1) 
+
+> i,p,q
+
+ˆQ(b2) 
+
+> j,r,s
+
+ˆQ(b3)
+
+> k,t,u
+
+,
+
+(14) where the new coefficients CPauli , h, g, and v are defined in Appendix B 1. The mode index sums have now been restored to the canonical restricted domains i < j and i < j < k as in Eq. (3). Because CPauli is a known global energy shift, we block-encode ˆHPauli − CPauli and add CPauli to the energy returned by phase estimation. In practice, one can prune tensor elements below a specified cutoff, increasing the sparsity of the encoded Hamiltonian without a significant loss in accuracy. We verify this in Section V for small systems where the ground-state energy can be obtained classically. The resulting LCU 1-norm is given by 
+
+λPauli = 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p≤q=0
+
+|hi,p,q | + 
+
+> M−1
+
+X 
+
+> i<j =0
+> N−1
+
+X 
+
+> p≤q, r≤s=0
+
+|gi,p,q,j,r,s | + 
+
+> M−1
+
+X 
+
+> i<j<k =0
+> N−1
+
+X
+
+> p≤q, r≤s, t ≤u=0
+
+|vi,p,q,j,r,s,k,t,u |. (15) The exclusion of the constant term leads to a noticeable reduction in the 1-norm. 
+
+B. THC LCU 
+
+Tensor hypercontraction (THC) is primarily used in electronic structure theory for compressing the electron repul-sion integral tensor from O(N 4) terms to O(N 2) terms [55]. Reference [54] proposed a technique to exploit THC 8to block-encode the electronic Hamiltonian efficiently. The vibrational Hamiltonian in Eq. (11) closely resembles the second-quantized electronic structure Hamiltonian. Moreover, its excitation operators ˆEpi 
+
+> qi
+
+have Lie algebraic properties similar to those of their electronic counterparts [31]. Motivated by these similarities, we extend THC to vibrational Hamiltonians, including tensors beyond two-mode coupling. In the following, all identities involving the excitation operators and modal rotations are understood in terms of their action on the physical subspace identified by having exactly one excitation per mode. THC relies on factorizing the two- and three-mode-coupling tensors in the vibrational Hamiltonian in a very specific fashion. We begin with an approximate factorization of the three-mode-coupling tensor v in Eq. (11) as 
+
+vTHC  
+
+> i,p,q,j,r,s,k,t,u
+
+=
+
+> Ri−1
+
+X 
+
+> μi=0
+> Rj−1
+
+X  
+
+> νj=0
+> Rk−1
+
+X 
+
+> ωk=0
+
+Γ(i,j,k )  
+
+> μi,ν j,ω k
+
+χ(i) 
+
+> p,μ i
+
+χ(i) 
+
+> q,μ i
+
+χ(j) 
+
+> r,ν j
+
+χ(j) 
+
+> s,ν j
+
+χ(k) 
+
+> t,ω k
+
+χ(k) 
+
+> u,ω k
+
+. (16) The factorization is done through a nonlinear optimization: minimize Γ, χ v − vTHC (Γ , χ ) F
+
+subject to  
+
+> N−1
+
+X
+
+> p=0
+
+|χ(i) 
+
+> p,μ i
+
+|2 = 1 ∀ i, μ i,
+
+Γ(i,j,k )  
+
+> μi,ν j,ω k
+
+= Γ (k,i,j )  
+
+> ωk,μ i,ν j
+
+= Γ (j,k,i )   
+
+> νj,ω k,μ i
+
+= Γ (i,k,j )  
+
+> μi,ω k,ν j
+
+= Γ (j,i,k )  
+
+> νj,μ i,ω k
+
+= Γ (k,j,i )   
+
+> ωk,ν j,μ i
+
+.
+
+(17) Here ∥·∥ F denotes the Frobenius norm and all variables are assumed to be real. The first constraint is required so that each column of χ(i) can be used as a modal rotation vector, as discussed below. The second constraint is needed to ensure that the symmetries of the original tensor v are respected by the THC-approximated tensor vTHC . Ri
+
+stands for the THC rank for mode i. By choosing a mode-dependent THC rank, the representation can be made more compact as some modes, which are weakly coupled to the rest, may require a smaller rank. Substituting the expression for vTHC into Eq. (11), we can write the three-mode-coupling term as an SOP of factors of the form PN −1 
+
+> p,q =0
+
+χ(i) 
+
+> p,μ i
+
+χ(i) 
+
+> q,μ i
+
+ˆEpi 
+
+> qi
+
+. This is facilitated by the decoupling of modal indices in the THC factorization, which is one of its key benefits. Since χ(i) has normalized columns by construction, for every column μi of χ(i), we can define a number-conserving modal rotation unitary ˆV (i) 
+
+> μi
+
+whose action in the single-excitation subspace maps modal 0i onto the normalized modal vector specified by that column of χ(i). These modal rotations conserve the excitation number of each mode, leaving the physical subspace invariant [31]. The result is the relation  
+
+> N−1
+
+X
+
+> p,q =0
+
+χ(i) 
+
+> p,μ i
+
+χ(i) 
+
+> q,μ i
+
+ˆa† 
+
+> pi
+
+ˆaqi = ˆV (i)
+
+> μi
+
+ˆ˜n0i
+
+ˆV (i)†
+
+> μi
+
+= 12
+
+ˆI − ˆV (i)
+
+> μi
+
+ˆZ0i
+
+ˆV (i)†
+
+> μi
+
+
+
+,
+
+(18) where ˆ ˜n0i = ˆ ˜a†
+
+> 0i
+
+ˆ˜a0i = ( ˆI − ˆZ0i )/2 is the number operator on modal 0 of mode i in the rotated basis. A derivation constructing the unitary ˆV (i) 
+
+> μi
+
+and expressing it in terms of two-qubit rotations is presented in Appendix C of Ref. [49]. Specifically, it is shown that each unitary ˆV (i) 
+
+> μi
+
+can be decomposed into N − 1 pairs of two-qubit rotations of the form exp 
+
+
+
+iθμi
+
+> pi,p ′
+> i
+
+ˆXpi
+
+ˆYp′
+
+> i
+
+
+
+exp 
+
+
+
+−iθμi
+
+> pi,p ′
+> i
+
+ˆYpi
+
+ˆXp′
+
+> i
+
+
+
+, where pi and p′ 
+
+> i
+
+label neighboring qubits of mode i, and the rotation angles 
+
+θμi
+
+> pi,p ′
+> i
+
+are determined by the corresponding column of χ(i).Using Eq. (18) after substituting the THC factorization of Eq. (16) into the Hamiltonian, it follows that the three-mode-coupling term of the Hamiltonian can be written as an SOP of terms of the form ( ˆI − ˆV (i) 
+
+> μi
+
+ˆZ0i
+
+ˆV (i)† 
+
+> μi
+
+). Due to the identity operator in each factor of the SOP, expanding the products yields terms of all mode-coupling levels up to three. Thus, in obtaining an LCU for a three-mode-coupling term, corrections to lower mode-coupling terms need to be introduced, which are incorporated by modifying the corresponding mode-coupling tensors. The explicit forms of the corrections are derived in Appendix C 1. Following this, the new two-mode-coupling tensor is also approximated using a THC factorization. The factorized tensor is given as ˜gTHC  
+
+> i,p,q,j,r,s
+
+=
+
+> Ri−1
+
+X 
+
+> μi=0
+> Rj−1
+
+X 
+
+> νj=0
+
+ζ(i,j ) 
+
+> μi,ν j
+
+ξ(i) 
+
+> p,μ i
+
+ξ(i) 
+
+> q,μ i
+
+ξ(j) 
+
+> r,ν j
+
+ξ(j) 
+
+> s,ν j
+
+, (19) 9where the modal rotation vectors ξ(i) 
+
+> μi
+
+satisfy the normalization condition P 
+
+> p
+
+|ξ(i) 
+
+> p,μ i
+
+|2 = 1, and we ensure ζ(i,j ) 
+
+> μi,ν j
+
+= ζ(j,i )  
+
+> νj,μ i
+
+.By the same reasoning as above, writing the two-mode-coupling term of the Hamiltonian as an LCU leads to further corrections to the one-mode tensor. These corrections from higher-order terms are completely analogous to the one-electron correction arising from the two-electron term in LCUs of the electronic structure Hamiltonian [54, 67]. The new one-mode-coupling tensor can be diagonalized for each mode i, with the corresponding eigenvectors used to construct modal rotation unitaries and the eigenvalues serving as the coefficients of Pauli Z operators. Details of all these steps are explicitly provided in Appendix C 1. Finally, the THC LCU can be written as ˆHTHC = CTHC + 12 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> μi=0
+
+η(i)
+
+> μi
+
+ˆW (i)
+
+> μi
+
+ˆZ0i
+
+ˆW (i)† 
+
+> μi
+
++ 14 
+
+> M−1
+
+X 
+
+> i<j =0 (Ri−1,R j−1)
+
+X 
+
+> (μi,ν j)=0
+
+ζ(i,j )
+
+> μi,ν j
+
+ˆU (i)
+
+> μi
+
+ˆZ0i
+
+ˆU (i)†
+
+> μi
+
+ˆU (j)
+
+> νj
+
+ˆZ0j
+
+ˆU (j)†
+
+> νj
+
++ 18 
+
+> M−1
+
+X  
+
+> i<j<k =0 (Ri−1,R j−1,R k−1)
+
+X  
+
+> (μi,ν j,ω k)=0
+
+Γ(i,j,k ) 
+
+> μi,ν j,ω k
+
+ˆV (i)
+
+> μi
+
+ˆZ0i
+
+ˆV (i)†
+
+> μi
+
+ˆV (j)
+
+> νj
+
+ˆZ0j
+
+ˆV (j)†
+
+> νj
+
+ˆV (k)
+
+> ωk
+
+ˆZ0k
+
+ˆV (k)† 
+
+> ωk
+
+,
+
+(20) where C THC is a constant resulting from summing the identities in all higher mode-coupling terms. The coefficient tensors η, ζ, and Γ and the associated modal rotation unitaries ˆW , ˆU , and ˆV arise from diagonalizing/factorizing one-, two-, and three-mode-coupling tensors, respectively. As in the case of the Pauli LCU, we block-encode ˆHTHC −
+
+CTHC and add CTHC to the eigenvalues obtained from the QPE workflow. The associated LCU 1-norm is given by 
+
+λTHC = 12 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> μi=0
+
+|η(i) 
+
+> μi
+
+| + 14 
+
+> M−1
+
+X 
+
+> i<j =0 (Ri−1,R j−1)
+
+X 
+
+> (μi,ν j)=0
+
+|ζ(i,j ) 
+
+> μi,ν j
+
+| + 18 
+
+> M−1
+
+X  
+
+> i<j<k =0 (Ri−1,R j−1,R k−1)
+
+X  
+
+> (μi,ν j,ω k)=0
+
+|Γ(i,j,k )  
+
+> μi,ν j,ω k
+
+|. (21) Compared to the Pauli LCU of Eq. (14), which has two modal indices per mode index, the LCU of Eq. (20) requires only one index per mode. We observed that the average THC rank was less than 2 N for the systems benchmarked in this work, implying that THC provides a substantially more compact representation of the Hamiltonian tensors. It has also been observed in electronic THC that the ranks are typically between two and five times the number of orbitals [68]. As such, here we assume the average THC rank to scale as O(N ). The 1-norm of the THC LCU can be further reduced by using a 1-norm-weighted regularization in the tensor factorization [68]. Since the number of THC parameters to be optimized grows rapidly with the number of modes, it is often convenient to start with an efficiently obtainable initial guess for the THC factorization. For the two- and three-mode-coupling coefficient tensors, we first perform a third-order CANDECOMP/PARAFAC (CP3) decomposition [69] to obtain an initial guess. This method is highly efficient as it decouples the search for an initial guess in the mode degrees of freedom, allowing parameters for different modes to be obtained in parallel. We provide details of the procedure for obtaining these initial guesses in Appendix C 2. Lastly, we note that we use different modal rotation vectors ξ and χ for two- and three-mode-coupling terms in the Hamiltonian. Using the same modal rotation vectors for both terms can potentially simplify the circuit implementation. However, due to the computational difficulty of obtaining such a factorization, we factorize these terms separately. 
+
+C. Block-Invariant Symmetry Shift (BLISS) 
+
+Block-encoding a Hermitian operator within a unitary requires rescaling its eigenvalues, and the cost of algorithms utilizing such a block-encoding oracle scales linearly with the rescaling factor. When using an LCU-based approach, this rescaling factor is dictated by the LCU 1-norm. Reference [70] proposed a method based on Hamiltonian sym-metries to reduce this 1-norm, which was later generalized to the Block-Invariant Symmetry Shift (BLISS) technique [56, 71]. Although originally proposed for electronic Hamiltonians, the concept applies generally to any block encoding where only the action of the operator on a specific symmetry sector is relevant. In the second-quantized vibrational framework, one such symmetry sector is naturally identified by noting that physically meaningful vibrational states occupy exactly one modal per mode. Accordingly, ( ˆNi − 1) |Ψ⟩ = 0 for any physically meaningful vibrational wave-function |Ψ⟩, where ˆNi = PN −1 
+
+> p=0
+
+ˆEpi 
+
+> pi
+
+is the number operator counting excitations in mode i. The BLISS technique modifies the Hamiltonian as ˆH → ˆH − ˆK by introducing a parameterized “killer” operator ˆK. This operator is constructed to annihilate states within the target symmetry subspace (i.e., ˆK |Ψ⟩ = 0) while acting non-trivially on states in other symmetry subspaces. One can then optimize the parameters within the killer operator to minimize the overall LCU 1-norm of the modified Hamiltonian. Thus, for the second-quantized vibrational Hamiltonian, ˆNi − 110 acts as a killer operator that systematically modifies the one-mode-coupling tensor. A more general one-mode killer takes the form ˆK1 = 
+
+> M−1
+
+X
+
+> i=0
+
+A(i)( ˆNi − 1) ,
+
+where the A(i) are scalar parameters. Similarly, higher-order killers can be constructed by forming weighted sums of operators such as ˆNi ˆNj − 1 and ˆNi ˆNj ˆNk − 1, optionally multiplied by excitation operators. For example, a sum of terms like ˆEtk 
+
+> uk
+
+( ˆNi ˆNj − 1) forms a three-mode-coupling killer. Hermiticity of the resulting Hamiltonian imposes constraints on the coefficients multiplying the killer operators. The explicit forms of the killer operators employed in this work and the corresponding constraints on their coefficients are provided in Appendix D. For the Pauli LCU, BLISS is incorporated by adding killers up to mode-coupling level n for an n-mode-coupling Hamiltonian. This modifies the underlying Hamiltonian tensors, producing a parameterized Pauli LCU whose 1-norm is subsequently minimized. We refer to this optimized representation as the BLISS-Pauli LCU. Care must be taken when adding killers: minimizing the 1-norm can sometimes inadvertently decrease the sparsity of the Hamiltonian tensors, potentially increasing the overall quantum resource requirements. To avoid this, we restrict the killer operators considered in this work as detailed in Appendix D. Applying BLISS to the THC framework (BLISS-THC) is complicated by the nonlinear optimization required to obtain the THC factors. We observed that performing BLISS prior to THC factorization yields tensors that re-quire substantially higher ranks to achieve the same accuracy. Simultaneous optimization of the BLISS and THC parameters, an approach used for electronic Hamiltonians [68], also suffered from the same issue. Consequently, we restrict the BLISS-THC optimization to the simplest killer operator: the one-mode-coupling shift. In this work, the BLISS-THC protocol consists of first deriving the standard THC LCU, followed by optimizing the one-mode killer coefficients to minimize λTHC . Further details are provided in Appendix D. Because BLISS primarily alters the 1-norm without changing the algebraic structure of the Hamiltonian, the block-encoding circuit remains conceptually unchanged. Provided the sparsity of the Hamiltonian is not significantly reduced, the required qubit count is also preserved.  
+
+> IV. RESOURCE ESTIMATION
+
+Using qubitization for quantum phase estimation with an LCU query model leads to the total Toffoli cost given in Eq. (10). In this section, we describe the block-encoding procedures for the Triangular, Pauli, and THC LCUs at a high level and identify the dominant contributions to their computational cost. The resulting asymptotic costs are summarized in Table I. Throughout this section, when comparing the asymptotic scaling with respect to M and 
+
+N , the mode-coupling level n, LCU coefficient precision, and rotation-angle precision are held fixed. We use eO to suppress polylogarithmic factors in M and N . Detailed quantum circuits together with the corresponding Toffoli and logical qubit costs for energy estimation using these LCUs are provided in Appendices A, B, and C. The circuits used to block-encode the Pauli and THC LCUs of the vibrational Hamiltonian closely follow the methods presented in Ref. [54]. In Ref. [49], the Triangular LCU was block-encoded by constructing an SOP of block encodings of individual one-mode operators. Each one-mode operator was block-encoded by first loading up to N (N + 1) /2 unique coefficients and then applying the corresponding Pauli operators. This results in a Toffoli cost of O(N 2) per one-mode operator. Since the Triangular LCU factorizes the tensors cij oioj and cijk oioj ok for every choice of mode indices, the number of products of one-mode operators for a fixed set of mode indices depends on the average factorization rank ¯ κ. The scaling of ¯ κ with N is generally problem dependent, and we therefore retain it explicitly in the asymptotic resource estimates. For a Hamiltonian with fixed mode-coupling level n, the number of possible mode index combinations scales as O(M n). Therefore, the total number of one-mode operators scales as O (¯ κM n). The logical qubit cost is dominated by the system qubits, since forming sums and products of block encodings requires only a small number of ancillas. The resulting asymptotic block-encoding cost is TBE ∆ = O  ¯κM nN 2 , LBE ∆ = O(M N ), (22) where T and L denote the Toffoli and logical qubit costs, respectively. A detailed derivation is given in Appendix A. Unlike the Triangular LCU, the Pauli and THC block encodings do not require repeated applications of the PREP and SELECT primitives. Instead, all coefficients are loaded once at the beginning, followed by a more expensive SELECT operation. Loading all coefficients at once produces a larger data table, which benefits more from advanced QROM techniques that reduce the leading dependence of the Toffoli cost on the table size from linear to square-root, 11                                               
+
+> Resources Triangular Pauli THC
+> Toffoli gates O λ∆¯κM nN2ϵ−1eO
+> 
+> λPauli Mn/ 2Nnϵ−1
+> eO
+> 
+> λTHC (M N )n/ 2ϵ−1
+> 
+> Logical qubits O(M N )eO
+> 
+> Mn/ 2Nn
+> eO
+> 
+> (M N )n/ 2
+> 
+> Table I. Asymptotic quantum resources required for energy estimation of vibrational Hamiltonians using different LCUs. Here,
+> λ∆,λPauli , and λTHC denote the LCU 1-norms of the Triangular, Pauli, and THC LCUs, respectively. The parameter n≥2 is the mode-coupling level of the Hamiltonian. The quantity ¯ κis the average factorization rank of the Hamiltonian coupling tensor slices whose dependence on Ncan be system dependent. The target energy precision is denoted by ϵ, and Mand Nrepresent the numbers of modes and modals, respectively. The Pauli and THC scalings assume the asymptotically optimal QROM ancilla tradeoff, while the THC scaling additionally assumes an average THC rank of O(N). Here, eOsuppresses polylogarithmic factors in Mand N, including those arising from QROM register sizes. When comparing the asymptotic scaling with respect to M
+> and N, the mode-coupling level n, coefficient and rotation-angle precisions are held fixed.
+
+up to polylogarithmic factors, in exchange for additional qubits. Such techniques include the Select-Swap method [50, 51] and the more recently proposed Select-Copy method which improves on the prefactors [52]. These extra qubits may be dirty ancillas that are already available elsewhere in the algorithm. For the THC LCU, performing SELECT only once also reduces the number of basis transformations. Only one transformation is required per mode-coupling level, rather than one for every one-mode operator appearing in the LCU. Since practical problems generally scale with the number of modes while the number of modals remains relatively small, reducing the dependence on the number of modes has the greatest impact on the overall computational cost. Physical Hamiltonians are typically sparse and often contain many terms with negligible coefficients. Rather than encoding every possible index combination, the Pauli LCU can be truncated to include only those terms whose coefficients have magnitude above a predefined threshold. However, in the worst case, for a Hamiltonian with mode-coupling level n, the number of unique coefficients scales as O  (M N 2)n. Without additional ancillas, the PREP circuit is dominated by coefficient loading and has a Toffoli cost of O  (M N 2)n [40]. If sufficiently many clean ancillas, initialized in the |0⟩ state, or dirty ancillas, initialized in arbitrary unknown states, are available, this cost can be reduced to eO (M N 2)n/ 2. The corresponding logical qubit cost scales in the same way [50]. The SELECT circuit is considerably cheaper, since it only applies the appropriate Pauli operator conditioned on the index register. This requires O(M N ) Toffoli gates. After accounting for the system qubits, the asymptotic block-encoding cost becomes TBE Pauli = eO
+
+
+
+(M N 2)n/ 2
+
+, LBE Pauli = eO
+
+
+
+(M N 2)n/ 2
+
+. (23) A complete derivation of these costs, together with the corresponding quantum circuits, is provided in Appendix B 2. The THC LCU factorizes the modal space, which reduces the number of coefficients that must be loaded. In this case, the number of coefficients scales as O(( M N )n). The PREP circuit therefore has a Toffoli cost of O(( M N )n) without additional ancillas and eO(( M N )n/ 2) when an optimal number of ancillas is available. In the latter case, the logical qubit cost also scales as eO(( M N )n/ 2). The THC SELECT circuit is more involved than its Pauli counterpart because it must implement modal rotations. Specifically, the THC LCU consists of products of up to n Pauli Z operators conjugated by modal rotations (see Eq. (20)), so the SELECT circuit must implement n modal rotation unitaries. These rotations are synthesized using the phase gradient technique [72]. The SELECT circuit requires QROM-based loading of the rotation angles together with controlled swaps of the system registers. For fixed mode-coupling level and rotation-angle precision, these operations have a leading cost of O(nM N ), while the rotations themselves require only O(nN ) Toffoli gates. Thus, the rotations do not alter the leading O(nM N ) scaling of SELECT. The ancillas allocated for the PREP circuit are reused during the rotations, so no additional qubits are required. Combining the PREP and SELECT costs gives TBE THC = eO
+
+
+
+(M N )n/ 2
+
+, LBE THC = eO
+
+
+
+(M N )n/ 2
+
+. (24) The corresponding circuits and explicit expressions for T BE THC and L BE THC are derived in Appendix C 3. Up to polylogarithmic factors, Table I shows that the Pauli and THC LCUs reduce the leading dependence of the Toffoli cost on the number of modes from M n to M n/ 2. Relative to the Pauli LCU, THC further reduces the leading dependence on the number of modals from N n to N n/ 2. In contrast, the Triangular LCU requires fewer logical qubits. Nevertheless, as we demonstrate with constant-factor cost estimates, the Pauli and THC LCUs achieve more than an order-of-magnitude reduction in Toffoli cost while requiring only a modest increase in logical qubits. 12 10 0 10 1 10 2 10 3                           
+
+> 10 1
+> 10 0
+> CH 4
+> 10 010 110 210 3
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> 10 010 110 210 3
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 010 110 210 3
+> 10 1
+> 10 0
+> C2H4
+> 10 010 110 210 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 010 110 210 3
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+
+Tensor error (cm 1)     
+
+> Energy error (cm  1)
+> Triangular Pauli THC
+> Figure 1. Ground-state energy error versus tensor approximation error calculated using the Frobenius norm for the Triangular, Pauli, and THC LCUs, shown from left to right. The top and bottom rows correspond to CH 4(9 modes) and C 2H4(12 modes), respectively. Both Hamiltonians include terms up to two-mode coupling and use 5 modals per mode.
+> V. RESULTS
+
+Following the work of Ref. [49], we evaluate the LCUs developed in this study on a series of seven polycyclic aromatic hydrocarbons (PAHs) with 30–138 vibrational modes. Specifically, these systems are linear chains of fused benzene rings known as polyacenes. They provide a systematic means to scale problem complexity by increasing the number of benzene rings. Additional details of these molecules are provided in Appendix F. We compare our approach with the Triangular LCU. The procedure for constructing the Triangular LCU and determining the associated resource estimates is detailed in Appendix A. We analyze the two-mode-coupling Hamiltonian costs for all seven systems using five modals per mode in the vibrational self-consistent field (VSCF) basis [12]. For the three-mode-coupling Hamiltonians, we restrict our analysis to PAH1 and PAH2, employing three modals per mode. All Hamiltonians are generated using MidasCpp [73]. Tensor optimizations for THC and BLISS are performed using the Adam optimizer from Optax [74]. The code used to obtain the LCUs and resource estimates reported herein is available on the associated GitHub repository [75]. In all three LCUs, we utilize approximate tensors in place of their exact counterparts to enable efficient block encodings while maintaining the desired energy accuracy. Because the approximation procedure differs between the LCUs, we quantify the tensor error using the Frobenius norm of the difference between the original and approximate tensors. Figure 1 shows the resulting ground-state energy error as a function of this tensor error for the two-mode-coupling CH 4 and C 2H4 Hamiltonians. The ground-state energies are computed using the Locally Optimal Block Preconditioned Conjugate Gradient (LOBPCG) algorithm as implemented in JAX [76]. For the Triangular LCU, we generate the data by systematically increasing the truncation cutoff applied to the singular values of the tensor slices (see Appendix A). For the Pauli LCU, we instead increase the cutoff used to discard small tensor elements. For each resulting approximate tensor, we construct the Hamiltonian and compute the corresponding ground-state energy. Nearly all THC data points are obtained by following the CP3-based initialization procedure described in Appendix C 2. The nonmonotonic behavior observed in some of the THC data potentially arises from the use of a 1-norm-regularized loss function rather than an objective based solely on tensor error. We employ this regularized objective because it provides more reliable convergence at a fixed THC rank. 13 30 PAH1 48 PAH2 66 PAH3 84 PAH4 102 PAH5 120 PAH6 138 PAH7        
+
+> Number of modes
+> 012345678
+> 1-norm (cm  1)
+> 1e6
+> 2345
+> Ratios
+> Fit Slopes (1e4 cm 1)
+> Triangular: 5.68 Pauli: 2.70 BLISS-Pauli: 1.53 THC: 1.37 BLISS-THC: 1.06
+> Figure 2. Comparison of LCU 1-norms across seven two-mode-coupling PAH Hamiltonians. The main panel shows the 1-norms for the Triangular, Pauli, and THC LCUs, with the BLISS technique applied to further reduce the 1-norms for the Pauli and THC methods. Linear fits versus the number of modes are overlaid as guides to the observed scaling; the fitted slopes are reported in the legend. The inset shows the ratios of the Triangular LCU 1-norm to the Pauli, BLISS-Pauli, THC, and BLISS-THC 1-norms.
+
+For the benchmark systems considered in Fig. 1, the resulting ground-state energy errors are typically one or more orders of magnitude smaller than the corresponding tensor errors. Based on this empirical observation, we adopt a target tensor error of 1 cm −1 as a heuristic proxy for achieving an energy accuracy of 1 cm −1. We apply the same tensor-error threshold to larger systems for which direct evaluation of the ground-state energy error is computationally impractical. A rigorous procedure, however, would require a more direct estimator of the resulting energy error, which we leave for future work. As shown in Table I, the induced LCU 1-norm plays a crucial role in determining the overall Toffoli cost. In Fig. 2, we demonstrate that the Pauli and THC LCUs exhibit smaller 1-norms than the Triangular LCU for two-mode-coupling PAH Hamiltonians. Furthermore, by applying the BLISS technique, the 1-norm of the Pauli LCU can be reduced by approximately 46% on average, and that of the THC LCU by roughly 21% on average. Relative to the Triangular LCU, the inset in the figure shows that the BLISS-THC variant achieves more than a fivefold decrease in the 1-norm. The total Toffoli and qubit costs for the same systems are presented in Fig. 3. For these estimates, both the coefficient precision and the rotation-angle precision are set to 20 bits. Across all evaluated systems with 5 modals per mode, the average THC rank lies between 6 and 7, substantially smaller than the ranks typically encountered for electronic structure Hamiltonians. The Pauli and THC variants distinguish between calculations performed with and without BLISS. Because the implementation of QROM admits a Toffoli–qubit tradeoff, the range of Toffoli costs obtained from different ancilla allocations is shown by vertical lines. The upper endpoints correspond to Select-Copy-based QROM [52] using available dirty ancillas, with the associated qubit costs shown by the solid bars in the right panel. The lower endpoints correspond to the costs obtained by using additional clean ancillas for minimizing the Select-Copy QROM’s Toffoli counts, while the associated additional qubit overheads are shown by the hatched portions of the stacked bars. Notably, even the Select-Copy-based Pauli LCU, which has the highest Toffoli cost among the Pauli and THC variants, achieves more than an order-of-magnitude reduction relative to the Triangular LCU. The Select-Copy-based THC LCU reduces Toffoli costs by an additional factor of 4–7 relative to the corresponding Pauli variant. Most importantly, both the Select-Copy-based Pauli and THC approaches achieve these Toffoli reductions with modest qubit overheads relative to the Triangular LCU, decreasing from approximately 11% to 5% for Pauli and from 33% to 13% for THC as the system size increases. BLISS-THC achieves a 111- to 281-fold reduction in Toffoli cost relative to the Triangular LCU. Further Toffoli reductions enabled by additional clean ancillas are accompanied by increased qubit overhead, with the relative increase in qubit requirements comparable to or larger than the corresponding Toffoli 14 30 PAH1 48 PAH2 66 PAH3 84 PAH4 102 PAH5 120 PAH6 138 PAH7 
+
+Number of modes 
+
+> 10 10
+> 10 11
+> 10 12
+> 10 13
+> Toffoli cost
+> 30 PAH1 48 PAH2 66 PAH3 84 PAH4 102 PAH5 120 PAH6 138 PAH7
+
+Number of modes 
+
+> 10 3
+> 10 4
+> Qubit cost
+
+Triangular Pauli BLISS-Pauli THC BLISS-THC Triangular Pauli BLISS-Pauli THC BLISS-THC Core qubits Additional clean ancillas 
+
+> Figure 3. Toffoli costs (left) and logical qubit costs (right) for QPE ground-state energy estimation of seven second-quantized, two-mode-coupling PAH Hamiltonians with a target QPE accuracy of 1 cm −1. Methods labeled “BLISS” use BLISS to reduce the LCU 1-norm. Because BLISS has a negligible effect on the logical qubit cost, separate BLISS qubit bars are omitted. A small x-axis offset between different methods was used for visual clarity. The vertical ranges on the left show the Toffoli–qubit tradeoffs available through QROM for the Pauli and THC methods. The upper endpoint of each range corresponds to dirty-ancilla-assisted Select-Copy QROM [52], while the lower endpoint corresponds to the largest clean-ancilla allocation considered [50]. In the right panel, the solid portion of Pauli and THC bars shows the logical qubit cost of the dirty-ancilla configuration, and the hatched portion shows the additional clean ancillas required to reach the lower Toffoli endpoint. For the Triangular LCU, Ref. [49] found no benefit from using either dirty or clean ancillas, so no Toffoli–qubit tradeoff is shown. The coefficient precision and, where applicable, the rotation-angle precision are both set to 20 bits.
+
+savings. The numerical values used to plot Figs. 2 and 3 are presented in Appendix F. Deriving the Triangular LCU for three-mode-coupling Hamiltonians involves factorizing order-three tensors. Be-cause this factorization is not unique, the resulting LCUs for the same Hamiltonian can yield varying resource estimates. The authors of Ref. [49] perform three-mode-coupling factorizations using the CANDECOMP/PARAFAC alternating least squares (CP-ALS) method, optionally initialized with an intermediate Tucker decomposition [69]. In this work, we also employ the CP-ALS method provided by the package TensorLy [77]; however, we use it on the decomposed THC core tensors instead as this is computationally more feasible. The exact procedure is outlined in Appendix A. Thus, the three-mode-coupling Triangular LCU resource estimates reported here are based on the im-plementation described in Appendix A and do not constitute an exact reproduction of the procedure used in Ref. [49]. However, given the asymptotic improvements offered by the Pauli and THC LCUs (see Table I), we anticipate that differences in how the Triangular LCU is constructed will not produce a notable change to the trends presented in the analysis below. For all three LCUs, we ensure that the sum of the two- and three-mode-coupling tensor approximation errors is less than 1 cm −1.The resulting resource estimates for the three-mode-coupling PAH1 and PAH2 Hamiltonians are provided in Ta-ble II. The arrows indicate the Toffoli–qubit tradeoff from the Select-Copy-based implementation using available dirty ancillas to the largest clean-ancilla allocation considered here. For PAH1, Select-Copy-based BLISS-THC achieves an approximately 178-fold reduction in Toffoli cost relative to the Triangular LCU, with only a 1.3-fold increase in qubit requirements. For PAH2, the corresponding reduction is approximately 95-fold, with a 1.27-fold increase in qubit requirements. Further Toffoli reductions are possible by allocating additional clean ancillas, reaching reductions of approximately 2540-fold and 2270-fold for PAH1 and PAH2, respectively, albeit with substantially larger qubit overheads. As in the two-mode-coupling results, THC provides lower Toffoli costs than the corresponding Pauli LCU, although the relative improvement is smaller for these three-mode-coupling Hamiltonians. This can be attributed in part to the smaller modal space of three modals per mode used here, compared with five modals per mode for the two-mode-coupling Hamiltonians. Since THC provides a near-quadratic asymptotic improvement in the Toffoli scaling with the number of modals relative to the Pauli LCU, its advantage is expected to grow as the modal space 15                                                       
+
+> Metric Method PAH1 PAH2
+> 1-norms (×10 5cm −1)Triangular 9.69 16.1 Pauli 4.31 7.79 BLISS-Pauli 3.35 6.41 THC 2.43 4.76 BLISS-THC 1.93 4.01
+> Qubit cost Triangular 244 302
+> Pauli 293 →5711 360 →12042 THC 321 →4938 385 →10501 Toffoli cost (×10 10 )Triangular 1030 3810 Pauli 21.1 →0.985 116 →3.50 BLISS-Pauli 14.9 →0.728 86.4 →2.74 THC 7.30 →0.510 47.5 →1.99 BLISS-THC 5.80 →0.405 40.1 →1.68
+> Table II. LCU 1-norms and QPE resource estimates for ground-state energy estimation of the three-mode-coupling PAH1 and PAH2 Hamiltonians with a target QPE accuracy of 1 cm −1. The Hamiltonians are represented using three VSCF modals per mode. Arrows show the Toffoli–qubit tradeoff from Select-Copy QROM using available dirty ancillas on the left to the largest clean-ancilla allocation considered on the right. Providing additional clean ancillas reduces the Toffoli cost while increasing the logical qubit requirement [51, 52]. For the Triangular LCU, Ref. [49] found no benefit from ancilla-assisted QROM, so no Toffoli–qubit tradeoff is reported. Because BLISS has a negligible effect on the logical qubit cost, separate BLISS qubit rows are omitted.
+
+increases. The reduction in the LCU 1-norm arising from tensor factorization may also become more pronounced with increasing modal-space size, further widening the gap between the Pauli and THC approaches. To further contextualize the advantages of the methods developed here, we compare the resource requirements of qubitization-based quantum phase estimation with those of the Trotter-approximation approach reported in Table 3 of Ref. [31]. This comparison considers four molecules: H 2S, CO 2, CH 2O, and CH 4, represented in a second-quantized local-mode harmonic-oscillator basis with four modals per mode. The Trotter-approximation data correspond to the Christiansen Greedy Fragment (CGF) method of Ref. [31]. As the non-Clifford cost reported in Ref. [31] is given in terms of T gates, we convert our Toffoli counts to T-gate counts and compare the resulting T-gate and qubit costs in Fig. 4; each Toffoli gate was counted as 4 T gates. Additional details of deriving resource estimates for Trotter-based QPE are provided in Appendix E, and the numerical values used to plot Fig. 4 are presented in Appendix F. As can be observed, Trotter-based QPE requires fewer qubits, whereas the qubitization-based approaches require fewer T gates. Importantly, across the systems studied, the BLISS-THC T-gate savings increase from 2-fold to nearly 9-fold, while the ratio of qubit costs decreases from approximately 7-fold to 5-fold. This trend suggests that the overall resource advantage of qubitization may increase with system size. Beyond phase estimation, if the objective is to simulate quantum dynamics, the block-encoded Hamiltonian can be used to construct the time-evolution operator directly via quantum signal processing (QSP) [41]. Because QSP exhibits asymptotically superior scaling compared to standard Trotterization, we anticipate the computational advantage of our proposed methods to be even more pronounced for time evolution than in the comparisons shown in Fig. 4. Overall, the two-mode-coupling results, together with the three-mode-coupling benchmarks, demonstrate that the Pauli and THC LCUs consistently achieve substantial reductions in the number of non-Clifford operations across a range of problem sizes relative to both the Triangular LCU and Trotter-based approaches.  
+
+> VI. CONCLUSION
+
+In this work, we have developed improved block-encoding strategies for second-quantized vibrational Hamiltonians and benchmarked their resource requirements against those of Ref. [49] for a series of polycyclic aromatic hydrocar-bon Hamiltonians. Exploiting similarities between the second-quantized electronic and vibrational Hamiltonians, we have generalized some of the block-encoding techniques developed for the electronic structure problem to vibrational quantum simulation. We have derived Pauli and THC LCUs and extended the BLISS technique to reduce the LCU 1-norm. Under the unary mapping, the vibrational creation and annihilation operators map directly to Pauli raising and lowering operators, making the construction of the corresponding qubit Hamiltonian straightforward. Obtaining the THC representation, however, involves a nonlinear optimization and a basis transformation via modal rotation unitaries. We have ensured efficient THC optimization by employing a CP3-based initialization that decouples the optimization problem for each mode. For both the Pauli and THC LCUs, we have developed efficient block-encoding circuits that yield substantial 16 H2S CO 2 CH 2O CH 4       
+
+> Molecules
+> 10 7
+> 10 8
+> T-gate cost
+> H2SCO 2CH 2OCH 4
+> Molecules
+> 050 100 150 200 250
+> Qubit cost
+> Trotter BLISS-Pauli BLISS-THC
+> Figure 4. Comparison of quantum resources required to estimate vibrational energies via QPE to an accuracy of 10 cm −1
+> for qubitization and Trotter-approximation-based approaches. For these small-system qubitization estimates, QROM without additional ancillas [40] is used instead of its ancilla-assisted variants [51, 52]. The Trotter estimates use the Christiansen Greedy Fragment (CGF) construction of Ref. [31]. All Hamiltonians are represented in a local-mode harmonic-oscillator basis with four modals per mode.
+
+reductions in Toffoli operations relative to the Triangular LCU proposed in Ref. [49]. The Triangular LCU, however, uses the fewest logical qubits, with the Pauli LCU requiring only a small increase when no additional ancillas are used. Up to polylogarithmic factors, allocating sufficient additional qubits allows both the Pauli and THC LCUs to achieve a quadratic improvement in the Toffoli scaling with the number of modes. Assuming that the average THC rank scales linearly with the number of modals, THC provides an additional quadratic improvement, up to polylogarithmic factors, in scaling with the number of modals. In part, these improvements arise from the ability to better exploit Toffoli–qubit tradeoffs using ancilla-assisted QROM techniques [50–52] compared to the Triangular LCU framework. We note that recently improved QROM implementations could reduce costs further [78]. For a QPE-based workflow of two-mode-coupling Hamiltonians, our results demonstrate that BLISS-THC can achieve up to a 281-fold reduction in the total Toffoli count compared to the Triangular LCU for only a modest increase in the qubit count. A similar analysis of small three-mode-coupling Hamiltonians indicates reductions by factors of 95–178, with the asymptotic scaling suggesting larger reductions as the number of modals increases. In both cases, further reductions in Toffoli cost are possible, but only at the expense of substantially increased qubit requirements. Furthermore, when benchmarked against recent Trotter-based approaches for a set of small systems with up to 9 modes, our qubitization methods achieve reductions of up to nearly ninefold in T-gate cost. Taken together with our asymptotic resource analysis, these results identify BLISS-THC as the most resource-efficient block-encoding strategy for almost all benchmarked systems in this work. Beyond quantum simulation, the vibrational THC factorization developed here may also be useful for classical methods for computing vibrational spectra. Since its original development by Mart´ ınez and coworkers [55], THC has been used to accelerate several established electronic structure methods [79, 80]. Given the parallels between second-quantized electronic and vibrational structure, it would be interesting to investigate whether analogous THC-based improvements are possible for vibrational perturbation theory [81], vibrational configuration interaction [82], and vibrational coupled-cluster theory [83, 84]. Future work in quantum simulation could include end-to-end resource estimates for vibrational double factoriza-tion. While straightforward to formulate for two-mode-coupling Hamiltonians, this approach will require nonlinear optimization for higher-order interactions. Additionally, extending techniques such as sum-of-squares and spectral amplification, which were recently proposed for electronic Hamiltonian simulation [85], presents a promising avenue for further cost reductions. Beyond optimizing our current framework, it is also valuable to establish numerically grounded comparisons of quantum resource requirements across different representations of the same vibrational problem at a fixed target accuracy. While this study focuses on a second-quantized representation, an efficient block-encoding of a real-space representation of the rovibrational Hamiltonian was recently introduced in Ref. [43]. A comparison across such representations for Trotter-based QPE was conducted in Ref. [31], demonstrating that a second-quantized approach required fewer resources than a real-space formulation for spectral calculations considered in that work. A similar comparison for block-encoding-based QPE will be important for identifying the most efficient pathway toward 17 practical vibrational quantum simulation. Furthermore, given the rapid increase in research activity to develop fault-tolerant algorithms for molecular vibrations, there is a growing need to identify challenging target molecular systems against which algorithmic costs can be meaningfully benchmarked. Such targets are likely to be large, strongly coupled systems with potential energy surfaces that do not admit compact SOP forms or n-mode expansions, making them challenging for leading tensor-network-based methods. 
+
+ACKNOWLEDGMENTS 
+
+The authors would like to thank Ove Christiansen for providing the PAH Hamiltonians and assisting in configuring MidasCpp. S.M. appreciates financial support from the Research Excellence Postdoctoral Fellowship at the University of Toronto Scarborough. We also acknowledge the Applied Quantum Computing Challenge program of the National Research Council of Canada (grant number AQC-103-2) and the NSERC Quantum Alliance program for financial support. This research was enabled in part by computational resources provided by Compute Ontario ( https:// computeontario.ca ) and the Digital Research Alliance of Canada ( https://alliancecan.ca ). Some computations were performed on the Niagara and Trillium supercomputers at the SciNet High Performance Computing Consortium and on the NARVAL and RORQUAL supercomputers through Calcul Qu´ ebec. SciNet is funded by Innovation, Science, and Economic Development Canada, the Digital Research Alliance of Canada, the Ontario Research Fund: Research Excellence, and the University of Toronto. 
+
+Appendix A: Details of Triangular LCU 
+
+The Triangular LCU relies on expressing the vibrational Hamiltonian as a sum-of-products (SOP) of one-mode op-erators. The full Hamiltonian is then block-encoded by explicitly forming the SOP of one-mode block encodings. Our implementation includes several modifications to the original approach; we first summarize the procedure described in Ref. [49]. Recall that the Hamiltonian obtained using the ADGA procedure is expressed as [see Eq. (6)] ˆH = X
+
+> i
+
+X
+
+> oi
+
+cioi ˆhi,o i
+
++ X
+
+> i<j
+
+X
+
+> oi,o j
+
+cij oioj ˆhi,o i ˆhj,o j
+
++ X
+
+> i<j<k
+
+X 
+
+> oi,o j,o k
+
+cijk oioj ok ˆhi,o i ˆhj,o j ˆhk,o k
+
+.
+
+Block-encoding the Hamiltonian by encoding the individual operators ˆhi,o i
+
+has a cost that scales with the number of terms in the coefficient tensors c. To reduce this cost, the tensors can be factorized, resulting in fewer Hamiltonian terms at the expense of making the one-mode operators depend explicitly on the mode combinations. The idea is to obtain the decompositions 
+
+cij oioj = X
+
+> α
+
+γ{i,j } 
+
+> α
+
+V i, {i,j } 
+
+> oi,α
+
+V j, {i,j }  
+
+> oj,α
+
+, (A1) 
+
+cijk oioj ok = X
+
+> α
+
+γ{i,j,k } 
+
+> α
+
+V i, {i,j,k } 
+
+> oi,α
+
+V j, {i,j,k }  
+
+> oj,α
+
+V k, {i,j,k }  
+
+> ok,α
+
+, (A2) for each mode pair ( i, j ) and mode triplet ( i, j, k ), respectively. The factorization of the cij tensor is a singular value decomposition (SVD) for each mode pair ( i, j). The factorization of cijk , however, is non-unique and can be challenging to obtain. The authors of Ref. [49] employ the CP-ALS method for each mode triplet ( i, j, k ) to perform this factorization with optional initialization from a preliminary Tucker decomposition. Substituting these factorizations into Eq. (6) modifies the Hamiltonian as ˆH = X
+
+> i
+
+ˆhi + X
+
+> i<j
+
+X
+
+> α
+
+γ{i,j } 
+
+> α
+
+ˆhi, {i,j } 
+
+> α
+
+ˆhj, {i,j } 
+
+> α
+
++ X
+
+> i<j<k
+
+X
+
+> α
+
+γ{i,j,k } 
+
+> α
+
+ˆhi, {i,j,k } 
+
+> α
+
+ˆhj, {i,j,k } 
+
+> α
+
+ˆhk, {i,j,k } 
+
+> α
+
+, (A3) where the new one-mode operators are defined as ˆhi = X
+
+> oi
+
+cioi ˆhi,o i
+
+,
+
+ˆhi, {i,j } 
+
+> α
+
+= X
+
+> oi
+
+V i, {i,j } 
+
+> oi,α
+
+ˆhi,o i
+
+,
+
+ˆhi, {i,j,k } 
+
+> α
+
+= X
+
+> oi
+
+V i, {i,j,k } 
+
+> oi,α
+
+ˆhi,o i
+
+.18 The coefficients γ{i,j } and γ{i,j,k } can be absorbed into the one-mode operators. The new SOP representation in Eq. (A3) benefits from having fewer terms than the original representation of Eq. (6). The name Triangular LCU derives from the way each of the above one-mode operators is encoded. Since these one-mode operators are Hermitian, their integrals accompanying the creation/annihilation operators constitute symmetric matrices. As such, loading only the lower/upper triangle of these matrices is sufficient to construct the one-mode operators. Our implementation of the Triangular LCU differs from the original approach in a few ways. First, instead of starting from the Hamiltonian of Eq. (6) and factorizing cij and cijk tensors, we start from the Hamiltonian of Eq. (11), which is also in an SOP form where the one-mode operators are now excitation operators, and factorize the 
+
+g and v tensors. This choice was made since the resulting LCU 1-norm was often found to be slightly smaller. For the two-mode-coupling tensor g, for each pair of i and j indices, we treat ( p, q ) and ( r, s ) as composite indices to obtain the SVD 
+
+gi,p,q,j,r,s =
+
+> κ{i,j }−1
+
+X
+
+> α=0
+
+˜γ{i,j } 
+
+> α
+
+˜V i, {i,j } 
+
+> (p,q ),α
+
+˜V j, {i,j } 
+
+> (r,s ),α
+
+. (A4) For the three-mode-coupling tensor v, we reuse the THC factorized form of Eq. (16), which we rewrite below for convenience. 
+
+vi,p,q,j,r,s,k,t,u =
+
+> Ri−1
+
+X 
+
+> μi=0
+> Rj−1
+
+X  
+
+> νj=0
+> Rk−1
+
+X 
+
+> ωk=0
+
+Γ(i,j,k )  
+
+> μi,ν j,ω k
+
+χ(i) 
+
+> p,μ i
+
+χ(i) 
+
+> q,μ i
+
+χ(j) 
+
+> r,ν j
+
+χ(j) 
+
+> s,ν j
+
+χ(k) 
+
+> t,ω k
+
+χ(k) 
+
+> u,ω k
+
+.
+
+Since the goal is to express this as a compact sum of products of one-mode integrals for each set of i, j, and k indices, we perform a CP-ALS decomposition of the Γ (i,j,k ) tensor: Γ(i,j,k )  
+
+> μi,ν j,ω k
+
+=
+
+> κ{i,j,k }−1
+
+X
+
+> α=0
+
+˜γ{i,j,k } 
+
+> α
+
+˜Vi, {i,j,k } 
+
+> μi,α
+
+˜Vj, {i,j,k }  
+
+> νj,α
+
+˜Vk, {i,j,k }  
+
+> ωk,α
+
+. (A5) By defining ˜V i, {i,j,k } 
+
+> (p,q ),α
+
+= P
+
+> μi
+
+˜Vi, {i,j,k } 
+
+> μi,α
+
+χ(i) 
+
+> p,μ i
+
+χ(i) 
+
+> q,μ i
+
+, we can rewrite the three-mode-coupling tensor as 
+
+vi,p,q,j,r,s,k,t,u =
+
+> κ{i,j,k }−1
+
+X
+
+> α=0
+
+˜γ{i,j,k } 
+
+> α
+
+˜V i, {i,j,k } 
+
+> (p,q ),α
+
+˜V j, {i,j,k } 
+
+> (r,s ),α
+
+˜V k, {i,j,k } 
+
+> (t,u ),α
+
+. (A6) Substituting Eqs. (A4) and (A6) back into the Hamiltonian of Eq. (11) and restricting the sum over mode indices leads to ˆH = X
+
+> i
+
+ˆhi + X
+
+> i<j κ{i,j }−1
+
+X
+
+> α=0
+
+2˜ γ{i,j }
+
+> α
+
+ˆ˜hi, {i,j }
+
+> α
+
+ˆ˜hj, {i,j } 
+
+> α
+
++ X
+
+> i<j<k κ{i,j,k }−1
+
+X
+
+> α=0
+
+6˜ γ{i,j,k }
+
+> α
+
+ˆ˜hi, {i,j,k }
+
+> α
+
+ˆ˜hj, {i,j,k }
+
+> α
+
+ˆ˜hk, {i,j,k } 
+
+> α
+
+, (A7) where the new one-mode operators are defined as ˆ˜hi, {i,j } 
+
+> α
+
+= X
+
+> p,q
+
+˜V i, {i,j } 
+
+> (p,q ),α
+
+ˆEpi 
+
+> qi
+
+,
+
+ˆ˜hi, {i,j,k } 
+
+> α
+
+= X
+
+> p,q
+
+˜V i, {i,j,k } 
+
+> (p,q ),α
+
+ˆEpi 
+
+> qi
+
+.
+
+Instead of the Hamiltonian of Eq. (A3), we use the Hamiltonian of Eq. (A7) to implement the Triangular LCU. The resulting 1-norm is 
+
+λ∆ = X
+
+> i
+
+ˆhi + X
+
+> i<j κ{i,j }−1
+
+X
+
+> α=0
+
+2 ˜γ{i,j }
+
+> α
+
+ˆ˜hi, {i,j }
+
+> α
+
+ˆ˜hj, {i,j }
+
+> α
+
++ X
+
+> i<j<k κ{i,j,k }−1
+
+X
+
+> α=0
+
+6 ˜γ{i,j,k }
+
+> α
+
+ˆ˜hi, {i,j,k }
+
+> α
+
+ˆ˜hj, {i,j,k }
+
+> α
+
+ˆ˜hk, {i,j,k } 
+
+> α
+
+,19 where ∥·∥ denotes the induced 1-norm obtained by expanding the operator as a Pauli LCU. To encode the full Hamiltonian, Ref. [49] uses PREP-SEL primitives to explicitly encode one-mode operators, form their products, and finally their sums. Note that a global PREP will be required when forming the final sum of operators to ensure correct rescaling of individual one-mode operators. Though the details of the global PREP are not discussed in Ref. [49], its contribution to the total cost will be subdominant and hence will be ignored here. In order to form the product of block encodings, the technique presented in Ref. [86] is used. Thus, the total number of Toffoli gates required to block-encode the Hamiltonian can simply be obtained as the cost of block-encoding a single one-mode operator times the number of one-mode operators in Eq. (A7) plus the cost of forming the products. We now discuss the dominant contributors to the cost of block-encoding an arbitrary one-mode operator ˆh. It can be expanded as ˆh = P 
+
+> p,q
+
+hp,q ˆEpq , where we have suppressed all except the modal indices for simplicity. The qubit representation of the operator is given by  
+
+> N−1
+
+X
+
+> p,q =0
+
+hp,q ˆEpq = 12 
+
+> N−1
+
+X
+
+> p<q =0
+
+hp,q ( ˆXp ˆXq + ˆYp ˆYq ) + 12 
+
+> N−1
+
+X
+
+> p=0
+
+hp,p (ˆI − ˆZp).
+
+Since hp,q = hq,p , we only load N (N + 1) /2 coefficients in the PREP, where N is the number of modals. In loading these values, it was reported in Ref. [49] that ancilla-assisted QROM did not offer any benefit over the QROM of Ref. [40] for the PAH Hamiltonians. Hence, the Toffoli cost of loading these values is equal to N (N + 1) /2 − 2. The cost of performing the comparator in coherent alias sampling is ℵ, where ℵ is the number of bits used to approximate the hp,q values. Note that this cost was assumed to be 2 ℵ in Ref. [49]. Thus, the cost of PREP is dominated by 
+
+CPREP(1) ∆ = N (N + 1) 2 + ℵ − 2,
+
+which is also the cost of PREP †, CPREP †(1) ∆ . To perform SELECT, a controlled unary iteration over the N (N + 1) /2states was used. Additionally, to distinguish between the application of ˆX ˆX and ˆY ˆY , one needs to control on an ancilla along with the right branch of the unary iterator. This does not appear to be accounted for in Ref. [49]. This additional control is only needed for p < q values. Hence, SELECT has a cost of 
+
+CSEL(1) ∆ = N (N + 1) 2 + N (N − 1) − 1= N (3 N − 1) 2 − 1.
+
+Thus the total dominant cost of block-encoding a one-mode operator is 
+
+CBE(1) = CPREP(1) ∆ + CSEL(1) ∆ + CPREP †(1) ∆
+
+= N (5 N + 1) 2 + 2 ℵ − 5.
+
+This cost ignores some of the logarithmic overheads. While this cost was obtained by mainly following the procedure outlined in Ref. [49], in principle, it is possible to improve upon it by using the Pauli Sub-SELECT circuit of Fig. 7 but without the outer mode-swap gates. Another important contributor to the cost of block-encoding the whole Hamiltonian comes from controls used to form products of block encodings [see Fig. 1 of Ref. [49]]. The qubits that need to be controlled are all the ancillas used when block-encoding a one-mode operator that remain entangled with the system qubits even after the application of PREP †. This includes the ℵ qubits used in coherent alias sampling. Hence, the total Toffoli cost of block-encoding a two-mode-coupling Hamiltonian is dominated by 
+
+CBE ∆ = 
+
+> M−1
+
+X
+
+> i=0
+
+ N (5 N + 1) 2 + 2 ℵ − 5
+
+
+
++ 
+
+> M−1
+
+X
+
+> i<j =0
+> κ{i,j }−1
+
+X
+
+> α=0
+
+2
+
+ N (5 N + 1) 2 + 3 ℵ − 5
+
+
+
+= M
+
+ N (5 N + 1) 2 + 2 ℵ − 5
+
+
+
++ M (M − 1)¯ κ2
+
+ N (5 N + 1) 2 + 3 ℵ − 5
+
+
+
+,
+
+where ¯ κ2 is the average of κ{i,j } for all i < j . Treating ℵ as a constant, the asymptotic Toffoli complexity of the Triangular LCU for a two-mode-coupling Hamiltonian is equal to O(λ∆ ¯κ2M 2N 2/ϵ ). 20 Likewise, for a three-mode-coupling Hamiltonian, 
+
+CBE ∆ = M
+
+ N (5 N + 1) 2 + 2 ℵ − 5
+
+
+
++ M (M − 1)¯ κ2
+
+ N (5 N + 1) 2 + 3 ℵ − 5
+
+
+
++ M (M − 1)( M − 2) 2 ¯κ3
+
+ N (5 N + 1) 2 + 3 ℵ − 5
+
+
+
+,
+
+where ¯ κ3 is the average of κ{i,j,k } for all i < j < k . Hence, for a Hamiltonian with a mode-coupling level equal to 
+
+n, the asymptotic Toffoli complexity is given by O(λ∆ ¯κM nN 2/ϵ ), where ¯ κ = max {1, ¯κ2, . . . , ¯κn}. For both two- and three-mode-coupling Hamiltonians, the number of qubits required is dominated by the system qubits, and hence the asymptotic logical qubit cost scales as O(M N ). 
+
+Appendix B: Details of Pauli LCU 
+
+In this section, we provide details of the derivation of the Pauli LCU, along with the circuits used to block-encode it. 
+
+1. Deriving Pauli LCU 
+
+The symmetries of the tensors in Eq. (11) allow the Hamiltonian to be rewritten as ˆH = 12 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p,q =0
+
+hi,p,q ( ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+) + 14 
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X 
+
+> p,q, r,s =0
+
+gi,p,q,j,r,s ( ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+)( ˆErj 
+
+> sj
+
++ ˆEsj 
+
+> rj
+
+)+ 18 
+
+> M−1
+
+X 
+
+> i,j,k =0
+> N−1
+
+X 
+
+> p,q,r, s,t,u =0
+
+vi,p,q,j,r,s,k,t,u ( ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+)( ˆErj 
+
+> sj
+
++ ˆEsj 
+
+> rj
+
+)( ˆEtk 
+
+> uk
+
++ ˆEuk 
+
+> tk
+
+),
+
+where the Hermitian sum of excitation operators was decomposed into an LCU as ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+= ˆIδp,q + (−1) δp,q 
+
+2
+
+> 1
+
+X
+
+> b1=0
+
+ˆQ(b1) 
+
+> i,p,q
+
+.
+
+To illustrate the result of this substitution, consider the two-mode-coupling term of the Hamiltonian as an example.  
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X 
+
+> p,q, r,s =0
+
+gi,p,q,j,r,s ( ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+)( ˆErj 
+
+> sj
+
++ ˆEsj 
+
+> rj
+
+)= 
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X 
+
+> p,q, r,s =0
+
+gi,p,q,j,r,s ˆIδp,q + (−1) δp,q 
+
+2
+
+> 1
+
+X
+
+> b1=0
+
+ˆQ(b1)
+
+> i,p,q
+
+!
+
+ˆIδr,s + (−1) δr,s 
+
+2
+
+> 1
+
+X
+
+> b2=0
+
+ˆQ(b2)
+
+> j,r,s
+
+!
+
+= 
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X
+
+> p,r =0
+
+gi,p,p,j,r,r + 
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X 
+
+> p,q, r,s =0
+
+gi,p,q,j,r,s 
+
+> 1
+
+X
+
+> b1=0
+
+(−1) δp,q δr,s 
+
+2 ˆQ(b1) 
+
+> i,p,q
+
++
+
+> 1
+
+X
+
+> b2=0
+
+(−1) δr,s δp,q 
+
+2 ˆQ(b2)
+
+> j,r,s
+
+!
+
++ 
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X 
+
+> p,q, r,s =0 1
+
+X
+
+> b1,b 2=0
+
+(−1) δp,q +δr,s gi,p,q,j,r,s 
+
+4 ˆQ(b1) 
+
+> i,p,q
+
+ˆQ(b2)
+
+> j,r,s
+
+.
+
+Most notably, the two terms that are linear in ˆQ can be shown to be identical. This follows from exchanging the dummy indices {i, p, q } with {j, r, s } and noticing that the g tensor possesses the symmetry gj,r,s,i,p,q = gi,p,q,j,r,s .21 Hence, the above relation reduces to  
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X 
+
+> p,q, r,s =0
+
+gi,p,q,j,r,s ( ˆEpi 
+
+> qi
+
++ ˆEqi 
+
+> pi
+
+)( ˆErj 
+
+> sj
+
++ ˆEsj 
+
+> rj
+
+)= 
+
+> M−1
+
+X
+
+> i,j =0
+
+ 
+
+> N−1
+
+X
+
+> p,r =0
+
+gi,p,p,j,r,r + 
+
+> N−1
+
+X 
+
+> p,q, r=0 1
+
+X
+
+> b1=0
+
+(−1) δp,q gi,p,q,j,r,r ˆQ(b1) 
+
+> i,p,q
+
++ 
+
+> N−1
+
+X 
+
+> p,q, r,s =0 1
+
+X
+
+> b1,b 2=0
+
+(−1) δp,q +δr,s gi,p,q,j,r,s 
+
+4 ˆQ(b1) 
+
+> i,p,q
+
+ˆQ(b2)
+
+> j,r,s
+
+ .
+
+As shown, when the two-mode-coupling term is expanded in terms of Pauli unitaries, it generates new terms with a mode-coupling level of two or less. The same principle applies to the one- and three-mode-coupling terms. Grouping the ˆQ unitaries based on their mode-coupling level thus yields new coefficient tensors and a global energy shift. Because these new coefficients are constructed via partial summations over the original symmetric tensors, they inherit the same symmetries. Specifically, they are symmetric under the exchange of composite mode-modal indices (e.g., swapping {i, p, q } with {j, r, s }). Since operators acting on different modes commute, this symmetry allows us to restrict the summation over the mode indices in the LCU. Furthermore, because the tensors are invariant under the exchange of modal indices within a given mode, and since ˆQ(b1) 
+
+> i,p,q
+
+= ˆQ(b1)
+
+> i,q,p
+
+, the summation over modal indices can be restricted to p ≤ q. These restrictions lead directly to the Hamiltonian in Eq. (14), with the new coefficients defined as 
+
+CPauli = 12 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p=0
+
+hi,p,p + 14 
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X
+
+> p,r =0
+
+gi,p,p,j,r,r + 18 
+
+> M−1
+
+X 
+
+> i,j,k =0
+> N−1
+
+X
+
+> p,r,t =0
+
+vi,p,p,j,r,r,k,t,t ,
+
+hi,p,q = 1(−2) δp,q 
+
+hi,p,q + 
+
+> M−1
+
+X 
+
+> j=0
+> N−1
+
+X
+
+> r=0
+
+gi,p,q,j,r,r + 34 
+
+> M−1
+
+X 
+
+> j,k =0
+> N−1
+
+X
+
+> r,t =0
+
+vi,p,q,j,r,r,k,t,t 
+
+ ,
+
+gi,p,q,j,r,s = 2(−2) δp,q +δr,s gi,p,q,j,r,s + 32 
+
+> M−1
+
+X 
+
+> k=0
+> N−1
+
+X
+
+> t=0
+
+vi,p,q,j,r,s,k,t,t 
+
+!
+
+,
+
+vi,p,q,j,r,s,k,t,u = 6vi,p,q,j,r,s,k,t,u 
+
+(−2) δp,q +δr,s +δt,u .
+
+2. Complete cost of block-encoding Pauli LCU 
+
+For convenience, we rewrite the Pauli LCU of Eq. (14) here. ˆHPauli = CPauli + 12 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p≤q=0 1
+
+X
+
+> b1=0
+
+hi,p,q ˆQ(b1) 
+
+> i,p,q
+
++ 14 
+
+> M−1
+
+X 
+
+> i<j =0
+> N−1
+
+X 
+
+> p≤q, r≤s=0 1
+
+X
+
+> b1,b 2=0
+
+gi,p,q,j,r,s ˆQ(b1) 
+
+> i,p,q
+
+ˆQ(b2)
+
+> j,r,s
+
++ 18 
+
+> M−1
+
+X 
+
+> i<j<k =0
+> N−1
+
+X
+
+> p≤q, r≤s, t ≤u=0 1
+
+X
+
+> b1,b 2,b 3=0
+
+vi,p,q,j,r,s,k,t,u ˆQ(b1) 
+
+> i,p,q
+
+ˆQ(b2) 
+
+> j,r,s
+
+ˆQ(b3)
+
+> k,t,u
+
+.
+
+The constant term is ignored when block-encoding. We use this three-mode-coupling Hamiltonian to draw PREP and SELECT circuits, but the costs are obtained for a general Hamiltonian of mode-coupling level n. In the following, unless stated otherwise, QROM refers to the ancilla-assisted QROM of Ref. [50]. The PREP circuit initializes a uniform index register of size S [54], where S = O  (M N 2)n is the number of unique non-negligible coefficients, uses QROM to load the LCU coefficients, and then applies coherent alias sampling to extract the loaded values and realize the target LCU coefficients. Assuming coefficients below a threshold are set to zero, the target PREP state 22 for block-encoding a three-mode-coupling Hamiltonian is given by PREP |0⟩ = 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p≤q=0
+
+s
+
+|hi,p,q |
+
+λPauli 
+
+|00 ⟩ | ipqα ⟩ | 0000 ⟩ | 0000 ⟩ | θ⟩ | +⟩ | +⟩ | +⟩ | garb ⟩
+
++ 
+
+> M−1
+
+X 
+
+> i<j =0
+> N−1
+
+X 
+
+> p≤q, r≤s=0
+
+s
+
+|gi,p,q,j,r,s |
+
+λPauli 
+
+|01 ⟩ | ipqα ⟩ | jrsβ ⟩ | 0000 ⟩ | θ⟩ | +⟩ | +⟩ | +⟩ | garb ⟩
+
++ 
+
+> M−1
+
+X 
+
+> i<j<k =0
+> N−1
+
+X
+
+> p≤q, r≤s, t ≤u=0
+
+s
+
+|vi,p,q,j,r,s,k,t,u |
+
+λPauli 
+
+|10 ⟩ | ipqα ⟩ | jrsβ ⟩ | ktuγ ⟩ | θ⟩ | +⟩ | +⟩ | +⟩ | garb ⟩ .
+
+(B1) By expanding the qubits in the |+⟩ state as |+⟩ = ( |0⟩ + |1⟩)/√2, the PREP state can be rewritten as PREP |0⟩ = 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p≤q=0 1
+
+X
+
+> b1=0
+
+s
+
+|hi,p,q |
+
+2λPauli 
+
+|00 ⟩ | ipqα ⟩ | 0000 ⟩ | 0000 ⟩ | θ⟩ | b1⟩ | +⟩ | +⟩ | garb ⟩
+
++ 
+
+> M−1
+
+X 
+
+> i<j =0
+> N−1
+
+X 
+
+> p≤q, r≤s=0 1
+
+X
+
+> b1,b 2=0
+
+s
+
+|gi,p,q,j,r,s |
+
+4λPauli 
+
+|01 ⟩ | ipqα ⟩ | jrsβ ⟩ | 0000 ⟩ | θ⟩ | b1⟩ | b2⟩ | +⟩ | garb ⟩
+
++ 
+
+> M−1
+
+X 
+
+> i<j<k =0
+> N−1
+
+X
+
+> p≤q, r≤s, t ≤u=0 1
+
+X
+
+> b1,b 2,b 3=0
+
+s
+
+|vi,p,q,j,r,s,k,t,u |
+
+8λPauli 
+
+|10 ⟩ | ipqα ⟩ | jrsβ ⟩ | ktuγ ⟩ | θ⟩ | b1⟩ | b2⟩ | b3⟩ | garb ⟩ .
+
+(B2) By comparing this with Eq. (14), we can see that the PREP state has the same coefficients as the Pauli LCU, up to the rescaling factor and the square roots which will be canceled on the application of PREP †. The registers in Eq. (B2) serve distinct functions. The first two qubits enumerate the mode-coupling level, where the states |00 ⟩, |01 ⟩,and |10 ⟩ correspond to one-, two-, and three-mode-coupling terms, respectively. The next three multi-part registers are designed to distinguish terms based on their coupling level. Consider the first of these registers, |ipqα ⟩: the first sub-register encodes the mode index i, the next two encode the modal indices p and q, and the final qubit α acts as a flag indicating whether the modal indices are identical (i.e., α = 1 ⇐⇒ p = q). This α flag is later utilized by the SELECT circuit. The qubit labeled θ encodes the sign of the coefficients, which depends on the mode and modal indices (this dependency is omitted in Eq. (B2) for brevity). The three subsequent qubits are used to distinguish the two Pauli operators defined in Eq. (13). The value encoded by these qubits is used as a flag in the SELECT circuit to implement appropriate unitaries. Note that the b1, b 2, and b3 values are not loaded during QROM but rather realized by expanding the |+⟩ states, which is evident from comparing Eq. (B2) to Eq. (B1). Thus, to realize the state in Eq. (B2), the loaded coefficients during QROM are those of Eq. (B1) and not of Eq. (B2). Finally, the garbage register, denoted as |garb ⟩, contains all auxiliary qubits generated during state preparation that are not acted upon by the SELECT operation. Due to this, it does not interfere with the block-encoded Hamiltonian. To block-encode a Hamiltonian with different levels of mode coupling, we accordingly allocate or omit the extra registers required to encode the corresponding mode and modal indices. A circuit realizing the state in Eq. (B2) is presented in Fig. 5. Below, we derive the Toffoli count associated with implementing the PREP circuit. Although the circuit presented here corresponds to n = 3, we will derive the cost for an arbitrary n.
+
+• The initial step involves preparing a uniform superposition over the S basis states. Using the procedure of Ref. [54], this operation incurs a cost of 3 ⌈log 2 S⌉ − 3η + 2 br − 9, where η represents the largest integer such that 2 η divides S, and br denotes the number of precision bits used to specify the required rotation angles for the state preparation. 
+
+• The subsequent step utilizes QROM to load the classical data. The Toffoli cost of data loading depends on the availability of clean or dirty ancilla qubits. Clean ancillas are strictly initialized in the |0⟩ state, whereas dirty ancillas reside in an arbitrary, unknown state. The cost of dirty-ancilla-assisted QROM is analyzed using the Select-Copy procedure of Ref. [52], whereas the cost of clean-ancilla-assisted QROM is analyzed using the theorems stated in Ref. [50]. To determine these costs, we first define the QROM output size, m, which depends on the mode-coupling level n. The circuit requires 2 n copies of registers of size ⌈log 2 M ⌉ + 2 ⌈log 2 N ⌉ + 1 each, 23 ⌈log 2 S⌉
+
+> ΩΩΩΩΩΩ
+> ℵℵ
+> 3
+
+|0⟩ Uniform[ S] In( s)
+
+|0⟩ M0s
+
+|0⟩ M1s
+
+|0⟩ alt( M0)s
+
+|0⟩ alt( M1)s
+
+|0⟩ θs
+
+|0⟩ alt( θ)s
+
+|0⟩ (i, p, q, α )s
+
+|0⟩ (j, r, s, β )s
+
+|0⟩ (k, t, u, γ )s
+
+|0⟩ alt( i, p, q, α )s
+
+|0⟩ alt( j, r, s, β )s
+
+|0⟩ alt( k, t, u, γ )s
+
+|0⟩ keep s keep 
+
+|0⟩ H⊗ℵ σ
+
+|0⟩ ⊕(keep ≤ σ)
+
+|0⟩ H⊗3
+
+Figure 5. Quantum circuit detailing the PREP operation for block-encoding a second-quantized vibrational Hamiltonian expressed as a Pauli LCU. The first register from the top is used to create a master index that acts as an address to load all the necessary indices. The next four qubits are used to load mode-coupling level flags and their alternate values. The θ and alt( θ) qubits store the primary and alternate coefficient-sign bits used in alias sampling. The six registers of size Ω are used to load tensor indices and their alternate values. Ω = ⌈log 2 M ⌉ + 2 ⌈log 2 N ⌉ + 1 accommodates a single mode index, two modal indices, and a Boolean flag denoting modal index equality, which is needed in the SELECT implementation. The parameter ℵ
+
+represents the bit precision employed for the binary approximation of the coefficients. The three bottom qubits are prepared in 
+
+|+⟩ and subsequently provide the b1, b 2, and b3 selector bits that choose between the Pauli operators of Eq. (13) in SELECT. 
+
+two sets of ⌈log 2 n⌉ qubits to encode the mode-coupling level of the terms and their alternate values, two qubits to encode the sign and its alternate value, and an ℵ-bit register to store the keep probabilities. Consequently, the total output size is 
+
+m = 2 n(⌈log 2 M ⌉ + 2 ⌈log 2 N ⌉ + 1) + 2 ⌈log 2 n⌉ + 2 + ℵ. (B3) The Toffoli cost of QROM using clean ancillas is given by QRM Tc (S, m ) = 
+
+ Sk1
+
+
+
++ m(k1 − 1) , (B4) where k1 is constrained to be a power of 2 such that 1 < k 1 < S and is chosen to minimize the Toffoli count subject to the availability of QRM Nc (S, m ) = 
+
+
+
+log 2
+
+ Sk1
+
+ 
+
++ m(k1 − 1) (B5) 24 clean ancillas. The superscripts T and N in Eqs. (B4) and (B5) denote the Toffoli and clean ancilla qubit counts, respectively. The Toffoli count is minimized when k1 ≈ pS/m . Conversely, if dirty ancillas are utilized, the Toffoli cost according to the Select-Copy architecture is given by (see Theorem 1 of Ref. [52]) QRM Td (S, m ) = 
+
+ mρ
+
+
+
++ 1 
+
+  Sk1
+
+
+
++ k1 − 3
+
+
+
++ ( k1 − 1) 
+
+
+
+ρ
+
+ mρ
+
+
+
++ 1 
+
+
+
++ m mod ρ
+
+
+
+, (B6) where k1 has the same constraints as above and ρ is an integer satisfying 1 ≤ ρ ≤ m. k1 and ρ are chosen to minimize the Toffoli cost subject to the availability of ρ(k1 − 1) dirty qubits and QRM Nd (S) = max 
+
+ 
+
+log 2
+
+ Sk1
+
+ 
+
+, log 2(k1)
+
+
+
+(B7) clean ancillas. 
+
+• The exact superposition over states with their target coefficients is realized via coherent alias sampling [40]. This necessitates an inequality test between registers of size ℵ, requiring exactly ℵ Toffoli gates. 
+
+• The Boolean output of this inequality test controls the swaps between the primary index registers and their alternate values. This step requires ⌈log 2 n⌉ controlled swaps for mode-coupling qubits, n sets of controlled swaps acting on registers of size ⌈log 2 M ⌉ + 2 ⌈log 2 N ⌉ + 1, and one controlled swap between θ and alt( θ). Because each controlled swap on a single qubit incurs a cost of one Toffoli gate, the cumulative Toffoli cost for this step is n(⌈log 2 M ⌉ + 2 ⌈log 2 N ⌉ + 1) + ⌈log 2 n⌉ + 1. Combining these contributions, the total Toffoli cost of the PREP circuit, parameterized by the choice of clean or dirty (c/d) ancillas, can be expressed as 
+
+CPREP Pauli = 3 ⌈log 2 S⌉ − 3η + 2 br − 9 + QRM Tc/d(S, m ) + ℵ
+
++ n(⌈log 2 M ⌉ + 2 ⌈log 2 N ⌉ + 1) + ⌈log 2 n⌉ + 1 . (B8) In principle, the PREP † operation can be implemented by strictly reversing the PREP circuit. However, one can utilize the measurement-based uncomputation technique of Ref. [50] to uncompute the QROM lookup more efficiently. By employing this approach, the Toffoli cost of clean-ancilla-assisted inverse QROM is reduced to QRM †Tc (S) = 
+
+ Sk2
+
+
+
++ k2, (B9) where k2 is a power of two such that 1 < k 2 < S and is chosen to minimize the Toffoli cost subject to the availability of QRM †Nc (S) = 
+
+
+
+log 2
+
+ Sk2
+
+ 
+
++ k2 (B10) clean ancillas. Alternatively, using dirty ancillas for the inverse QROM gives a Toffoli cost of QRM †Td (S) = 2 
+
+ Sk2
+
+
+
++ 4 k2, (B11) where k2 satisfies the same constraints as above and is chosen to minimize the Toffoli cost subject to the availability of k2 − 1 dirty ancillas and QRM †Nd (S) = 
+
+
+
+log 2
+
+ Sk2
+
+ 
+
++ 1 (B12) clean ancillas. Here k2 can be different from k1 used by the QROM of the PREP circuit. Apart from this substitution, the remaining Toffoli cost for PREP †, denoted as CPREP † 
+
+> Pauli
+
+, is identical to that of the forward PREP circuit and is given as 
+
+CPREP † 
+
+> Pauli
+
+= 3 ⌈log 2 S⌉ − 3η + 2 br − 9 + QRM †Tc/d(S) + ℵ
+
++ n(⌈log 2 M ⌉ + 2 ⌈log 2 N ⌉ + 1) + ⌈log 2 n⌉ + 1 . (B13) 25 ΩΩΩ
+
+> M N
+
+|ctrl ⟩|M 0⟩|M 1⟩|θ⟩ ˆZ
+
+|ipqα ⟩ In( ipqα )
+
+|jrsβ ⟩ In( jrsβ )
+
+|ktuγ ⟩ In( ktuγ )
+
+|b1⟩ In( b1)
+
+|b2⟩ In( b2)
+
+|b3⟩ In( b3)
+
+|ψ⟩ ˆQ(b1) 
+
+> i,p,q
+
+ˆQ(b2) 
+
+> j,r,s
+
+ˆQ(b3)
+
+> k,t,u
+
+Sub-SELECT 
+
+Figure 6. Quantum circuit of the SELECT operation for block-encoding a second-quantized vibrational Hamiltonian expressed as a Pauli LCU. The controlled-Z gate conditioned on the external control applies the phase associated with the sign of the selected LCU coefficient. A ranged operation involving mode-coupling level qubits |M 0M1⟩ governs the sequential activation of the Sub-SELECT primitives. Each activated primitive applies the corresponding indexed Pauli unitary ˆQ defined in Eq. (13) to the M N -qubit system register |ψ⟩. The selector qubits b1, b 2, and b3 correspond to the bottom three qubits of the PREP circuit (see Fig. 5). The Sub-SELECT primitive is expanded in Fig. 7. 
+
+The Toffoli complexities of the PREP and PREP † operations are asymptotically dominated by the QROM and inverse QROM subroutines, respectively. In the absence of clean or dirty ancillas, these data-loading costs scale linearly with S, resulting in an overall complexity of O  (M N 2)n. Conversely, with sufficient auxiliary qubits, the forward-QROM cost scales as O  (M N 2)n/ 2√m, whereas the inverse-QROM cost scales as O  (M N 2)n/ 2. For fixed n and precision parameters, suppressing the polylogarithmic factor arising from √m allows both costs to be summarized as eO  (M N 2)n/ 2.We now detail the implementation of the SELECT oracle. For a Pauli LCU, the construction of SELECT is conceptually straightforward: the objective is to apply the Pauli operators of the form ˆQ(b1) 
+
+> i,p,q
+
+, defined in Eq. (13), conditioned on the indices {i, p, q, b 1}. The corresponding quantum circuit for the SELECT operation is illustrated in Fig. 6. To recover the correct sign in front of each term of the LCU, a controlled-Z gate is applied in the SELECT circuit. A primitive circuit, denoted as Sub-SELECT, is utilized to implement the controlled indexed unitaries ˆQ of Eq. (13). This primitive is repeated up to n times, reflecting the maximum mode-coupling level of the Hamiltonian. Because an individual LCU term may couple fewer than n modes, we incorporate a ranged operation, as introduced in Ref. [40], to ensure the sub-circuit is executed only as many times as required by the active term of the LCU. This ranged operation introduces an additional Toffoli cost of n − 1. Consequently, the total Toffoli cost of the complete SELECT circuit is expressed as 
+
+CSEL Pauli = nC Sub-SEL Pauli + n − 1,
+
+where CSub-SEL Pauli represents the Toffoli cost of a single Sub-SELECT primitive, which is expanded in Fig. 7. The Sub-SELECT circuit implements the operator ˆQ(b1) 
+
+> i,p,q
+
+for an arbitrary mode i by conjugating the operation ˆQ(b1)0,p,q with a block-swap network that exchanges the system qubits of the i-th mode with those of the zeroth mode. 26 ⌈log 2 M ⌉⌈log 2 N ⌉⌈log 2 N ⌉
+
+> NNN
+
+=... ... ...... ... ...
+
+|ctrl ⟩|i⟩
+
+In( ipqα )In( i) In( i)
+
+|p⟩ In( p) In( p)
+
+|q⟩ In( q)
+
+|α⟩|b1⟩ In( b1) In( b1) In( b1)
+
+|ψ0⟩ ˆXp0 (i ˆZp0 )b1 ˆXq0 (i ˆZq0 )b1 ˆZp0
+
+...
+
+|ψi⟩ ˆQ(b1)
+
+> i,p,q
+
+...
+
+|ψM −1⟩
+
+Figure 7. Quantum circuit for the Pauli Sub-SELECT primitive used in the Pauli SELECT circuit of Fig. 6. The system qubits for mode i are swapped with those for mode 0 at the beginning of the circuit, and the swap is undone at the end. ˆQ(b1) 
+
+> i,p,q
+
+is implemented using separate unary iterators over p and q, leading to a cost linear in the number of modals. The qubit |b1⟩ is used to selectively implement ˆXp0 ˆXq0 and ˆYp0 ˆYq0 . The equality flag α = 1 ⇐⇒ p = q selects Zp0 for the diagonal case. 
+
+To realize ˆQ(b1)0,p,q , two independent unary iterations over the indices p and q are used to apply the two-qubit operators ˆXp0
+
+ˆXq0 or ˆYp0
+
+ˆYq0 conditioned on the value of |b1⟩. Note that if p = q, this results in an identity operation. To correct this, an additional unary iteration over p indices controlled on |α⟩ is used to implement the ˆZp0 operation. The Toffoli complexity of the Sub-SELECT primitive can be obtained as follows. 
+
+• Unary iteration over a mode index without an external control costs M − 2 Toffolis. For each index of the iteration, we have controlled swaps over registers of size N which cost N Toffolis per index. There is no swap when the mode index is zero. Thus, the total cost is ( M − 2) + ( M − 1) N = ( M − 1)( N + 1) − 1. 
+
+• Controlled unary iteration over indices p and b1 costs 2 N − 1 Toffolis. The controlled unary iteration over q and 
+
+b1 also costs 2 N − 1 Toffolis. 
+
+• Controlled unary iteration over p with an additional control over α costs N Toffolis. 
+
+• Finally, the controlled swap is identical to the first operation above and costs ( M − 2) + ( M − 1) N = ( M −
+
+1)( N + 1) − 1 Toffolis. Hence, the total cost of Sub-SELECT is 
+
+CSub-SEL Pauli = 2(( M − 1)( N + 1) − 1) + 5 N − 2= 2 M N + 2 M + 3 N − 6.
+
+This gives the total Toffoli count of SELECT as 
+
+CSEL Pauli = n(2 M N + 2 M + 3 N − 6) + n − 1. (B14) Thus, the cost of SELECT scales as O(nM N ) and is asymptotically subleading to PREP for n ≥ 2. The total cost of block-encoding the Hamiltonian is 
+
+CBE Pauli = CPREP Pauli + CSEL Pauli + CPREP † 
+
+> Pauli
+
+. (B15) 27 To build the walk operator after applying PREP † · SELECT · PREP, one needs to reflect on all the qubits that are still entangled with the system qubits. These qubits are as follows: ⌈log 2 S⌉ qubits storing the uniform superposition index, one qubit that stores the success of uniform superposition preparation, ℵ qubits used in alias sampling, and n
+
+qubits used to store b1, b 2, . . . values. A reflection on these qubits has a cost of ⌈log 2 S⌉ + ℵ + n − 1. We need one Toffoli gate to control SELECT on the successful preparation of the uniform superposition state and one Toffoli gate to control the reflection on the appropriate branch of the QPE unary iterator. Therefore, the total Toffoli cost of performing quantum phase estimation using the Pauli LCU for a second-quantized vibrational Hamiltonian is given by 
+
+CPauli =
+
+ πλ Pauli 
+
+2ϵ
+
+  CBE Pauli + ⌈log 2 S⌉ + ℵ + n + 1  , (B16) where ϵ is the required accuracy in the target energy and λPauli is the 1-norm of the Pauli LCU, as given in Eq. (15). Hence, for optimal data-loading ancillas and fixed n ≥ 2 and precision parameters, the asymptotic Toffoli cost of estimating the energy of a Hamiltonian expressed as a Pauli LCU scales as eO  λPauli (M N 2)n/ 2/ϵ .We now evaluate the total qubit count for phase estimation using the Pauli LCU. 1. The phase estimation requires a register of size ⌈log 2(I + 1) ⌉ where I =
+
+ πλ Pauli 
+
+2ϵ
+
+
+
+.2. A unary iterator on the phase estimation register requires ⌈log 2(I + 1) ⌉ − 1 ancillas. 3. Preparing the uniform superposition state requires ⌈log 2(S)⌉ qubits to store the uniform index, 1 qubit for storing the success, br qubits for the phase gradient state, and 1 ancilla to perform the rotation on (see Appendix A of Ref. [54]). Here S is the number of terms in the LCU with unique coefficients. 4. A register of size m (defined in Eq. (B3)) is required to store the bit strings loaded by QROM. The QROM in PREP uses QRM Nc/d(S, m ) additional clean ancillas, as defined in Eqs. (B5) and (B7), depending on whether clean- or dirty-ancilla-assisted QROM is employed. For notational convenience, we define QRM Nd (S, m ) ≡
+
+QRM Nd (S), since the clean-ancilla requirement of the dirty-ancilla-assisted QROM is independent of the output size m. The inverse QROM in PREP † uses QRM †Nc/d(S) additional clean ancillas, as defined in Eqs. (B10) and (B12), depending on whether clean- or dirty-ancilla-assisted inverse QROM is employed. Because the clean-ancilla requirement of the inverse QROM is independent of the output size m, these ancillas can come from the QROM workspace or other clean qubits that are idle during uncomputation, without increasing the maximal logical qubit count. 5. ℵ qubits are required for storing the uniform superposition state σ used in coherent alias sampling. Another qubit is needed to store the result of the inequality test in coherent alias sampling. 6. n qubits are needed to ensure Pauli ˆX and ˆY are implemented in the SELECT circuit. 7. To perform the ranged operation over the mode-coupling qubits in SELECT, QROM ancillas can be reused. 8. Finally, the system wavefunction is stored in a register of size M N .In total, the logical qubit cost depending on whether clean or dirty (c/d) ancillas are utilized is given by 
+
+NPauli = 2 ⌈log 2(I + 1) ⌉ + ⌈log 2 S⌉ + br + m + ℵ + 2 + n + M N + QRM Nc/d(S, m ). (B17) For fixed n ≥ 2 and precision parameters, if an optimal number of clean or dirty ancillas is available to minimize the Toffoli count, then the qubit cost scales as eO  (M N 2)n/ 2. Equations (B16) and (B17) together determine the quantum resources required to estimate an eigenvalue of a vibrational Hamiltonian expressed as a Pauli LCU using QPE. If the BLISS technique is employed, the same functional forms of the Toffoli and qubit counts can be used to estimate the resources but with a modified 1-norm and a potentially different S.
+
+> Appendix C: Details of THC LCU
+
+This section presents the derivation of the THC LCU together with the associated block-encoding circuits. 28 
+
+1. Deriving THC LCU 
+
+As in the main text, all operator identities in this derivation are understood in terms of their action on the physical subspace with exactly one excitation per mode. Recall that a three-mode-coupling THC factorized tensor has the form 
+
+vTHC 
+
+i,p,q,j,r,s,k,t,u =
+
+Ri−1X
+
+μi=0 
+
+Rj −1
+
+X
+
+νj =0 
+
+Rk −1X
+
+ωk =0 
+
+Γ(i,j,k )
+
+μi,ν j ,ω k χ(i)
+
+p,μ i χ(i)
+
+q,μ i χ(j)
+
+r,ν j χ(j)
+
+s,ν j χ(k)
+
+t,ω k χ(k)
+
+u,ω k .
+
+We look at the three-mode-coupling term of Eq. (11) for a given set of modes ( i, j, k ) when the tensor v is approximated as above: 
+
+N −1X
+
+p,q,r, s,t,u =0 
+
+vTHC 
+
+i,p,q,j,r,s,k,t,u ˆEpi
+
+qi
+
+ˆErj
+
+sj
+
+ˆEtk
+
+uk =
+
+N −1X
+
+p,q,r, s,t,u =0 (Ri−1,R j −1,R k −1) 
+
+X
+
+(μi,ν j ,ω k )=0 
+
+Γ(i,j,k )
+
+μi,ν j ,ω k χ(i)
+
+p,μ i χ(i)
+
+q,μ i χ(j)
+
+r,ν j χ(j)
+
+s,ν j χ(k)
+
+t,ω k χ(k)
+
+u,ω k
+
+ˆEpi
+
+qi
+
+ˆErj
+
+sj
+
+ˆEtk
+
+uk .
+
+Using the fact that summation over modal indices has been mutually decoupled and the relation 
+
+N −1X
+
+p,q =0 
+
+χ(i)
+
+p,μ i χ(i)
+
+q,μ i ˆa†
+
+pi ˆaqi = 12
+
+ˆI − ˆV (i)
+
+μi
+
+ˆZ0i
+
+ˆV (i)†
+
+μi
+
+
+
+,
+
+which has been detailed in the main text, we can rewrite the three-mode-coupling term as 
+
+N −1X
+
+p,q,r, s,t,u =0 
+
+vTHC 
+
+i,p,q,j,r,s,k,t,u ˆEpi
+
+qi
+
+ˆErj
+
+sj
+
+ˆEtk
+
+uk
+
+= 18
+
+(Ri−1,R j −1,R k −1) 
+
+X
+
+(μi,ν j ,ω k )=0 
+
+Γ(i,j,k )
+
+μi,ν j ,ω k
+
+ˆI − ˆV (i)
+
+μi
+
+ˆZ0i
+
+ˆV (i)†
+
+μi
+
+  ˆI − ˆV (j)
+
+νj
+
+ˆZ0j
+
+ˆV (j)†
+
+νj
+
+  ˆI − ˆV (k)
+
+ωk
+
+ˆZ0k
+
+ˆV (k)†
+
+ωk
+
+
+
+.
+
+We multiply the terms across the parentheses and substitute in place of the three-mode-coupling term in the Hamil-tonian of Eq. (11) to get ˆH ≈ ˜C +
+
+M −1X
+
+i=0 
+
+N −1X
+
+p,q =0 
+
+˜hi,p,q ˆEpi
+
+qi +
+
+M −1X
+
+i,j =0 
+
+N −1X
+
+p,q, r,s =0 
+
+˜gi,p,q,j,r,s ˆEpi
+
+qi
+
+ˆErj
+
+sj
+
++ 18
+
+M −1X
+
+i<j<k =0 (Ri−1,R j −1,R k −1) 
+
+X
+
+(μi,ν j ,ω k )=0 
+
+Γ(i,j,k )
+
+μi,ν j ,ω k
+
+ˆV (i)
+
+μi
+
+ˆZ0i
+
+ˆV (i)†
+
+μi
+
+ˆV (j)
+
+νj
+
+ˆZ0j
+
+ˆV (j)†
+
+νj
+
+ˆV (k)
+
+ωk
+
+ˆZ0k
+
+ˆV (k)†
+
+ωk ,
+
+(C1) where the tensors are redefined as ˜C = 18
+
+M −1X
+
+i,j,k =0 
+
+N −1X
+
+p,r,t =0 
+
+vTHC 
+
+i,p,p,j,r,r,k,t,t ,
+
+˜hi,p,q = hi,p,q − 34
+
+M −1X
+
+j,k =0 
+
+N −1X
+
+r,t =0 
+
+vTHC 
+
+i,p,q,j,r,r,k,t,t ,
+
+˜gi,p,q,j,r,s = gi,p,q,j,r,s + 32
+
+M −1X
+
+k=0 
+
+N −1X
+
+t=0 
+
+vTHC 
+
+i,p,q,j,r,s,k,t,t ,
+
+Γ(i,j,k )
+
+μi,ν j ,ω k = −6Γ (i,j,k )
+
+μi,ν j ,ω k .
+
+(C2) 29 The multiplier of six in the definition of Γ comes from restricting the sum over mode indices in Eq. (C1). The next step is to obtain a THC factorization of the two-mode-coupling tensor ˜ g. In analogy with Eq. (17), we solve minimize 
+
+ζ, ξ ˜g −
+
+> Ri−1
+
+X 
+
+> μi=0
+> Rj−1
+
+X 
+
+> νj=0
+
+ζ(i,j ) 
+
+> μi,ν j
+
+ξ(i) 
+
+> p,μ i
+
+ξ(i) 
+
+> q,μ i
+
+ξ(j) 
+
+> r,ν j
+
+ξ(j)
+
+> s,ν j
+> F
+
+subject to  
+
+> N−1
+
+X
+
+> p=0
+
+|ξ(i) 
+
+> p,μ i
+
+|2 = 1 ∀ i, μ i,ζ(i,j ) 
+
+> μi,ν j
+
+= ζ(j,i )  
+
+> νj,μ i
+
+,
+
+(C3) and the THC-approximated tensor is defined as ˜gTHC  
+
+> i,p,q,j,r,s
+
+=
+
+> Ri−1
+
+X 
+
+> μi=0
+> Rj−1
+
+X 
+
+> νj=0
+
+ζ(i,j ) 
+
+> μi,ν j
+
+ξ(i) 
+
+> p,μ i
+
+ξ(i) 
+
+> q,μ i
+
+ξ(j) 
+
+> r,ν j
+
+ξ(j) 
+
+> s,ν j
+
+.
+
+Following the workflow for three-mode-coupling THC, we define number-conserving unitaries ˆU (i) 
+
+> μi
+
+such that  
+
+> N−1
+
+X
+
+> p,q =0
+
+ξ(i) 
+
+> p,μ i
+
+ξ(i) 
+
+> q,μ i
+
+ˆa† 
+
+> pi
+
+ˆaqi = ˆU (i)
+
+> μi
+
+ˆ˜n0i
+
+ˆU (i)† 
+
+> μi
+
+,
+
+leading to the Hamiltonian ˆH ≈ ˜˜C + 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> p,q =0
+
+˜˜hi,p,q ˆEpi 
+
+> qi
+
++ 14 
+
+> M−1
+
+X 
+
+> i<j =0 (Ri−1,R j−1)
+
+X 
+
+> (μi,ν j)=0
+
+ζ(i,j )
+
+> μi,ν j
+
+ˆU (i)
+
+> μi
+
+ˆZ0i
+
+ˆU (i)†
+
+> μi
+
+ˆU (j)
+
+> νj
+
+ˆZ0j
+
+ˆU (j)†
+
+> νj
+
++ 18 
+
+> M−1
+
+X  
+
+> i<j<k =0 (Ri−1,R j−1,R k−1)
+
+X  
+
+> (μi,ν j,ω k)=0
+
+Γ(i,j,k ) 
+
+> μi,ν j,ω k
+
+ˆV (i)
+
+> μi
+
+ˆZ0i
+
+ˆV (i)†
+
+> μi
+
+ˆV (j)
+
+> νj
+
+ˆZ0j
+
+ˆV (j)†
+
+> νj
+
+ˆV (k)
+
+> ωk
+
+ˆZ0k
+
+ˆV (k)† 
+
+> ωk
+
+,
+
+(C4) where the new coefficients are given by ˜˜C = ˜C − 14 
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X
+
+> p,r =0
+
+˜gTHC 
+
+> i,p,p,j,r,r
+
+,
+
+˜˜hi,p,q = ˜hi,p,q + 
+
+> M−1
+
+X 
+
+> j=0
+> N−1
+
+X
+
+> r=0
+
+˜gTHC  
+
+> i,p,q,j,r,r
+
+,
+
+ζ(i,j ) 
+
+> μi,ν j
+
+= 2 ζ(i,j ) 
+
+> μi,ν j
+
+.
+
+(C5) Finally, the one-mode-coupling operator must also be expressed in diagonal form. We write the eigendecomposition as ˜˜hi,p,q = PN −1 
+
+> μi=0
+
+η(i) 
+
+> μi
+
+W(i) 
+
+> p,μ i
+
+W(i) 
+
+> q,μ i
+
+and define the modal rotation unitary ˆW (i) 
+
+> μi
+
+associated with column μi of W(i). The resulting Hamiltonian is ˆHTHC = CTHC + 12 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> μi=0
+
+η(i)
+
+> μi
+
+ˆW (i)
+
+> μi
+
+ˆZ0i
+
+ˆW (i)† 
+
+> μi
+
++ 14 
+
+> M−1
+
+X 
+
+> i<j =0 (Ri−1,R j−1)
+
+X 
+
+> (μi,ν j)=0
+
+ζ(i,j )
+
+> μi,ν j
+
+ˆU (i)
+
+> μi
+
+ˆZ0i
+
+ˆU (i)†
+
+> μi
+
+ˆU (j)
+
+> νj
+
+ˆZ0j
+
+ˆU (j)†
+
+> νj
+
++ 18 
+
+> M−1
+
+X  
+
+> i<j<k =0 (Ri−1,R j−1,R k−1)
+
+X  
+
+> (μi,ν j,ω k)=0
+
+Γ(i,j,k ) 
+
+> μi,ν j,ω k
+
+ˆV (i)
+
+> μi
+
+ˆZ0i
+
+ˆV (i)†
+
+> μi
+
+ˆV (j)
+
+> νj
+
+ˆZ0j
+
+ˆV (j)†
+
+> νj
+
+ˆV (k)
+
+> ωk
+
+ˆZ0k
+
+ˆV (k)† 
+
+> ωk
+
+,
+
+where CTHC = ˜˜C + PM −1
+
+> i=0
+
+PN −1 
+
+> μi=0
+
+η(i) 
+
+> μi
+
+/2 and η(i) 
+
+> μi
+
+= −η(i) 
+
+> μi
+
+. This recovers the THC LCU of Eq. (20), whose 1-norm is given in Eq. (21). To prevent THC fitting errors from entering the lower-order tensor redefinitions directly, the contractions in Eqs. (C2) and (C5) may instead be evaluated using the unfactorized tensors v and ˜ g, respectively, rather than their THC approximations. We adopt this prescription here, following the analogous treatment of the one-body correction in Ref. [54]. 30 
+
+2. Initializing THC factorization 
+
+Here we derive the initializations used to obtain the THC LCUs for the PAH Hamiltonians. To obtain a warm start for a three-mode-coupling Hamiltonian, we start by reshaping vi,p,q,j,r,s,k,t,u to a symmetric order-three tensor 
+
+V(i,p,q ),(j,r,s ),(k,t,u ) and perform a CP3 factorization as 
+
+V(i,p,q ),(j,r,s ),(k,t,u ) ≈ X
+
+> α
+
+V(i,p,q ),α V(j,r,s ),α V(k,t,u ),α , (C6) where we treat each of ( i, p, q ), ( j, r, s ) and ( k, t, u ) as a single composite index. This decouples the mode degrees of freedom, which allows us to perform a second CP3 factorization on individual modes as 
+
+V(i,p,q ),α ≈
+
+> Ri−1
+
+X
+
+> μi=0
+
+χ(i) 
+
+> p,μ i
+
+χ(i) 
+
+> q,μ i
+
+D(i) 
+
+> α,μ i
+
+, (C7) where χ is subjected to the same constraint as in Eq. (17). Substituting this into Eq. (C6) leads to the desired THC initialization: 
+
+vTHC  
+
+> i,p,q,j,r,s,k,t,u
+
+=
+
+> Ri−1
+
+X 
+
+> μi=0
+> Rj−1
+
+X  
+
+> νj=0
+> Rk−1
+
+X 
+
+> ωk=0
+
+ X 
+
+> α
+
+D(i) 
+
+> α,μ i
+
+D(j) 
+
+> α,ν j
+
+D(k)
+
+> α,ω k
+
+
+
+χ(i) 
+
+> p,μ i
+
+χ(i) 
+
+> q,μ i
+
+χ(j) 
+
+> r,ν j
+
+χ(j) 
+
+> s,ν j
+
+χ(k) 
+
+> t,ω k
+
+χ(k) 
+
+> u,ω k
+
+,
+
+where we identify Γ (i,j,k )  
+
+> μi,ν j,ω k
+
+= P 
+
+> α
+
+D(i) 
+
+> α,μ i
+
+D(j) 
+
+> α,ν j
+
+D(k) 
+
+> α,ω k
+
+.The initialization for a two-mode-coupling tensor is more straightforward. We start with the tensor gi,p,q,j,r,s and reshape it to a symmetric matrix G(i,p,q ),(j,r,s ). Since G is symmetric, it admits an eigendecomposition 
+
+G(i,p,q ),(j,r,s ) = X
+
+> α
+
+σαG(i,p,q ),α G(j,r,s ),α .
+
+This decouples the mode indices, allowing us to perform a CP3 factorization for each mode as 
+
+G(i,p,q ),α ≈
+
+> Ri−1
+
+X
+
+> μi=0
+
+ξ(i) 
+
+> p,μ i
+
+ξ(i)
+
+> q,μ i
+
+¯D(i) 
+
+> α,μ i
+
+. (C8) Substituting this back into the eigendecomposition leads to the THC initialization: ˜gTHC  
+
+> i,p,q,j,r,s
+
+=
+
+> Ri−1
+
+X 
+
+> μi=0
+> Rj−1
+
+X 
+
+> νj=0
+
+X
+
+> α
+
+σα ¯D(i)
+
+> α,μ i
+
+¯D(j)
+
+> α,ν j
+
+!
+
+ξ(i) 
+
+> p,μ i
+
+ξ(i) 
+
+> q,μ i
+
+ξ(j) 
+
+> r,ν j
+
+ξ(j) 
+
+> s,ν j
+
+,
+
+where we identify ζ(i,j ) 
+
+> μi,ν j
+
+= P 
+
+> α
+
+σα ¯D(i) 
+
+> α,μ i
+
+¯D(j) 
+
+> α,ν j
+
+. When the number of modes is large and the THC optimization becomes computationally expensive, it can be more efficient to invest additional effort in obtaining a high-quality CP3 initialization and then perform only a few THC optimization iterations. For all systems analyzed in this work, the THC ranks were determined by performing multiple sweeps over increasing THC ranks in the CP3 decompositions of Eqs. (C7) and (C8). Because the number of modals in the three-mode-coupling systems considered here was small, no additional THC optimization was necessary to achieve the target tensor accuracy of 1 cm −1.
+
+3. Complete cost of block-encoding THC LCU 
+
+Consider the three-mode-coupling Hamiltonian of Eq. (20) expressed as a THC LCU, which we rewrite below for convenience. ˆHTHC = C + 12 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> μi=0
+
+η(i)
+
+> μi
+
+ˆW (i)
+
+> μi
+
+ˆZ0i
+
+ˆW (i)† 
+
+> μi
+
++ 14 
+
+> M−1
+
+X 
+
+> i<j =0 (Ri−1,R j−1)
+
+X 
+
+> (μi,ν j)=0
+
+ζ(i,j )
+
+> μi,ν j
+
+ˆU (i)
+
+> μi
+
+ˆZ0i
+
+ˆU (i)†
+
+> μi
+
+ˆU (j)
+
+> νj
+
+ˆZ0j
+
+ˆU (j)†
+
+> νj
+
+31 ⌈log 2 S⌉
+
+> ΩΩΩΩΩΩ
+> ℵℵ
+
+|0⟩ Uniform[ S] In( s)
+
+|0⟩ M0s
+
+|0⟩ M1s
+
+|0⟩ alt( M0s )
+
+|0⟩ alt( M1s )
+
+|0⟩ θs
+
+|0⟩ alt( θ)s
+
+|0⟩ (i, μ )s
+
+|0⟩ (j, ν )s
+
+|0⟩ (k, ω )s
+
+|0⟩ alt( i, μ )s
+
+|0⟩ alt( j, ν )s
+
+|0⟩ alt( k, ω )s
+
+|0⟩ keep s keep s
+
+|0⟩ H⊗ℵ σs
+
+|0⟩ ⊕(keep s ≤ σs)
+
+Figure 8. Quantum circuit detailing the PREP operation for block-encoding a second-quantized vibrational Hamiltonian expressed as a THC LCU. As in the Pauli LCU, the first register from the top is used to create a uniform superposition over basis states that act as addresses to load all the necessary indices. The next four qubits are used to load mode-coupling level flags and their alternate values. The θ and alt( θ) qubits store the primary and alternate coefficient-sign bits used in alias sampling. The six registers of size Ω are used to load THC factor indices and their alternate values. Here, Ω = ⌈log 2 M ⌉ + ⌈log 2 Rmax ⌉
+
+accommodates a single mode index and a single THC factor index, where Rmax = max {N, max i Ri}. The parameter ℵ represents the bit precision employed for the binary approximation of the coefficients. 
+
++ 18 
+
+> M−1
+
+X  
+
+> i<j<k =0 (Ri−1,R j−1,R k−1)
+
+X  
+
+> (μi,ν j,ω k)=0
+
+Γ(i,j,k ) 
+
+> μi,ν j,ω k
+
+ˆV (i)
+
+> μi
+
+ˆZ0i
+
+ˆV (i)†
+
+> μi
+
+ˆV (j)
+
+> νj
+
+ˆZ0j
+
+ˆV (j)†
+
+> νj
+
+ˆV (k)
+
+> ωk
+
+ˆZ0k
+
+ˆV (k)† 
+
+> ωk
+
+.
+
+The constant term can be ignored when block-encoding. Unlike the Pauli LCU, the THC LCU depends on basis rotations in the modal subspace. This requires Givens rotations in the SELECT circuit. However, the idea of the PREP circuit remains the same as in the Pauli LCU. Assuming that the average THC rank scales as O(N ), we first prepare a uniform superposition over all possible unique coefficients S = O (( M N )n), use QROM to load the indices and corresponding coefficient values, and perform alias sampling to extract the coefficients. Here as well, QROM refers to the ancilla-assisted constructions of Refs. [50, 52]. We present the THC PREP circuit in Fig. 8. 32 The state prepared by the PREP circuit can be given as PREP |0⟩ = 
+
+> M−1
+
+X 
+
+> i=0
+> N−1
+
+X
+
+> μi=0
+
+s
+
+|η(i) 
+
+> μi
+
+|
+
+2λTHC 
+
+|00 ⟩ | iμ i⟩ | 00 ⟩ | 00 ⟩ | θ⟩ | garb ⟩
+
++ 
+
+> M−1
+
+X 
+
+> i<j =0 (Ri−1,R j−1)
+
+X 
+
+> (μi,ν j)=0
+
+s
+
+|ζ(i,j ) 
+
+> μi,ν j
+
+|
+
+4λTHC 
+
+|01 ⟩ | iμ i⟩ | jν j ⟩ | 00 ⟩ | θ⟩ | garb ⟩
+
++ 
+
+> M−1
+
+X  
+
+> i<j<k =0 (Ri−1,R j−1,R k−1)
+
+X  
+
+> (μi,ν j,ω k)=0
+
+s
+
+|Γ(i,j,k )  
+
+> μi,ν j,ω k
+
+|
+
+8λTHC 
+
+|10 ⟩ | iμ i⟩ | jν j ⟩ | kω k⟩ | θ⟩ | garb ⟩ .
+
+(C9) The first two qubits flag the mode-coupling level of each term in the LCU. The next three registers encode the mode and THC factor indices. Although not shown for brevity, the θ register depends on the mode and factor indices and encodes the sign of the target THC coefficient. Similarly, the register |garb ⟩ is also entangled with the index qubits and represents all other qubits used in achieving this superposition state. Since the SELECT operation does not depend on the garbage register, it does not interfere with the block-encoded Hamiltonian. The Toffoli cost of implementing the PREP circuit can be obtained as follows. 
+
+• The circuit begins by preparing a uniform superposition over the S basis states. This operation incurs a cost of 3⌈log 2 S⌉ − 3η + 2 br − 9 [54], where η represents the largest integer such that 2 η divides S, and br denotes the number of precision bits used to specify the required rotation angles for the state preparation. 
+
+• All the indices and flags of the LCU are then loaded using QROM. The cost of QROM with clean ancillas is given by QRM Tc (S, m ) defined in Eq. (B4), and QROM with dirty ancillas is given by QRM Td (S, m ) defined in Eq. (B6). Here m is defined as 
+
+m = 2 n(⌈log 2 M ⌉ + ⌈log 2 Rmax ⌉) + 2 ⌈log 2 n⌉ + 2 + ℵ, (C10) where Rmax = max {N, max i Ri}. In practice, the maximum THC rank is at least N , so Rmax = max i Ri.
+
+• The target LCU coefficients are extracted from the loaded keep probabilities via coherent alias sampling [40]. This requires an inequality test between registers of size ℵ, leading to ℵ Toffoli gates. 
+
+• The result of the inequality test is then used to control the swaps between the primary index registers and their alternate values. The Toffoli cost of performing these swaps equals n(⌈log 2 M ⌉ + ⌈log 2 Rmax ⌉) + ⌈log 2 n⌉ + 1. In total, the Toffoli cost of the THC PREP circuit, parameterized by the choice of clean or dirty (c/d) ancillas, is given by 
+
+CPREP THC = 3 ⌈log 2 S⌉ − 3η + 2 br − 9 + QRM Tc/d(S, m ) + ℵ
+
++ n(⌈log 2 M ⌉ + ⌈log 2 Rmax ⌉) + ⌈log 2 n⌉ + 1 . (C11) Using the inverse QROM costs of Eqs. (B9) and (B11), the cost of PREP † can be given as 
+
+CPREP † 
+
+> THC
+
+= 3 ⌈log 2 S⌉ − 3η + 2 br − 9 + QRM †Tc/d(S) + ℵ
+
++ n(⌈log 2 M ⌉ + ⌈log 2 Rmax ⌉) + ⌈log 2 n⌉ + 1 . (C12) Dominant contributions to the Toffoli costs of PREP and PREP † come from QROM and inverse QROM, re-spectively. With sufficient ancillas, the forward-QROM cost scales as O(√Sm ), whereas the inverse-QROM cost scales as O(√S). Thus, for fixed n and precision parameters, CPREP THC = O  (M N )n/ 2√m = eO  (M N )n/ 2, while 
+
+CPREP † 
+
+> THC
+
+= O  (M N )n/ 2.The SELECT implementation for THC incurs a higher cost than the corresponding implementation for the Pauli LCU. This increased cost arises from the requirement to implement modal rotations. Specifically, the LCU unitaries that are implemented take the form ˆU(i),M 
+
+> μi
+
+ˆZ0i
+
+ ˆU(i),M
+
+> μi
+
+†
+
+, where ˆU(i),M 
+
+> μi
+
+denotes a modal rotation operator. The superscript M stands for the mode-coupling level of a given LCU term. M can take values from 0 to n − 1, where 33 ΩΩΩ(N −1) ℶ                     
+
+> M N
+> |ctrl ⟩|M 0⟩
+> In( M ≥ 0) In( M ≥ 1) In( M ≥ 2)
+> |M 1⟩|θ⟩ˆZ
+> |iμ i⟩In( iμ i)
+> |jν j⟩In( jν j)
+> |kω k⟩In( kω k)
+> |0⟩data : rot (i),M
+> μidata : rot (j),M
+> νjdata : rot (k),M
+> ωk
+> |ψ⟩ˆU(i),M†
+> μiˆZ0i
+> ˆU(i),M
+> μi
+> ˆU(j),M†
+> νjˆZ0j
+> ˆU(j),M
+> νjˆU(k),M†
+> ωkˆZ0k
+> ˆU(k),M
+> ωk
+> Sub-SELECT 0Sub-SELECT 1Sub-SELECT 2
+
+Figure 9. Quantum circuit of the SELECT operation for block-encoding a second-quantized vibrational Hamiltonian expressed as a THC LCU. The controlled-Z gate conditioned on the external control applies the phase associated with the coefficient sign. The two-bit register M0M1 encodes the mode-coupling label M ∈ { 0, 1, 2}, corresponding to one-, two-, and three-mode-coupling terms. The accumulator qubit |acc ⟩ is initialized conditionally on |ctrl ⟩ and activates Sub-SELECT l when l ≤ M .Each active Sub-SELECT applies the modal-rotation-conjugated Z operator associated with the corresponding loaded mode and factor index. rot (i),M 
+
+> μi
+
+denotes the rotation angles corresponding to the modal rotation operator ˆU(i),M 
+
+> μi
+
+. The register of size ( N − 1) ℶ is used to store the rotation angles, where ℶ is the number of bits used to approximate the angles. 
+
+n is the mode-coupling level of the Hamiltonian. Thus, for one-, two-, and three-mode-coupling terms, M takes the values 0, 1, and 2, respectively. We can relate ˆU(i),M 
+
+> μi
+
+to the modal rotation operators of Eq. (20) as follows: ˆU(i),M 
+
+> μi
+
+=
+
+
+
+ˆW (i) 
+
+> μi
+
+M = 0 ˆU (i) 
+
+> μi
+
+M = 1 ˆV (i) 
+
+> μi
+
+M = 2 
+
+. (C13) Modal rotation is implemented by decomposing the operator into N −1 Givens rotations (see Appendix C of Ref. [49]). These rotations are realized by adding the corresponding rotation angles into a phase gradient state, thereby inducing the desired phase kickback. The overall SELECT circuit is shown in Fig. 9. The controlled-Z operation acts on the sign qubit to ensure that the correct sign is recovered in front of each LCU term. To implement a ranged operation similar to the Pauli LCU, an ancilla is turned on, controlled on the external control qubit. We label this ancilla as |acc ⟩, which stands for “accumulator” qubit. This is followed by repeated application of a primitive operation referred to as Sub-SELECT. Although each instance of Sub-SELECT differs slightly, the distinction arises mainly from the procedure used to perform unary iteration over the mode-coupling index and the mode index. In successive applications of Sub-SELECT, the unary iteration over M and mode index i begins from an integer value that is incremented by one relative to the previous instance. We distinguish each Sub-SELECT by adding a subscript to it. For example, Sub-SELECT l includes a unary iteration over the mode-coupling index that iterates over values M ≥ l and a mode index i ≥ l. The iteration over mode-coupling qubits is used to implement distinct rotations corresponding to each mode-coupling level. Sub-SELECT l is active iff l ≤ M ; equivalently, the accumulator remains active for the first 
+
+M + 1 Sub-SELECT primitives. Since an LCU term can have at most M = n − 1 and there are n Sub-SELECT operations, it can be ensured that the |acc ⟩ qubit returns to zero after the action of the last Sub-SELECT primitive. The Toffoli count of the SELECT circuit is obtained as the sum of the Toffoli counts of each Sub-SELECT primitive 34 ⌈log 2 M ⌉⌈log 2 Rmax ⌉                      
+
+> (N−1) ℶ
+> M N
+> =
+> |M 0⟩
+> In( M ≥ l)In( M ≥ l)In( M ≥ l)
+> |M 1⟩|acc ⟩|i⟩
+> In( iμ i)In( i≥l)In( i≥l)
+> |μi⟩In( μi)In( μi)
+> |0⟩data : rot (i),M
+> μidata : rot (i),M
+> μiIn
+> (
+> rot (i) ,M
+> μi
+> )
+> In
+> (
+> rot (i) ,M
+> μi
+> )
+> data : rot (i),M
+> μi
+> |ψ⟩ˆU(i),M†
+> μiˆZ0i
+> ˆU(i),M
+> μi|ψl⟩ ↔ | ψi⟩ˆU(i),M†
+> μi
+> ˆZ0lˆU(i),M
+> μi|ψl⟩ ↔ | ψi⟩
+
+Figure 10. Quantum circuit of the Sub-SELECT l operation for block-encoding a second-quantized vibrational Hamiltonian expressed as a THC LCU. The first two qubits encode the mode-coupling level of a given LCU term. |acc ⟩ stands for the accumulator qubit. The Sub-SELECT is performed by conjugating the action of Givens rotations by data loaders and swaps. The iteration over index i is used for swapping the system qubits while loading appropriate rotation angles in parallel. The ˆZ0l operator is controlled on the accumulator qubit to ensure that the whole Sub-SELECT primitive has a non-trivial action only if the accumulator qubit is switched on. 
+
+and the additional overhead from ensuring a ranged operation. This can be denoted as 
+
+CSEL THC =
+
+> n−1
+
+X
+
+> l=0
+
+CSub-SEL l 
+
+> THC
+
++ n − 1,
+
+where CSub-SEL l 
+
+> THC
+
+stands for the Toffoli cost of Sub-SELECT l. In Fig. 10, we provide the implementation for the Sub-SELECT l circuit. It involves loading rotation angles as a function of i, μ i and M values as well as swapping the system qubits for mode l with mode i. This can be efficiently performed by using QROM with clean ancillas to load the angles while keeping the iteration over the i values at the top of the unary tree. This allows us to use the same unary tree to perform the system qubit swaps in parallel to loading the rotation angles. The gate In( i ≥ l) in Fig. 10 reflects this by having parallel branches for swapping and loading. The reason for the restricted unary iteration over 
+
+i and M values directly follows from the restricted sum over mode indices in the LCU expansion of a vibrational Hamiltonian. The rotations are performed by adding the angles to the phase gradient state. A ˆZ gate is applied to modal 0 of mode l, followed by the application of inverse rotations, inverse QROM, and CSWAPs. The Toffoli cost of the Sub-SELECT l operation can be obtained as follows. 
+
+• The cost of loading the rotation angles using QROM with clean ancillas is (see Eq. (B4)) QRM Tc ( ˜Sl, ˜m), where ˜Sl is the number of values that are loaded and ˜ m = ( N − 1) ℶ is the size of the data that is loaded. ℶ is the number of bits used in the binary approximation of the rotation angles. The value of ˜Sl can be written as ˜Sl = ( n − l) 
+
+> M−1
+
+X
+
+> i=l
+
+Ri + 
+
+> M−1
+
+X
+
+> i=0
+
+(N − Ri)δl, 0
+
+= ( n − l)( M − l) ¯R≥l + M (N − ¯R)δl, 0, (C14) where ¯R and ¯R≥l stand for the average THC rank and average THC rank of the last M − l modes, respectively. Thus, ¯R = ¯R≥0. The presence of δl, 0 signifies that for the first Sub-SELECT, for M = 0, which encodes the one-mode operator, the number of terms per mode in the diagonal representation is N and not Ri.
+
+• While loading the rotation angles, by keeping the iteration over i values at the top of the unary tree, we can also perform controlled swaps on the system qubits to bring the i-th subsystem qubits to the l-th position. This has a cost of ( M − l − 1) N .
+
+• The next step is to perform Givens rotations. This has a cost of 2( N − 1)( ℶ − 2). 
+
+• The controlled ˆZ operation does not require Toffoli gates. 
+
+• Inverting the rotations again costs 2( N − 1)( ℶ − 2) Toffoli gates. 35 
+
+• The final step is to undo the data loading and controlled swaps from the first step. Using measurement-based uncomputation, the cost of unloading is QRM †Tc ( ˜Sl), while the cost of swaps is ( M − l − 1) N .Thus, the cost of Sub-SELECT l can be given by 
+
+CSub-SEL l 
+
+> THC
+
+= 2( M − l − 1) N + QRM Tc ( ˜Sl, ˜m) + QRM †Tc ( ˜Sl) + 4( N − 1)( ℶ − 2) , (C15) where ˜Sl is given in Eq. (C14). Using this, we can write the cost of the SELECT circuit as 
+
+CSEL THC =
+
+> n−1
+
+X
+
+> l=0
+
+
+
+2( M − l − 1) N + QRM Tc ( ˜Sl, ˜m) + QRM †Tc ( ˜Sl) + 4( N − 1)( ℶ − 2) 
+
+
+
++ n − 1= 2 M N n − N n (n + 1) + n − 1 + 4 n(N − 1)( ℶ − 2) + 
+
+> n−1
+
+X
+
+> l=0
+
+
+
+QRM Tc ( ˜Sl, ˜m) + QRM †Tc ( ˜Sl)
+
+
+
+. (C16) For fixed n, constant ℶ, and ¯R = O(N ), the cost of the THC SELECT circuit scales as O(M N n ). The THC LCU block-encoding cost is defined as 
+
+CBE THC = CPREP THC + CSEL THC + CPREP † 
+
+> THC
+
+. (C17) The qubits that need to be reflected on for construction of the qubitization walk operator are as follows: The 
+
+⌈log 2 S⌉ qubits used in the uniform superposition state, 1 qubit used to flag the success of uniform superposition state preparation, and ℵ qubits used in coherent alias sampling. All other ancillas become unentangled with the system qubits after the application of PREP †. These reflections have a cost of ⌈log 2 S⌉ + ℵ − 1 Toffolis. We also need one Toffoli to control the SELECT operation on the success of preparing a uniform superposition state in PREP and one more for coupling the reflection with the right branch of the unary iterator of QPE. Thus, the total Toffoli cost of estimating eigenvalues of a second-quantized vibrational Hamiltonian to accuracy ϵ using QPE is given by 
+
+CTHC =
+
+ πλ THC 
+
+2ϵ
+
+
+
+(CBE THC + ⌈log 2 S⌉ + ℵ + 1) . (C18) For optimal data-loading ancillas and fixed n ≥ 2 and precision parameters, the asymptotic Toffoli cost based on Eq. (C18) is eO  λTHC (M N )n/ 2/ϵ . Note that the asymptotic costs in both Pauli and THC LCUs are still dominated by the PREP circuit. However, the requirement of modal rotations can provide significant overhead in the case of the THC LCU. We now consider the qubit cost of implementing QPE for the THC LCU. Some of the QPE-related costs remain identical to the Pauli LCU. 1. The phase estimation requires a register of size ⌈log 2(I + 1) ⌉ where I =
+
+ πλ THC 
+
+2ϵ
+
+
+
+.2. A unary iterator on the phase estimation register requires ⌈log 2(I + 1) ⌉ − 1 ancillas. 3. Preparing the uniform superposition state requires ⌈log 2(S)⌉ qubits to store the uniform index, 1 qubit for storing the success, br qubits for the phase gradient state, and 1 ancilla to perform the rotation on (see Appendix A of Ref. [54]). Here S is the number of terms in the LCU. 4. A register of size m (defined in Eq. (C10)) stores the bit strings loaded by QROM. The number of clean ancillas required when using clean or dirty (c/d) ancilla-based QROM is given by QRM Nc/d(S, m ), as defined in Eqs. (B5) and (B7). Recall that we have defined QRM Nd (S, m ) ≡ QRM Nd (S) for notational convenience. For inverse QROM with measurement-based uncomputation, the corresponding clean ancilla cost is QRM †Nc/d(S); this contribution need not be counted separately because the inverse QROM can reuse the QROM ancillas together with any idle clean qubits available elsewhere in the circuit. 5. ℵ qubits are required for storing the uniform superposition state σ used in coherent alias sampling. Another qubit is needed to store the result of the inequality test in coherent alias sampling. 6. In SELECT, QRM Nc ( ˜S0, ˜m) clean ancillas are required when utilizing QROM to load the rotation angles. ˜S0 is defined in Eq. (C14) and ˜ m = ( N − 1) ℶ. Here, one can reuse the QROM ancillas from the PREP circuit. ˜m
+
+qubits are required to store the rotation angles. The qubit cost of unloading the angles can again be ignored since it will be smaller than the cost for loading them. 36 7. While br qubits are already counted for a phase gradient state, if ℶ > b r , then we will replace br with ℶ.8. ℶ − 2 ancillas, which can again be borrowed from QROM ancillas if available, are required while adding to a phase gradient state. 9. M N qubits are required for encoding the system wavefunction. In total, the logical qubit cost for the THC LCU can be given as 
+
+NTHC = 2 ⌈log 2(I + 1) ⌉ − 1 + ⌈log 2(S)⌉ + max( br , ℶ) + 2 + m + ℵ + 1 + M N 
+
++ max 
+
+
+
+QRM Nc/d(S, m ), max  QRM Nc ( ˜S0, ˜m), ℶ − 2 + ˜ m
+
+
+
+, (C19) For fixed n ≥ 2 and precision parameters, if an optimal number of clean or dirty ancillas is available to minimize the Toffoli count, then the qubit cost for the THC LCU scales as eO  (M N )n/ 2, which mainly comes from QROM. Equations (C18) and (C19) together determine the quantum resources required to estimate eigenvalues of a vibrational Hamiltonian expressed as a THC LCU using QPE. Utilization of BLISS only changes the value of the LCU 1-norm. 
+
+Appendix D: Details of BLISS 
+
+This section provides a complete mathematical description of the BLISS technique, alongside the specific algorithmic choices used to construct the BLISS-Pauli and BLISS-THC LCUs. We define the BLISS-modified Hamiltonian as ˆHB = ˆH − ˆK1 − ˆK2 − ˆK3,
+
+where ˆH is assumed to be in the symmetrized form of Eq. (11) and ˆKn is a killer operator at the mode-coupling level 
+
+n. We expand these killer operators using the number-operator symmetry as follows: ˆK1 = 
+
+> M−1
+
+X
+
+> i=0
+
+A(i)( ˆNi − 1) , (D1) ˆK2 = 
+
+> M−1
+
+X
+
+> i,j =0
+
+B(i,j )( ˆNi ˆNj − 1) +  
+
+> M−1
+
+X 
+
+> i,j =0
+> N−1
+
+X
+
+> r,s =0
+
+C(i,j ) 
+
+> r,s
+
+( ˆNi − 1) ˆErj 
+
+> sj
+
+, (D2) ˆK3 = 
+
+> M−1
+
+X
+
+> i,j,k =0
+
+D(i,j,k )( ˆNi ˆNj ˆNk − 1) +  
+
+> M−1
+
+X 
+
+> i,j,k =0
+> N−1
+
+X
+
+> t,u =0
+
+E(i,j,k ) 
+
+> t,u
+
+( ˆNi ˆNj − 1) ˆEtk
+
+> uk
+
++ 
+
+> M−1
+
+X 
+
+> i,j,k =0
+> N−1
+
+X
+
+> r,s,t,u =0
+
+F(i,j,k ) 
+
+> r,s,t,u
+
+( ˆNi − 1) ˆErj
+
+> sj
+
+ˆEtk 
+
+> uk
+
+,
+
+(D3) where A, B, C, D, E, and F are parameterized tensors that can be optimized to minimize the overall 1-norm. Because the excitation operators natively conserve excitation count within their mode, each of these killers annihilates states within the one-excitation-per-mode physical subspace, regardless of the tensor coefficient values. To ensure that ˆHB
+
+remains Hermitian and that the modified tensors retain the permutation symmetries of the original ˆH, we impose the following restrictions on the coefficients: 
+
+B(i,j ) = B(j,i ),
+
+C(i,j ) 
+
+> r,s
+
+= C(i,j ) 
+
+> s,r
+
+,
+
+D(i,j,k ) = D(k,i,j ) = D(j,k,i ) = D(j,i,k ) = D(k,j,i ) = D(i,k,j ),
+
+E(i,j,k ) 
+
+> u,t
+
+= E(i,j,k ) 
+
+> t,u
+
+= E(j,i,k ) 
+
+> t,u
+
+= E(j,i,k ) 
+
+> u,t
+
+,
+
+F(i,j,k ) 
+
+> s,r,u,t
+
+= F(i,j,k ) 
+
+> r,s,u,t
+
+= F(i,j,k ) 
+
+> s,r,t,u
+
+= F(i,j,k ) 
+
+> r,s,t,u
+
+= F(i,k,j ) 
+
+> t,u,r,s
+
+= F(i,k,j ) 
+
+> u,t,r,s
+
+= F(i,k,j ) 
+
+> t,u,s,r
+
+= F(i,k,j ) 
+
+> u,t,s,r
+
+.37 Additionally, these coefficients are strictly zero whenever any two of the mode indices ( i, j, k ) are identical. Applying these killers to the Hamiltonian in Eq. (11) yields the BLISS-modified tensors 
+
+hBi,p,q = hi,p,q − A (i)δp,q + 
+
+> M−1
+
+X
+
+> j=0
+
+C(j,i ) 
+
+> p,q
+
++ 
+
+> M−1
+
+X
+
+> j,k =0
+
+E(j,k,i ) 
+
+> p,q
+
+,gBi,p,q,j,r,s = gi,p,q,j,r,s − B (i,j )δp,q δr,s − 12
+
+
+
+C(i,j ) 
+
+> r,s
+
+δp,q + C(j,i ) 
+
+> p,q
+
+δr,s 
+
+
+
++ 
+
+> M−1
+
+X
+
+> k=0
+
+F(k,i,j ) 
+
+> p,q,r,s
+
+,vBi,p,q,j,r,s,k,t,u = vi,p,q,j,r,s,k,t,u − D (i,j,k )δp,q δr,s δt,u − 13
+
+
+
+E(i,j,k ) 
+
+> t,u
+
+δp,q δr,s + E(i,k,j ) 
+
+> r,s
+
+δp,q δt,u + E(k,j,i ) 
+
+> p,q
+
+δr,s δt,u 
+
+
+
+− 13
+
+
+
+F(i,j,k ) 
+
+> r,s,t,u
+
+δp,q + F(j,i,k )
+
+> p,q,t,u
+
+δr,s + F(k,j,i ) 
+
+> r,s,p,q
+
+δt,u 
+
+
+
+,
+
+(D4) along with a constant global shift to the Hamiltonian given by 
+
+CB = X
+
+> i
+
+A(i) + X
+
+> i,j
+
+B(i,j ) + X
+
+> i,j,k
+
+D(i,j,k ).
+
+Optimizing the Pauli LCU via BLISS proceeds directly from these modified tensors. Once the Pauli LCU for ˆHB
+
+is derived, the resulting 1-norm becomes a cost function of the BLISS parameters, which are optimized classically. For the three-mode-coupling Hamiltonians studied here, we enforce F = 0. We observed that including the F
+
+tensor decreased the sparsity of the Hamiltonian while offering only marginal reductions in the 1-norm. Similarly, for Hamiltonians truncated at the two-mode-coupling level, we set ˆK3 = 0. For the BLISS-THC approach, we observed that applying the higher-order killers ˆK2 or ˆK3 from Eqs. (D2) and (D3) requires substantially larger THC ranks to maintain the same accuracy. Consequently, we construct the BLISS-THC Hamiltonian using only the one-mode killer, ˆK1. This modifies the parameters η(i) 
+
+> μi
+
+of Eq. (20) to η(i)Bμi = η(i) 
+
+> μi
+
++ A(i).Because the η(i) 
+
+> μi
+
+parameters correspond to the negative of the eigenvalues of the THC-modified one-mode-coupling tensor, the 1-norm is optimally minimized by setting A(i) = − median μi
+
+ η(i)
+
+> μi
+
+. Thus, the final 1-norm for the BLISS-THC LCU retains the exact mathematical form of Eq. (21), with η(i) 
+
+> μi
+
+replaced by η(i)Bμi .
+
+Appendix E: Comparing Qubitization with Trotter Approximation 
+
+Qubitization of the block-encoded Hamiltonian enables efficient implementation of QPE. Alternatively, one can approximate the time-evolution operator using a Trotter decomposition and perform phase estimation directly on the resulting operator. This approach can be highly favorable because Trotterization does not require additional ancilla qubits. However, previous studies on the electronic Hamiltonian have shown that qubitization often leads to a smaller Toffoli cost than Trotter-based methods [54], though this performance gap is narrowing [87]. In Ref. [31], different Hamiltonian fragmentations and their associated costs were studied for implementing a Trotterized time propagator. In this section, we consider these costs and compare them with the cost of qubitization-based phase estimation using the LCUs developed here. The second-order Trotter approximation evaluates the time evolution of a Hamiltonian, ˆH = PL−1 
+
+> i=0
+
+ˆHi, by express-ing the exact time propagator for a time t as a product of the evolutions of its individual fragments for a time step ∆t = t/r , repeated r times in the following form: 
+
+e−i ˆHt ≈
+
+> L−1
+
+Y
+
+> i=0
+
+e−i ˆHi∆t/ 20Y
+
+> i=L−1
+
+e−i ˆHi∆t/ 2
+
+!r
+
+.
+
+The resulting approximate time propagator can then be viewed as being generated exactly by a different, effective Hamiltonian, ˆHeff (∆ t), such that 
+
+> L−1
+
+Y
+
+> i=0
+
+e−i ˆHi∆t/ 20Y
+
+> i=L−1
+
+e−i ˆHi∆t/ 2 = e−i ˆHeff (∆ t)∆ t.
+
+By increasing r, the difference between the eigenvalues of ˆHeff (∆ t) and ˆH can be kept below a target error threshold, 
+
+ϵTrot . Reference [31] assumes the state of the system undergoing QPE has a spectral support of width α. To pre-vent the aliasing of Hamiltonian energies, QPE can be performed on the propagator exp 
+
+
+
+−i ˆHeff 2π/α 
+
+
+
+rather than 38 exp 
+
+
+
+−i ˆHeff 2π/ ∥ ˆH∥
+
+
+
+. Because ∥ ˆH∥ > α , using the latter propagator in QPE would require more queries, thereby inflating the final resource estimates. The qubitization costs evaluated in this work employ optimizations established in Refs. [54] and [40]. Specifically: (1) instead of initializing a uniform superposition state on the ancilla qubits, QPE is performed on a state that improves precision by either minimizing the spectral leakage [65] or the Holevo variance [88]; (2) rather than applying a controlled time propagator conditioned solely on the QPE ancilla being in the |1⟩ state, a directionally controlled forward or backward evolution is conditioned on the ancilla being in either the |1⟩ or |0⟩ state; and (3) the number of queries to the walk operator is not restricted to a power of 2. Under these assumptions, the required number of walk operator queries is ⌈πλ LCU /(2 ϵQPE )⌉, where λLCU is the LCU 1-norm and ϵQPE is the target energy resolution for QPE. To ensure a fair comparison, we apply the same optimizations to Trotterization. The directionally controlled Trotter evolution can be implemented at the same cost as an uncontrolled time propagator [89, 90]. If QPE is performed on the operator exp 
+
+
+
+−i ˆHeff 2π/α 
+
+
+
+, the algorithm estimates the dimensionless parameter ϕ = E/α , where E is the target eigenvalue. Therefore, the error in the energy, ϵQPE , relates to the error in the measured value, δϕ , as 
+
+ϵQPE = αδϕ. 
+
+Assuming the phase error is dominated by the Holevo variance [40], we can relate it to Ncalls , the number of QPE queries to the propagator, as 
+
+δϕ = 12π tan 
+
+ π
+
+2Ncalls + 1 
+
+
+
+≈ 14Ncalls 
+
+.
+
+The prefactor of 1 /(2 π) arises from explicitly including the 2 π factor in the exponential definition of the propagator. This factor is absent in Ref. [40], which defines the time propagator as exp 
+
+
+
+−i ˆH/α 
+
+
+
+. Thus, Ncalls can be expressed in terms of the target QPE energy accuracy as 
+
+Ncalls =
+
+ α
+
+4ϵQPE 
+
+
+
+.
+
+Because each Trotter oracle exp 
+
+
+
+−i ˆHeff 2π/α 
+
+
+
+is implemented using r discrete steps of exp 
+
+
+
+−i ˆHeff 2π/ (αr )
+
+
+
+, the total cost of estimating the energy to an accuracy ϵ using QPE on the Trotterized time evolution is 
+
+CTrot =
+
+ α
+
+4ϵQPE 
+
+
+
+rC step ,
+
+where Cstep is the cost of implementing a single Trotter step, r is chosen such that the energy error of ˆHeff is less than 
+
+ϵTrot , and the total target accuracy is ϵ = ϵQPE + ϵTrot . If δt is the evolution time of a single Trotter step required to bound the energy error below ϵTrot , then r = max(1 , ⌈2π/ (αδt )⌉). For a second-order Trotter product formula, the step duration scales as δt ∝ √ϵTrot .Table 3 in Ref. [31] lists the values of Cstep and r for four molecules (H 2S, CO 2, CH 2O, and CH 4). To enable a direct comparison with the reported Trotter resource estimates, we retain the parameters used there, including 
+
+ϵTrot = 7 cm −1 and a spectral width of α = 5516 cm −1. Among the various Hamiltonian fragmentation schemes evaluated, Christiansen Greedy Fragments (CGFs) yield the lowest resource estimates. The CGFs were obtained via a greedy factorization of two-mode-coupling tensors to a relative accuracy of approximately 5%. Accordingly, we generated THC and Pauli LCUs of the same Hamiltonians to an accuracy of ∼ 5% ± 1% for the data presented here. Figure 4 in the main text illustrates the results for estimating the energy to a combined QPE-plus-Trotter error budget of ϵ = 10 cm −1.
+
+> Appendix F: Numerical Data
+
+The PAH molecules considered here are linear chains of fused benzene rings called polyacenes. We consider up to seven benzene rings. Hamiltonians for these systems were obtained directly from the authors of Ref. [49]. As such, the electronic structure calculations used to obtain these systems are given in Appendix F of the same paper. MidasCpp [73] was then utilized to perform VSCF calculations and generate the explicit mode-coupling tensors. For the four small molecules used in obtaining Trotter-based resource estimates, the Hartree–Fock level of theory was used to generate the electronic PES. In Table III, we provide the numerical values used in plotting Figs. 2 and 3. Table IV lists the numerical values used in plotting Fig. 4. 39 
+
+Metric Method PAH1 PAH2 PAH3 PAH4 PAH5 PAH6 PAH7 
+
+1-norms (×10 6 cm −1)Triangular 2.19 3.14 4.27 5.19 6.30 7.22 8.33 Pauli 1.05 1.48 2.05 2.47 3.00 3.43 3.97 BLISS-Pauli 0.53 0.75 1.06 1.40 1.72 1.92 2.10 THC 0.48 0.72 0.96 1.23 1.47 1.70 1.96 BLISS-THC 0.39 0.57 0.76 0.97 1.15 1.33 1.53 
+
+Qubit cost Triangular 301 395 487 579 671 763 853 
+
+Pauli 334 →2567 432 →2789 529 →5570 619 →5660 711 →5752 803 →10963 897 →11565 THC 401 →1154 498 →2271 593 →2491 684 →4630 776 →4722 867 →4814 961 →5160 Toffoli cost (×10 11 )Triangular 6.63 22.40 62.90 104.00 184.00 293.00 446.00 Pauli 0.45 →0.09 1.03 →0.19 2.62 →0.39 3.24 →0.55 4.79 →0.82 6.35 →1.12 9.54 →1.49 BLISS-Pauli 0.28 →0.05 0.70 →0.11 1.71 →0.22 2.59 →0.37 3.91 →0.56 4.94 →0.72 7.14 →0.92 THC 0.07 →0.03 0.20 →0.07 0.40 →0.13 0.66 →0.21 1.10 →0.29 1.39 →0.39 2.03 →0.54 BLISS-THC 0.06 →0.03 0.16 →0.06 0.32 →0.10 0.52 →0.16 0.86 →0.23 1.09 →0.31 1.59 →0.42 
+
+Table III. LCU 1-norms and QPE quantum resource estimates underlying Figs. 2 and 3 for seven two-mode-coupling PAH Hamiltonians represented using five VSCF modals per mode, with a target QPE accuracy of 1 cm −1. Arrows show the resource tradeoff from dirty-ancilla-assisted QROM to the maximum retained clean-ancilla QROM configuration. BLISS variants are omitted from the qubit rows, consistent with the plotted qubit costs. 
+
+Metric Method H2S CO 2 CH 2O CH 4
+
+Qubits Trotter 30 34 42 54 
+
+BLISS-Pauli 148 152 170 190 BLISS-THC 202 207 223 242 T gates (×10 7)Trotter 1.57 3.56 10.21 52.44 BLISS-Pauli 0.76 0.63 3.32 11.92 BLISS-THC 0.73 0.98 2.65 6.10 
+
+Table IV. QPE resource estimates underlying Fig. 4 for H 2S, CO 2, CH 2O, and CH 4, represented in a local-mode harmonic-oscillator basis with four modals per mode. The combined error budget from QPE and the Trotter approximation is 10 cm −1,with ϵQPE = 3 cm −1 and ϵTrot = 7 cm −1. The Trotter estimates correspond to the Christiansen Greedy Fragment construction of Ref. [31], while the BLISS-Pauli and BLISS-THC estimates use QROM without the Toffoli–qubit tradeoff. [1] Cristina Puzzarini, Julien Bloino, Nicola Tasinato, and Vincenzo Barone. Accuracy and interpretability: The devil and the holy grail. New routes across old boundaries in computational spectroscopy. Chemical Reviews , 119(13):8131–8191, 2019. [2] Ignacio Loaiza, Stepan Fomichev, Danial Motlagh, Pablo AM Casares, Daniel Honciuc Menendez, Serene Shum, Alain Delgado, and Juan Miguel Arrazola. Simulating near-infrared spectroscopy on a quantum computer for enhanced chemical detection. 2025. arXiv:2504.10602. [3] H. Bernhard Schlegel. Exploring potential energy surfaces for chemical reactions: An overview of some practical methods. 
+
+Journal of Computational Chemistry , 24(12):1514–1527, 2003. [4] Satoshi Maeda, Yu Harabuchi, Yuriko Ono, Tetsuya Taketsugu, and Keiji Morokuma. Intrinsic reaction coordinate: Calculation, bifurcation, and automated search. International Journal of Quantum Chemistry , 115(5):258–269, 2015. [5] Partha P. Bera, Joseph S. Francisco, and Timothy J. Lee. Identifying the molecular origin of global warming. The Journal of Physical Chemistry A , 113(45):12694–12699, 2009. PMID: 19694447. [6] Ø. Hodnebrog, B. Aamaas, J. S. Fuglestvedt, G. Marston, G. Myhre, C. J. Nielsen, M. Sandstad, K. P. Shine, and T. J. Wallington. Updated global warming potentials and radiative efficiencies of halocarbons and other weak atmospheric absorbers. Reviews of Geophysics , 58(3):e2019RG000691, 2020. [7] Nicolas PD Sawaya, Francesco Paesani, and Daniel P Tabor. Near- and long-term quantum algorithmic approaches for vibrational spectroscopy. Physical Review A , 104(6):062419, 2021. [8] Tucker Carrington, Jr. Perspective: Computing (ro-)vibrational spectra of molecules with more than four atoms. The Journal of Chemical Physics , 146(12):120902, 03 2017. [9] M.H. Beck, A. J¨ ackle, G.A. Worth, and H.-D. Meyer. The multiconfiguration time-dependent Hartree (MCTDH) method: a highly efficient algorithm for propagating wavepackets. Physics Reports , 324(1):1–105, 2000. [10] Haobin Wang. Multilayer multiconfiguration time-dependent Hartree theory. The Journal of Physical Chemistry A ,119(29):7951–7965, 2015. PMID: 26020459. [11] Joel M Bowman, Tucker Carrington, and Hans-Dieter Meyer. Variational quantum approaches for computing vibrational energies of polyatomic molecules. Molecular Physics , 106(16-18):2145–2182, 2008. 40 
+
+[12] Mikkel B. Hansen, Manuel Sparta, Peter Seidler, Daniele Toffoli, and Ove Christiansen. New formulation and implementa-tion of vibrational self-consistent field theory. Journal of Chemical Theory and Computation , 6(1):235–248, 2010. PMID: 26614334. [13] Ove Christiansen. Vibrational structure theory: new vibrational wave function methods for calculation of anharmonic vibrational energies and vibrational contributions to molecular properties. Phys. Chem. Chem. Phys. , 9:2942–2953, 2007. [14] Al´ an Aspuru-Guzik, Anthony D. Dutoi, Peter J. Love, and Martin Head-Gordon. Simulated quantum computation of molecular energies. Science , 309(5741):1704–1707, 2005. [15] Sam McArdle, Suguru Endo, Al´ an Aspuru-Guzik, Simon C. Benjamin, and Xiao Yuan. Quantum computational chemistry. 
+
+Rev. Mod. Phys. , 92:015003, Mar 2020. [16] Delmar G. A. Cabral, Pouya Khazaei, Brandon C. Allen, Pablo E. Videla, Max Sch¨ afer, Rodrigo G. Corti˜ nas, Alejan-dro Cros Carrillo de Albornoz, Jorge Ch´ avez-Carlos, Lea F. Santos, Eitan Geva, and Victor S. Batista. A roadmap for simulating chemical dynamics on a parametrically driven bosonic quantum device. The Journal of Physical Chemistry Letters , 15(48):12042–12050, 2024. PMID: 39589318. [17] Chris Sparrow, Enrique Mart´ ın-L´ opez, Nicola Maraviglia, Alex Neville, Christopher Harrold, Jacques Carolan, Yogesh N. Joglekar, Toshikazu Hashimoto, Nobuyuki Matsuda, Jeremy L. O’Brien, David P. Tew, and Anthony Laing. Simulating the vibrational quantum dynamics of molecules using photonics. Nature , 557(7707):660–667, May 2018. [18] Shreyas Malpathak, Sangeeth Das Kallullathil, and Artur F. Izmaylov. Simulating vibrational dynamics on bosonic quantum devices. The Journal of Physical Chemistry Letters , 16(8):1855–1864, 2025. PMID: 39950938. [19] Sam McArdle, Alexander Mayorov, Xiao Shan, Simon Benjamin, and Xiao Yuan. Digital quantum simulation of molecular vibrations. Chemical Science , 10(22):5725–5735, 2019. [20] Pauline J Ollitrault, Alberto Baiardi, Markus Reiher, and Ivano Tavernelli. Hardware efficient quantum algorithms for vibrational structure calculations. Chemical Science , 11(26):6842–6855, 2020. [21] Erik L¨ otstedt, Kaoru Yamanouchi, Takashi Tsuchiya, and Yutaka Tachikawa. Calculation of vibrational eigenenergies on a quantum computer: Application to the Fermi resonance in CO 2. Physical Review A , 103(6):062609, 2021. [22] Erik L¨ otstedt, Kaoru Yamanouchi, and Yutaka Tachikawa. Evaluation of vibrational energies and wave functions of CO 2
+
+on a quantum computer. AVS Quantum Science , 4(3):036801, 07 2022. [23] Marco Majland, Patrick Ettenhuber, Nikolaj Thomas Zinner, and Ove Christiansen. Vibrational ADAPT-VQE: Critical points lead to problematic convergence. The Journal of Chemical Physics , 160(15):154109, 04 2024. [24] Erik L¨ otstedt and Tam´ as Szidarovszky. Rovibrational energy levels of H 2O by quantum computing. March 2026. arXiv:2603.05795. [25] John Preskill. Quantum Computing in the NISQ era and beyond. Quantum , 2:79, August 2018. [26] Sarah Mostame, Tanvi P. Gujarati, Alberto Baiardi, Abhijit Mitra, Dimitar Trenev, and Sumathy Raman. Sample-based quantum simulation of vibrational structure of polyyne chains. 2026. arXiv:2610.09616. [27] Kunal Kumar, Erik L¨ otstedt, Yuri Kobayashi, and Seiji Yunoki. Vibrational Sample-Based Quantum Diagonalization with Unitary-Cluster-Jastrow Ans¨ atze on IBM QPUs. 2026. arXiv:2610.09532. [28] Erik L¨ otstedt and Kaoru Yamanouchi. Simulation of vibrational dynamics using qubits and qudits. 2026. arXiv:2605.12866. [29] Nicolas PD Sawaya, Tim Menke, Thi Ha Kyaw, Sonika Johri, Al´ an Aspuru-Guzik, and Gian Giacomo Guerreschi. Resource-efficient digital quantum simulation of d-level systems for photonic, vibrational, and spin-s hamiltonians. npj Quantum Information , 6(1):49, 2020. [30] Dimitar Trenev, Pauline J Ollitrault, Stuart M Harwood, Tanvi P Gujarati, Sumathy Raman, Antonio Mezzacapo, and Sarah Mostame. Refining resource estimation for the quantum computation of vibrational molecular spectra through Trotter error analysis. Quantum , 9:1630, 2025. [31] Shreyas Malpathak, Sangeeth Das Kallullathil, Ignacio Loaiza, Stepan Fomichev, Juan Miguel Arrazola, and Artur F. Izmaylov. Trotter simulation of vibrational hamiltonians on a quantum computer. Journal of Chemical Theory and Computation , 22(1):95–119, 01 2026. [32] A. Yu. Kitaev. Quantum measurements and the Abelian Stabilizer Problem. arXiv e-prints , pages quant–ph/9511026, November 1995. [33] Andrew M. Childs, Yuan Su, Minh C. Tran, Nathan Wiebe, and Shuchen Zhu. Theory of Trotter error with commutator scaling. Phys. Rev. X , 11:011020, Feb 2021. [34] Shashank G. Mehendale, Luis A. Mart´ ınez-Mart´ ınez, Prathami Divakar Kamath, and Artur F. Izmaylov. Estimating Trotter approximation errors to optimize hamiltonian partitioning for lower eigenvalue errors. Digital Discovery , 4:3540– 3551, 2025. [35] Ryan Babbush, Jarrod McClean, Dave Wecker, Al´ an Aspuru-Guzik, and Nathan Wiebe. Chemical basis of Trotter-Suzuki errors in quantum chemistry simulation. Phys. Rev. A , 91:022311, Feb 2015. [36] William Maxwell, Pablo A. M. Casares, Robert A. Lang, Stepan Fomichev, Juan Miguel Arrazola, Soran Jahangiri, Ali Asadi, Luis Alfredo Nunez Meneses, Thomas Germain, and Danial Motlagh. Practical estimation of Trotter error for hamiltonian simulation, 2026. arXiv:2606.30738. [37] Guang Hao Low and Isaac L. Chuang. Hamiltonian Simulation by Qubitization. Quantum , 3:163, July 2019. [38] Andrew M. Childs and Nathan Wiebe. Hamiltonian Simulation Using Linear Combinations of Unitary Operations. arXiv e-prints , page arXiv:1202.5822, February 2012. [39] Mario Szegedy. Quantum speed-up of Markov chain based algorithms. In Proceedings of the 45th Annual IEEE Symposium on Foundations of Computer Science , pages 32–41, 2004. [40] Ryan Babbush, Craig Gidney, Dominic W Berry, Nathan Wiebe, Jarrod McClean, Alexandru Paler, Austin Fowler, and Hartmut Neven. Encoding electronic spectra in quantum circuits with linear T complexity. Physical Review X , 8(4):041015, 41 
+
+2018. [41] Guang Hao Low and Isaac L. Chuang. Optimal hamiltonian simulation by quantum signal processing. Phys. Rev. Lett. ,118:010501, Jan 2017. [42] Hirsh Kamakari and Emil Zak. Higher order tensor factorizations for block encoding vibrational and vibronic hamiltonians. 2025. arXiv:2504.08065. [43] Michal Szczepanik, ´Akos Nagy, and Emil ˙Zak. Simulating high-accuracy nuclear motion hamiltonians in discrete variable representation using Walsh-Hadamard QROM with fault-tolerant quantum computers. 2025. arXiv:2510.19062. [44] Ove Christiansen. A second quantization formulation of multimode dynamics. The Journal of Chemical Physics ,120(5):2140–2148, 2004. [45] Xiaolu Cheng and Ryan P. Steele. Efficient anharmonic vibrational spectroscopy for large molecules using local-mode coordinates. The Journal of Chemical Physics , 141(10):104105, 09 2014. [46] Christoph R. Jacob and Markus Reiher. Localizing normal modes in large molecules. The Journal of Chemical Physics ,130(8):084106, 02 2009. [47] Kiyoshi Yagi, Murat Ke¸ celi, and So Hirata. Optimized coordinates for anharmonic vibrational structure theories. The Journal of Chemical Physics , 137(20):204118, 11 2012. [48] Julia Br¨ uggemann, Mario Wolter, and Christoph R. Jacob. Quantum-chemical calculation of two-dimensional infrared spectra using localized-mode VSCF/VCI. The Journal of Chemical Physics , 157(24):244107, 12 2022. [49] Marco Majland, Rasmus Berg Jensen, Patrick Ettenhuber, Irfansha Shaik, Nikolaj Thomas Zinner, and Ove Christiansen. Fault-tolerant quantum computations of vibrational wave functions. Journal of Chemical Theory and Computation ,22(1):30–51, 01 2026. [50] Dominic W Berry, Craig Gidney, Mario Motta, Jarrod R McClean, and Ryan Babbush. Qubitization of arbitrary basis quantum chemistry leveraging sparsity and low rank factorization. Quantum , 3:208, 2019. [51] Guang Hao Low, Vadym Kliuchnikov, and Luke Schaeffer. Trading T gates for dirty qubits in state preparation and unitary synthesis. Quantum , 8:1375, June 2024. [52] Danial Motlagh and Matthew Pocrnic. Halving the cost of QROM, 2026. arXiv:2605.20334. [53] Matthew Pocrnic, Ignacio Loaiza, Juan Miguel Arrazola, Nathan Wiebe, and Danial Motlagh. Efficient simulation of pre-Born-Oppenheimer dynamics on a quantum computer. 2026. arXiv:2602.11272. [54] Joonho Lee, Dominic W Berry, Craig Gidney, William J Huggins, Jarrod R McClean, Nathan Wiebe, and Ryan Babbush. Even more efficient quantum computations of chemistry through tensor hypercontraction. PRX Quantum , 2(3):030305, 2021. [55] Edward G. Hohenstein, Robert M. Parrish, and Todd J. Mart´ ınez. Tensor hypercontraction density fitting. I. Quartic scaling second- and third-order Møller-Plesset perturbation theory. The Journal of Chemical Physics , 137(4):044103, 07 2012. [56] Ignacio Loaiza and Artur F. Izmaylov. Block-invariant symmetry shift: Preprocessing technique for second-quantized hamiltonians to improve their decompositions to linear combination of unitaries. Journal of Chemical Theory and Com-putation , 19(22):8201–8209, 2023. PMID: 37939198. [57] Ryan Babbush, Nathan Wiebe, Jarrod McClean, James McClain, Hartmut Neven, and Garnet Kin-Lic Chan. Low-depth quantum simulation of materials. Phys. Rev. X , 8:011044, Mar 2018. [58] Manuel Sparta, Daniele Toffoli, and Ove Christiansen. An adaptive density-guided approach for the generation of potential energy surfaces of polyatomic molecules. Theoretical Chemistry Accounts , 123(5):413–429, 2009. [59] R. Cleve, A. Ekert, C. Macchiavello, and M. Mosca. Quantum algorithms revisited. Proceedings of the Royal Society A: Mathematical, Physical and Engineering Sciences , 454(1969):339–354, 01 1998. [60] Miroslav Dobˇ s´ ıˇ cek, G¨ oran Johansson, Vitaly Shumeiko, and G¨ oran Wendin. Arbitrary accuracy iterative quantum phase estimation algorithm using a single ancillary qubit: A two-qubit benchmark. Phys. Rev. A , 76:030306(R), Sep 2007. [61] Shelby Kimmel, Guang Hao Low, and Theodore J. Yoder. Robust calibration of a universal single-qubit gate set via robust phase estimation. Phys. Rev. A , 92:062315, Dec 2015. [62] Lin Lin and Yu Tong. Heisenberg-limited ground-state energy estimation for early fault-tolerant quantum computers. PRX Quantum , 3:010318, Feb 2022. [63] Ignacio Loaiza, Danial Motlagh, Kasra Hejazi, Modjtaba Shokrian Zini, Alain Delgado, and Juan Miguel Arrazola. Non-linear spectroscopy via generalized quantum phase estimation. Quantum , 9:1822, August 2025. [64] Sean Greenaway, William Pol, and Sukin Sim. A case study against QSVT: assessment of quantum phase estimation improved by signal processing techniques, 2024. arXiv:2404.01396. [65] Kaur Kristjuhan and Dominic W. Berry. Quantum phase estimation with optimal confidence interval using three control qubits. Quantum , 10:2193, August 2026. [66] Cody Jones. Low-overhead constructions for the fault-tolerant Toffoli gate. Physical Review A—Atomic, Molecular, and Optical Physics , 87(2):022328, 2013. [67] Ignacio Loaiza, Aritra Sankar Brahmachari, and Artur F Izmaylov. Majorana tensor decomposition: A unifying frame-work for decompositions of fermionic hamiltonians to linear combination of unitaries. Quantum Science and Technology ,10(3):035035, 2025. [68] Athena Caesura, Cristian L. Cortes, William Pol, Sukin Sim, Mark Steudtner, Gian-Luca R. Anselmetti, Matthias Deg-roote, Nikolaj Moll, Raffaele Santagati, Michael Streif, and Christofer S. Tautermann. Faster quantum chemistry simula-tions on a quantum computer with improved tensor factorization and active volume compilation. PRX Quantum , 6:030337, Aug 2025. [69] Tamara G. Kolda and Brett W. Bader. Tensor decompositions and applications. SIAM Review , 51(3):455–500, 2009. 42 
+
+[70] Ignacio Loaiza, Alireza Marefat Khah, Nathan Wiebe, and Artur F Izmaylov. Reducing molecular electronic hamiltonian simulation cost for linear combination of unitaries approaches. Quantum Science and Technology , 8(3):035019, May 2023. [71] Smik Patel, Aritra Sankar Brahmachari, Joshua T. Cantin, Linjun Wang, and Artur F. Izmaylov. Global minimization of electronic hamiltonian 1-norm via linear programming in the block invariant symmetry shift (BLISS) method. Journal of Chemical Theory and Computation , 21(2):703–713, 2025. PMID: 39804571. [72] Yuval R Sanders, Dominic W Berry, Pedro CS Costa, Louis W Tessler, Nathan Wiebe, Craig Gidney, Hartmut Neven, and Ryan Babbush. Compilation of fault-tolerant quantum heuristics for combinatorial optimization. PRX Quantum ,1(2):020312, 2020. [73] O. Christiansen, D. G. Artiukhin, F. Bader, I. H. Godtliebsen, E. M. Gras, W. Gyørffy, M. B. Hansen, M. B. Hansen, M. G. Højlund, N. M. Høyer, R. B. Jensen, A. B. Jensen, E. L. Klinting, J. Kongsted, C. K¨ onig, D. Madsen, N. K. Madsen, K. Monrad, G. Schmitz, P. Seidler, K. Sneskov, M. Sparta, B. Thomsen, D. Toffoli, and A. Zoccante. MidasCpp (Molecular Interactions, dynamics and simulation Chemistry program package in C++), 2026. Version 2026.04.0, available at https://gitlab.com/midascpp/midascpp .[74] DeepMind, Igor Babuschkin, Kate Baumli, Alison Bell, Surya Bhupatiraju, Jake Bruce, Peter Buchlovsky, David Budden, Trevor Cai, Aidan Clark, Ivo Danihelka, Antoine Dedieu, Claudio Fantacci, Jonathan Godwin, Chris Jones, Ross Hemsley, Tom Hennigan, Matteo Hessel, Shaobo Hou, Steven Kapturowski, Thomas Keck, Iurii Kemaev, Michael King, Markus Kunesch, Lena Martens, Hamza Merzic, Vladimir Mikulik, Tamara Norman, George Papamakarios, John Quan, Roman Ring, Francisco Ruiz, Alvaro Sanchez, Laurent Sartran, Rosalia Schneider, Eren Sezener, Stephen Spencer, Srivatsan Srinivasan, Miloˇ s Stanojevi´ c, Wojciech Stokowiec, Luyu Wang, Guangyao Zhou, and Fabio Viola. The DeepMind JAX Ecosystem. http://github.com/google-deepmind , 2020. [75] Shashank G. Mehendale. Vibrational Block Encodings. https://github.com/Shashank-G-M/ Vibrational-Block-Encodings , October 2026. [76] James Bradbury, Roy Frostig, Peter Hawkins, Matthew James Johnson, Yash Katariya, Chris Leary, Dougal Maclaurin, George Necula, Adam Paszke, Jake VanderPlas, Skye Wanderman-Milne, and Qiao Zhang. JAX: composable transforma-tions of Python+NumPy programs. http://github.com/jax-ml/jax , 2018. [77] Jean Kossaifi, Yannis Panagakis, Anima Anandkumar, and Maja Pantic. TensorLy: Tensor learning in Python. Journal of Machine Learning Research (JMLR) , 20(26):1–6, 2019. [78] Danial Motlagh. Halving the cost of QROM again via dense encoding, 2026. arXiv:2610.02321. [79] Edward G. Hohenstein, Sara I. L. Kokkila, Robert M. Parrish, and Todd J. Mart´ ınez. Quartic scaling second-order approximate coupled cluster singles and doubles via tensor hypercontraction: THC-CC2. The Journal of Chemical Physics ,138(12):124111, 03 2013. [80] Edward G. Hohenstein, Sara I. L. Kokkila, Robert M. Parrish, and Todd J. Mart´ ınez. Tensor hypercontraction equation-of-motion second-order approximate coupled cluster: Electronic excitation energies in O(N 4) time. The Journal of Physical Chemistry B , 117(42):12972–12978, 2013. PMID: 23964979. [81] Ove Christiansen. Møller–Plesset perturbation theory for vibrational wave functions. The Journal of Chemical Physics ,119(12):5773–5781, 09 2003. [82] Peter Seidler, Mikkel Bo Hansen, Werner Gy˝ orffy, Daniele Toffoli, and Ove Christiansen. Vibrational absorption spectra calculated from vibrational configuration interaction response theory using the Lanczos method. The Journal of Chemical Physics , 132(16):164105, 04 2010. [83] Ove Christiansen. Vibrational coupled cluster theory. The Journal of Chemical Physics , 120(5):2149–2159, February 2004. [84] Peter Seidler, Eduard Matito, and Ove Christiansen. Vibrational coupled cluster theory with full two-mode and approxi-mate three-mode couplings: The VCC[2pt3] model. The Journal of Chemical Physics , 131(3):034115, 07 2009. [85] Robbie King, Guang Hao Low, Ryan Babbush, Rolando D Somma, and Nicholas C Rubin. Quantum simulation with sum-of-squares spectral amplification. Physical Review Letters , 136(11):110601, 2026. [86] Vera von Burg, Guang Hao Low, Thomas H¨ aner, Damian S Steiger, Markus Reiher, Martin Roetteler, and Matthias Troyer. Quantum computing enhanced computational catalysis. Physical Review Research , 3(3):033055, 2021. [87] Pablo A. M. Casares, William Maxwell, Danial Motlagh, Hitarth Choubisa, Zy Niu, Ignacio Loaiza, Jonathan E. Mueller, Arne-Christian Voigt, Juan Miguel Arrazola, and Stepan Fomichev. Theory and practice of Trotter product formulas for quantum chemistry. arXiv e-prints , June 2026. arXiv:2606.30741. [88] A. Luis and J. Peˇ rina. Optimum phase-shift estimation and the quantum description of the phase difference. Phys. Rev. A, 54:4564–4570, Nov 1996. [89] Ian D. Kivlichan, Craig Gidney, Dominic W. Berry, Nathan Wiebe, Jarrod McClean, Wei Sun, Zhang Jiang, Nicholas Rubin, Austin Fowler, Al´ an Aspuru-Guzik, Hartmut Neven, and Ryan Babbush. Improved Fault-Tolerant Quantum Simulation of Condensed-Phase Correlated Electrons via Trotterization. Quantum , 4:296, July 2020. [90] William A. Simon and Peter J. Love. Halving the Cost of Controlled Time-Evolution. November 2025. arXiv:2511.13855.
