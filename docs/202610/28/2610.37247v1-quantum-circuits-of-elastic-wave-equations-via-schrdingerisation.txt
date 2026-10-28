@@ -1,0 +1,2717 @@
+Title: Quantum circuits of elastic wave equations via Schrödingerisation
+
+URL Source: https://arxiv.org/pdf/2610.37247v1
+
+Published Time: Wed, 28 Oct 2026 01:25:59 GMT
+
+Number of Pages: 36
+
+Markdown Content:
+# Quantum circuits of elastic wave equations via Schr ¨odingerisation 
+
+Shi Jin ∗1,2,3 and Chundan Zhang † ‡1 1School of Mathematical Sciences, Shanghai Jiao Tong University, Shanghai 200240, China. 
+
+> 2
+
+Institute of Natural Sciences, Shanghai Jiao Tong University, Shanghai 200240, China. 
+
+> 3
+
+Ministry of Education Key Laboratory in Scientific and Engineering Computing, Shanghai Jiao Tong University, Shanghai 200240, China. October 28, 2026 
+
+Abstract 
+
+We construct explicit quantum circuits for the velocity–stress formulation of elastic wave equations in homogeneous media using Schrödingerisation. After rewriting the equations in symmetric matrix form(SMF), we use Fourier spectral discretization for source-driven periodic problems and staggered-grid finite differences for Dirichlet, Neumann, and impedance bound-ary conditions. The Schrödingerisation method transforms any linear PDEs into a system of Schrödinger-type PDEs –with unitary evolution– using the warped phase transformation that maps the equations in one higher dimension. For periodic problems, we develop circuits by com-bining controlled Fourier-mode rotations. For physical boundaries, interleaved encoding swaps the spatial and field-component registers, enabling a more efficient circuit construction using shift operators. We analyze pth-order Trotter–Suzuki formulas and derive splitting-error and CNOT-gate estimates, under the assumptions of smooth auxiliary initialization and solution-state recovery. Comparison with classical partitioned splitting methods identifies a polyno-mial improvement in spatial-resolution dependence for the quantum state-evolution subroutine. Noiseless circuit simulations of a forced periodic problem and an impedance problem illustrate the constructions and quantify their errors against exact solutions and classical reference com-putations. 
+
+Keywords : Elastic wave equations, quantum circuits, Schrödingerisation method 
+
+# 1 Introduction 
+
+Elastic wave equations describe the propagation of mechanical disturbances in solids [1] and are widely used in seismology and geodynamics [2]. The velocity–stress formulation gives a first-order hyperbolic system that is well suited to staggered-grid discretization and the treatment of physical 
+
+> ∗
+
+shijin-m@sjtu.edu.cn 
+
+> †
+
+Corresponding author. 
+
+> ‡
+
+chundanzhang@sjtu.edu.cn 
+
+1arXiv:2610.37247v1 [quant-ph] 27 Oct 2026 boundary conditions [3]. In practical problems, Dirichlet, Neumann, and impedance conditions model fixed, traction, and absorbing boundaries, while source terms represent external forces or seismic excitations [4]. Therefore, it is important to develop efficient algorithms for elastic systems with source terms and physically relevant boundary conditions. Classical numerical methods, such as finite difference methods [5], finite element methods [6], boundary element methods [7] and other numerical methods [8] , have been extensively developed for elastic wave simulation. Nevertheless, large-scale simulations in high dimensions, long-time wave propagation, and models with fine spatial resolution or complex media may still lead to substantial computational cost. This has motivated the development of quantum algorithms for partial differential equations. Early approaches mainly relied on quantum linear system algorithms, such as HHL-type methods, by discretizing the PDE and reformulating it as a linear system [9, 10]. More recently, Hamiltonian-simulation-based approaches have provided a more natural and advantageous framework for PDEs. The Schrödingerisationembeds general non-unitary dynamics into a unitary evolution in an enlarged Hilbert space [11,12], which is the only method that transfer general linear PDEs into unitary PDEs, thus also most natural for continuous quantum computing [13]. A complementary approach is the linear combination of Hamiltonian simulation (LCHS) method for simulating non-unitary dynamics [14]. Based on these frameworks, explicit quantum circuits have been developed for several classes of PDEs, including hyperbolic equations [15] and canonical PDEs in Fourier space [16]. These techniques have also been applied to elastic wave propagation, for which explicit quantum algorithms and circuit constructions have been investigated [17]. These developments demonstrate the importance of exploiting the algebraic and differential structure of PDEs to obtain implementable quantum circuits with explicit complexity estimates. A useful framework for connecting general linear PDEs with Hamiltonian simulation is Schrödin-gerisation method [11,12]. The main idea is to transform a non-Schrödinger or non-unitary evolution into an enlarged Schrödinger-type system with unitary evolution, so that Hamiltonian simulation techniques can be applied. The formulation is natural for PDEs and other realistic physical mod-els. Explicit Schrödingerisation circuits have been developed for advection and heat equations [18], Maxwell’s equations [19], Black–Scholes equations [20], and heat equations with physical bound-ary conditions [21]. Its application to elastic wave equations has also been studied [22]. For the velocity–stress system, the symmetric matrix form (SMF) [23, 24] exposes the coupling between physical components and spatial derivatives. The source-free periodic system admits unitary evo-lution after discretization, whereas forcing and physical boundary terms require a treatment of the resulting non-unitary dynamics. In this paper, we develop explicit circuits for these semidiscrete systems. We use Fourier spec-tral discretization under periodic boundary conditions and staggered-grid finite differences under physical boundary conditions. The circuits are assembled from elementary evolutions using nested product formulas. We further analyze the error contributions arising from the Hamiltonian simula-tion and the spatial and auxiliary-variable discretizations. Smooth auxiliary initialization [25] is used in the complexity analysis to control the auxiliary Fourier resolution. The main contributions are as follows: 2(a) We construct quantum circuits for periodic velocity–stress systems with time-independent sources. Fourier diagonalization gives controlled rotations for the spatial and auxiliary vari-ables. For d = 2 , 3, we also provide explicit circuit constructions and estimates of the corre-sponding CNOT-gate complexity. (b) We derive circuits for physical boundary conditions using exchanged encoding for the spatial and the field-component registers. The Neumann circuit follows by conjugating the Dirichlet spatial circuit, while the impedance construction uses exact controlled rotations on the two boundary subspaces. (c) We derive commutator-based error bounds and CNOT-gate estimates for pth-order Trotter– Suzuki formulas, including the effects of auxiliary approximation. Comparison with classical methods identifies a polynomial advantage in spatial resolution for the state-evolution sub-routine under the stated assumptions. (d) The circuits experiments are performed using the Unitarylab package [26], which facilitates the construction and execution of the quantum circuits on a local simulator. Each test compares the recovered circuit solution with the exact PDE solution, a classical partitioned solution, and a classical Schrödingerised solution. Our setting differs from Refs. [16,17] mainly in its modelling scope. Ref. [16] treats the isotropic acoustic wave equation, whereas we consider the coupled elastic velocity–stress system with both compressional and shear waves. Ref. [17] considers a source-free elastic system with a specific zero boundary treatment, while our framework, enabled by Schrödingerisation to embed the non-unitary dynamics into a unitary evolution, includes periodic conditions with sources and Dirichlet, Neumann, and impedance boundary conditions. The paper is organized as follows. Section 2 reviews the velocity–stress equations and their symmetric matrix form. Section 3 introduces Schrödingerisation, recovery, and smooth auxiliary initialization. Section 4 develops the circuits of the source-driven system and their complexity estimates in one and multiple dimensions. Section 5 treats physical boundary conditions. Section 6 presents the numerical experiments, and Section 7 concludes the paper. Throughout this paper, ∥·∥ denotes the spectral norm. N denotes the number of discretization points, whereas n denotes the corresponding number of qubits. Their specific meanings are indicated by subscripts, e.g., Nx and np. For notational simplicity, the tensor power in I⊗n is omitted whenever its dimension can be inferred from the context. 32 A review of velocity–stress equation 
+
+The motion of a small displacement in an elastic medium can be described as: 
+
+ρ∂ tvi =
+
+> d
+
+X
+
+> j=1
+
+∂xj σij + fi, i = 1 , . . . , d, (2.1a) 
+
+∂tσii = ( λ + 2 μ)∂xi vi + λ X 
+
+> j̸=i
+
+∂xj vj , i = 1 , . . . , d, (2.1b) 
+
+∂tσij = μ  ∂xj vi + ∂xi vj
+
+ + gij , 1 ≤ i < j ≤ d. (2.1c) where vi represents the velocity in the i-th direction, σij denotes the components of the Cauchy stress tensor, representing the force acting in the i-th direction on a surface with normal in the 
+
+j-th direction. fi is the body force. λ and μ describe the properties of the medium called Lam ´e
+
+parameters. Let σn = ( σ11 , . . . , σ dd )T be the vector of normal stresses. The normal-stress part is governed by the matrix 
+
+Cd = 2 μI d + λ11 T , 1 = (1 , . . . , 1) T .
+
+Indeed, the normal-stress equations (2.1b) can be written as 
+
+∂tσn = Cd
+
+
+
+∂x1 v1
+
+...
+
+∂xd vd
+
+ , (2.2) Introducing the rescaled variables 
+
+ζ = C−1/2 
+
+> d
+
+σn, sij = σij 
+
+√μ , ui = √ρ v i. (2.3) For simplicity, we still denote the rescaled velocity ui by vi in the following. Since 
+
+Cd = 2 μ
+
+
+
+Id − 1
+
+d 11 T
+
+
+
++ ( dλ + 2 μ) 1
+
+d 11 T ,
+
+one gets 
+
+C1/2 
+
+> d
+
+= p2μ
+
+
+
+Id − 1
+
+d 11 T
+
+
+
++ pdλ + 2 μ 1
+
+d 11 T .
+
+Thus the entries of ρ−1/2C1/2 
+
+> d
+
+are 
+
+m1 = 1
+
+d√ρ
+
+
+
+(d − 1) p2μ + pdλ + 2 μ
+
+
+
+on the diagonal, and 
+
+m2 = 1
+
+d√ρ
+
+
+
+−p2μ + pdλ + 2 μ
+
+
+
+off the diagonal. The shear coefficient is 
+
+m3 =
+
+r μρ .
+
+4After the above rescaling, Eqs. (2.1a), (2.1c), (2.2) can be written as 
+
+∂tζi = m1∂xi vi + m2
+
+X 
+
+> k̸=i
+
+∂xk vk, i = 1 , . . . , d, ∂tsij = m3
+
+ ∂xj vi + ∂xi vj
+
+ , 1 ≤ i < j ≤ d, ∂tvi = m1∂xi ζi + m2
+
+X 
+
+> k̸=i
+
+∂xi ζk + m3
+
+X 
+
+> k̸=i
+
+∂xk sik + efi, i = 1 , . . . , d, 
+
+(2.4) where sik = ski if k < i . The source terms efi are the corresponding rescaled source terms. Now order the rescaled unknowns as 
+
+U = ( ζ1, . . . , ζ d, {sij }1≤i<j ≤d, v 1, . . . , v d)T . (2.5) The total number of physical components is qd = d2+3 d 
+
+> 2
+
+. Then the system (2.4) can be written in the symmetric matrix form 
+
+∂tU =
+
+> d
+
+X
+
+> ℓ=1
+
+Aℓ∂xℓ U + F. (2.6) 
+
+Notation for the nested splittings. To distinguish the different levels of the circuit decompo-sition, we adopt the following notation throughout this paper. UI and UII denote the evolutions generated by the −H1 ⊗ Dp and H2 ⊗ I components, respectively. The additional subscripts x and 
+
+Y distinguish the two factors obtained from the splitting of UII : UII ,x denotes the spatial-operator evolution, whereas UII ,Y denotes the evolution generated by the Y -dependent term. For different boundary conditions, the spatial factor is further denoted by UP , UD, UN , or Uimp , corresponding to the Dirichlet, Neumann, and impedance cases, respectively. 
+
+# 3 A review of the Schrodingerization method 
+
+The Schrödingerisation method embeds a linear, non-unitary evolution into a unitary system by introducing one auxiliary variable [11]. We recall the construction for autonomous version, as used below. After spatial discretization, consider ˙y = By + b, with a time-independent source b. Introduce 
+
+u = yb
+
+!
+
+, A = B I
+
+0 0
+
+!
+
+, ˙u = Au. (3.1) Then it becomes a homogeneous system. For a homogeneous problem, no augmentation is needed. In either case, write 
+
+A = H1 + iH 2, H1 = A + A†
+
+2 , H2 = A − A†
+
+2i , (3.2) where both H1 and H2 are Hermitian. The warped phase transformation w = g(p)u gives 
+
+∂tw = −H1∂pw + iH 2w, w(0 , p ) = g(p)u(0) . (3.3) 5The original choice is g(p) = e−| p|. With the Fourier convention d∂pw = iη bw, truncation and Fourier discretization in p yield 
+
+ddt bwh = iH bwh, H = −H1 ⊗ Dp + H2 ⊗ I, H = H†, (3.4) where Dp is the Fourier correlation matrix of the variable p. Thus the enlarged evolution is eiHt .Depending on the definition of w, we can choose either multiplying by 1/g (p) at one point of p, or integrating to recover u:
+
+u = w/g (p), for any p ≥ p∗; or u = 1
+
+g(p∗)
+
+Z ∞
+
+> p∗
+
+w(p)dp, (3.5) where p∗ ≥ max {λ+max (H1)T, 0} and λ+max (H1) denotes the largest positive eigenvalue of H1.
+
+Smooth initialization and optimal auxiliary resolution. The cusp of e−| p| limits the accu-racy of the Fourier spectral approximation. Instead an analytical extension can lead to optimal matrix-query complexity [25]. Let εaux denote the error tolerance assigned to the truncation, recov-ery, and Fourier spectral discretization in the auxiliary variable p. Allowing a small initialization error permits an analytic (Gevrey-1) profile [25]: 
+
+gεaux (p) = 1 + erf( αp )2 e−p, α = 2 plog(1 /ε aux ). (3.6) Here 0 < ε aux < e −1. Its relevant quantitative regularity is 
+
+g(q) 
+
+> εaux
+> 1/q L2(R)
+
+≤ Cq, q = Θ(log(1 /ε aux )) , (3.7) with C independent of q and εaux . The Fourier-tail bound μ−q
+
+> max
+
+∥g(q)∥L2 , where κaux is the largest Fourier mode. Together with controlled domain truncation, then it gives 
+
+μmax = O(log(1 /ε aux )) . (3.8) 
+
+# 4 Periodic boundary condition 
+
+In this section, we study the elastic wave equation with source term under periodic boundary conditions and develop its explicit quantum circuit representation based on the Schrödingerisation framework. For a homogeneous medium, the one-dimensional SMF with a time independent external force 
+
+f can be written as 
+
+∂tu = aX∂ xu + f, (4.1) where u = ( σ/ √μ, √ρ v ) denotes the rescaled variables (2.4) in the SMF formulation and a =
+
+q μρ
+
+is the wave speed. 64.1 Fourier discretization and Schrödingerisation 
+
+Consider the periodic domain x ∈ [−πL x, πL x], the Fourier spectral method diagonalizes the spatial differentiation operator. Let 
+
+xj = −πL x + j∆x, j = 0 , . . . , N x − 1, ∆x = 2πL x
+
+Nx
+
+, (4.2) and let uh(t) and fh(t) collect the grid values of u and f , respectively. Define the Fourier differen-tiation matrix by Px = Φ −1DxΦ, where Φ is the discrete Fourier transform matrix and 
+
+Dx =
+
+> Nx−1
+
+X
+
+> j=0
+
+ζj |j⟩⟨ j|, ζj = j − Nx/2
+
+Lx
+
+is diagonal in the Fourier basis. Applying the discrete Fourier transform bu = Φ uh and bf = Φ fh,the semi-discrete system becomes 
+
+ddt bu = ia X ⊗ Dx bu + bf ≜ iK P bu + bf . (4.3) The presence of the forcing term prevents the semi-discrete system (4.3) from being directly interpreted as a unitary quantum evolution. Following the Schrödingerisation method in Section 3, we first rewrite the system as a homogeneous ODE 
+
+ddt u = Au, u = bu
+
+bf
+
+!
+
+, A = iK P I
+
+0 0
+
+!
+
+. (4.4) The Hermitian and skew-Hermitian parts are 
+
+H1 = A + A†
+
+2 = 12 X ⊗ I⊗nx+1 , H2 = A − A†
+
+2i = σ00 ⊗ KP + 12 Y ⊗ I⊗nx+1 . (4.5) Suppose that the auxiliary variable p ∈ [−πL p, πL p] and the Schrödinger system is 
+
+ddt bwh = −i(H1 ⊗ Dp) bwh + i(H2 ⊗ I) bwh ≜ iH SM F bwh, (4.6) where Dp = P 
+
+> k
+
+ηk|k⟩⟨ k| with diagonal entries ηk = k−Np/2 
+
+> Lp
+
+. The Hamiltonian HSM F is 
+
+HSM F = −H1 ⊗ Dp + H2 ⊗ I⊗np . (4.7) 
+
+Remark 4.1. For the d-dimensional SMF equations, the semi-discrete system can be written as 
+
+ddt 
+
+bu
+
+bf
+
+!
+
+= iK P I
+
+0 0
+
+! bu
+
+bf
+
+!
+
+, (4.8) where KP = Pdℓ=1 Aℓ ⊗ Dℓ. D ℓ denotes the Fourier differentiation matrix acting on the ℓ-th spatial direction, and Aℓ is the corresponding symmetric coefficient matrix in (2.6). For the Hamiltonian in Eq. (4.7), we have 
+
+H1 = 12
+
+0 II 0
+
+!
+
+= 12 X ⊗ I, H2 = 12i
+
+2iK P I
+
+−I 0
+
+!
+
+= σ00 ⊗ KP + 12 Y ⊗ I. (4.9) 74.2 Quantum circuit construction 
+
+Define the Hamiltonian simulation in the short time, 
+
+USM F (τ ) = exp (−iτ H 1 ⊗ Dp + iτ H 2 ⊗ I⊗np ). (4.10) The total time evolution USM F (T ) can be approximated via the p-th-order Trotter product formula. To explicitly construct the quantum circuit, we decompose USM F (τ ) into a series of small blocks that can be implemented with elementary quantum gates. Taking the first-order product formula as an example, for the first splitting, we define 
+
+USM F (τ ) ≈ UI(τ )UII (τ ), UI(τ ) = exp( −iH 1 ⊗ Dpτ ), UII (τ ) = exp( iH 2 ⊗ I⊗np τ ) (4.11) Since Dp is diagonal in the Fourier basis, UI(τ ) admits an exact circuit implementation without any splitting approximation. 
+
+UI(τ ) = exp 
+
+− iτ 
+
+2 X ⊗ I⊗(nx+1) ⊗
+
+> Np−1
+
+X
+
+> k=0
+
+ηk |k⟩ ⟨ k|
+
+ =
+
+> Np−1
+
+X
+
+> k=0
+
+exp( − iη kτ
+
+2 X ⊗ I⊗(nx+1) ) ⊗ | k⟩ ⟨ k|
+
+=
+
+> Np−1
+
+X
+
+> k=0
+
+Rx(τ η k) ⊗ I⊗(nx+1) ⊗ | k⟩ ⟨ k| =
+
+> Np−1
+
+X
+
+> k=0
+
+Rx( τLp
+
+)k− Np  
+
+> 2
+
+⊗ I⊗(nx+1) ⊗ | k⟩ ⟨ k|
+
+= Rx(− τ N p
+
+2Lp
+
+) ⊗ I⊗(nx+1+ np)
+
+> np−1
+
+Y′
+
+> m=0
+
+Rx( τLp
+
+)2m
+
+⊗ | 1⟩ ⟨ 1| + I ⊗ | 0⟩ ⟨ 0| ≜ V1(τ ).
+
+(4.12) Here the first equality can be found in Appendix B.1. The last step is obtained by applying Lemma 3 in [18] together with the identities (A.3). The circuit diagram is shown in Fig. 1. For the second splitting, we define 
+
+UII (τ ) ≈UII ,x (τ )UII ,Y (τ ), UII ,x (τ ) = exp( iτ σ 00 ⊗ KP ) ⊗ I⊗np , UII ,Y (τ ) = exp( iτ 
+
+2 Y ⊗ I) ⊗ I⊗np
+
+UII ,x (τ ) = [ σ00 ⊗ UP (τ ) + σ11 ⊗ I⊗(nx+1) ] ⊗ I⊗np , UP (τ ) = exp( iτ K P ).
+
+(4.13) The operator UP (τ ) can be treated in exactly the same manner as UI(τ ), since Dx is also diagonal in the Fourier basis. Thus, we have 
+
+UP (τ ) = Rx( aτ N x
+
+Lx
+
+) ⊗ I⊗nx
+
+> nx−1
+
+Y′
+
+> m=0
+
+(Rx( −2m+1 aτ Lx
+
+) ⊗ | 1⟩ ⟨ 1| + I ⊗ | 0⟩ ⟨ 0|). (4.14) The circuit diagrams are shown in Figs. 2-3. The QFT and inverse QFT are applied to the x-register and the p-register before and after the Hamiltonian simulation, respectively. Accordingly, the Schrödingerisation-based quantum circuit for solving Eq. (4.1) using the first-order Lie–Trotter formula is illustrated in Fig. 4. 
+
+Remark 4.2. In d-dimensional case, the construction of UI(τ ) and UII ,Y (τ ) follows the same proce-dure as in the one-dimensional case, except that the spatial register now consists of nxd+1+ ⌈log 2 qd⌉
+
+qubits. For UII ,x , the circuit implementation of exp( iτ Pdℓ=1 Aℓ ⊗ Dℓ) reduces to constructing the individual evolutions eiA ℓt, where each Aℓ is sparse and symmetric. As derived in Appendix C.3, the implementation of each directional evolution requires O(d log d) CNOT gates. 8ancilla Rx(− Npτ 
+
+> 2Lp
+
+) Rx( τLp ) Rx( τLp )2 · · · Rx( τLp )2np −1
+
+x /nx+1 · · · 
+
+p0 • · · · 
+
+p1 • · · · 
+
+...pnp−1 · · · •
+
+Fig. 1: Quantum circuit for UI(τ )
+
+b Rx( −2aτ Lx ) Rx( −2aτ Lx )2 · · · Rx( −2aτ Lx )2nx −1
+
+Rx( aτ N x 
+
+> Lx
+
+)
+
+x0 • · · · 
+
+x1 • · · · 
+
+...
+
+xnx−1 · · · •
+
+Fig. 2: Quantum circuit for UII ,x (τ )
+
+ancilla Ry(−τ )
+
+x /nx+1 UP (−τ )
+
+p /np
+
+Fig. 3: Quantum circuit for UII (τ )
+
+Fig. 5 presents the circuit for UII ,x (τ ) in the d-dimensional case, while the detailed circuits for 
+
+d = 2 and d = 3 are provided in Appendix C.2. 
+
+4.3 Complexity 
+
+In this subsection, we analyze the approximation error of the Schrödingerisation-based cir-cuit simulation. Let USM F (τ ) denote the exact evolution operator over one time step τ , and let 
+
+VSM F, p (τ ) denote its approximation obtained using a pth-order product formula. For p = 1 , the first-order Lie–Trotter approximation is given by 
+
+VSM F, 1(τ ) = UI(τ )UII ,x (τ )UII ,Y (τ ), (4.15) For p = 2 , we employ the symmetric second-order product formula 
+
+VSM F, 2(τ ) = UI
+
+ τ
+
+2
+
+
+
+UII 
+
+ τ
+
+2
+
+
+
+UII 
+
+ τ
+
+2
+
+
+
+UI
+
+ τ
+
+2
+
+
+
+,UII 
+
+ τ
+
+2
+
+
+
+= UII ,x 
+
+ τ
+
+4
+
+
+
+UII ,Y 
+
+ τ
+
+4
+
+
+
+UII ,Y 
+
+ τ
+
+4
+
+
+
+UII ,x 
+
+ τ
+
+4
+
+
+
+.
+
+(4.16) We first present preliminary lemma concerning commutator-scaling estimates for Trotter split-ting errors. 
+
+Lemma 4.1. [27] Let G = PΓ 
+
+> γ=1
+
+Gγ , where each Gγ is anti-Hermitian, and let Sp(τ ) be a pth-order product formula approximating eτ G with stages number sp. Then, the local approximation error satisfies 
+
+eτ G − Sp(τ ) = Op
+
+eα(p)comm τ p+1 
+
+, (4.17) 9ancilla UI(τ ) UII (τ )
+
+bx /nx QF T IQF T p /np QF T IQF T 
+
+Fig. 4: Quantum circuit for VSM F (t)
+
+ancila 2 exp ( iA 1t) exp ( iA 2t) · · · exp ( iA dt)1 /n • · · · 
+
+2 /n • · · · 
+
+...
+
+d /n · · · •
+
+Fig. 5: Quantum circuit for UII ,x (τ )
+
+where 
+
+eα(p)comm =
+
+> Γ
+
+X
+
+> γ1,...,γ p+1 =1
+
+Gγp+1 , Gγp , . . . , [Gγ2 , G γ1 ] . . .  . (4.18) 
+
+Here, the constant hidden in Op(·) depends only on the chosen pth-order product formula and is independent of τ . For the standard recursive Suzuki formula, s1 = 1 and sp = 2 ·5p/ 2−1, p = 2 , 4, 6 . . . 
+
+4.3.1 Error and complexity analysis Lemma 4.2. Consider the Schrödinger equation ∂∂t |u(t)⟩ = iH SM F |u(t)⟩, where the Hamiltonian is given by Eq. (4.7) . For a fixed pth-order product formula, the one-step approximation error satisfies 
+
+∥USM F (τ ) − VSM F, p (τ )∥ = Op
+
+ τ p+1 C1,p 
+
+ , (4.19) 
+
+where 
+
+C1,p := κaux (1 + λx)(1 + κaux + λx)p−1 + λx(1 + λx)p−1. (4.20) 
+
+κaux := ∥Dp∥ and κx := ∥Dx∥ denote the largest absolute Fourier wave numbers in the auxiliary 
+
+p-direction and the physical x-direction, respectively, while λx := aκ x denotes the corresponding wave-speed-weighted spatial scale. For the total evolution time T = rτ , let Vp(T ) = [ VSM F, p (τ )] r. The corresponding global approximation error is bounded by 
+
+USM F (T ) − V r
+
+> SMF ,p
+
+(τ ) = Op( T p+1 
+
+rp C1,p ). (4.21) 
+
+Proof. The error arises from the two splittings. Throughout the proof, we repeatedly use 
+
+∥[C, D ]∥≤ 2∥C∥ ∥ D∥. (4.22) For the first splitting in Eq. (4.11), its two anti-Hermitian generators are 
+
+G1 = −iH 1 ⊗ Dp, G2 = iH 2 ⊗ I, (4.23) 10 where H1 and H2 are given by Eqs.(4.5). Using the formula (4.18), the different innermost commu-tators satisfy 
+
+[G1, G 1] = [ G2, G 2] = 0 , [G2, G 1] = −[G1, G 2][G1, G 2] = [ −iH 1, iH 2] ⊗ Dp = [ H1, H 2] ⊗ Dp.
+
+Using [X, σ 00 ] = −iY and [X, Y ] = 2 iZ , we have 
+
+[H1, H 2] = − ia 
+
+2 Y ⊗ X ⊗ Dx + i
+
+2 Z ⊗ I. (4.24) Consequently, 
+
+∥[G1, G 2]∥= ∥[G2, G 1]∥≤ 12 κaux (1 + λx). (4.25) We next determine how each additional commutator changes this initial factor. For example, 
+
+[G1, [G1, G 2]] = [ −iH 1, [H1, H 2]] ⊗ D2
+
+> p
+
+,
+
+[G2, [G1, G 2]] = [ iH 2, [H1, H 2]] ⊗ Dp.
+
+(4.26) It follows from (4.22) that commuting with G1 contributes a factor no larger than 2∥H1∥κaux ,whereas commuting with G2 contributes a factor no larger than 2∥H2∥. Therefore, among the remaining p − 1 commutators, a term containing r occurrences of G1 and p − 1 − r occurrences of 
+
+G2 is bounded by 
+
+(2 ∥H1∥κaux )r(2 ∥H2∥)p−1−r∥[G1, G 2]∥. (4.27) There are  p−1
+
+> r
+
+ arrangements and the two orders of the innermost mixed commutator gives 
+
+eα(p)1 ≤ 2
+
+> p−1
+
+X
+
+> r=0
+
+p − 1
+
+r
+
+
+
+(2 ∥H1∥κaux )r(2 ∥H2∥)p−1−r∥[H1, H 2]∥κaux 
+
+= 2 p(∥H1∥κaux + ∥H2∥)p−1∥[H1, H 2]∥κaux . (4.28) Since ∥H1∥= 12 , ∥H2∥≤ λx + 12 and ∥[H1, H 2]∥≤ 12 (1 + λx), Eq. (4.28) becomes 
+
+eα(p)1 ≤ 2p−1κaux (1 + λx)( 12 κaux + λx + 12 )p−1. (4.29) For the second splitting in Eq. (4.13), using the same method, the two anti-Hermitian generators are G1 = iaσ 00 ⊗ X ⊗ Dx and G2 = i 
+
+> 2
+
+Y ⊗ I. Similar as above, the second commutator coefficient is 
+
+eα(p)2 ≤ 2p(∥G1∥+∥G2∥)p−1∥[G1, G 2]∥= 2 p−1λx(λx + 12 )p−1. (4.30) Finally, applying Lemma 4.1 to both splittings and absorbing all fixed formula-dependent factors into Op(·), the triangle inequality yields 
+
+∥USM F (τ ) − VSMF ,p (τ )∥ = Op[τ p+1 (eα(p)1 + eα(p)2 )] . (4.31) Combining Eqs. (4.29) and (4.30), we find 
+
+eα(p)1 + eα(p)2 ≤ 2p−1
+
+
+
+κaux (1 + λx)( 12 κaux + λx + 12 )p−1 + λx(λx + 12 )p−1
+
+
+
+= Op(C1,p ), (4.32) where in the last step we used 12 κaux + λx + 12 ≤ 1 + κaux + λx and λx + 12 ≤ 1 + λx. Substitution into (4.31) proves (4.19). For r time steps, we have 
+
+USM F (τ ) − V r
+
+> SMF ,p
+
+(τ ) ≤ r ∥USM F (τ ) − VSMF ,p (τ )∥ = Op( T p+1 
+
+rp C1,p ). (4.33) 11 Lemma 4.3. Let Vd,p (τ ) denote the circuit approximation of the d-dimensional Hamiltonian evo-lution USM F, d (τ ) given by Eq. (4.9) . Then the local error satisfies 
+
+∥USM F, d (τ ) − Vd,p (τ )∥ = Op
+
+ τ p+1 Cd,p 
+
+ , (4.34) 
+
+where 
+
+Cd,p := κaux (1 + dλ sp )(1 + κaux + dλ sp )p−1 + dλ sp (1 + dλ sp )p−1 + dp(d − 1) λp+1 sp . (4.35) 
+
+For T = rτ , the global error over the time interval [0 , T ] satisfies 
+
+∥USM F, d (T ) − [Vd,p (τ )] r∥ = Op
+
+ T p+1 Cd,p 
+
+rp
+
+
+
+, (4.36) 
+
+where 
+
+κaux := ∥Dp∥, κsp := max 
+
+> 1≤ℓ≤d
+
+∥Dℓ∥, ν := max 
+
+> 1≤ℓ≤d
+
+∥Aℓ∥, λsp := νκ sp . (4.37) 
+
+Proof. The d-dimensional construction introduces an additional splitting among the different spatial directions. That is, exp( iτ Pdℓ=1 Aℓ ⊗ Dℓ) ≈ Qdℓ=1 exp( iτ A ℓ ⊗ Dℓ). Define 
+
+Gp = −iH 1 ⊗ Dp, Gy = i
+
+2 Y ⊗ I, Gℓ = iσ 00 ⊗ Aℓ ⊗ Dℓ, ℓ = 1 , . . . , d. (4.38) Set Gsp := Pdℓ=1 Gℓ. From (4.37), we have 
+
+∥Gp∥= 12 κaux , ∥Gy∥= 12 , ∥Gsp ∥≤ dλ sp . (4.39) The splitting-error analysis for the d-dimensional case follows the same argument as that used in Eqs. (4.28) and (4.30), yielding 
+
+eα(p) 
+
+> d, 1
+
+≤ κaux (1 + dλ x) ( κaux + dλ x + 1) p−1 , eα(p) 
+
+> d, 2
+
+= dλ x (dλ x + 1) p−1 . (4.40) By Lemma 4.1 and Eqs.(4.22), each fixed index sequence satisfies 
+
+Gγp+1 , Gγp , . . . , [Gγ2 , G γ1 ] . . .  ≤ 2pλp+1 sp . (4.41) There are dp+1 ordered index sequences in total and d d p−1 = dp sequences contain the vanishing commutator [Gγi , G γj ] = 0 . Thus at most dp+1 −dp = dp(d−1) terms are nonzero, and consequently 
+
+eα(p)d,3 ≤ 2pdp(d − 1) λp+1 sp = Op
+
+ dp(d − 1) λp+1 sp 
+
+ . (4.42) Combining the three splitting errors by the triangle inequality proves (4.34). Finally, unitary in-variance and a telescoping sum with τ = T /N t give (4.36). 
+
+Lemma 4.4. In one-dimensional case, the approximated time evolution operator VSM F, p (τ ) ob-tained by a pth-order Trotter–Suzuki product formula can be implemented using 
+
+Q(p)CNOT = O 2spnp + s2
+
+> p
+
+(8 nx + 2)  (4.43) 
+
+CNOT gates. 
+
+12 Proof. By Fig. 1, one realization of UI(τ ) costs np controlled Rx gates, while one realization of 
+
+UII (τ ) costs one controlled Rx gate and nx doubly controlled Rx gates. According to [15, 28], a multi-controlled Rx gate with (j − 1) control qubits can be decomposed into at most (16 j − 40) 
+
+CNOT gates for j > 3. Consequently, the implementations of UI(τ ) and UII (τ ) require at most 2np
+
+and 8nx + 2 CNOT gates, respectively. According to Lemma 4.1, the sp-th-order Trotter product formula consists of p individual evolu-tion stages. The outer formula contains O(sp) UI-UII stages. Each occurrence of UII is implemented by an inner formula with O(sp) UII ,x -UII ,Y stages. Thus UI is repeated O(sp) times, whereas the in-ner blocks are repeated O(s2
+
+> p
+
+) times. Thus, the total CNOT gates number is 2spnp +s2
+
+> p
+
+(8 nx +2) .
+
+Remark 4.3. In d-dimensional case, the circuit consists of controlled coefficient-matrix evolutions 
+
+eiA ℓt associated with the d spatial directions. Each direction requires nx such controlled expo-nentials, giving dn x controlled exponentials in total. Since each eiA ℓt can be implemented using 
+
+O(d log d) CNOT gates, which is derived in Appendix C.3, and the innermost directional blocks are repeated O(s3
+
+> p
+
+) times. Thus the approximated time evolution operator Vd,p (τ ) obtained by a pth-order Trotter–Suzuki product formula can be implemented using O 2spnp + 16 s3
+
+> p
+
+nxd2 log d CNOT gates. 
+
+Lemma 4.5. In one-dimensional case, to achieve Hamiltonian simulation error between USM F (T )
+
+and VSMF ,p (T ) at most ε, it is sufficient to choose time steps r satisfying 
+
+r = Op(T 1+1 /p C1/p  
+
+> 1,p
+
+ε−1/p ). (4.44) 
+
+The CNOT complexity of VSMF , p (T )is 
+
+QT, (p)CNOT = Op
+
+"
+
+(spnp + s2
+
+> p
+
+(nx + 1)) T 1+1 /p C1/p 
+
+> 1,p
+
+ε1/p 
+
+#
+
+. (4.45) 
+
+Proof. To suppress the error in the simulation over the total time T to ε, it is sufficient to divide the total time T into r intervals, where r = T /τ , such that 
+
+∥USMF (T ) − VSMF ,p (T )∥ = Op
+
+ T p+1 C1,p 
+
+N pt
+
+
+
+≤ ε. (4.46) Solving this inequality for r proves (4.44) and multiplication by the one-step cost in Lemma 4.4 proves (4.45). 
+
+Remark 4.4. In d-dimensional case, to achieve at most ε Hamiltonian-simulation error, it is suf-ficient to choose r = Op(T 1+1 /p C1/p d,p ε−1/p ). The corresponding CNOT complexity over [0 , T ] is 
+
+QT, (p) 
+
+> d, CNOT
+
+= Op(s3
+
+> p
+
+d2nxT 1+1 /p C1/p d,p ε−1/p ).
+
+Theorem 4.1. Given the one-dimensional SMF equation (4.1) , assume that the physical parameters are independent of the target precision ε. For the auxiliary variable, use the smooth Schrödingeri-sation profile (3.6) . Define 
+
+RT := max 
+
+
+
+1, ∥u(0) ∥∥u(T )∥
+
+
+
+. (4.47) 13 Then the pth-order Schrödingerisation circuit prepares the normalized recovered state |u(T )⟩ =
+
+u(T )/∥u(T )∥ with error O(ε) using 
+
+eOp
+
+s2
+
+> p
+
+T 1+1 /p R 1+1 /p T
+
+ε 1/p h
+
+!
+
+(4.48) 
+
+CNOT gates with polylogarithmic factors suppressed by eOp.Proof. The total error consists of the spatial Fourier discretization error, the auxiliary-variable approximation error, and the unitary-evolution error after recovery. For the spatial discretization, we continue to use h to denote the spatial resolution. The largest retained wavenumber satisfies κx = ∥Dx∥= Nx 
+
+> 2Lx
+
+= πh . Consequently, 
+
+λx = aκ x = πa h = Θ 
+
+ ah
+
+
+
+. (4.49) We next estimate the largest Fourier mode in the auxiliary variable. Let PNp denote the Fourier spectral projection in the auxiliary variable. The standard Fourier approximation estimate gives 
+
+gεaux − PNp gεaux L2(( −Lp,L p)) ≲
+
+ πκaux 
+
+q
+
+g(q)  
+
+> εaux L2(( −Lp,R p))
+
+, (4.50) where κaux is the largest Fourier mode. Setting the Fourier projection error to O(εaux ) yields 
+
+κaux = O
+
+
+
+ε−1/q  
+
+> aux
+
+g(q)
+
+> εaux
+> 1/q L2
+
+
+
+. (4.51) By the regularity relations (3.7), Eqs. (4.51) imply 
+
+κaux = O(log(1 /ε aux )) = O(log(1 /ε )) . (4.52) The profile permits that both the truncation and recovery errors are O(εaux ) [25]. In the practical cases considered here, d = 1 , 2, 3, so the dominant scales satisfy λx > k p > d . Therefore, Eqs. (4.49) and (4.52), together with (4.20), imply C1/p  
+
+> 1,p
+
+= eOp( ah ). Moreover, nx = ⌈log 2 Nx⌉ = O(log(1 /h )) ,while np is polylogarithmic in 1/ε . Hence 
+
+spnp + s2
+
+> p
+
+(nx + 1) = eOp(s2
+
+> p
+
+). (4.53) As shown in Fig. 4, the QFT on the auxiliary registers are applied before the Hamiltonian simulation and the inverse QFT applied after it. Their combined CNOT cost is O(n2
+
+> p
+
+) [29, 30] which also can be absorbed into eOp. Consequently, Lemma 4.5 gives the CNOT cost of Hamiltonian Simulation with error at most ε:
+
+Qrun = eOp
+
+s2
+
+> p
+
+T 1+1 /p 
+
+ε1/p h
+
+!
+
+. (4.54) We next estimate the error introduced by the approximate unitary evolution after the recovery projection and normalization. Let 
+
+| bw(T )⟩ = USMF (T ) | bw(0) ⟩ , | bwD(T )⟩ = V r
+
+> SMF
+
+(τ ) | bw(0) ⟩ (4.55) 14 be the states generated by the exact and approximate unitary evolutions, respectively. And let w(T )
+
+and wp(T ) be the corresponding vectors after the inverse QFT on the auxiliary register. Denote by 
+
+Mrec the projector onto the recovery interval 
+
+∥| Mrec wD(T )⟩ − | Mrec w(T )⟩∥ = O
+
+ ∥Mrec (wD(T ) − w(T )) ∥∥Mrec w(T )∥
+
+
+
+= O
+
+ ∥w(0) ∥∥u(T )∥∥ grec ∥ ∥USMF (T ) − V r
+
+> SMF
+
+(τ )∥
+
+
+
+= O
+
+ ∥u(0) ∥∥u(T )∥ ε′
+
+
+
+,
+
+(4.56) For the admissible smooth initialization, Schrödingerisation recovery gives [18, 20, 25] 
+
+∥w(0) ∥= ∥u(0) ∥ ∥ g∥, ∥Mrec w(T )∥= Θ( ∥u(T )∥ ∥ grec ∥) , ∥g∥∥grec ∥ = O(1) , (4.57) where g is the discretized auxiliary profile and grec is its restriction to the recovery interval. There-fore, to ensure an O(ε) error after recovery, we choose ε′ = Θ 
+
+ εRT
+
+
+
+. By Eqs. (4.54), this choice introduces an additional factor R1/p T into the CNOT complexity of a single circuit execution. Note that the probability of getting the desired state is Θ(min 
+
+n
+
+1, ∥u(T )∥2
+
+> ∥u(0) ∥2
+
+o
+
+) = Θ( R−2 
+
+> T
+
+),, by using the amplitude amplification, the repeated times for the measurements is Θ( RT ). Substituting 
+
+ε′ into (4.54) and ignoring the logarithmic term, the proof is completed. 
+
+Remark 4.5. For u(t) ∈ Hρ, the Fourier projection error satisfies 
+
+∥u(t) − PNx u(t)∥L2 = O(hρ).
+
+Balancing the spatial discretization error with the target accuracy by choosing h = Θ( ε1/ρ ) gives an overall error of O(ε). Substituting this choice into the complexity estimate yields 
+
+eOp
+
+s2
+
+> p
+
+T 1+1 /p R 1+1 /p T
+
+ε 1/p +1 /ρ 
+
+!
+
+. (4.58) 
+
+Theorem 4.2. In d-dimensional case, d ≥ 2, and suppose the assumption same as Theorem 4.1. Use the smooth auxiliary profile (3.6) and define RT as Eqs. (4.47) . By pth-order Trotter–Suzuki approximation, the Schrödingerisation method can prepare the d-dimensional SMF solution state with error O(ε) using 
+
+eOp
+
+" s3
+
+> p
+
+d3+1 /p log(2 d) T 1+1 /p R1+1 /p T
+
+ε1/p h1+1 /p 
+
+#
+
+. (4.59) 
+
+CNOT gates. Proof. As in the proof of Theorem 4.1, the spatial discretization and smooth auxiliary profile imply 
+
+κsp = O(h−1) and κaux = O(log(1 /ε )) . Hence C1/p d,p = eOp
+
+ d1+1 /p h−(1+1 /p ), while nx and np are polylogarithmic in 1/ε . Ignoring the logarithmic factors nx and np, Hamiltonian simulation with error ε′ costs 
+
+eOp
+
+h
+
+s3
+
+> p
+
+d3+1 /p log(2 d) T 1+1 /p h−(1+1 /p )(ε′)−1/p i
+
+. (4.60) The output-state error and recovery measurement are exactly the same as in the proof of Theo-rem 4.1. Hence, the overall recovery overhead is R1+ 1 
+
+> p
+> T
+
+.15 Remark 4.6. For the classical simulation of the d-dimensional velocity–stress system with periodic boundary conditions, we consider the same Fourier spectral discretization in space and a pth-order partitioned splitting method in time. Let qd = d2+3 d 
+
+> 2
+
+and let N be the number of spatial grid points in each direction. One application of the semi-discrete operator requires O qdsdN d arithmetic operations where sd is the sparsity. Hence, a pth-order splitting formula with sp stages costs 
+
+O(qdsdspN d) per time step. Since the coefficient matrix norm of semi-ODE satisfy O(d/h ), the global temporal error is 
+
+Op(T p+1 dp+1 N −pt h−p−1). Combining the accuracy requirement with the conservative CFL condition 
+
+∆t = O(h/d ), we choose 
+
+Nt = Op max 
+
+(
+
+dT h , d1+1 /p T 1+1 /p 
+
+ε1/p h1+1 /p 
+
+)! 
+
+. (4.61) Combining the initial FFT, the classical arithmetic complexity is 
+
+Wcl = N d log N d + eOp
+
+"
+
+spdq d max 
+
+(
+
+dT h1+ d , d1+1 /p T 1+1 /p 
+
+ε1/p h1+1 /p +d
+
+)# 
+
+. (4.62) 
+
+Remark 4.7. By Theorems 4.1 and 4.2, together with Remark 4.6, when only considering the quantum state-evolution as a subroutine, for fixed d, the proposed algorithm provides a polynomial advantage over the classical method with respect to the spatial resolution. Moreover, the gate complexity in Theorem 4.2 matches that of Ref. [16]. Whereas the latter relies on the unitary dynamics arising from a periodic spectral discretization of the wave equation, the present Schrödingerisation-based construction accommodates source terms and more general boundary conditions without changing the asymptotic complexity order. 
+
+# 5 Physical boundary conditions 
+
+In this section, we derive the semi-discrete ODE systems obtained from the staggered-grid finite-difference discretization of the velocity–stress equations under three types of physical bound-ary conditions. Without loss of generality, we focus on the SMF system (2.4) in the subsequent development. We first consider the one-dimensional velocity–stress formulation, 
+
+
+
+ρ(x)vt(x, t ) = σx(x, t ), v(x, 0) = v0(x),σt(x, t ) = μ(x)vx(x, t ), σ(x, 0) = σ0(x).
+
+(5.1) 
+
+5.1 The Dirichlet boundary condition 
+
+Taking the domain Ω = ( a, b ), we impose the time–independent velocity boundary conditions, 
+
+v(x = a, t ) = ga, v(x = b, t ) = gb. (5.2) We now discretize (5.1) on a staggered grid. The domain is uniformly divied into N intervals of length ∆x = ( b − a)/N and xi = a + i∆x with i = 0 , 1, . . . , N . The velocity variables vi(t) = v(xi, t )
+
+16 are located at integer grid points, while the stress variables σi+ 12
+
+(t) = σ(xi + ∆x 
+
+> 2
+
+, t ) are located at half grid points. The staggered finite difference scheme is given by 
+
+ddt σi+ 12
+
+(t) = a vi+1 (t) − vi(t)∆x , i = 0 , 1, . . . , N − 1. (5.3) 
+
+ddt vi(t) = a σi+ 12
+
+(t) − σi− 12
+
+(t)∆x , i = 1 , 2, . . . , N − 1, (5.4) Let ˜v(t) = [ v1(t), v 2(t), . . . , v N −1(t)] T , ˜σ(t) = [ σ 12
+
+(t), σ 32
+
+(t), . . . , σ N − 12
+
+(t)] T . Then (5.3) and (5.4) can be written as ddt ˜σ(t) = a
+
+∆x D ˜v(t) + a
+
+∆x bD, (5.5) 
+
+ddt ˜v(t) = − a
+
+∆x DT ˜σ(t), (5.6) where bD = ( −ga, . . . , g b) contains the contribution from the boundary condition. D is the difference matrix: 
+
+D =
+
+
+
+1
+
+−1 1
+
+−1 . . .. . . 1
+
+−1
+
+
+
+∈ RN ×(N −1) 
+
+To encode the solution into quantum states, we augment the vectors ˜v(t) by appending one zero entry, so that the new variables can be represented as 
+
+v(t) =  
+
+> N−2
+
+X
+
+> j=0
+
+vj (t) |j⟩ + 0 |N − 1⟩ , σ(t) =  
+
+> N−1
+
+X
+
+> j=0
+
+σj+ 12
+
+(t) |j⟩ .
+
+Here N = 2 n is chosen to match the dimension of the computational basis of an n-qubit register. Accordingly, the coefficient matrices are augmented in a compatible manner: 
+
+Aσ = [ D, 0N ], Av = [ −DT ; 0TN ].
+
+We obtain the new semi-ODEs: 
+
+ddt 
+
+σv
+
+!
+
+= ah
+
+0 Aσ
+
+Av 0
+
+! σv
+
+!
+
++ a
+
+∆x
+
+bD
+
+0
+
+!
+
+≜ ah (KDu′ + b′). (5.7) where 
+
+KD = 0 Aσ
+
+Av 0
+
+!
+
+, u′ = ( σ, v)T , b′ = ( bD, 0)T
+
+Using the shift operators in Appendix A.2 to describe the coefficient matrices Av and Aσ:
+
+Aσ = P − S+ 
+
+> n
+
+, Av = −P + S− 
+
+> n
+
+, P = I⊗n − σ⊗n 
+
+> 11
+
+. (5.8) By homogeneousing, Eqs. (5.7) become 
+
+du
+
+dt = ADu, u = u′
+
+b′
+
+!
+
+, AD = a
+
+∆x
+
+KD I
+
+0 0
+
+!
+
+. (5.9) 17 5.1.1 Schrödingerisation 
+
+The corresponding Hamiltonian after Schrödingerisation has the form 
+
+HDri = a
+
+∆x (−H1 ⊗ Dp + H2 ⊗ I), (5.10) where 
+
+H1 = 12 X ⊗ I, H2 = −i σ00 ⊗ KD + 12 Y ⊗ I. (5.11) 
+
+5.1.2 Interleaved encoding and quantum circuits 
+
+Following the previous notation for the elementary circuits UI(τ ), UII (τ ) and UII ,Y (τ ), we introduce 
+
+UII ,x (τ ) = exp( τ σ 00 ⊗ KD), UD(τ ) = exp( τ K D).
+
+For the implementation of UII ,x (τ ), it is equivalent to construct the explicit circuits of exp( τ K D).Let b denote the block qubit distinguishing the stress and velocity variables, and let x denote the 
+
+n-qubit spatial register. We use the interleaved register ordering 
+
+|x⟩ | b⟩ , (5.12) where the block qubit is the least significant qubit. This change of encoding is an exact permutation of the computational basis and introduces no approximation error. We employ the technique of interleaved encoding to handle the matrix KD:
+
+Kb,x D := KD = σ01 ⊗ Aσ + σ10 ⊗ Av. (5.13) Exchange the auxiliary qubit register and the x register, and the matrix becomes: 
+
+Kx,b D = S− 
+
+> n+1
+
+− S+ 
+
+> n+1
+
+− σ⊗n 
+
+> 11
+
+⊗ (σ01 − σ10 ) . (5.14) Splitting Kx,b D into two terms, the execution of exp( τ K x,b D ) can be derived as follows: 
+
+exp( τ K x,b ) ≈ exp( τ H 0) exp( τ H end ), (5.15) where 
+
+H0 = S− 
+
+> n+1
+
+− S+
+
+> n+1
+
+, Hend = −σ⊗n 
+
+> 11
+
+⊗ (σ01 − σ10 ) . (5.16) By Lemma 2 in [18], the circuit construction of exp( τ H 0) can be implemented by 
+
+exp( τ H 0) ≈
+
+> n+1
+
+Y
+
+> j=1
+
+exp( τ (s− 
+
+> j
+
+− s+ 
+
+> j
+
+)) = 
+
+> n+1
+
+Y
+
+> j=1
+
+I⊗(nx−j) ⊗ Wj (γτ, λ ) ≜ V (4 .2) 1 (ϕ1), (5.17) where γ = a 
+
+> 2h
+
+and λ = π 
+
+> 2
+
+. And exp( τ H end ) can be implemented by the controlled Ry gate 
+
+exp( τ H end ) = exp( −iτ σ ⊗n 
+
+> 11
+
+⊗ Y ) = σ⊗n 
+
+> 11
+
+⊗ exp( −iτ Y ) + σ⊗n 
+
+> 00
+
+⊗ I = σ⊗n 
+
+> 11
+
+⊗ Ry(2 τ ). (5.18) 
+
+5.1.3 Quantum circuit construction 
+
+The interleaved encoding only changes the register ordering from (ancilla , block , x ) to (ancilla , x, block ).It does not affect the construction of UI(τ ) and UII ,Y (τ ) for the identity on the block and x-registers. The construction of UII ,x is obtained by replacing UP with UD, where UD is shown in Figs.6-7. 18 ·q1 •
+
+q2 •
+
+... · · · · · · 
+
+qj−1 •
+
+qj • • • P (λ) H RZ (−2γτ ) H P (−λ) • • •
+
+...qnx
+
+Fig. 6: Quantum circuit for Wj (γτ, λ )
+
+q1 W1
+
+W2
+
+Wnx
+
+Wnx+1 
+
+•
+
+q2 •
+
+... · · · · · · 
+
+qnx •
+
+ancilla 2 RY (−2γτ )
+
+Fig. 7: Quantum circuit for UD(τ ) = exp( τ K D)
+
+5.2 The Neumann Boundary Condition 
+
+We next consider the Neumann boundary condition. In the velocity–stress formulation, it prescribes the stress at the two endpoints. 
+
+σ(xL, t ) = gL, σ(xR, t ) = gR. (5.19) In contrast to the Dirichlet case, the stress variables σ(xi, t ) are placed at the integer grid points, while the velocity variables v(xi+ 12
+
+, t ) are located at the staggered grid points. The staggered grid discretization is given by 
+
+ddt σi(t) = a vi+ 12
+
+(t) − vi− 12
+
+(t)
+
+h , i = 1 , . . . , N − 1, (5.20) 
+
+ddt vi+ 12
+
+(t) = a σi+1 (t) − σi(t)
+
+h , i = 0 , . . . , N − 1. (5.21) Following the same procedure as in the Dirichlet case, we set N = 2 n and append one zero entry to the interior stress vector, 
+
+v(t) =  
+
+> N−1
+
+X
+
+> j=0
+
+vj+ 12
+
+(t) |j⟩ , σ(t) =  
+
+> N−2
+
+X
+
+> j=0
+
+σj+ 12
+
+(t) |j⟩ + 0 |N − 1⟩ .
+
+The ODEs can be written as the homogeneous system 
+
+ddt u(t) = AN u(t), AN = ah
+
+KN I
+
+0 0
+
+!
+
+, u = ( σ, v, 0, bN ), (5.22) where bN = ( −ga, . . . , g b) and KN = ( X ⊗ I)KD(X ⊗ I) .
+
+5.2.1 Schrödingerisation 
+
+The corresponding Hamiltonian after Schrödingerisation has the form 
+
+HN eu = a
+
+∆x (−H1 ⊗ Dp + H2 ⊗ I), (5.23) where 
+
+H1 = 12 X ⊗ I, H2 = −i σ00 ⊗ KN + 12 Y ⊗ I. (5.24) 19 5.2.2 Quantum circuit construction 
+
+The derivation of UN eu (τ ) is the same as UDir (τ ), except for exp( τ K N ). Given the relationship between KN and KD, we have 
+
+Kx,b N = ( I ⊗ X)Kx,b D (I ⊗ X), exp( τ K x,b N ) = ( I ⊗ X) exp( τ K x,b D )( I ⊗ X). (5.25) Therefore, compared with the Dirichlet case, the quantum circuit for the Neumann boundary con-dition differs only by two additional X gates acting on the auxiliary qubit at both ends of circuit 
+
+UD, as shown in Fig. 8. The remainder of the circuit is identical. 
+
+x /nx
+
+exp( τ K D)
+
+ancilla X X
+
+Fig. 8: Quantum circuit for UN (τ ) = exp( τ K N )
+
+5.3 The impedance boundary condition 
+
+The impedance boundary conditions are imposed at the left and right endpoints as 
+
+−σ(0 , t ) + ηLv(0 , t ) = 0 , σ(L, t ) + ηRv(L, t ) = 0 , (5.26) where ηL, η R ≥ 0 denote the boundary impedances. Using the same staggered-grid scheme and grid points as in the Dirichlet case, we obtain Eqs. (5.3) and (5.4). At the boundary nodes, the corresponding boundary closures are 
+
+ddt v0(t) = 2 a σ 12
+
+(t) − ηLv0(t)
+
+h , (5.27) 
+
+ddt vN (t) = −2a σN − 12
+
+(t) + ηRvN (t)
+
+h . (5.28) Let N + 1 = 2 n and append one zero entry to the interior stress vector. The semi-ODE can be written as 
+
+ddt u(t) = AI u(t), AI = ah
+
+0 Aσ
+
+Av −2K
+
+!
+
+, u = ( σ, v), (5.29) where K = diag ( κL, 0, . . . , 0, κ R) = κLσ⊗n 
+
+> 00
+
++ κRσ⊗n 
+
+> 11
+
+. The coefficient matrices can be written as 
+
+Aσ = −P + S− 
+
+> n
+
+, Av = P − S+ 
+
+> n
+
++ M, (5.30) 
+
+P = I⊗n − σ⊗n 
+
+> 11
+
+, M = σ⊗n 
+
+> 00
+
+− σ⊗(n−1) 11 ⊗ σ10 . (5.31) 
+
+5.3.1 Schrödingerisation 
+
+The corresponding Hamiltonian after Schrödingerisation has the form 
+
+HImp = a
+
+∆x (−H1 ⊗ Dp + H2 ⊗ I), (5.32) where 
+
+H1 = 12
+
+ σ01 ⊗ M T + σ10 ⊗ M  − 2σ11 ⊗ K, H2 = −iKN + i
+
+2
+
+ σ01 ⊗ M T − σ10 ⊗ M  . (5.33) 20 5.3.2 Quantum circuit construction Implementation of the H1-evolution After the register reordering, the Hermitian part H1
+
+takes the form 
+
+H1 = 12
+
+ M T ⊗ σ01 + M ⊗ σ10 
+
+ − 2K ⊗ σ11 . (5.34) Substituting (5.31) gives 
+
+H1 = σ⊗n 
+
+> 00
+
+⊗ ( 12 X − 2κLσ11 ) − σ⊗(n−1) 11 ⊗ ( 12 (σ⊗201 + σ⊗210 ) + 2 κRσ⊗211 ). (5.35) We divide H1 into the left and right boundary terms, 
+
+H1,L = σ⊗n 
+
+> 00
+
+⊗ hL, H1,R = − 12 σ⊗(n−1) 11 ⊗  σ⊗201 + σ⊗210 
+
+ − 2κRσ⊗n+1 11 , (5.36) where hL = −κLI + 12 X + κLZ and [H1,L , H 1,R ] = 0 . Hence the decomposition is exact and introduces no splitting error e−iτ H 1 = e−iτ H 1,L e−iτ H 1,R .For the left boundary term, define ΩL =
+
+q
+
+κ2 
+
+> L
+
++ 14 and choose θL such that 
+
+cos θL = κL
+
+ΩL
+
+, sin θL = 12Ω L
+
+. (5.37) Then 12 X + κLZ = Ω LRy(θL)ZR y(−θL), and hence 
+
+UL(τ ) := e−iτ h L = eiκ Lτ Ry(θL)Rz (2Ω Lτ )Ry(−θL). (5.38) Therefore, 
+
+e−iτ H 1,L = C|0n⟩
+
+h
+
+U (b) 
+
+> L
+
+(τ )
+
+i
+
+. (5.39) For the right boundary term, we define VR = I ⊗ σ00 + X ⊗ σ11 , which represents a CNOT gate controlled by the qubit b and acting on the least significant qubit x0 of the spatial register. Thus, we have 
+
+VR
+
+
+
+σ(x0)00 ⊗ Xb
+
+
+
+VR = σ(x0)01 ⊗ σ(b)01 + σ(x0)10 ⊗ σ(b)10 , VR
+
+
+
+σ(x0)00 ⊗ σ(b)11 
+
+
+
+VR = σ(x0)11 ⊗ σ(b)11 . (5.40) The right boundary Hamiltonian(5.36) can be written as H1,R = VR
+
+h
+
+σ⊗(n−1) 11 ⊗ σ00 ⊗ hR
+
+i
+
+VR with 
+
+hR = −κRI − 12 X + κRZ. Similarly, 
+
+UR(τ ) := e−iτ h R = eiκ Rτ Ry(θR)Rz (2Ω Rτ )Ry(−θR) (5.41) where ΩR =
+
+q
+
+κ2 
+
+> R
+
++ 14 and θR = atan2( −1/2, κ R).
+
+e−iτ H 1,R = VRC|1n−10⟩U (b) 
+
+> R
+
+(τ )VR. (5.42) Combining (5.39) and (5.42), we obtain 
+
+e−iτ H 1 = C|0n⟩
+
+h
+
+U (b) 
+
+> L
+
+(τ )
+
+i
+
+VRC|1n−10⟩
+
+h
+
+U (b) 
+
+> R
+
+(τ )
+
+i
+
+VR. (5.43) The corresponding circuit is shown in Fig. 10. 21 Implementation of the H2-evolution For the evolution generated by H2, the KN -dependent part is implemented by the circuit shown in Fig. 8. We denote the remaining part by H2,M .Following the same treatment as for H1, its evolution can be written as 
+
+eiτ H 2,M = C|0n⟩
+
+h
+
+R(b) 
+
+> y
+
+(τ )
+
+i
+
+VRC|1n−10⟩
+
+h
+
+R(b) 
+
+> y
+
+(−τ )
+
+i
+
+VR. (5.44) The corresponding circuit is shown in Fig. 11. 
+
+5.3.3 Circuits Plots 
+
+x / nx−1 • • • •
+
+x0 /1
+
+ancilla P (κLτ ) Ry(−θL) Rz (2Ω Lτ ) Ry(θL) • P (κLτ ) Ry(−θR) Rz (2Ω Rτ ) Ry(θR) •
+
+Fig. 9: Quantum circuit for UI,x (τ )
+
+ancilla UI,x (τ ) U 2I,x (τ ) · · · U 2nx −1 
+
+> I,x
+
+(τ )
+
+q0 • · · · 
+
+q1 • · · · 
+
+...
+
+qnx−1 · · · •
+
+Fig. 10: Quantum circuit for UI(τ )
+
+x / nx−1
+
+exp( τ K D)
+
+•
+
+x0 /1
+
+ancilla X X Ry(−τ ) • Ry(τ ) •
+
+Fig. 11: Quantum circuit for UII (τ )
+
+5.4 Complexity 
+
+For conciseness, the following error, gate-complexity, and total-complexity analyses are pre-sented only for the Dirichlet boundary condition. The Neumann and impedance constructions have the same asymptotic estimates, up to constants depending on the boundary parameters, and hence their conclusions follow analogously. 
+
+5.4.1 Splitting errors Lemma 5.1. Consider the Schrödinger equation ∂∂t |u(t)⟩ = iH Dri |u(t)⟩, where the Hamiltonian is given by Eq. (5.10) . Let UDri (T ) = eiH Dri T denote the exact time-evolution operator. For a time step 
+
+τ = T /r , let VDri , p (T ) be a pth-order Trotter–Suzuki product formula. Then the local approximation error over one time step satisfies the local splitting error satisfies 
+
+∥UDri (τ ) − VDri , p (τ )∥ = Op
+
+ ap+1 τ p+1 
+
+hp+1 (kp 
+
+> max
+
++ np)
+
+
+
+. (5.45) 22 For the total evolution time T = rτ , let VDri , p (T ) = V r
+
+> Dri , p
+
+(τ ). The corresponding global approxima-tion error is bounded by 
+
+UDri (T ) − V r
+
+> Dri , p
+
+(τ ) = Op
+
+ ap+1 T p+1 
+
+rphp+1 (kp 
+
+> max
+
++ np)
+
+
+
+. (5.46) 
+
+Proof. The error analysis for the first two splitting steps is the same as that in Theorem 4.1. Since 
+
+∥H1∥= 12 , ∥H2∥≤ ∥ KD∥+ 12 and ∥KD∥≤ 2∥, we have 
+
+eα(p)1 ≤ 2pap+1 
+
+hp+1 kmax ∥[H1, H 2]∥(kmax ∥H1∥+∥H2∥)p−1
+
+= Op
+
+ ap+1 
+
+hp+1 kmax (1 + kmax )p−1
+
+
+
+= Op( ap+1 
+
+hp+1 kp
+
+> max
+
+).
+
+(5.47) 
+
+eα(p)2 = Op
+
+ ap+1 
+
+hp+1 ∥KD∥(∥KD∥+ 12 )p−1
+
+
+
+= Op
+
+ ap+1 
+
+hp+1 
+
+
+
+. (5.48) The thrid spliiting is (5.15), by Appendix B.1 in [18], using ∥[H0, H end ]∥≤ 1, ∥H0∥≤ 2 and 
+
+∥Hend ∥= 1 , eα(p)3 immediately yields the same order as eα(p)2 .It remains to consider the decomposition of the main shift term (5.17). Write Tℓ = s− 
+
+> ℓ
+
+− s+
+
+> ℓ
+
+and define the commutator coefficient by 
+
+α(p)4 := 
+
+> n+1
+
+X
+
+> j1,...,j p+1 =1
+
+Tjp+1 , [· · · , [Tj2 , T j1 ] · · · ] . (5.49) By Appendix (B.6) in [18], P
+
+> 1≤j<k ≤n+1
+
+∥[Tj , T k]∥= O(n) and ∥Tj ∥≤ 1. Furthermore, the conserva-tive higher-order is estimated Op(np). Consequently, 
+
+α(p)4 = Op
+
+ npap+1 
+
+hp+1 
+
+
+
+. (5.50) Therefore, by the triangle inequality, the total local error is bounded by the sum of the four contributions, 
+
+ϵ(p) 
+
+> Dri
+
+= Op
+
+ ap+1 τ p+1 
+
+hp+1 (kmax (1 + kmax )p−1 + 1 + np)
+
+
+
+. (5.51) By the same argument as in Lemma 4.2, the error over time T is bounded by Eq. (5.46). 
+
+Remark 5.1. In the d-dimensional case, KD is composed of the differential matrix associated with different spatial directions. As in Lemma 4.3, an additional Trotter–Suzuki splitting is required to implement the evolution generated by KD. The derivation is analogous to that of Lemma 4.3 and is omitted here. The local approximation error for the pth-order product formula satisfies 
+
+ϵ(p) 
+
+> d
+
+= Op
+
+ ap+1 τ p+1 
+
+hp+1 (dk max (d + kmax )p−1 + dp+1 + dn p)
+
+
+
+. (5.52) Therefore, for a total evolution time T = rτ , the corresponding global error is 
+
+U (d)Dri (T ) − V (d)
+
+> Dri,p
+
+(T ) = Op
+
+ ap+1 T p+1 
+
+rphp+1 
+
+ dk max (d + kmax )p−1 + dp+1 + dn p
+
+. (5.53) 23 5.4.2 CNOT-gate complexity Lemma 5.2. The approximated time evolution operator VDri, p (τ ) obtained by a pth-order Trotter– Suzuki product formula can be implemented using QDri = O(s4
+
+> p
+
+n2) CNOT gates. Proof. We first collect the costs of the elementary circuit blocks. UI(τ ) contains one Rx gate and 
+
+np controlled Rx gates. Hence its CNOT cost is 2np. UII ,Y (τ ) contains one (n + 1) -qubit controlled 
+
+Ry gate with CNOT cost 16 n − 8. The controlled Wj blocks contribute 
+
+CW =
+
+> n+1
+
+X
+
+> j=2
+
+(16 j − 24) + 6 
+
+> n+1
+
+X
+
+> j=2
+
+2( j − 1) + 4(2 + 2 n)= 14 n2 + 14 n + 8 . (5.54) Since the circuit construction involves four nested product-formula decompositions, the resulting gate cost acquires 
+
+NCNOT ≤ 2spnp + s3
+
+> p
+
+(16 n − 8) + s4
+
+> p
+
+(14 n2 + 14 n + 8) . (5.55) Hence, the dominant gate complexity is s4
+
+> p
+
+CW.
+
+Remark 5.2. In the d-dimensional case, the gate complexity of UII (τ ) increases by a factor of d
+
+compared with the one-dimensional case. Then the shift-operator circuits are repeated s5 
+
+> p
+
+times in a 
+
+pth-order Trotter–Suzuki approximation. Consequently, the CNOT complexity satisfies O(d s 5
+
+> p
+
+n2).
+
+Lemma 5.3. In one-dimensional case, to achieve Hamiltonian simulation error between UDri (T )
+
+and VDri ,p (T ) at most ε, it is sufficient to choose time steps r satisfying Op( T 1+ 1    
+
+> p(kp
+> max +np)1
+> p
+> ε1
+> ph1+ 1
+> p
+
+). The CNOT complexity of VDri , p (T ) is QT, (p)CNOT = Op     
+
+> s4
+> pn2T1+ 1
+> p(kp
+> max +np)1
+> p
+> ε1
+> ph1+ 1
+> p
+
+!
+
+.Proof. The proof is analogous to that of Lemma 4.5 and is omitted here. 
+
+Remark 5.3. In d-dimensional case, to achieve at most ε Hamiltonian-simulation error, the corre-sponding CNOT complexity over [0 , T ] is O d2+ 1    
+
+> ps5
+> pn2T1+ 1
+> p
+> ε1
+> ph1+ 1
+> p
+
+!
+
+.
+
+5.4.3 Total complexity and classical comparison Theorem 5.1. In one-dimensional case, suppose the assumption same as Theorem 4.1. Use the smooth auxiliary profile (3.6) and define RT as Eqs. (4.47) . By pth-order Trotter–Suzuki approxi-mation, the CNOT gate complexity of the Schrödingerisation-based quantum algorithm for the SMF equation (5.2) with Dirichlet boundary conditions is 
+
+eO
+
+ s4
+
+> p
+
+T 1+ 1 
+
+> p
+
+R1+ 1
+
+> p
+> T
+
+ε 1 
+
+> p
+
+h1+ 1
+
+> p
+
+ .
+
+Proof. The proof follows the same steps as those of Theorems 4.1 and 4.2 and is therefore omitted. 24 Remark 5.4. According to Remark 5.3 and Theorem 5.1, in the d-dimensional case, the CNOT complexity of the circuit implementation for solving the SMF with Dirichlet boundary conditions via Schrödingerisation is eO d2+ 1     
+
+> pT1+ 1
+> ps5
+> pR1+ 1
+> pT
+> ε1
+> ph1+ 1
+> p
+
+!
+
+.
+
+Remark 5.5. For the d-dimensional velocity–stress system discretized spatially by the same staggered-grid scheme and temporally by a pth-order operator-splitting scheme, the classical arithmetic com-plexity can be derived analogously to Remark 4.6 and is given by 
+
+Wcl = Op
+
+"
+
+spdq dsd max 
+
+(
+
+dT h1+ d , d1+1 /p T 1+1 /p 
+
+ε1/p h1+1 /p +d
+
+)# 
+
+(5.56) 
+
+Remark 5.6. For fixed d, and when only the quantum state-evolution subroutine is considered, the staggered-grid Schrödingerisation algorithm retains a polynomial advantage in the spatial resolution over the corresponding classical method. Ignoring the logarithmic factors, the gate complexity has the same order as that of Ref. [17] which considers a centered finite-difference discretization under periodic boundary conditions. The present method accommodates Dirichlet, Neumann, and impedance boundary conditions. Moreover, the symmetric structure of the SMF further simplifies the circuit decomposition. In particular, the implementation of UI requires O(np) CNOT gates, where np = log 2 Np, rather than a cost depending directly on the auxiliary discretization size Np [18]. Thus, the proposed construction reduces the circuit-level overhead while preserving the same leading asymptotic complexity. 
+
+# 6 Numerical Experiments 
+
+In this chapter, we present numerical experiments to verify the accuracy of the derived quantum circuits. For each test, we compare four types of solutions: the exact PDE solution, a first-order classical Lie-partitioned solution of the semidiscrete system, the classical solution of the Schrödin-gerised system, and the state recovered from the UnitaryLab circuit. The latter two use the same auxiliary discretization and recovery point. All circuit results in this section are obtained with a noiseless state-vector simulator. Both tests use ρ = 1 , with μ = 1 /2 in the periodic test and μ = 1 
+
+in the impedance test. 
+
+6.1 A two-dimensional periodic problem with a constant body force 
+
+On [−π, π )2, we consider the two-dimensional velocity–stress system with periodic boundary conditions in both directions and the constant body force f = (0 .2, −0.1) T .We use nx = ny = 4 spatial qubits and Nt = 512 time steps up to T = 1 . The classical method updates stress first and then velocity, whereas the circuit uses first-order splitting of the Schrödingerised evolution, including the two spatial directions. For these material parameters, the SMF variables are (σ11 , σ 22 , √2σ12 , v x, v y)T . The five components are encoded in three qubits, with three unused basis states padded by zeros. For Schrödingerisation, we set np = 7 , R = 4 , and use the smooth auxiliary profile (3.6). Including the source-augmentation qubit, the circuit contains 4 + 4 + 3 + 1 + 7 = 19 qubits. Fig. 12 25 compares the five physical components along y = 0 , and Fig. 13 shows the full two-dimensional fields. The four grid solutions are Fourier-interpolated to a 128 × 128 grid for visualization only. 3 2 1 0 1 2 3                                       
+
+> x
+> 0.3
+> 0.2
+> 0.1
+> 0.0 0.1 0.2 0.3
+> 11
+> (a) 11
+> 3210123
+> x
+> 0.6
+> 0.4
+> 0.2
+> 0.0 0.2 0.4 0.6
+> 22
+> (b) 22
+> 3210123
+> x
+> 0.3
+> 0.2
+> 0.1
+> 0.0 0.1 0.2 0.3
+> 12
+> (c) 12
+> 3210123
+> x
+> 0.1
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> vx
+> (d) vx
+> 3210123
+> x
+> 1.00
+> 0.75
+> 0.50
+> 0.25
+> 0.00 0.25 0.50 0.75
+> vy
+> (e) vy
+> PDE exact Lie partitioned schro_classical UnitaryLab circuit 2D periodic elastic SMF, y= 0, T= 1, Nx=Ny= 16, Nt= 512
+
+Fig. 12: Five components of the two-dimensional velocity–stress solution along y = 0 at T = 1 .We measure errors in the physical variables using 
+
+∥e∥2
+
+h= hxhy
+
+X
+
+i,j 
+
+ |eσ11 ,ij |2+|eσ22 ,ij |2+|eσ12 ,ij |2+|evx,ij |2+|evy ,ij |2 . (6.1) At T = 1 , the errors relative to the exact solution are listed in Tab.1. The classical Schrödingerised result is more accurate because the matrix-exponential action is evaluated directly, avoiding tempo-ral splitting errors. Both the classical and quantum-circuit methods exhibit first-order convergence. The remaining error differences are mainly due to different splitting commutators and the recovery errors in the circuit method. These results confirm the correctness of the proposed circuit. Tab. 1: Errors relative to the exact solution at T = 1 on the 16 × 16 grid. 
+
+Nt Lie-partitioned method Classical Schrödingerised solution Circuit solution 
+
+128 3.5331 × 10 −2 6.8927 × 10 −6 2.1490 × 10 −2
+
+256 1.7664 × 10 −2 6.8927 × 10 −6 1.0750 × 10 −2
+
+512 8.8315 × 10 −3 6.8927 × 10 −6 5.3776 × 10 −3
+
+6.2 Homogeneous problem with impedance boundary conditions 
+
+The second test uses the source-free system with unit impedances, 
+
+−σ(−π, t ) + v(−π, t ) = 0 , σ(π, t ) + v(π, t ) = 0 . (6.2) 26 Let 
+
+F (ξ) = 
+
+
+
+(1 − r2)4, |r|< 1,
+
+0, |r|≥ 1,r = ξ + 1 0.8 . (6.3) The initial data v(x, 0) = F (x) and σ(x, 0) = −F (x) give the right-moving exact solution 
+
+v(x, t ) = F (x − t), σ(x, t ) = −F (x − t). (6.4) Over the simulated time interval, the support of this pulse remains separated from both endpoints and therefore satisfies (6.2). The staggered discretization uses N = 63 stress cells and N + 1 = 64 velocity nodes. Here 
+
+h = 2 π/N , ZL = ZR = 1 , T = 1 .2, and Nt = 512 . The auxiliary parameters are np = 7 , R = 4 ,and p∗ = 2 .4, giving a 14-qubit state-vector simulation. Fig. 14 shows the recovered velocity and stress. Using the staggered-grid weighted L2 norm, the errors relative to the exact solution are 3.5334 × 10 −2 for the Lie-partitioned method, 3.5283 × 10 −2
+
+for the classical Schrödingerised solution, and 3.8984 × 10 −2 for the circuit solution. 3 2 1 0 1 2 3            
+
+> x
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> v(x, T)
+> (a) Velocity
+> PDE exact Lie partitioned schro_classical UnitaryLab circuit
+> 3210123
+> x
+> 1.0
+> 0.8
+> 0.6
+> 0.4
+> 0.2
+> 0.0 (x, T)
+> (b) Stress
+> PDE exact Lie partitioned schro_classical UnitaryLab circuit
+> Homogeneous impedance boundary, N= 63, T= 1.2, Nt= 512
+
+Fig. 14: Velocity and stress for the homogeneous impedance problem at T = 1 .2.
+
+# 7 Conclusion 
+
+We have developed explicit Schrödingerisation circuits for the velocity–stress elastic wave equa-tions in homogeneous media. The periodic construction combines Fourier spectral discretization with controlled rotations. For physical boundary conditions, staggered-grid discretization and in-terleaved encoding lead to shift circuits and boundary corrections. These constructions accommo-date time-independent source terms and non-unitary boundary dynamics within the same Hamilto-nian simulation framework. Our results establish a theoretical foundation for quantum-accelerated modeling–with polynomial advantage over its classical counterparts for quantum state computation– of elastic wave propagation, with potential applications in geophysical exploration and materials science. Realistic wave propagation often involves complex boundary value problems and unbounded domains. Our future efforts will focus on quantum algorithms for such generalized scenarios, derive 27 the corresponding quantum circuit for practical simulations and assess the costs of input preparation, observable estimation, and implementation with a finite gate set. 
+
+# Acknowledgement 
+
+We acknowledge support from NSFC Grant No. 12341104, the Shanghai Pilot Program for Basic Research, the STCSM Grant No. 24LZ1401200, the Shanghai Jiao Tong University 2030 Initiative, and the Fundamental Research Funds for the Central Universities. 
+
+# References 
+
+[1] C. L. M. H. Navier, Mémoire sur les lois de l’équilibre et du mouvement des corps solides élastiques, Mém. Acad. Sci. Inst. Fr. 7 (1827) 375–393. [2] K. E. Bullen, B. A. Bolt, An introduction to the theory of seismology, Cambridge university press, 1985. [3] N. Dai, A. Vafidis, E. Kanasewich, Wave propagation in heterogeneous, porous media; avelocity-stress, finite-difference method, Geophysics 60 (2) (1995) 327–340. [4] M. Käser, M. Dumbser, An arbitrary high-order discontinuous galerkin method for elastic waves on unstructured meshes—i. the two-dimensional isotropic case with external source terms, Geophysical Journal International 166 (2) (2006) 855–877. [5] R. J. LeVeque, Finite difference methods for ordinary and partial differential equations: steady-state and time-dependent problems, SIAM, 2007. [6] K. J. Marfurt, Accuracy of finite-difference and finite-element modeling of the scalar and elastic wave equations, Geophysics 49 (5) (1984) 533–549. [7] W. J. Mansur, A time-stepping technique to solve wave propagation problems using the bound-ary element method, Ph.D. thesis, University of Southampton (1983). [8] L. Chai, P. Tong, X. Yang, Frozen Gaussian approximation for 3d seismic tomography, Inverse Prob. 34 (5) (2018) 055004. [9] D. W. Berry, High-order quantum algorithm for solving linear differential equations, J. Phys. A: Math. Theor. 47 (2010). [10] A. M. Childs, J.-P. Liu, Quantum spectral methods for differential equations, Commun. Math. Phys. 375 (2019) 1427 – 1457. [11] S. Jin, N. Liu, Y. Yu, Quantum simulation of partial differential equations: Applications and detailed analysis, Phys. Rev. A 108 (3) (2023) 032603. [12] S. Jin, N. Liu, Y. Yu, Quantum simulation of partial differential equations via Schrödingeriza-tion, Phys. Rev. Lett. 133 (23) (2024) 230602. 28 [13] S. Jin, N. Liu, Analog quantum simulation of partial differential equations, Quantum Sci. Technol. 9 (3) (2024) 035047. doi:10.1088/2058-9565/ad49cf .[14] D. An, J.-P. Liu, L. Lin, Linear combination of Hamiltonian simulation for nonunitary dynamics with optimal state preparation cost, Physical Review Letters 131 (15) (2023) 150603. [15] Y. Sato, R. Kondo, I. Hamamura, T. Onodera, N. Yamamoto, Hamiltonian simulation for hyperbolic partial differential equations by scalable quantum circuits, Physical Review Research 6 (3) (2024) 033246. [16] M. Lubasch, Y. Kikuchi, L. Wright, C. Mc Keever, Quantum circuits for partial differential equations in fourier space, Physical Review Research 7 (4) (2025) 043326. [17] K. Nakanishi, H. Yano, Y. Sato, Hamiltonian simulation for 3D elastic wave equations in homogeneous elastic media, Phys. Rev. Appl. (Oct 2026). doi:10.1103/qz5r-pgbv .[18] J. Hu, S. Jin, N. Liu, L. Zhang, Quantum circuits for partial differential equations via schrödin-gerisation, Quantum 8 (2024) 1563. [19] C. Ma, S. Jin, N. Liu, K. Wang, L. Zhang, Schrödingerization based Quantum Circuits for Maxwell’s Equation with time-dependent source terms, arXiv preprint arXiv:2411.10999 (2024). [20] S. Jin, Z. Tang, X. Yin, L. Zhang, Quantum Circuits for the Black-Scholes equations via Schrö dingerisation, arXiv preprint arXiv:2505.04304 (2025). [21] S. Jin, N. Liu, Y. Yu, Quantum Circuits for the heat equation with physical boundary conditions via Schrödingerization, Journal of Computational Physics (2025) 114138. [22] S. Jin, C. Zhang, Quantum simulation of elastic wave equations via Schrödingerisation, arXiv preprint arXiv:2505.18711 (2025). [23] C. Sun, Z. Yang, G. Jiang, Stable Symmetric Matrix Form Framework for the Elastic Wave Equation Combined with Perfectly Matched Layer and Discretized in the Curve Domain, Sym-metry 12 (2) (2020) 202. [24] C. Sun, Z.-L. Yang, G.-X.-X. Jiang, Y. Yang, Multiblock SBP-SAT Methodology of Symmetric Matrix Form of Elastic Wave Equations on Curvilinear Grids, Shock Vib. 2020 (1) (2020) 8401537. [25] S. Jin, N. Liu, C. Ma, Y. Peng, Y. Yu, On the Schrödingerization method for linear non-unitary dynamics with optimal dependence on matrix queries, arXiv preprint arXiv:2505.00370 (2025). [26] UnitaryLab, Unitarylab, computer software (2025). URL https://www.unitarylab.com 
+
+[27] A. M. Childs, Y. Su, M. C. Tran, N. Wiebe, S. Zhu, Theory of Trotter Error with Commutator Scaling, Phys. Rev. X 11 (2021) 011020. doi:10.1103/PhysRevX.11.011020 .29 [28] R. Vale, T. M. D. Azevedo, I. C. Araújo, I. F. Araujo, A. J. da Silva, Circuit decomposition of multi-controlled special unitary single-qubit gates, IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems (2023). doi:10.1109/TCAD.2023.3327102 .[29] M. A. Nielsen, I. L. Chuang, Quantum computation and quantum information, Cambridge university press, 2010. doi:10.1017/cbo9780511976667 .[30] L. Lin, Lecture notes on quantum algorithms for scientific computation, arXiv preprint arXiv:2201.08309 (2022). arXiv:2201.08309 .[31] M. Möttönen, J. J. Vartiainen, V. Bergholm, M. M. Salomaa, Transformation of quantum states using uniformly controlled rotations, Quantum Info. Comput. 5 (6) (2005) 467–473. 30 0
+
+> 0
+> 11
+> y
+
+PDE exact 
+
+> 0
+> 0
+
+Lie partitioned 
+
+> 0
+> 0
+
+schro_classical 
+
+> 0
+> 0
+
+UnitaryLab circuit 
+
+> 0
+> 0
+> 22
+> y
+> 0
+> 0
+> 0
+> 0
+> 0
+> 0
+> 0
+> 0
+> 12
+> y
+> 0
+> 0
+> 0
+> 0
+> 0
+> 0
+> 0
+> 0
+> vx
+> y
+> 0
+> 0
+> 0
+> 0
+> 0
+> 0
+> 0
+> x
+> 0
+> vy
+> y
+> 0
+> x
+> 0
+> 0
+> x
+> 0
+> 0
+> x
+> 0
+> 0.5
+> 0.0 0.5
+> 0.5
+> 0.0 0.5
+> 0.5
+> 0.0 0.5
+> 1
+> 01
+> 0.5
+> 0.0 0.5
+
+2D physical fields at T = 1; common color scale within each row Fig. 13: Two-dimensional physical fields at T = 1 on the 16 × 16 computational grid. Rows cor-respond to σ11 , σ22 , σ12 , vx, and vy. Columns show the exact, Lie-partitioned, classical Schrödin-gerised, and circuit solutions. 31 A Notations 
+
+A.1 Notation for Finite Difference Operators 
+
+In a qubit representation, the finite difference operators can be written in terms of matrix product operators. We first introduce the elementary 2 × 2 matrices: 
+
+σ01 := |0⟩⟨ 1|, σ10 := |1⟩⟨ 0|, σ00 := |0⟩⟨ 0|, σ11 := |1⟩⟨ 1|, I := σ00 + σ11 . (A.1) The left and right shift operators are defined by S+ 
+
+> nx
+
+|j⟩ = |j + 1 ⟩, S− 
+
+> nx
+
+|j⟩ = |j − 1⟩,
+
+S− 
+
+> nx
+
+= 
+
+> 2nx −1
+
+X
+
+> j=1
+
+|j − 1⟩⟨ j|=
+
+> nx
+
+X
+
+> ℓ=1
+
+I⊗(nx−ℓ) ⊗ σ01 ⊗ σ⊗(ℓ−1) 10 ≜
+
+> nx
+
+X
+
+> ℓ=1
+
+s− 
+
+> ℓ
+
+,S+ 
+
+> nx
+
+= ( S− 
+
+> nx
+
+)† = 
+
+> 2nx −1
+
+X
+
+> j=1
+
+|j⟩⟨ j − 1|=
+
+> nx
+
+X
+
+> ℓ=1
+
+I⊗(nx−ℓ) ⊗ σ10 ⊗ σ⊗(ℓ−1) 01 ≜
+
+> nx
+
+X
+
+> ℓ=1
+
+s+ 
+
+> ℓ
+
+.
+
+(A.2) The rotation operators Rx(φ), R y(φ), R z (φ) are defined as: 
+
+Rx(φ) = e−iφX/ 2, Ry(φ) = e−iφY / 2, Rz (φ) = e−iφZ/ 2. (A.3) 
+
+# B The related Proof 
+
+B.1 Proof of exp ( P 
+
+> k
+
+Ak ⊗ | k⟩⟨ k|) = P 
+
+> k
+
+exp( Ak) ⊗ | k⟩⟨ k|
+
+Proof. Let A = P 
+
+> k
+
+Ak ⊗ | k⟩ ⟨ k|. Since the projectors {| k⟩ ⟨ k|} k are mutually orthogonal, 
+
+|k⟩ ⟨ k| | l⟩ ⟨ l| = δkl |k⟩ ⟨ k| . (B.1) It follows that, for any positive integer m,
+
+Am = X
+
+> k
+
+Ak ⊗ | k⟩ ⟨ k|
+
+!m
+
+= X
+
+> k
+
+Amk ⊗ | k⟩ ⟨ k| . (B.2) Using the power-series expansion of the matrix exponential, we obtain 
+
+exp( A) = 
+
+> ∞
+
+X
+
+> m=0
+
+1
+
+m! Am =
+
+> ∞
+
+X
+
+> m=0
+
+1
+
+m!
+
+X
+
+> k
+
+Amk ⊗ | k⟩ ⟨ k| (B.3) 
+
+= X
+
+> k
+> ∞
+
+X
+
+> m=0
+
+Amk
+
+m!
+
+!
+
+⊗ | k⟩ ⟨ k| = X
+
+> k
+
+exp( Ak) ⊗ | k⟩ ⟨ k| . (B.4) 
+
+# C Constructions of exp( iA ℓt)
+
+We use the velocity and stress variables themselves to label the quantum basis states. That is, the Dirac states |vi⟩, |ni⟩, and |sij ⟩ are identified with the corresponding components of the SMF system. In this basis, the coefficient matrix Aℓ can be expressed as 
+
+Aℓ =
+
+> d
+
+X
+
+> j=1
+
+aℓj (|nj ⟩⟨ vℓ|+|vℓ⟩⟨ nj |) + X 
+
+> k̸=ℓ
+
+m3 (|sℓk ⟩⟨ vk|+|vk⟩⟨ sℓk |) ,
+
+32 where sℓk = skℓ if k < ℓ , and 
+
+aℓj =
+
+
+
+m1, j = ℓ, m2, j̸ = ℓ. 
+
+C.1 The derivation of exp( iA ℓt)
+
+Since the directional operators Aℓ, ℓ = 1 , . . . , d are generally noncommuting, the exponential of A cannot be factorized exactly. Thus, the d-dimensional circuit is obtained by sequentially implementing the directional evolution operators 
+
+exp ( iτ A ℓ ⊗ Dℓ) , ℓ = 1 , . . . , d. 
+
+Each factor acts only on the physical-component register and the spatial register associated with the ℓ-th direction, which makes the circuit structure a direct extension of the one-dimensional construction. From the velocity–stress formulation reviewed in Sec. 2, it follows that Aℓ possesses a highly structured sparsity pattern. Specifically, Aℓ can be decomposed into three parts: a normal stress– velocity star block, d − 1 shear stress–velocity two-dimensional blocks, and a zero block. Define ω = pm21 + ( d − 1) m22, and |αℓ⟩ = 1
+
+> ω
+
+
+
+m1|nℓ⟩ + m2
+
+P 
+
+> j̸=ℓ
+
+|nj ⟩
+
+
+
+. Then the normal– velocity part of Aℓ can be written as 
+
+Bℓ = ω (|αℓ⟩⟨ vℓ|+|vℓ⟩⟨ αℓ|) . (C.1) Here Bℓ is a rank-two Hermitian operator. Let Pℓ be a unitary acting on the normal-stress subspace such that Pℓ|nℓ⟩ = |αℓ⟩, and acting as the identity on the remaining variables. Then 
+
+Bℓ = Pℓω (|nℓ⟩⟨ vℓ|+|vℓ⟩⟨ nℓ|) P † 
+
+> ℓ
+
+. (C.2) Therefore, eiB ℓt = PℓXnℓ,v ℓ (ωt )P † 
+
+> ℓ
+
+, where the two-level rotation Xp,q (θ) is defined by 
+
+Xp,q (θ) = exp ( iθ (|p⟩⟨ q|+|q⟩⟨ p|)) . (C.3) Restricted to the subspace span {| p⟩, |q⟩} , it has the matrix representation 
+
+Xp,q (θ) = cos θ i sin θi sin θ cos θ
+
+!
+
+. (C.4) The unitary Pℓ can be constructed using d − 1 Givens rotations in the normal-stress subspace. Let 
+
+j1 = ℓ, {j2, . . . , j d} = {1, . . . , d } \ { ℓ}.
+
+Set rk = pm21 + ( k − 1) m22, k = 1 , . . . , d. Then rd = ω. A sequence of Givens rotations with angles satisfying θk = arctan m2 
+
+> rk−1
+
+, k = 2 , . . . , d , can be used to prepare the state |αℓ⟩ from |nℓ⟩. Thus Pℓ
+
+can be implemented by d − 1 two-level real rotations, and P † 
+
+> ℓ
+
+by reversing the same rotations. Next, for each k̸ = ℓ, the shear–velocity part of Aℓ contains the two-dimensional block 
+
+m3 (|sℓk ⟩⟨ vk|+|vk⟩⟨ sℓk |) .
+
+33 Its exponential is simply 
+
+Xsℓk ,v k (m3t) = exp ( im 3t (|sℓk ⟩⟨ vk|+|vk⟩⟨ sℓk |)) . (C.5) Therefore, the full exponential of the directional matrix Aℓ admits the exact factorization 
+
+eiA ℓt = PℓXnℓ,v ℓ (ωt )P †
+
+> ℓ
+
+Y 
+
+> k̸=ℓ
+
+Xsℓk ,v k (m3t). (C.6) The decomposition is exact because the normal–velocity block and all shear–velocity blocks act on mutually disjoint subspaces. Therefore, the implementation of exp( iA ℓt) consists of the basis transformation Pℓ, its inverse 
+
+P † 
+
+> ℓ
+
+, one two-level rotation associated with the normal–velocity block, and d-1 two-level rotations associated with the shear–velocity blocks. 
+
+Remark C.1. The number of qubits used to encode the spatial variables and physical components is m = dn + ⌈log 2 q⌉ = dn +
+
+l
+
+log 2 d2+3 d
+
+> 2
+
+m
+
+. For quantum implementation, we define the matrix 
+
+eAℓ = Aℓ ⊕ 02⌈log 2 q⌉−q. Then 
+
+ei eAℓt = eiA ℓt ⊕ 02⌈log 2 q⌉−q. (C.7) The extended variables can be set as an invariants. 
+
+C.2 The circuit of exp( iA ℓt)
+
+Directional circuits for ei eAℓt in d = 2 , 3 are presented in Figs. 15 and 16, respectively with 
+
+θ2 = atan2( m2, m 1), θ3 = atan2 
+
+
+
+m2,
+
+q
+
+m21 + m22
+
+
+
+,ωd =
+
+q
+
+m21 + ( d − 1) m22, βP = −2ωdt, βS = −2m3t. 
+
+(C.8) Here θ3 is used only for d = 3 . All unused basis states are left invariant. The circuits below are exact and no product-formula approximation is used within a directional block. 
+
+C.3 The complexity of exp( iA ℓτ )
+
+Lemma C.1. In the short time τ , the CNOT gate complexity of explicitly implementing exp( iA ℓt)
+
+is bounded by O(d(log d)) .Proof. By the decomposition derived in Sec. C.1, the implementation of exp( iA ℓt) involves the operators Pℓ, Xnℓ,v ℓ (ωt ), P † 
+
+> ℓ
+
+, and d − 1 additional two-level rotations Xsℓk ,v k (m3t).Consequently, each two-level rotation Xp,q (θ) can be implemented on the computational basis by a multi-controlled Rx rotation. Similarly, each Givens rotation used in Pℓ can be implemented as a two-level real rotation, corresponding to a multi-controlled Ry rotation after mapping the two basis states to states differing in only one qubit by a Gray-code transformation. Consequently, a total of 3d − 2 two-level Rx/R y rotation gates are required. According to Ref. [31], each two-level Rx/R y rotation acting on an n-qubit register can be decomposed into at most 18 n−42 CNOT gates. Therefore, the CNOT complexity for implementing 
+
+exp( iA ℓt) is bounded by 
+
+QCNOT (exp( iA ℓt)) = (3 d − 2)(18 ⌈log 2 q⌉ − 42) = O(d log d).
+
+34 component n1 n2 s12 v1 v2
+
+basis label 0 1 2 3 4
+
+The basis label is the integer represented by |q2 · · · q0⟩ for d = 2 .(a) ei eA1t
+
+q2 •
+
+q1 • Rx(βS ) •
+
+q0 Ry(−2θ2) • Rx(βP ) • Ry(2 θ2)
+
+(b) ei eA2t
+
+q2 •
+
+q1 •
+
+q0 Ry(2 θ2) • Rx(βP ) • Rx(βS ) Ry(−2θ2)
+
+Fig. 15: Directional circuits in d = 2 . The qj wires encode the physical components, not the spatial variables. 35 component n1 n2 n3 s12 s13 s23 v1 v2 v3
+
+basis label 0 1 2 3 4 5 6 7 8
+
+The basis label is the integer represented by |q3 · · · q0⟩.(a) ei eA1t
+
+q3 •
+
+q2 Rx(βS ) • Rx(βS ) •
+
+q1 Ry(−2θ3) • Rx(βP ) • • Ry(2 θ3)
+
+q0 Ry(−2θ2) • Ry(2 θ2)
+
+(b) ei eA2t
+
+q3 •
+
+q2 •
+
+q1 • • Rx(βP ) • • •
+
+q0 Ry(2 θ2) • Ry(2 θ3) • • • Rx(βS ) • • • Rx(βS ) • • • Ry(−2θ3) • Ry(−2θ2)
+
+(c) ei eA3t
+
+q3 •
+
+q2 • •
+
+q1 Ry(2 θ2) • • Rx(βP ) • Rx(βS ) Rx(βS ) • Ry(−2θ2)
+
+q0 • Ry(−2θ3) • • • Ry(2 θ3) •
+
+Fig. 16: Directional circuits in d = 3 . The qj wires encode the physical components, not the spatial variables. 36

@@ -1,0 +1,55 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-28T23:15:01.341785+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 1,
+    "deep_cap": 7,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 12,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2610.37247v1",
+      "source": "arxiv",
+      "title": "Quantum circuits of elastic wave equations via Schrödingerisation",
+      "abstract": "We construct explicit quantum circuits for the velocity-stress formulation of elastic wave equations in homogeneous media using Schrödingerisation. After rewriting the equations in symmetric matrix form(SMF), we use Fourier spectral discretization for source-driven periodic problems and staggered-grid finite differences for Dirichlet, Neumann, and impedance boundary conditions. The Schrödingerisation method transforms any linear PDEs into a system of Schrödinger-type PDEs -with unitary evolution- using the warped phase transformation that maps the equations in one higher dimension. For periodic problems, we develop circuits by combining controlled Fourier-mode rotations. For physical boundaries, interleaved encoding swaps the spatial and field-component registers, enabling a more efficient circuit construction using shift operators. We analyze $p$th-order Trotter-Suzuki formulas and derive splitting-error and CNOT-gate estimates, under the assumptions of smooth auxiliary initialization and solution-state recovery. Comparison with classical partitioned splitting methods identifies a polynomial improvement in spatial-resolution dependence for the quantum state-evolution subroutine. Noiseless circuit simulations of a forced periodic problem and an impedance problem illustrate the constructions and quantify their errors against exact solutions and classical reference computations.",
+      "authors": [
+        "Shi Jin",
+        "Chundan Zhang"
+      ],
+      "primary_category": "quant-ph",
+      "categories": [
+        "quant-ph",
+        "math.NA"
+      ],
+      "published": "2026-10-27T13:47:21+00:00",
+      "link": "https://arxiv.org/pdf/2610.37247v1",
+      "tags": [
+        "keyword:quantum-algo",
+        "keyword:quantum-ode",
+        "query:quantum-algo",
+        "query:quantum-ode"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Schrödingerisation transforms linear PDEs into unitary Schrödinger-type dynamics for quantum circuits",
+      "llm_evidence_cn": "薛定谔化将线性偏微分方程转化为可幺正演化的薛定谔型系统并构建量子线路",
+      "llm_evidence": "薛定谔化将线性偏微分方程转化为可幺正演化的薛定谔型系统并构建量子线路",
+      "canonical_evidence": "薛定谔化将线性偏微分方程转化为可幺正演化的薛定谔型系统并构建量子线路",
+      "llm_tldr_en": "The paper builds explicit quantum circuits for velocity-stress elastic wave equations using the Schrödingerisation method, which maps linear PDEs into unitary Schrödinger-type equations in one higher dimension, with Fourier spectral and staggered-grid discretizations.",
+      "llm_tldr_cn": "针对线性偏微分方程的量子求解问题，本文采用薛定谔化方法将弹性波方程转化为高维薛定谔型幺正演化系统。作者先将方程改写为对称矩阵形式，对周期问题用傅里叶谱离散、对各类边界条件用交错网格有限差分，并结合受控傅里叶模式旋转与编码交换构造显式量子线路。该工作把薛定谔化推广到弹性波方程组，为波动方程的量子模拟提供了可实现的线路框架。",
+      "llm_tldr": "针对线性偏微分方程的量子求解问题，本文采用薛定谔化方法将弹性波方程转化为高维薛定谔型幺正演化系统。作者先将方程改写为对称矩阵形式，对周期问题用傅里叶谱离散、对各类边界条件用交错网格有限差分，并结合受控傅里叶模式旋转与编码交换构造显式量子线路。该工作把薛定谔化推广到弹性波方程组，为波动方程的量子模拟提供了可实现的线路框架。",
+      "llm_tags": [
+        "query:quantum-ode"
+      ],
+      "matched_query_tag": "query:quantum-ode",
+      "matched_query_text": "Schrodingerization, Schrödingerization, Schrodingerisation, and Schrödingerisation transforms for simulating non-unitary dynamics and solving differential equations",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

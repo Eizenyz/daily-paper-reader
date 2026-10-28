@@ -1,0 +1,25 @@
+{
+  "date": "20261028",
+  "date_label": "",
+  "generated_at": "2026-10-28 23:17:20 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.37247v1",
+      "route": "202610/28/2610.37247v1-quantum-circuits-of-elastic-wave-equations-via-schrdingerisation",
+      "title": "Quantum circuits of elastic wave equations via Schrödingerisation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "薛定谔化将线性偏微分方程转化为可幺正演化的薛定谔型系统并构建量子线路",
+      "first_seen_at": "2026-10-28 23:17:20 UTC",
+      "updated_at": "2026-10-28 23:17:20 UTC"
+    }
+  ]
+}

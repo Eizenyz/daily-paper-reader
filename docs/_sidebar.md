@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-10-28 <!--dpr-date:20261028-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202610/28/2610.37247v1-quantum-circuits-of-elastic-wave-equations-via-schrdingerisation" data-sidebar-item="{&quot;title&quot;: &quot;Quantum circuits of elastic wave equations via Schrödingerisation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2610.37247v1-quantum-circuits-of-elastic-wave-equations-via-schrdingerisation&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;薛定谔化将线性偏微分方程转化为可幺正演化的薛定谔型系统并构建量子线路&quot;}">Quantum circuits of elastic wave equations via Schrödingerisation</a>
   * 2026-10-27 <!--dpr-date:20261027-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202610/27/2610.33095v1-an-efficient-quantum-spectral-galerkin-method-for-linear-elliptic-equations" data-sidebar-item="{&quot;title&quot;: &quot;An Efficient Quantum Spectral-Galerkin Method for Linear Elliptic Equations&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2610.33095v1-an-efficient-quantum-spectral-galerkin-method-for-linear-elliptic-equations&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;quantum-ode&quot;}], &quot;evidence&quot;: &quot;量子谱伽辽金方法求解线性椭圆偏微分方程，复杂度为 poly(d, log(1/ε))&quot;}">An Efficient Quantum Spectral-Galerkin Method for Linear Elliptic Equations</a>
