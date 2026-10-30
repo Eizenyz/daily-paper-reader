@@ -1,0 +1,41 @@
+{
+  "date": "20261030",
+  "date_label": "",
+  "generated_at": "2026-10-30 23:32:36 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.39491v1",
+      "route": "202610/30/2610.39491v1-automated-verification-of-hamiltonian-simulation-by-quantum-signal-processing",
+      "title": "Automated Verification of Hamiltonian Simulation by Quantum Signal Processing",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-algo"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "对基于量子信号处理的哈密顿量模拟进行自动化验证，涉及块编码",
+      "first_seen_at": "2026-10-30 23:32:36 UTC",
+      "updated_at": "2026-10-30 23:32:36 UTC"
+    },
+    {
+      "paper_id": "2610.32841v1",
+      "route": "202610/30/2610.32841v1-hardware-friendly-estimation-of-lcu-based-expectation-values-via-quantum-to-classical-workload-shifting",
+      "title": "Hardware-Friendly Estimation of LCU-Based Expectation Values via Quantum-to-Classical Workload Shifting",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "quantum-ode"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向非幺正算子的LCU期望值估计并转移经典负载",
+      "first_seen_at": "2026-10-30 23:32:36 UTC",
+      "updated_at": "2026-10-30 23:32:36 UTC"
+    }
+  ]
+}

@@ -1,0 +1,1912 @@
+Title: Automated Verification of Hamiltonian Simulation by Quantum Signal Processing
+
+URL Source: https://arxiv.org/pdf/2610.39491v1
+
+Published Time: Fri, 30 Oct 2026 03:00:33 GMT
+
+Number of Pages: 32
+
+Markdown Content:
+# Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 
+
+MIN LAI, National Taiwan University, Taiwan 
+
+YU-FANG CHEN, Academia Sinica, Taiwan 
+
+SHIH-HAN HUNG, National Taiwan University, Taiwan We present, to the best of our knowledge, the first fully automated verification framework for QSP-based Hamiltonian simulation. Our framework exploits the structure of the simulation algorithm: Hamiltonians are given as weighted sums of Pauli strings, embedded into larger unitaries through block encodings, and transformed into time-evolution operators by quantum signal processing (QSP). Using a symbolic Pauli-sum semantics for ancilla-indexed circuit blocks, our verifier proves that the distinguished all-zero ancilla block is proportional to the target Hamiltonian and infers the subnormalization factor automatically. It then verifies the QSP layer by extracting the implemented polynomial transformation and certifying its approximation error. This structure-aware abstraction is essential for scalability. Composing our verified block encoding and QSP wrapper yields an estimated macro-expanded size of about 1.52 million gates. The verifier certifies the block encoding once and checks the QSP layer through its abstract interface, without expanding the oracle calls. Our implementation verifies block encodings of structured Pauli-sum Hamiltonians with up to 256 system qubits and verifies QSP Hamiltonian-simulation instances by extracting their implemented polynomials and checking the resulting approximation bounds. These results show that fully automated verification can handle common Hamiltonian-simulation circuits at substantial scale when it exploits their algorithmic structure. 
+
+1 Introduction 
+
+Hamiltonian simulation is one of the central algorithmic tasks in quantum computing and a leading application area where quantum computers may provide computational advantage. It underlies applications in quantum chemistry, condensed-matter physics, and quantum algorithms more broadly. The task is defined as follows: given a Hamiltonian 𝐻 and time 𝑡 , the goal is to approximate the time-evolution operator 𝑒 −i𝐻𝑡 to within error 𝜖 [Lloyd 1996]. Since Feynman [1982] proposed the idea of simulating quantum systems using a quantum computer and Lloyd [1996] gave the first explicit algorithm, many quantum algorithms have been given to tackle the problem. In particular, three families of quantum algorithms dominate. 
+
+Product formulas approximate 𝑒 −i𝐻𝑡 by interleaving the evolutions under the individual terms of 
+
+𝐻 = Í𝑗 𝐻 𝑗 , and their correctness rests on nested commutator bounds [Childs et al. 2021]. Linear combination of unitaries (LCU) approximates 𝑒 −i𝐻𝑡 as a weighted sum of easy unitaries via an ancilla-controlled selection circuit [Childs and Wiebe 2012]. Quantum signal processing (QSP) achieves nearly optimal complexity by encoding a polynomial approximation of 𝑒 −i𝑥𝑡 into the eigenphases of a block-encoding walk operator [Low and Chuang 2017, 2019]. The last two families share a common primitive: a block encoding of matrix 𝐻 , a unitary that embeds the subnormalized operator 𝐻 /𝛼 as a submatrix (in standard form, its top-left block) for some subnormalization factor 𝛼 . This allows non-unitary 𝐻 to be accessed coherently on an enlarged quantum state. A defining feature of these algorithms is that no implementation ever 
+
+equals the target 𝑒 −i𝐻𝑡 : the algorithms are deliberate truncations governed by a tunable accuracy parameter, and a finite universal gate set can in any case only approximate the required rotations, as analyzed by Dawson and Nielsen [2006]. The obligation of the verification task is therefore not just exact equivalence checking, but an approximate generalization of it, i.e., deciding whether two quantum processes agree to within error 𝜖 in a suitable metric.  
+
+> Authors’ Contact Information: Min Lai, National Taiwan University, Taiwan, mimi.lai.cat@gmail.com; Yu-Fang Chen, Academia Sinica, Taiwan, yfc@iis.sinica.edu.tw; Shih-Han Hung, National Taiwan University, Taiwan, shihhanh@ntu.edu. tw. arXiv:2610.39491v1 [cs.PL] 29 Oct 2026 2Min Lai, Yu-Fang Chen, and Shih-Han Hung
+
+This is substantially harder than, and poorly served by the tools built for, its exact counterpart. The difficulty is not merely numerical. The operators are 2 𝑛 -dimensional and given only implicitly by a circuit, so approximate checking must certify a quantitative norm bound on an object it cannot represent explicitly. Furthermore, the existing techniques that make exact equivalence tractable— decision diagrams [Burgholzer and Wille 2020], stabilizer formalism [Thanos et al. 2023], path-sums [Amy 2018], weighted model-counting [Huang et al. 2026], tree automata [Chen et al. 2023a,b, 2025], and ZX-calculus rewriting [Coecke and Duncan 2011]—primarily target circuit-to-circuit comparisons or state-based properties, rather than directly certifying a spectral-norm bound against an operator-level specification without a reference circuit. 
+
+Automated verification of Hamiltonian simulation. Our main contribution is a novel solution to automatically verifying Hamiltonian simulation based on quantum signal processing. Here, Hamiltonian simulation verification means proving that a quantum circuit generated from a Hamiltonian 𝐻 correctly approximates the intended time-evolution operator 𝑒 −i𝐻𝑡 .This gap is especially visible in block-encoding-based Hamiltonian simulation. In these algorithms, correctness is not a statement that the whole circuit unitary equals another circuit. The Hamiltonian is typically given symbolically as a weighted sum of Pauli strings, and the verifier must first show that an ancilla-selected block of a larger unitary is proportional to this Hamiltonian, while also recovering the subnormalization factor. A second semantic obligation arises from the simulation layer built around the certified block encoding. In QSP-based Hamiltonian simulation, the circuit repeatedly invokes the block encoding and its adjoint, interleaved with phase transformations, so that the overall circuit block-encodes a polynomial transformation of the encoded Hamiltonian. The final check is therefore an approx-imation guarantee: after accounting for the block-encoding subnormalization, the implemented polynomial must approximate 𝑒 −i𝐻𝑡 within the prescribed error bound. Thus, verification naturally decomposes into certifying the block encoding and certifying the QSP transformation. Fully automated verification of this kind remains largely out of reach for existing general-purpose quantum verification techniques. The difficulty is not merely circuit size, but the semantic gap between the generated circuit and the high-level specification it is meant to satisfy. A verifier must connect low-level gates to the high-level specification 𝑒 −i𝐻𝑡 . This requires certifying the block encoding of the symbolic Pauli-sum Hamiltonian, reasoning about ancilla-selected blocks rather than entire unitaries, and verifying that the surrounding QSP layer implements the intended polynomial approximation of time evolution. We present, to the best of our knowledge, the first fully automated verification framework for block-encoding-based Hamiltonian simulation circuits. Our verifier combines two complementary symbolic techniques. For block encodings, it constructs a branch-indexed symbolic model of the circuit by symbolic execution, where each branch operator is represented as a weighted sum of Pauli strings. This allows the verifier to inspect the induced all-zero ancilla block, prove that it is proportional to the target Hamiltonian, and infer the subnormalization factor automatically. The resulting block-encoding certificate is then used as an abstract interface for verifying the simulation layer. In this paper, we focus on QSP-based Hamiltonian simulation. For the QSP component, the verifier replaces each invocation of the certified block encoding by a four-block symbolic abstraction, symbolically executes the QSP circuit, and uses sound rewrite rules derived from unitarity to extract the implemented polynomial transformation. The extracted polynomial is then checked against the desired time-evolution function after accounting for the block-encoding subnormalization. Together, these two symbolic components validate the two main obligations in QSP-based Hamiltonian simulation: certifying the input block encoding and certifying the surrounding QSP transformation. Although QSP is our main target, the same decomposition Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 3
+
+also suggests a path toward verifying other block-encoding-based simulation methods, including LCU-based algorithms derived from truncated Taylor-series approximations. Our evaluation shows that this structure-aware approach scales to substantial Hamiltonian-simulation instances. The verifier checks block encodings of structured Pauli-sum Hamiltonians with up to 256 system qubits and hundreds of Pauli terms, without constructing the exponentially large system matrix. It also verifies QSP-based Hamiltonian-simulation circuits by extracting the implemented polynomial and certifying its approximation error. Composing the verified block encodings and QSP wrappers yields large Hamiltonian-simulation circuits whose correctness can be established without expanding the oracle calls. Our evaluation illustrates this composition and reports the resulting error bound and macro-expanded circuit size. These results demonstrate fully automated verification of common block-encoding-based Hamiltonian-simulation circuits at substantial scale. 
+
+2 Background 2.1 Quantum Computing 
+
+Here we give a very brief introduction to quantum computing and fix notation. For a full treatment, we refer the readers to Nielsen and Chuang [2010]. 
+
+States. The state of a single qubit is a unit vector in the Hilbert space C2, written in the com-putational basis as a superposition |𝜓 ⟩ = 𝛼 |0⟩ + 𝛽 |1⟩ with |𝛼 |2 + | 𝛽 |2 = 1. While a single-qubit state is represented using two complex numbers, only the magnitudes and the relative phase of the coefficients 𝛼 and 𝛽 matter in algorithmic settings, since the global phase is physically irrelevant. An 𝑛 -qubit state lives in the tensor product (C2)⊗𝑛  C2𝑛 
+
+. The exponential dimension is the source of quantum states’ expressive power and of the difficulty of classical simulation algorithms. 
+
+Evolution. Elementary operations that describe the dynamics of quantum systems are unitaries: a computation transforms |𝜓 ⟩ to 𝑈 |𝜓 ⟩ for some unitary 𝑈 , satisfying 𝑈 †𝑈 = 𝑈𝑈 † = 𝐼 . Algorithms are expressed as quantum circuits built from a universal gate set, which uniformly approximates any unitary to arbitrary accuracy. A unitary may be written as the time evolution in the form 
+
+𝑒 −i𝐻𝑡 for some Hamiltonian—a Hermitian matrix 𝐻 of the same size. As we will be discussing in this paper, we can implement a unitary 𝑈 when the corresponding 𝐻 can be written as a linear combination of unitaries with few terms. We will be frequently talking about the Pauli matrices, which form a set of unitary matrices closed under matrix multiplication up to a phase in {1, i, −1, −i}. A single-qubit Pauli matrices include four operators, in standard basis written as: 
+
+𝐼 =
+
+1 00 1
+
+
+
+, 𝑋 =
+
+0 11 0
+
+
+
+, 𝑌 =
+
+0 −ii 0
+
+
+
+, 𝑍 =
+
+1 00 −1
+
+
+
+(1) It is straightforward to check the multiplication of any two matrices yields another up to a phase. An 𝑛 -qubit Pauli matrix is the tensor product of single-qubit Pauli matrices, i.e., they form a set P𝑛 = {𝐼, 𝑋, 𝑌, 𝑍 }⊗𝑛 . The Pauli matrices are orthogonal to one another with respect to the Hilbert-Schmidt inner product—that is, for 𝑃, 𝑄 ∈ P 𝑛 , ⟨𝑃, 𝑄 ⟩ = tr (𝑃 †𝑄 ) = 0 if and only if 𝑃 ≠ 𝑄 .Furthermore, they form a complete basis for matrices of the same size. As a result, we can uniquely decompose any matrix into a linear combination of Pauli matrices. Moreover, the coefficients are real when the matrix is Hermitian. 
+
+Measurement. Information is extracted by measurement. A projective measurement of a state |𝜓 ⟩
+
+in the computational basis yields an outcome 𝑥 with probability |⟨ 𝑥 |𝜓 ⟩| 2 (Born’s rule). Upon mea-surement, the quantum state collapses to the outcome state |𝑥 ⟩. Measurement is thus probabilistic. 4 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+Norms and spectra. For a complex number 𝑧 ∈ C, we write |𝑧 | for its modulus. For a vector 𝑣 ∈ C𝑛 ,we write ∥𝑣 ∥ for the Euclidean norm, and for vectors 𝑢, 𝑣 ∈ C𝑛 we write ⟨𝑢, 𝑣 ⟩ = Í𝑗 𝑢 𝑗 𝑣 𝑗 for the standard complex inner product, where 𝑢 𝑗 is the complex conjugate of 𝑢 𝑗 . For a matrix 𝐴 , we write 
+
+∥𝐴 ∥ for its spectral norm, defined by 
+
+∥𝐴 ∥ = max   
+
+> ∥𝑣 ∥=1
+
+∥𝐴𝑣 ∥.
+
+Equivalently, ∥𝐴 ∥ is the largest singular value of 𝐴 ; when 𝐴 is normal, it is the largest absolute value of its eigenvalues. We write ∥𝐴 ∥𝐹 for the Frobenius norm, 
+
+∥𝐴 ∥𝐹 =√︁ tr (𝐴 †𝐴 ).
+
+Equivalently, if 𝜎 1 (𝐴 ), . . . , 𝜎 𝑟 (𝐴 ) are the singular values of 𝐴 , then ∥𝐴 ∥𝐹 =√︃ Í𝑟 𝑗 =1 𝜎 𝑗 (𝐴 )2. For a Hermitian matrix 𝐻 , we write Spec (𝐻 ) for the set of eigenvalues of 𝐻 . Since Hermitian matrices have real eigenvalues, ∥𝐻 ∥ ≤ 1 implies Spec (𝐻 ) ⊆ [− 1, 1].
+
+2.2 Block Encoding in Quantum Computational Linear Algebra 
+
+Block encoding of an exponentially large linear operator is an essential subroutine for the design of a wide range of quantum algorithms [Martyn et al. 2021]. A unitary operator 𝑈 block encodes a linear operator 𝐴 if the topleft diagonal submatrix is a scalar multiple of 𝐴 . While the matrix 𝐴 
+
+to be block encoded may be a non-square matrix in general, we restrict our discussion to square matrices, since we will be focusing on Hamiltonian simulation. 
+
+Definition 2.1 (Block encoding). A unitary 𝑈 ∈ U(2𝑛 +𝑚 ) block encodes a matrix 𝐴 ∈ C2𝑛 ×2𝑛 
+
+using 
+
+𝑚 ancilla qubits if 
+
+𝑈 =
+
+𝐴 /𝛼 ·· ·
+
+
+
+⇐⇒ 𝐴 /𝛼 = (⟨ 0𝑚 | ⊗ 𝐼 ⊗𝑛 )𝑈 (| 0𝑚 ⟩ ⊗ 𝐼 ⊗𝑛 ), (2) where 𝐼 is an 2 × 2 identity matrix. The fact that the topleft submatrix scaled by a real number 
+
+𝛼 ≥ ∥ 𝐴 ∥ follows from the fact that 𝑈 is a unitary matrix. A quantum circuit block encodes 𝐴 if it produces a unitary operator that block encodes 𝐴 . A block encoding of 𝐴 will often be denoted as 
+
+𝑈 𝐴 , when the implementation detail is irrelevant in context. 
+
+Linear Combination of Unitaries. A standard way to construct block encodings is the Linear Combination of Unitaries (LCU) method. Suppose 𝐴 = Í𝑀 −1 
+
+> 𝑖 =0
+
+𝑐 𝑖 𝑈 𝑖 is a linear combination of 𝑀 
+
+unitaries. Let 𝛼 = Í𝑖 |𝑐 𝑖 |, and set 𝑚 = ⌈log 𝑀 ⌉ after padding the list to length 2 𝑚 if necessary. The unitary PREPARE maps |0𝑚 ⟩ to Í2𝑚 −1
+
+> 𝑖 =0
+
+√︁ |𝑐 𝑖 |/ 𝛼 |𝑖 ⟩, and the SELECT unitary applies the phase-weighted operation (𝑐 𝑖 /| 𝑐 𝑖 |) 𝑈 𝑖 when the ancilla is in state |𝑖 ⟩, with an arbitrary phase convention when 𝑐 𝑖 = 0. Then 
+
+(⟨ 0𝑚 | ⊗ 𝐼 )( PREPARE † ⊗ 𝐼 )SELECT (PREPARE ⊗ 𝐼 )(| 0𝑚 ⟩ ⊗ 𝐼 ) = 𝐴 /𝛼. 
+
+Thus (PREPARE † ⊗ 𝐼 )SELECT (PREPARE ⊗ 𝐼 ) block encodes 𝐴 with subnormalization factor 𝛼 . The same construction also applies when the controlled operations are themselves block encodings, yielding a block encoding of the corresponding weighted sum. We next illustrate LCU with a simple block encoding of a sum of two single-qubit Pauli operators. 
+
+Example 2.2. We can use the quantum circuit from Fig. 1 to block encode the operator 𝑋 − 𝑍 :Upon measurement with outcome 0, the state of the remaining wire is 𝑋 −𝑍  
+
+> 2
+
+|𝜓 ⟩. Therefore, this circuit block encodes 𝑋 − 𝑍 with subnormalization factor 2 using one ancilla qubit, i.e., we have 
+
+ ⟨0|anc ⊗ 𝐼 sys 
+
+ 𝐶  |0⟩anc ⊗ 𝐼 sys 
+
+ = 𝑋 − 𝑍 
+
+2 . (3) Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 5
+
+|0⟩anc 𝑋 𝐻 𝐻 0
+
+|𝜓 ⟩sys 𝑋 𝑍 𝑋 −𝑍  
+
+> 2
+
+|𝜓 ⟩sys      
+
+> Fig. 1. A block encoding of 𝑋 −𝑍 with a subnormalization factor 2.
+
+To emphasize the roles of the qubits, we will denote the qubit that starts with a zero state and ends with a zero outcome as the ancilla qubits, and the qubits whose state is unrestricted are called the system qubits. 
+
+Pauli Decomposition. Recall that the Pauli matrices {𝐼, 𝑋, 𝑌, 𝑍 }⊗𝑛 form an orthogonal basis with respect to the Hilbert–Schmidt inner product. We can uniquely decompose a matrix of the same size into a linear combination of the Pauli matrices. Therefore given any 2 𝑛 × 2𝑛 matrix 𝐴 , we can compute a block encoding by its decomposition into Pauli matrices of the same dimension, and apply LCU to implement a block encoding. While this method applies generally to any matrix, we should note that it does not produce an efficient block encoding, unless the number of terms in the summation is polynomially bounded. 
+
+2.3 Quantum Signal Processing 
+
+With the ability to perform matrix arithmetic using block encodings, we can further construct func-tions of encoded matrices. Quantum Singular Value Transformation (QSVT), formally established by Gilyén et al. [2019], provides a systematic way of producing block encodings of a polynomial 𝑝 
+
+applied to the singular values of an encoded matrix 𝐴 . When 𝐴 is Hermitian, as in the Hamiltonian simulation setting discussed below, this framework effectively evaluates 𝑝 (𝐴 ).Given a block encoding 𝑈 𝐴 of Hermitian 𝐴 and some target degree-𝑑 polynomial 𝑝 , an ancilla-efficient method to evaluate 𝑝 (𝐴 ) is provided by the framework of Quantum Signal Processing (QSP). For a polynomial function 𝑝 satisfying the standard QSP admissibility conditions, including the required parity and boundedness constraints, there is a sequence of angles 𝜙 0, . . . , 𝜙 𝑑 such that the following sequence of unitaries produces a block encoding whose real part is 𝑝 (𝐴 ):
+
+𝑈 𝑝 (𝐴 ) = 𝑒 i𝜙 𝑑 𝑍 Π (𝑈 𝐴 )†𝑒 i𝜙 𝑑 −1𝑍 Π (𝑈 𝐴 ) . . . (𝑈 𝐴 )†𝑒 i𝜙 1𝑍 Π (𝑈 𝐴 )𝑒 i𝜙 0𝑍 Π , (4) where 𝑍 Π is a reflection associated with the projector Π, i.e., 𝑍 Π = 2Π − 𝐼 [Gilyén et al. 2019]. Furthermore, given the coefficients of 𝑓 , the corresponding angles can be efficiently found using a classical computer [Gilyén et al. 2019]. Although QSP directly implements polynomial transformations, it can also be used to approxi-mate non-polynomial functions that admit accurate polynomial approximations on the relevant spectral interval. More precisely, if a non-polynomial function can be uniformly approximated by a polynomial of sufficiently large degree over the singular values of interest, then QSP can be used to implement the corresponding approximate transformation. In the context of Hamiltonian simulation, to approximate a block encoding of the time evolution operator 𝑒 −i𝐻𝑡 for a Hamiltonian 
+
+𝐻 —a Hermitian matrix describing a physical system—one can approximate the scalar function 
+
+𝑒 −i𝑥𝑡 by a polynomial of sufficiently high degree, and then apply the QSP framework to obtain an approximation of 𝑒 −i𝐻𝑡 [Low and Chuang 2017]. 
+
+Example 2.3 (Implementation of QSP circuits). For Hamiltonian 𝐻 satisfying ∥𝐻 ∥ ≤ 1, we can approximate the real part of 𝑒 −i𝐻𝑡 , i.e., cos (𝐻𝑡 ), by applying a truncation to the Jacobi-Anger expansion: 𝑝 (𝐻 ) = 𝐽 0 (𝑡 ) − 2𝐽 2 (𝑡 )𝑇 2 (𝐻 ) + 2𝐽 4 (𝑡 )𝑇 4 (𝐻 ), where 𝑇 2 (𝑥 ) = 2𝑥 2 −1 and 𝑇 4 (𝑥 ) = 8𝑥 4 −8𝑥 2 +16 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+are Chebyshev polynomials, and 𝐽 𝑚 is the 𝑚 -th Bessel function of the first kind. For a small evolution time 𝑡 = 2, we can numerically compute the coefficients: cos (2𝑥 ) ≈ 𝐽 0 (2) − 2𝐽 2 (2)𝑇 2 (𝑥 ) + 2𝐽 4 (2)𝑇 4 (𝑥 )
+
+= 0.22389078 − 0.70566806 𝑇 2 (𝑥 ) + 0.06799144 𝑇 4 (𝑥 )
+
+= 0.54393152 𝑥 4 − 1.95526763 𝑥 2 + 0.99755028 . (5) We may compute the angles 
+
+𝜙 0 ≈ 2.30473309 , 𝜙 1 = 𝜙 3 ≈ − 1.05394248 , 𝜙 2 ≈ 1.06662014 , 𝜙 4 ≈ 0.73393676 . (6) such that (4) is satisfied. □
+
+3 Overview of the Verification Framework 
+
+We now give an overview of our verification framework for block-encoding-based Hamiltonian simulation. The goal is to verify that a circuit generated from a symbolic Hamiltonian 𝐻 and simulation time 𝑡 implements an approximation of the time-evolution operator 𝑒 −𝑖𝐻𝑡 within a prescribed error bound 𝜖 . Rather than treating the whole circuit as an unstructured unitary, the verifier follows the algorithmic structure of the construction: it first certifies the block encoding, then symbolically analyzes the QSP layer, and finally checks the extracted polynomial approximation. Given a Hamiltonian 𝐻 written as a sum of Pauli operators, the verification task proceeds in the following four steps.                               
+
+> 𝑜𝑝 𝐵 0𝐵 1
+> Initial 𝐼 0
+> 𝑋 (𝑞 𝑎 )0𝐼 𝐻 (𝑞 𝑎 )𝐼 √2−𝐼 √2
+> open-𝐶𝑋 (𝑞 𝑎 , 𝑞 𝑠 )𝑋 √2−𝐼 √2
+> 𝐶𝑍 (𝑞 𝑎 , 𝑞 𝑠 )𝑋 √2−𝑍 √2
+> 𝐻 (𝑞 𝑎 )X−Z2
+> 𝑋 +𝑍
+> 2
+> Table 1. Symbolic execution of the block-encoding circuit in Ex-ample 2.2. Here open -𝐶𝑋 is acti-vated on ancilla value 0.
+
+Verification of block encoding. The input to this step is a sym-bolic Hamiltonian 𝐻 = Í𝑀 𝑖 =1 𝛼 𝑖 𝑃 𝑖 , given as Pauli strings 𝑃 𝑖 with weights 𝛼 𝑖 , together with a circuit 𝑄 alleged to block encode 𝐻 .The verifier checks whether 𝑄 implements a block encoding of 𝐻 
+
+up to an unknown subnormalization factor. Rather than construct-ing the full unitary matrix of 𝑄 , it symbolically executes the circuit and tracks the system operator induced on each ancilla branch. 
+
+Example 3.1. Consider the single-qubit Hamiltonian 𝐻 = (𝑋 −
+
+𝑍 )/ 2 and the LCU-style block-encoding circuit 𝑄 BE from Exam-ple 2.2, using one ancilla qubit 𝑞 𝑎 and one system qubit 𝑞 𝑠 . Since there is one ancilla qubit, symbolic execution maintains two branch operators 𝐵 0 and 𝐵 1, representing 
+
+|Φ⟩ = |0⟩anc 𝐵 0 |𝜓 ⟩sys + | 1⟩anc 𝐵 1 |𝜓 ⟩sys .
+
+Initially 𝐵 0 = 𝐼 and 𝐵 1 = 0. The verifier then updates these symbolic operators gate by gate, as shown in Table 1. For example, 𝑋 (𝑞 𝑎 ) swaps the two branches, so (𝐵 0, 𝐵 1) = (𝐼, 0) ↦ → ( 0, 𝐼 ), while open-𝐶𝑋 (𝑞 𝑎 , 𝑞 𝑠 ) applies 𝑋 only on the branch where the ancilla value is 0, updating 𝐵 0 ↦ → 𝑋 𝐵 0 and leaving 𝐵 1 unchanged. After the final gate, the all-zero branch is 𝐵 0 = (𝑋 − 𝑍 )/ 2 = 𝐻 . Therefore, the verifier accepts 𝑄 BE as a valid block encoding of 𝐻 . More generally, if the final all-zero branch operator is 𝐻 /𝛼 , then the circuit block-encodes 𝐻 with subnormalization factor 𝛼 . □
+
+Symbolic execution of QSP. The input to this procedure is the Hamiltonian-simulation QSP circuit 𝐶 QSP , together with the verified block-encoding gate 𝑄 BE . After the block-encoding circuit has been verified, the verifier no longer expands its internal gate-level implementation. Instead, the verified block-encoding circuit is treated as a symbolic unitary 
+
+[[ 𝑄 BE ]] =
+
+𝐻 𝐺 𝐴 𝐶 
+
+
+
+,Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 7
+
+where the top-left block 𝐻 is the verified encoded Hamiltonian, while 𝐺, 𝐴, 𝐶 are kept as symbolic blocks. In general, after the circuit 𝑄 BE is certified, 𝑄 BE is a block encoding of a 1 /𝛼 multiple of the target Hamiltonian. To simulate the target Hamiltonian at evolution time 𝑡 , effectively we can simulate 𝐻 —the top-left block of [[ 𝑄 BE ]] —at time 𝛼𝑡 . Therefore, for ease of notation, in the remaining three stages, we will follow the convention. Namely, we simulate a Hamiltonian 𝐻 
+
+satisfying that ∥𝐻 ∥ ≤ 1 at evolution time 𝛼𝑡 , when 𝐻 is the top-left block of [[ 𝑄 BE ]] , and after 
+
+𝛼 is obtained from the previous stage. The verifier symbolically executes 𝐶 QSP over this abstract block-encoding gate. Since the verifier reasons only about the principal block and the aggregate non-principal block, it supports only QSP circuits whose operations preserve this abstraction. In particular, the block-encoding ancilla may only be accessed through operations that distinguish the all-zero ancilla state from all remaining ancilla states collectively, while the system register is modified only through invocations of the certified block encoding. The output of this procedure is the operator encoded in the all-zero ancilla branch. 
+
+Example 3.2. Consider a Hamiltonian-simulation QSP circuit 𝐶 QSP together with a verified block encoding 𝑄 BE . Unlike the block-encoding verifier, which explicitly tracks every block-encoding ancilla branch, the QSP verifier reasons only about whether the block-encoding ancilla is in the all-zero state or not. Consequently, the internal implementation of the certified block encoding is no longer expanded. Every invocation of 𝑄 BE is replaced by the symbolic four-block abstraction. The QSP verifier assumes a restricted circuit language. Between two consecutive calls to 𝑄 BE or 
+
+𝑄 †
+
+> BE
+
+, no gate modifies the system register. Moreover, operations on the block-encoding ancilla may depend only on whether the ancilla is in the all-zero state, and do not distinguish individual nonzero ancilla states. Consequently, every symbolic operator generated during execution is constructed solely from the symbolic blocks 𝐻 , 𝐴 , 𝐺 , and 𝐶 , together with scalar phase factors. On each call to the certified block encoding, the verifier applies the symbolic update 
+
+ 𝐵 ′
+
+> 0
+
+𝐵 ′
+
+> ≠0
+
+
+
+=
+
+𝐻 𝐺 𝐴 𝐶 
+
+  𝐵 0
+
+𝐵 ≠0
+
+
+
+,
+
+where 𝐵 0 denotes the symbolic operator associated with the principal (all-zero) block-encoding branch, and 𝐵 ≠0 collectively represents all remaining block-encoding branches, rather than tracking them individually. Thus the symbolic expressions produced during execution may contain the auxiliary symbolic blocks 𝐴 , 𝐺 , and 𝐶 in addition to 𝐻 . □
+
+Polynomial Extraction by Unitary Simplification. After symbolic execution finishes, the principal branch 𝐵 0 is an expression over 𝐻 , 𝐴 , 𝐺 , and 𝐶 . The verifier then applies a fixed set of oriented rewrite rules, derived from the unitarity identities of the four-block abstraction, to normalize this expression. These rewrite rules eliminate the auxiliary symbolic blocks whenever possible, and the verifier accepts only when the final expression reduces to a polynomial in 𝐻 .
+
+Example 3.3. Suppose symbolic execution produces 𝐸 = 𝐻𝐴 †𝐴 + 𝐺𝐺 †𝐻 . Using the unitarity identities 𝐴 †𝐴 = 𝐼 − 𝐻 †𝐻 and 𝐺𝐺 † = 𝐼 − 𝐻𝐻 †, the verifier rewrites 
+
+𝐸 = 𝐻 (𝐼 − 𝐻 †𝐻 ) + ( 𝐼 − 𝐻𝐻 †)𝐻 = 2𝐻 − 𝐻𝐻 †𝐻 − 𝐻𝐻 †𝐻 . 
+
+In the Hamiltonian simulation setting, the encoded Hamiltonian is Hermitian, so 𝐻 † = 𝐻 , and hence 𝐸 = 2𝐻 − 2𝐻 3. Thus the auxiliary blocks have been eliminated, and the verifier reads the result as the polynomial 𝑓 (𝑥 ) = 2𝑥 − 2𝑥 3.
+
+Verification of approximate polynomial. In the last step, the verifier checks whether the ex-tracted polynomial approximates the desired time-evolution function. If the verified block encoding has principal block 𝐻 /𝛼 , then the QSP circuit applies the extracted polynomial 𝑝 to the normalized 8 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+Hamiltonian 𝐻 /𝛼 . Therefore, to simulate the original Hamiltonian 𝐻 for time 𝑡 , it suffices to check the scalar approximation 
+
+𝑝 (𝑥 ) ≈ 𝑒 −𝑖𝛼𝑥𝑡 /𝛽 = 𝑒 −𝑖𝑥 (𝛼𝑡 ) /𝛽 for 𝑥 ∈ [− 1, 1].
+
+for some complex subnormalization factor 𝛽 . Thus, the block-encoding subnormalization 𝛼 is compensated by simulating at an effective evolution time 𝛼𝑡 .The new subnormalization factor 𝛽 may differ from 1 if the implementation chooses the QSP angles to compute a polynomial 𝑝 that approximates a scalar multiple of the exponential function. In known implementations, e.g., Gilyén et al. [2019], the QSP step yields some subnormalization factors 
+
+|𝛽 | > 1 and compensates it by applying an oblivious amplitude amplification on top. Therefore, to offer flexibility, our verification allows for |𝛽 | ≥ 1 and computes it in the runtime. More specifically, the verification computes 𝛽 , and aims to check if the following condition holds: max   
+
+> 𝑥 ∈ [− 1,1]
+
+𝛽𝑝 (𝑥 ) − 𝑒 −i𝛼𝑥𝑡 ≤ 𝜖. (7) Of course, our verification cannot enumerate every element in [− 1, 1], but since the exponential function can be well-approximated by a polynomial, we can check numerically whether they satisfy (7) on the Chebyshev nodes {𝑥 𝑚 = cos   2𝑚 −12𝑀 𝜋  : 𝑚 ∈ [ 𝑀 ]} for 𝑀 = 𝑂 (| 𝛼𝑡 | + ln (1/𝜖 ) + 𝑑 ) and 
+
+[𝑀 ] = {1, . . . , 𝑀 }. The verification then checks at every grid point 𝑥 𝑚 , |𝛽 ∗𝑝 (𝑥 𝑚 ) − 𝑒 −i𝛼𝑥 𝑚 𝑡 | ≤ 𝜖 /2. This requires at most 𝑂 (𝑀 ) evaluations of the functions, and can be done efficiently with a classical computer. Although the pointwise threshold 𝜖 /2 is stricter than the desired uniform error bound, Theorem 7.1 shows that, with sufficiently many Chebyshev nodes, the conditions 
+
+𝛽 ∗𝑝 (𝑥 𝑚 ) − 𝑒 −i𝛼𝑥 𝑚 𝑡 ≤ 𝜖 /2 for all 𝑚 ∈ [ 𝑀 ] suffice to guarantee (7). 
+
+4 Symbolic Verification of Block Encoding Circuits 
+
+Let the target Hamiltonian be given as a weighted sum of Pauli strings 𝐻 = Í𝑀 −1 
+
+> ℓ=0
+
+ℎℓ 𝑃 ℓ , where 
+
+ℎℓ ∈ C and 𝑃 ℓ ∈ { 𝐼, 𝑋, 𝑌, 𝑍 }⊗𝑛 . We assume that the block-encoding circuit 𝑈 acts on 𝑟 ancilla qubits and 𝑛 system qubits. Our symbolic verifier checks whether the all-zero ancilla block 1 of 𝑈 is proportional to the target Hamiltonian: 
+
+(⟨ 0𝑟 |anc ⊗ 𝐼 sys )𝑈 (| 0𝑟 ⟩anc ⊗ 𝐼 sys ) = 𝐻 /𝛼 
+
+for some subnormalization factor 𝛼 .Our verification algorithm symbolically executes the input circuit gate by gate. Instead of tracking amplitudes over the full Hilbert space, it tracks the system operation induced on each ancilla branch. Concretely, after every circuit prefix, the verifier maintains one symbolic system operator for each ancilla bit string. At the end of the symbolic execution, the operator associated with the all-zero ancilla branch is compared with the target Hamiltonian, up to an unknown subnormalization factor. 
+
+4.1 Symbolic states 
+
+Our symbolic verifier maintains a branch-indexed symbolic state 
+
+𝜎 = {𝐵 𝑏 }𝑏 ∈ { 0,1}𝑟 , 𝐵 𝑏 =∑︁  
+
+> 𝑃 ∈ P 𝑛
+
+𝑐 𝑏,𝑃 𝑃, 𝑐 𝑏,𝑃 ∈ C, P𝑛 = {𝐼, 𝑋, 𝑌, 𝑍 }⊗𝑛 .
+
+Here 𝑏 is an ancilla bit string and 𝐵 𝑏 is a symbolic system operator. The state represents 
+
+|Φ⟩ =∑︁  
+
+> 𝑏 ∈ { 0,1}𝑟
+
+|𝑏 ⟩anc 𝐵 𝑏 |𝜓 ⟩sys , 𝐵 0𝑟 = 𝐼, 𝐵 𝑏 = 0 for 𝑏 ≠ 0𝑟 initially .                        
+
+> 1For ancilla bit strings 𝑏, 𝑏 ′∈ { 0,1}𝑟 , the (𝑏, 𝑏 ′)-block of 𝑈 is the system operator 𝑈 𝑏,𝑏 ′:=(⟨ 𝑏 |anc ⊗𝐼 sys )𝑈 ( | 𝑏 ′⟩anc ⊗𝐼 sys ).Thus, the all-zero ancilla block is 𝑈 0𝑟 ,0𝑟 .Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 9
+
+4.2 Gate updates 
+
+We now describe how quantum gates update symbolic states. The update rules depend only on how a gate interacts with the ancilla register and the system register. For the Pauli-LCU block-encoding circuits considered here, it suffices to handle gates of the following forms: (1) Ancilla-only gates, (2) System-only gates, and (3) Ancilla-controlled system gates. These forms cover the standard LCU structure: PREPARE and PREPARE † act only on the ancilla register, while SELECT consists of ancilla-controlled Pauli operations on the system register. We therefore do not describe system-controlled ancilla gates or other gate patterns. Their occurrence in this setting is likely either redundant or indicative of a bug in the circuit construction. When such a gate is encountered, the verifier reports it directly instead of attempting to absorb it into the Pauli-LCU abstraction. 
+
+Ancilla-only gates. An ancilla-only gate only changes how symbolic branches are combined. Suppose it acts on 𝑡 ancilla qubits and is represented by 𝑀 ∈ C2𝑡 ×2𝑡 
+
+. For every fixed assignment 𝑤 
+
+of the remaining 𝑟 − 𝑡 ancilla bits and affected-bit values 𝑢, 𝑣 ∈ { 0, 1}𝑡 , the verifier updates 
+
+𝐵 ′ 
+
+> 𝑤,𝑢
+
+=∑︁  
+
+> 𝑣 ∈ { 0,1}𝑡
+
+𝑀 𝑢,𝑣 𝐵 𝑤,𝑣 .
+
+For 𝑡 = 1, this gives 𝐵 ′ 
+
+> 𝑤, 0
+
+= 𝑀 00 𝐵 𝑤, 0 + 𝑀 01 𝐵 𝑤, 1 and 𝐵 ′ 
+
+> 𝑤, 1
+
+= 𝑀 10 𝐵 𝑤, 0 + 𝑀 11 𝐵 𝑤, 1. In particular, 
+
+x anc[j] : 𝐵 ′ 
+
+> 𝑤, 0
+
+= 𝐵 𝑤, 1, 𝐵 ′ 
+
+> 𝑤, 1
+
+= 𝐵 𝑤, 0;
+
+h anc[j] : 𝐵 ′ 
+
+> 𝑤, 0
+
+= 𝐵 𝑤, 0 + 𝐵 𝑤, 1
+
+√2 , 𝐵 ′ 
+
+> 𝑤, 1
+
+= 𝐵 𝑤, 0 − 𝐵 𝑤, 1
+
+√2 .
+
+System-only gates. A system-only gate acts only on the system register and leaves the ancilla branch unchanged. Suppose 𝐺 = Í𝑄 ∈ P 𝑛 𝑔 𝑄 𝑄 is represented as a Pauli polynomial. Then 𝐵 ′ 
+
+> 𝑏
+
+= 𝐺𝐵 𝑏 
+
+for every 𝑏 ∈ { 0, 1}𝑟 . If 𝐵 𝑏 = Í𝑃 ∈ P 𝑛 𝑐 𝑏,𝑃 𝑃 , then 𝐵 ′ 
+
+> 𝑏
+
+= Í𝑄,𝑃 ∈ P 𝑛 𝑔 𝑄 𝑐 𝑏,𝑃 𝑄𝑃 . In the special case where 
+
+𝐺 ∈ P 𝑛 is a Pauli string, each product satisfies 𝐺𝑃 = 𝜔 𝐺,𝑃 𝑃 ′ for some 𝜔 𝐺,𝑃 ∈ {± 1, ±i} and 𝑃 ′ ∈ P 𝑛 .Hence a system-only Pauli gate only changes Pauli labels and coefficients, and does not increase the number of Pauli terms. For example, x sys[i] updates 𝐵 ′ 
+
+> 𝑏
+
+= 𝑋 𝑖 𝐵 𝑏 for every 𝑏 ∈ { 0, 1}𝑟 .
+
+Ancilla-controlled system gates. An ancilla-controlled system gate applies a system operation depending on the ancilla control bits. Suppose a set 𝐽 of ancilla qubits controls a system gate 
+
+𝐺 = Í𝑄 ∈ P 𝑛 𝑔 𝑄 𝑄 , and let 𝑡 = |𝐽 |. For every fixed assignment 𝑤 of the remaining 𝑟 − 𝑡 ancilla bits and every control value 𝑢 ∈ { 0, 1}𝑡 , the verifier updates 
+
+𝐵 ′ 
+
+> 𝑤,𝑢
+
+=
+
+(
+
+𝐺𝐵 𝑤,𝑢 if 𝑢 = 1𝑡 ,𝐵 𝑤,𝑢 otherwise. If 𝐵 𝑤, 1𝑡 = Í𝑃 ∈ P 𝑛 𝑐 𝑤, 1𝑡 ,𝑃 𝑃 , then 𝐵 ′ 
+
+> 𝑤, 1𝑡
+
+= Í𝑄,𝑃 ∈ P 𝑛 𝑔 𝑄 𝑐 𝑤, 1𝑡 ,𝑃 𝑄𝑃 , with the phase from Pauli multiplica-tion absorbed into the coefficient. For 𝑡 = 1, the common controlled-Pauli updates are 
+
+cx anc[j], sys[i] : 𝐵 ′ 
+
+> 𝑤, 0
+
+= 𝐵 𝑤, 0, 𝐵 ′ 
+
+> 𝑤, 1
+
+= 𝑋 𝑖 𝐵 𝑤, 1;
+
+cz anc[j], sys[i] : 𝐵 ′ 
+
+> 𝑤, 0
+
+= 𝐵 𝑤, 0, 𝐵 ′ 
+
+> 𝑤, 1
+
+= 𝑍 𝑖 𝐵 𝑤, 1.
+
+When 𝐺 is a Pauli string, the update does not increase the number of Pauli terms. 
+
+4.3 Final Proportionality Check 
+
+After symbolically executing the whole circuit, the verifier obtains a family of symbolic operators 
+
+{𝐵 𝑏 }𝑏 ∈ { 0,1}𝑟 . By construction, the all-zero branch satisfies 
+
+𝐵 0𝑟 = (⟨ 0𝑟 |anc ⊗ 𝐼 sys )𝑈 (| 0𝑟 ⟩anc ⊗ 𝐼 sys ).10 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+Therefore, the verifier accepts if the all-zero branch is equal to the target Hamiltonian up to a subnormalization factor: 𝐵 0𝑟 = 𝐻 𝛼 for some nonzero scalar 𝛼 . Equivalently, write 
+
+𝐻 =∑︁  
+
+> 𝑃 ∈ P 𝑛
+
+ℎ𝑃 𝑃 and 𝐵 0𝑟 =∑︁  
+
+> 𝑃 ∈ P 𝑛
+
+𝑐 𝑃 𝑃 . (8) Since the Pauli strings in P𝑛 form a basis for the vector space of linear operators on 𝑛 qubits, these Pauli expansions are unique. Hence checking 𝐵 0𝑟 = 𝐻 /𝛼 is equivalent to checking whether the coefficient vector 𝑐 = (𝑐 𝑃 )𝑃 is proportional to the coefficient vector ℎ = (ℎ𝑃 )𝑃 :
+
+𝛼𝑐 𝑃 = ℎ𝑃 for every 𝑃 ∈ P 𝑛 .
+
+In the implementation of Proportional (𝐵, 𝐻, 𝜖 ), coefficients are represented numerically. The verifier therefore checks approximate proportionality by finding a positive real scalar 𝛼 such that 
+
+𝛼𝐵 0𝑟 is close to 𝐻 . More precisely, 𝛼𝐵 0𝑟 − 𝐻 = Í𝑃 ∈ P 𝑛 (𝛼𝑐 𝑃 − ℎ𝑃 )𝑃 . Since the Pauli strings are orthogonal under the Hilbert–Schmidt inner product and satisfy tr (𝑃 †𝑃 ) = 2𝑛 , we have ∥𝛼𝐵 0𝑟 −
+
+𝐻 ∥𝐹 = 2𝑛 /2 ∥𝛼𝑐 − ℎ∥. Hence ∥𝛼𝐵 0𝑟 − 𝐻 ∥ ≤ ∥ 𝛼𝐵 0𝑟 − 𝐻 ∥𝐹 = 2𝑛 /2 ∥𝛼𝑐 − ℎ∥. It therefore suffices to check ∥𝛼𝑐 −ℎ∥ ≤ 𝜖  
+
+> 2𝑛 /2
+
+. The verifier infers the subnormalization factor by solving min 𝛼 ∈R>0 ∥𝛼𝑐 −ℎ∥.To this end, the following lemma is useful. Lemma 4.1. For integer 𝑁 ≥ 1, let 𝑎, 𝑏 be two vectors of 𝑁 entries, with 𝑎 ≠ 0, and let 𝐶 (𝛾 ) = ∥𝛾𝑎 −𝑏 ∥.Then 𝐶 is minimized at 𝛾 = ⟨𝑎, 𝑏 ⟩/∥ 𝑎 ∥2. If 𝛾 is restricted to be in the set of real numbers, then 𝐶 is minimized at 𝛾 = Re ⟨𝑎, 𝑏 ⟩/∥ 𝑎 ∥2.
+
+Proof. The lemma can be proved by a geometric argument. Let 𝑏 = 𝑐 0𝑎 + 𝑐 1𝑎 ⊥ for some vector 
+
+𝑎 ⊥ orthogonal to 𝑎 . This decomposition is always possible since we can choose 𝑎 ⊥ in the span of 
+
+{𝑎, 𝑏 }. By taking an inner product with 𝑎 on both sides, we have the coefficient 𝑐 0 = ⟨𝑎, 𝑏 ⟩/∥ 𝑎 ∥2.Since the two components are orthogonal, 
+
+∥𝛾𝑎 − 𝑏 ∥2 = |𝛾 − 𝑐 0 |2 ∥𝑎 ∥2 + ∥ 𝑐 1𝑎 ⊥ ∥2 = |𝛾 − 𝑐 0 |2 ∥𝑎 ∥2 + ∥ 𝑏 − 𝑐 0𝑎 ∥2.
+
+The second term is independent of 𝛾 . Hence the minimum over 𝛾 ∈ C is attained at 𝛾 = 𝑐 0, while the minimum over 𝛾 ∈ R is attained at 𝛾 = Re (𝑐 0).
+
+□
+
+In both normalization checks, we return (Reject , ⊥) if the denominator cannot be confirmed to be positive before division. Geometrically, this projects ℎ onto the ray spanned by 𝑐 . If the lower bound of ∥𝑐 ∥ is not positive, Proportional returns (Reject , ⊥) . By Lemma 4.1, the best real subnormalization factor is 
+
+𝛼 ∗ = Re (⟨ 𝑐, ℎ ⟩) ∥𝑐 ∥2 . (9) If 𝛼 ∗ ≤ 0, Proportional returns (Reject , ⊥) . Otherwise, it accepts when 
+
+∥𝛼 ∗𝑐 − ℎ∥ ≤ 𝜖 
+
+2𝑛 /2 . (10) where Re takes the real part of a complex number. Proportional (𝐵, 𝐻, 𝜖 ) returns a pair (Accept , 𝛼 ∗)
+
+iff 𝛼 ∗ > 0 and (10) holds. Otherwise, it returns (Reject , ⊥) .
+
+4.4 Algorithm 
+
+We summarize the symbolic execution procedure above as Algorithm 1. The algorithm initializes one symbolic branch for each ancilla bit string, processes the input circuit gate by gate using the symbolic update rules, and finally checks whether the all-zero branch is proportional to the target Hamiltonian. Because the subnormalization factor is not fixed a priori, the final check Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 11 
+
+Algorithm 1: VerifyBlockEncoding (𝐻, 𝐶, 𝜖 )
+
+Input: Target Hamiltonian 𝐻 = Í𝑃 ∈ P 𝑛 ℎ𝑃 𝑃 ; QASM circuit 𝐶 acting on 𝑟 ancilla qubits and 
+
+𝑛 system qubits; tolerance 𝜖 
+
+Output: (Accept , 𝛼 ) if 𝐵 0𝑟 is a Hermitian satisfying ∥𝛼𝐵 0𝑟 − 𝐻 ∥ ≤ 𝜖 ; otherwise (Reject , ⊥) . 
+
+> 1
+
+Initialize 𝐵 𝑏 ← 0 for all 𝑏 ∈ { 0, 1}𝑟 , and set 𝐵 0𝑟 ← 𝐼  
+
+> 2
+
+foreach instruction 𝑔 in 𝐶 do  
+
+> 3
+
+Update {𝐵 𝑏 }𝑏 ∈ { 0,1}𝑟 according to the symbolic update rule for 𝑔  
+
+> 4
+
+Write 𝐻 = Í𝑃 ∈ P 𝑛 ℎ𝑃 𝑃, 𝐵 0𝑟 = Í𝑃 ∈ P 𝑛 𝑐 𝑃 𝑃 .  
+
+> 5
+
+if 𝐵 0𝑟 ≠ 𝐵 † 
+
+> 0𝑟
+
+then Return (Reject , ⊥)  
+
+> 6
+
+return Proportional (𝐵 0𝑟 , 𝐻, 𝜖 )
+
+infers the factor 𝛼 from the Pauli coefficients. Here Proportional (𝐵, 𝐻, 𝜖 ) denotes the numerical proportionality check on Pauli expansions. First, write the two matrices as a linear combination of Pauli matrices, as in (8). The check treats ℎ = (ℎ𝑃 )𝑃 and 𝑐 = (𝑐 𝑃 )𝑃 as coefficient vectors and infers the positive real subnormalization factor 𝛼 that best fits ℎ ≈ 𝛼𝑐. Equivalently, as analyzed in Section 4.3, it computes the inferred value 𝛼 ∗ as in (9). The verifier rejects if 𝛼 ∗ ≤ 0 or the principal block is not Hermitian, and otherwise checks if (10) holds. When this check succeeds, the verifier accepts 𝐵 as a block encoding of 𝐻 with the subnormalization factor 𝛼 ∗.
+
+Branch complexity. If the block-encoding circuit uses 𝑟 ancilla qubits, symbolic execution tracks one Pauli-polynomial system operator 𝐵 𝑏 for each branch 𝑏 ∈ { 0, 1}𝑟 , hence 2 𝑟 symbolic branches. For a standard Pauli-LCU block encoding of 𝑀 Pauli terms, 𝑟 = ⌈log 2 𝑀 ⌉, so the number of branches is 𝑂 (𝑀 ). The size of each branch expression is circuit-dependent. In the worst case, symbolic multiplication can make a branch expression grow exponentially, and we do not claim a polynomial worst-case bound for arbitrary circuits. However, the verifier avoids constructing the exponentially large system matrix: it tracks Pauli-polynomial expressions attached to ancilla branches. In our evaluation, this representation is sufficient to verify block encodings of structured Pauli-sum Hamiltonians, including Ising, MaxCut, and Heisenberg instances, with hundreds of Pauli terms and up to 256 system qubits. Theorem 4.2 (Soundness of the block-encoding verifier). Let 𝑈 be the unitary implemented by the input circuit 𝐶 . Assume that 𝐶 uses only the gate forms supported by the symbolic semantics in Section 4. If Algorithm 1 returns (Accept , 𝛼 ) on input (𝐻, 𝐶, 𝜖 ), then 𝛼 > 0,the principal block 
+
+𝐵 0𝑟 = (⟨ 0𝑟 |anc ⊗ 𝐼 sys )𝑈 (| 0𝑟 ⟩anc ⊗ 𝐼 sys ) is Hermitian, and ∥𝛼𝐵 0𝑟 − 𝐻 ∥ ≤ 𝜖. 
+
+Proof. The symbolic execution rules maintain the invariant that after any circuit prefix 𝐶 𝑡 
+
+with denotation 𝑈 𝑡 , the symbolic branches satisfy 𝑈 𝑡 (| 0𝑟 ⟩anc |𝜓 ⟩sys ) = Í𝑏 ∈ { 0,1}𝑟 |𝑏 ⟩anc 𝐵 (𝑡 ) 
+
+> 𝑏
+
+|𝜓 ⟩sys 
+
+for every system state |𝜓 ⟩. This holds initially by 𝐵 (0) 
+
+> 0𝑟
+
+= 𝐼 and 𝐵 (0) 
+
+> 𝑏
+
+= 0 for 𝑏 ≠ 0𝑟 , and each update rule is obtained by applying the corresponding gate to this branch decomposition. Hence, after processing the whole circuit, 𝐵 0𝑟 = (⟨ 0𝑟 |anc ⊗ 𝐼 sys )𝑈 (| 0𝑟 ⟩anc ⊗ 𝐼 sys ).It remains to use the final proportionality check. Write 𝐻 = Í𝑃 ∈ P 𝑛 ℎ𝑃 𝑃 and 𝐵 0𝑟 = Í𝑃 ∈ P 𝑛 𝑐 𝑃 𝑃 ,and let ℎ = (ℎ𝑃 )𝑃 and 𝑐 = (𝑐 𝑃 )𝑃 . When the algorithm accepts, Proportional returns a positive real 𝛼 such that ∥𝛼𝑐 − ℎ∥ ≤ 𝜖 /2𝑛 /2. Let 𝐷 = 𝛼𝐵 0𝑟 − 𝐻 = Í𝑃 ∈ P 𝑛 (𝛼𝑐 𝑃 − ℎ𝑃 )𝑃 . By orthogonality of the 
+
+𝑛 -qubit Pauli basis, ∥𝐷 ∥𝐹 = 2𝑛 /2 ∥𝛼𝑐 −ℎ∥. Since ∥𝐷 ∥ ≤ ∥ 𝐷 ∥𝐹 , we get ∥𝛼𝐵 0𝑟 −𝐻 ∥ ≤ 2𝑛 /2 ∥𝛼𝑐 −ℎ∥ ≤ 𝜖 .Substituting the expression for 𝐵 0𝑟 proves the claim. Moreover, Algorithm 1 accepts only if 𝐵 0𝑟 = 𝐵 † 
+
+> 0𝑟
+
+,which establishes the Hermiticity claim. □12 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+5 Symbolic Execution of Quantum Signal Processing 
+
+This section describes the symbolic execution of quantum signal processing (QSP) circuits built from a certified block encoding. A QSP circuit repeatedly invokes a block-encoding unitary 𝑈 𝐻 and its adjoint 𝑈 † 
+
+> 𝐻
+
+. Rather than expanding the gate-level implementation of 𝑈 𝐻 at every invocation, the verifier reuses the block-encoding certificate as an abstract interface and symbolically executes the surrounding QSP circuit. Throughout this section, we follow the notation of Section 4: the system register contains 𝑛 qubits, and the certified block encoding uses 𝑟 block-encoding ancilla qubits. In addition, the QSP layer uses 𝑠 phase ancilla qubits. Thus the circuit has three disjoint registers: 𝑠 
+
+phase-ancilla qubits, 𝑟 block-encoding ancilla qubits, and 𝑛 system qubits. We index phase-ancilla branches by 𝑝 ∈ { 0, 1}𝑠 , and block-encoding ancilla branches by 𝑏 ∈ { 0, 1}𝑟 .The purpose of this phase is to compute the symbolic expression implemented by the principal QSP branch. The verifier tracks the phase-ancilla branches explicitly. For the internal block-encoding ancilla, however, it distinguishes only the all-zero branch 0 𝑟 from the aggregate of all nonzero branches 𝑏 ≠ 0𝑟 . Each invocation of 𝑈 𝐻 or 𝑈 † 
+
+> 𝐻
+
+updates the current symbolic expressions according to this two-component abstraction. After all QSP gates have been processed, the principal compo-nent of the all-zero phase branch contains the expression produced by symbolic execution. This expression is then passed to the polynomial-extraction phase. 
+
+5.1 Four-Block Matrix Abstraction of Block Encodings 
+
+Once a block-encoding circuit 𝑈 𝐻 has been certified, the verifier no longer expands its internal gate structure. Instead, it replaces 𝑈 𝐻 by a typed four-block matrix abstraction. Since the system register has 𝑛 qubits, the principal all-zero block-encoding branch has dimension 2 𝑛 . The aggregate of all nonzero block-encoding branches has dimension (2𝑟 − 1)2𝑛 .With respect to the decomposition into the all-zero branch and the aggregate nonzero branch, we write 
+
+𝑈 𝐻 =
+
+𝐻 𝐺 𝐴 𝐶 
+
+
+
+, 𝑈 † 
+
+> 𝐻
+
+=
+
+𝐻 † 𝐴 †
+
+𝐺 † 𝐶 †
+
+
+
+.
+
+Here the four matrix variables have dimensions 
+
+𝐻 ∈ C2𝑛 ×2𝑛 
+
+, 𝐺 ∈ C2𝑛 × ( 2𝑟 −1)2𝑛 
+
+, 𝐴 ∈ C(2𝑟 −1)2𝑛 ×2𝑛 
+
+, 𝐶 ∈ C(2𝑟 −1)2𝑛 × ( 2𝑟 −1)2𝑛 
+
+.
+
+The principal block 𝐻 is the block certified by the block-encoding verifier: 
+
+𝐻 = (⟨ 0𝑟 | ⊗ 𝐼 )𝑈 𝐻 (| 0𝑟 ⟩ ⊗ 𝐼 ).
+
+In the first verification phase, this block is proved to equal the target Hamiltonian up to a subnor-malization factor. In the Hamiltonian-simulation phase, this subnormalization factor is absorbed into the effective simulation time. Therefore, in the QSP symbolic execution below, we use 𝐻 to denote the normalized encoded Hamiltonian block. The remaining blocks 𝐴 , 𝐺 , and 𝐶 summarize the behavior of 𝑈 𝐻 involving the aggregate nonzero block-encoding branches. They are treated as formal matrix variables with the dimensions above and are not expanded into the internal gates of the certified block encoding. This abstraction is used only after the block encoding has been verified. It therefore separates the verification of the QSP layer from the gate-level verification of the block-encoding circuit: the QSP verifier sees only the certified principal block 𝐻 , the formal garbage blocks 𝐴, 𝐺, 𝐶 , and the fact that these blocks arise from a unitary matrix. 
+
+5.2 Symbolic Execution over the Four-Block Abstraction 
+
+We now describe how the verifier symbolically executes a QSP circuit after replacing each call to 
+
+𝑈 𝐻 by its four-block matrix abstraction. The symbolic executor treats the three registers differently. Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 13 
+
+The phase ancilla register is tracked explicitly: each branch 𝑝 ∈ { 0, 1}𝑠 carries its own symbolic pair. The block-encoding ancilla register is tracked only through the two-component abstraction introduced above: the all-zero branch and the aggregate of all nonzero branches. Finally, the system register is represented symbolically through the matrix expressions attached to these components. The four-block abstraction is valid only for QSP circuits that preserve this two-component view of the block-encoding ancilla. Between two consecutive invocations of the certified block encoding, no gate may modify the system register directly. Moreover, operations on the block-encoding ancilla are restricted to those whose behavior depends only on whether the ancilla is in the all-zero state. For example, multi-controlled gates conditioned on the all-zero block-encoding ancilla state are supported, whereas operations that distinguish individual nonzero block-encoding ancilla states are not. Under these restrictions, the verifier never needs to distinguish individual nonzero block-encoding ancilla branches during QSP symbolic execution. For each phase-ancilla branch, it maintains only two symbolic components: the principal component corresponding to the all-zero block-encoding branch, and the aggregate non-principal component representing all remaining block-encoding branches. 
+
+5.3 Symbolic States 
+
+For each phase-ancilla branch 𝑝 ∈ { 0, 1}𝑠 , the verifier maintains a pair (𝐵 𝑝, 0, 𝐵 𝑝, ≠0). The expression 
+
+𝐵 𝑝, 0 represents the component in the all-zero block-encoding branch, while 𝐵 𝑝, ≠0 represents the aggregate component over all nonzero block-encoding branches. Their dimensions are 
+
+𝐵 𝑝, 0 ∈ C2𝑛 ×2𝑛 
+
+, 𝐵 𝑝, ≠0 ∈ C(2𝑟 −1)2𝑛 ×2𝑛 
+
+.
+
+Thus 𝐵 𝑝, 0 and 𝐵 𝑝, ≠0 have the same input dimension but different output dimensions. The symbolic state is BQSP = {( 𝐵 𝑝, 0, 𝐵 𝑝, ≠0)} 𝑝 ∈ { 0,1}𝑠 , initialized by 
+
+𝐵 0𝑠 ,0 = 𝐼, 𝐵 𝑝, 0 = 0 for 𝑝 ≠ 0𝑠 , 𝐵 𝑝, ≠0 = 0 for all 𝑝 ∈ { 0, 1}𝑠 .
+
+The verifier then symbolically executes the QSP circuit gate by gate. 
+
+5.4 Aggregate-Compatible Gate Updates 
+
+We now describe the gate updates used by the QSP symbolic executor. The updates are restricted to gates that preserve the aggregate abstraction introduced above. The verifier may explicitly distinguish computational-basis branches of the phase ancilla register, but it may not distinguish individual nonzero branches of the block-encoding ancilla register. 
+
+Phase-ancilla gates. Gates acting only on the phase ancilla register are handled branch-wise. Since the phase branches are tracked explicitly, an ancilla-only gate on the phase register mixes the symbolic pairs (𝐵 𝑝, 0, 𝐵 𝑝, ≠0) across different branches 𝑝 ∈ { 0, 1}𝑠 according to the usual matrix action of the gate. The same branch mixing is applied simultaneously to the principal components and to the aggregate non-principal components. For example, under the convention 𝑅 𝑧 (𝜃 ) = 𝑒 −𝑖𝜃𝑍 /2 =
+
+𝑒 −𝑖𝜃 /2 00 𝑒 𝑖𝜃 /2
+
+
+
+, applying 𝑅 𝑧 (𝜃 ) to a phase-ancilla qubit multiplies the symbolic pair in each branch with that qubit equal to 0 by 𝑒 −𝑖𝜃 /2, and the symbolic pair in each branch with that qubit equal to 1 by 𝑒 𝑖𝜃 /2.
+
+Operations controlled by the phase ancilla. Some QSP circuits contain operations controlled by one or more phase-ancilla qubits. Since phase-ancilla branches are tracked explicitly, such operations are handled branch by branch. For a fixed phase branch 𝑝 , if the control condition is not satisfied, the pair (𝐵 𝑝, 0, 𝐵 𝑝, ≠0) is left unchanged. If the control condition is satisfied, the corresponding operation is applied to that pair. In particular, a controlled call to 𝑈 𝐻 or 𝑈 † 
+
+> 𝐻
+
+applies the four-block update only 14 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+on the phase branches where the controls are enabled. The explicit update rules for calls to 𝑈 𝐻 and 
+
+𝑈 † 
+
+> 𝐻
+
+are given in Section 5.5. 
+
+Operations on the block-encoding ancilla. Operations that access the internal block-encoding ancilla are allowed only if they preserve the distinction between the all-zero branch and the aggregate nonzero component. Such operations may test whether the block-encoding ancilla is in the all-zero state, but they may not distinguish among different nonzero block-encoding ancilla states. For example, a phase operation conditioned on the block-encoding ancilla being in the all-zero state is represented by 𝐵 ′ 
+
+> 𝑝, 0
+
+= 𝜔𝐵 𝑝, 0 and 𝐵 ′ 
+
+> 𝑝, ≠0
+
+= 𝐵 𝑝, ≠0, where 𝜔 ∈ C is the corresponding phase factor. Similarly, an operation that applies the same scalar factor to every nonzero block-encoding ancilla branch is represented by 𝐵 ′ 
+
+> 𝑝, 0
+
+= 𝐵 𝑝, 0 and 𝐵 ′ 
+
+> 𝑝, ≠0
+
+= 𝜔𝐵 𝑝, ≠0. Both updates are well typed because scalar multiplication preserves the dimensions of blocks. Operations that distinguish two different nonzero block-encoding ancilla branches are not supported by this abstraction. Supporting such gates would require returning to the finer branch representation used by the block-encoding verifier, where each ancilla branch is tracked separately. 
+
+System-side operations. Between two consecutive invocations of the certified block encoding, the QSP gate language does not allow gates that modify the system register directly. All system-side transformations in the QSP layer are introduced through calls to 𝑈 𝐻 and 𝑈 † 
+
+> 𝐻
+
+, which are handled by the four-block abstraction in Section 5.5. This restriction ensures that the aggregate non-principal component can be treated as a single symbolic component without expanding the individual nonzero block-encoding ancilla branches. 
+
+5.5 Calls to the Block Encoding 
+
+A call to the certified block encoding 𝑈 𝐻 or its adjoint 𝑈 † 
+
+> 𝐻
+
+acts on the block-encoding ancilla and the system register. In the QSP verifier, this call is not expanded into the gate-level implementation of 𝑈 𝐻 ; instead, it is executed using the four-block abstraction. For each fixed phase-ancilla branch 𝑝 ∈ { 0, 1}𝑠 , the symbolic state contains a pair (𝐵 𝑝, 0, 𝐵 𝑝, ≠0). A call to 𝑈 𝐻 updates this pair by 
+
+ 𝐵 ′
+
+> 𝑝, 0
+
+𝐵 ′
+
+> 𝑝, ≠0
+
+
+
+=
+
+𝐻 𝐺 𝐴 𝐶 
+
+  𝐵 𝑝, 0
+
+𝐵 𝑝, ≠0
+
+
+
+, or equivalently, 𝐵 ′ 
+
+> 𝑝, 0
+
+= 𝐻𝐵 𝑝, 0 + 𝐺𝐵 𝑝, ≠0
+
+and 𝐵 ′ 
+
+> 𝑝, ≠0
+
+= 𝐴𝐵 𝑝, 0 + 𝐶𝐵 𝑝, ≠0. These products are well typed: both 𝐻𝐵 𝑝, 0 and 𝐺𝐵 𝑝, ≠0 are 2 𝑛 × 2𝑛 
+
+matrices, while both 𝐴𝐵 𝑝, 0 and 𝐶𝐵 𝑝, ≠0 are (2𝑟 − 1)2𝑛 × 2𝑛 matrices. A call to 𝑈 † 
+
+> 𝐻
+
+is handled similarly: 
+
+ 𝐵 ′
+
+> 𝑝, 0
+
+𝐵 ′
+
+> 𝑝, ≠0
+
+
+
+=
+
+𝐻 † 𝐴 †
+
+𝐺 † 𝐶 †
+
+  𝐵 𝑝, 0
+
+𝐵 𝑝, ≠0
+
+
+
+. Equivalently, 𝐵 ′ 
+
+> 𝑝, 0
+
+= 𝐻 †𝐵 𝑝, 0 +
+
+𝐴 †𝐵 𝑝, ≠0 and 𝐵 ′ 
+
+> 𝑝, ≠0
+
+= 𝐺 †𝐵 𝑝, 0 + 𝐶 †𝐵 𝑝, ≠0. Again, both terms in the first sum are 2 𝑛 × 2𝑛 matrices, and both terms in the second sum are (2𝑟 − 1)2𝑛 × 2𝑛 matrices. If the call is controlled by one or more phase-ancilla qubits, then the update is applied only to the phase branches on which the controls are enabled. For all other phase branches, the pair 
+
+(𝐵 𝑝, 0, 𝐵 𝑝, ≠0) is left unchanged. For example, if a call to 𝑈 𝐻 is controlled on a phase-ancilla qubit being 1, then every branch 𝑝 with that qubit equal to 1 receives the 𝑈 𝐻 update above, while all branches 𝑝 with that qubit equal to 0 are unchanged. Theorem 5.1 (Correctness of symbolic execution). Let 𝐶 be a QSP circuit supported by the symbolic semantics, and let 𝑈 𝐶 be its unitary. If 𝐸 = SymbolicExecute (𝐶 ), then (J𝐸 K = (⟨ 0𝑠 | ⊗ ⟨ 0𝑟 | ⊗ 
+
+𝐼 )𝑈 𝐶 (| 0𝑠 ⟩ ⊗ | 0𝑟 ⟩ ⊗ 𝐼 )) . Hence, Algorithm 2 returns exactly the principal block of the QSP circuit. 
+
+Proof. We induct on the number of executed instructions. For each phase branch 𝑝 , the inter-preted pair (𝐵 𝑝, 0, 𝐵 𝑝, ≠0) equals the principal and non-principal components of the circuit prefix applied to |0𝑠 ⟩ ⊗ | 0𝑟 ⟩ ⊗ 𝐼 . The initialization satisfies this property. Phase-ancilla gates mix these Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 15 
+
+Algorithm 2: SymbolicExecute (𝐶 )
+
+Input: QSP circuit 𝐶 , number of phase ancilla 𝑠 
+
+Output: Symbolic expression 𝐸  
+
+> 1
+
+Initialize 𝐵 0𝑠 ,0 ← 𝐼 and 𝐵 𝑝,𝜂 ← 0 for (𝑝, 𝜂 ) ∈ { 0, 1}𝑠 × { 0, ≠ 0} \ {( 0𝑠 , 0)}  
+
+> 2
+
+foreach instruction 𝑔 in 𝐶 do  
+
+> 3
+
+Update {𝐵 𝑝,𝜂 }𝑝 ∈ { 0,1}𝑠 , 𝜂 ∈ { 0,≠0} according to the symbolic update rule for 𝑔  
+
+> 4
+
+Normalize each 𝐵 𝑝,𝜂 with the rewrite rules of Section 6.  
+
+> 5
+
+return 𝐵 0𝑠 ,0
+
+components according to their matrix entries. Phase operations conditioned on the zero or nonzero block-encoding branch multiply the corresponding components by the specified scalars. Calls to 𝑈 𝐻 
+
+and 𝑈 † 
+
+> 𝐻
+
+apply their exact four-block matrix action. Phase-controlled operations apply the relevant update only on enabled phase branches. Thus every supported instruction preserves the property. After the last instruction, 𝐵 0𝑠 ,0 is exactly the principal block stated in the theorem. □
+
+6 Polynomial Extraction by Unitarity Simplification 
+
+After symbolic execution, the verifier obtains a symbolic state BQSP = {( 𝐵 𝑝, 0, 𝐵 𝑝, ≠0)} 𝑝 ∈ { 0,1}𝑠 . The operator implemented by the QSP circuit is represented by the principal component of the all-zero phase branch, namely 𝐵 0𝑠 ,0. The goal of this stage is to extract the polynomial transformation implemented by the QSP circuit. The raw expression 𝐵 0𝑠 ,0 may contain the auxiliary blocks 𝐴, 𝐺, 𝐶 
+
+and their adjoints, corresponding to intermediate transitions through the aggregate non-principal component. The verifier applies a fixed oriented rewrite system derived from the unitarity of the four-block abstraction. If the normalized expression contains only 𝐻 , scalar coefficients, and identities, the verifier reads it as a polynomial in 𝐻 . Otherwise, the verifier rejects. 
+
+Dimension compatibility. The block variables 𝐻, 𝐺, 𝐴, 𝐶 have the matrix dimensions specified in Section 5.1. Symbolic execution generates expressions by dimension-compatible block-matrix multiplication through calls to 𝑈 𝐻 and 𝑈 † 
+
+> 𝐻
+
+: products such as 𝐺𝐴 , 𝐻𝐺 , and 𝐴𝐻 may arise, whereas dimension-incompatible products such as 𝐻𝐴 are not generated. The polynomial extractor applies rewrite rules only to dimension-compatible subexpressions. 
+
+Rewrite rules from unitarity. Recall that 𝑈 𝐻 is unitary. Hence the block identities induced by 
+
+𝑈 † 
+
+> 𝐻
+
+𝑈 𝐻 = 𝐼 and 𝑈 𝐻 𝑈 † 
+
+> 𝐻
+
+= 𝐼 are valid. The verifier orients these identities into rewrite rules: R1 : 𝐴 †𝐴 → 𝐼 − 𝐻 †𝐻, R2 : 𝐺𝐺 † → 𝐼 − 𝐻𝐻 †,
+
+R3 : 𝐴 †𝐶 → − 𝐻 †𝐺, R4 : 𝐺𝐶 † → − 𝐻𝐴 †,
+
+R5 : 𝐶 †𝐴 → − 𝐺 †𝐻, R6 : 𝐶𝐺 † → − 𝐴𝐻 †,
+
+R7 : 𝐺 †𝐺 → 𝐼 − 𝐶 †𝐶, R8 : 𝐴𝐴 † → 𝐼 − 𝐶𝐶 †.
+
+Each rule is a dimension-compatible matrix identity. For example, 𝐴 †𝐴 and 𝐼 − 𝐻 †𝐻 have the same dimensions, as do 𝐴 †𝐶 and −𝐻 †𝐺 . Rules R1–R6 reduce the number of non-principal block occurrences. Rules R7 and R8 preserve the total number of non-principal block occurrences, but reduce the number of occurrences of 𝐴 and 𝐺 . The rewrite system is sound but intentionally incomplete: if the deterministic simplifier does not reduce the expression to a polynomial in 𝐻 , the verifier rejects. 16 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+Algorithm 3: ExtractPolynomial (𝐸 )
+
+Input: Dimension-compatible symbolic expression 𝐸 
+
+Output: (Accept , 𝑝 ) if 𝐸 rewrites to a polynomial 𝑝 (𝐻 ); (Reject , ⊥) otherwise  
+
+> 1
+
+while some rewrite or algebraic normalization rule applies to 𝐸 do  
+
+> 2
+
+Update 𝐸 using the first applicable rule in the fixed priority order  
+
+> 3
+
+if 𝐸 contains any symbol in {𝐺, 𝐺 †, 𝐴, 𝐴 †, 𝐶, 𝐶 † } then return (Reject , ⊥)  
+
+> 4
+
+else collect the coefficients of the powers of 𝐻 in 𝐸 and return (Accept , 𝑝 )
+
+Algebraic normalization. In addition to the unitarity rules, the verifier applies the following algebraic normalization rules: D1 : 𝑋 (𝛽𝑌 + 𝜅𝑍 ) → 𝛽𝑋𝑌 + 𝜅𝑋𝑍, D2 : (𝛽𝑌 + 𝜅𝑍 )𝑋 → 𝛽𝑌𝑋 + 𝜅𝑍𝑋, 
+
+S1 : 𝐼𝑋 → 𝑋, 𝑋 𝐼 → 𝑋, S2 : 0𝑋 → 0, 𝑋 0 → 0, 𝑋 + 0 → 𝑋, 
+
+S3 : 𝛽𝑋 + 𝜅𝑋 → ( 𝛽 + 𝜅 )𝑋, S4 : 𝐻𝐻 𝑘 → 𝐻 𝑘 +1, 𝐻 𝑘 𝐻 → 𝐻 𝑘 +1,
+
+H : 𝐻 † → 𝐻 . 
+
+Here 𝛽, 𝜅 ∈ C, and rule H is used only in the Hamiltonian simulation setting, where the certified principal block 𝐻 is Hermitian. The implementation also flattens associative sums and products before applying these rules. These algebraic rules are ordinary matrix-algebra simplifications and do not use any additional property of the block encoding. Rules H and S1–S4 are applied after flattening associative sums and products, so they should be read as part of the canonicalization procedure rather than as a complete rewrite system. 
+
+Canonicalization and termination. Rules H and S1–S4 are implemented as a deterministic canoni-calization pass: the verifier flattens sums/products, moves scalars to the front, combines identical monomials, collects powers of 𝐻 , and removes zero terms. The simplifier applies rules in the fixed order R1–R8, then D1–D2, interleaved with this canonicalization. To see why this process terminates, imagine fully expanding the expression into a sum of monomials, without collecting coefficients. Distribution does not change these expanded terms. Each R step replaces affected terms by finitely many simpler terms: each new term has fewer non-principal blocks, or the same number but fewer occurrences of 𝐴, 𝐴 †, 𝐺, 𝐺 †. These counts cannot decrease indefinitely. Since each replacement produces only finitely many terms, only finitely many R steps are possible. Between R steps and after the last one, distribution finishes expanding a finite expression; it never factors sums back into products. Canonicalization also terminates and only simplifies or combines terms. Hence the whole process terminates. 
+
+6.1 Example: Symbolic Execution and Polynomial Extraction 
+
+rule expression 
+
+𝐻 (− 𝐻 †𝐻 + 𝐴 †𝐴 ) + 𝐺 (𝐺 †𝐻 − 𝐶 †𝐴 )
+
+R1 𝐻 (− 2𝐻 †𝐻 + 𝐼 ) + 𝐺 (𝐺 †𝐻 − 𝐶 †𝐴 )
+
+R5 𝐻 (− 2𝐻 †𝐻 + 𝐼 ) + 𝐺 (2𝐺 †𝐻 )
+
+D1 𝐻 (− 2𝐻 †𝐻 + 𝐼 ) + 2𝐺𝐺 †𝐻 
+
+R2 𝐻 (− 2𝐻 †𝐻 + 𝐼 ) + 2(𝐼 − 𝐻𝐻 †)𝐻 
+
+D1 −2𝐻𝐻 †𝐻 + 𝐻 + 2(𝐼 − 𝐻𝐻 †)𝐻 
+
+D2 −2𝐻𝐻 †𝐻 + 𝐻 + ( 2𝐻 − 2𝐻𝐻 †𝐻 )
+
+H −4𝐻 3 + 3𝐻 
+
+> Table 2. Simplifying the symbolic expression.
+
+To better explain how our abstraction works, con-sider the following example for symbolic execution of a QSP circuit. For demonstrating the usage of QSP and our verification, we simplify our example so the resulting polynomial is not particularly attached to a Hamiltonian simulation. Consider the following implementation of quan-tum singular value transform based on quantum sig-nal processing: We invoke our verification scheme to prove that it produces a block encoding of 𝑝 (𝐻 ) =
+
+−4𝐻 3 + 3𝐻 , where 𝐻 is block-encoded by 𝑈 𝐻 with Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 17 
+
+𝑞 0 𝑅 𝑧 (𝜋 ) 𝑅 𝑧 (𝜋 )
+
+𝑞 1
+
+𝐻 𝐺 𝐴 𝐶 
+
+ 𝐻 † 𝐴 †
+
+𝐺 † 𝐶 †
+
+ 𝐻 𝐺 𝐴 𝐶 
+
+
+
+Fig. 2. An abstraction of the circuit in Figure 3 for symbolic execution. 
+
+subnormalization factor 𝛼 = 1. This effectively re-duces each application of 𝑈 𝐻 or its Hermitian conjugate (𝑈 𝐻 )† as a single-qubit abstract gate, illustrated as the following quantum circuit. We perform symbolic execution on the circuit in Fig. 2: starting from input block of the form (𝐼, 0)
+
+representing the state on 𝑞 1 (with that of 𝑞 0 initialized to |0⟩) and recalling that 𝑅 𝑧 (𝜃 ) = 𝑒 −i𝜃𝑍 /2,we proceed the symbolic execution and summarize the steps in Table 3.                                                                                
+
+> 𝑜𝑝 00 01 10 11
+> 𝐼 000
+> 𝑈 𝐻 𝐻 𝐴 00
+> 𝐶𝑋 0𝐴 𝐻 0
+> 𝑅 𝑧 0−i𝐴 i𝐻 0
+> 𝐶𝑋 i𝐻 −i𝐴 00
+> (𝑈 𝐻 )†i𝐻 †𝐻 −i𝐴 †𝐴 i𝐺 †𝐻 −i𝐶 †𝐴 00
+> 𝐶𝑋 0i𝐺 †𝐻 −i𝐶 †𝐴 i𝐻 †𝐻 −i𝐴 †𝐴 0
+> 𝑅 𝑧 0𝐺 †𝐻 −𝐶 †𝐴 −𝐻 †𝐻 +𝐴 †𝐴 0
+> 𝐶𝑋 −𝐻 †𝐻 +𝐴 †𝐴 𝐺 †𝐻 −𝐶 †𝐴 00
+> 𝑈 𝐻 𝐻 (− 𝐻 †𝐻 +𝐴 †𝐴 ) + 𝐺 (𝐺 †𝐻 −𝐶 †𝐴 )𝐴 (− 𝐻 †𝐻 +𝐴 †𝐴 ) + 𝐶 (𝐺 †𝐻 −𝐶 †𝐴 )00
+
+Table 3. The symbolic execution of the abstract circuit in Fig. 2. 
+
+𝑞 0 𝑅 𝑧 (𝜋 ) 𝑅 𝑧 (𝜋 )
+
+𝑞 1
+
+𝑈 𝐻 𝑈 † 
+
+> 𝐻
+
+𝑈 𝐻 
+
+𝑞 2
+
+Fig. 3. An example QSP circuit. 
+
+We will only simplify the expres-sion in the first branch at the end, i.e., the “00” entry in the last row of Ta-ble 3. We then apply rewrite rules to simplify the symbolic expression, as in Table 2. Here we omit detailed sim-plifications of symbolic expressions, and only show crucial steps using the rules from Section 6. The above symbolic execution treats the quantum state in each step of the execution as a vector of four symbols, starting from (𝐼, 0, 0, 0). The 𝑈 𝐻 is abstracted into a four-block matrix acting on the abstract wire 𝑞 1, and thus in the joint space of 𝑞 0 and 𝑞 1, each application of 𝑈 𝐻 is an application of the unitary 
+
+𝐼 ⊗ 𝑈 𝐻 =
+
+
+
+𝐻 𝐺 0 0
+
+𝐴 𝐶 0 00 0 𝐻 𝐺 
+
+0 0 𝐴 𝐶 
+
+
+
+(11) Similarly, each application of 𝑅 𝑧 (𝜙 ) acts as a multiplication of the matrix diag (𝑒 −i𝜙 /2, 𝑒 −i𝜙 /2, 𝑒 i𝜙 /2, 𝑒 i𝜙 /2),which is equivalent to a phase multiplication to each branch. The open controlled NOT acts as a swap of the 00 and 10 branches, since it corresponds to a Pauli-𝑋 gate when 𝑞 1 is in the zero state. Note that in this example, we have shown that the symbolic execution of QSP corresponds to application of one- and two-qubit gates to a symbolic expression of a two-qubit state, and therefore 18 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+can be simulated efficiently. To conclude that the circuit results in a block encoding of a polynomial in 𝐻 , we develop a tool to automatically simplify the symbolic expression in the 00 branch using the rules that reflect the unitary structure. Theorem 6.1. The rewrite rules form a sound system. 
+
+Proof. We prove the soundness using the fact that 𝑈 𝐻 is a symbolic expression of a unitary. 
+
+𝑈 𝐻 (𝑈 𝐻 )† =
+
+𝐻𝐻 † + 𝐺𝐺 † 𝐻𝐴 † + 𝐺𝐶 †
+
+𝐴𝐻 † + 𝐶𝐺 † 𝐴𝐴 † + 𝐶𝐶 †
+
+
+
+=
+
+𝐼 00 𝐼 
+
+
+
+This justifies the soundness of R2, R4, R6, and R8. Similarly, since 
+
+(𝑈 𝐻 )†𝑈 𝐻 =
+
+𝐻 †𝐻 + 𝐴 †𝐴 𝐻 †𝐺 + 𝐴 †𝐶 𝐺 †𝐻 + 𝐶 †𝐴 𝐺 †𝐺 + 𝐶 †𝐶 
+
+
+
+=
+
+𝐼 00 𝐼 
+
+
+
+This justifies the soundness of R1, R3, R5, and R7. The soundness of rule H follows from the fact that 𝐻 represents a Hermitian matrix. The soundness of D1 and D2 follows from the fact that the symbols represent matrices and from standard matrix arithmetic. □
+
+Corollary 6.2. Algorithm 3 is sound, i.e., if Algorithm 3 accepts, then the expression 𝑝 is proved to be equivalent to the symbolic expression 𝐸 using the rewrite rules in the logic. 
+
+Proof. If Algorithm 3 accepts, then there must be a polynomial deduced from the rewrite rules. The theorem follows from the soundness of the logic, proved in Theorem 6.1. □
+
+6.2 Completeness of Rewrite Rules for Standard QSP Circuits 
+
+In this section, we show that when the quantum program has a standard QSP form, it is always possible to apply our rewrite rules to extract a polynomial in the topleft block 𝐻 . First, we give the grammar of a standard QSP circuit. 
+
+Definition 6.3 (Standard QSP circuits). A quantum program is a standard QSP circuit if it has the following patterns: (1) The program alternates its queries to 𝑈 and 𝑈 †.(2) Between two adjacent queries to 𝑈 or 𝑈 †, an arbitrary number of 𝐶𝑋 gates (as shown in Fig. 3) can be applied to 𝑞 1𝑞 0 and that of single-qubit gates can to 𝑞 0.Formally, the expression 𝐸 of the quantum program is a standard QSP circuit, if it follows the grammar: 
+
+𝐼 := 𝜖 | 𝐶𝑋 [𝑞 1, 𝑞 0]; 𝐼 | 𝑊 [𝑞 0]; 𝐼 (12) 
+
+𝐴 := 𝜖 | 𝑈 † [𝑞 1, 𝑞 2]; 𝐼 ; 𝐵 (13) 
+
+𝐵 := 𝜖 | 𝑈 [𝑞 1, 𝑞 2]; 𝐼 ; 𝐴 (14) 
+
+𝐸 := 𝐼 | 𝐼 ; 𝑈 [𝑞 1, 𝑞 2]; 𝐼 ; 𝐴 | 𝐼 ; 𝑈 † [𝑞 1, 𝑞 2]; 𝐼 ; 𝐵. (15) Here 𝑊 denotes any single-qubit gate. The standard QSP circuit defined in Definition 6.3 can be easily checked by parsing the program expression. Given the definition, we show that when the quantum program is a standard QSP circuit, there is always a composition of the rewrite rules that simplifies the resulting symbolic expression of the abstract state to a polynomial. To show this, we define equivalence classes of expressions to make our argument concrete. Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 19 
+
+Definition 6.4 (Equivalent class of expressions). We define an equivalence class I of symbolic expressions as those which can be simplified to a polynomial in 𝐻 using the rewrite rules. We use the notation 𝑀 I to denote the class of expressions that are simplified to 𝑀 𝑓 (𝐻 ) for some polynomial 𝑓 for 𝑀 ∈ { 𝜖, 𝐻, 𝐺, 𝐴, 𝐶, 𝐻 †, 𝐺 †, 𝐴 †, 𝐶 † }, where 𝜖 is an empty expression. We say that a tuple of symbolic expressions (𝑣 1, 𝑣 2, . . . ) ∈ ( 𝑀 1I, 𝑀 2I, . . . ) if each component 𝑣 𝑖 ∈ 𝑀 𝑖 I.Theorem 6.5 (Completeness of rewrite rules for standard QSP programs). For every standard QSP circuit (as defined in Definition 6.3), in each step of symbolic execution, there exists a composition of rewrite rules that deduces the resulting state to expressions in the class (I , 𝑀 I, I, 𝑀 I) 
+
+for some 𝑀 ∈ { 𝐴, 𝐺 † }. In particular, the first element of the abstract state is a polynomial in 𝐻 .
+
+Proof. Using the convention provided by Definition 6.4, we show that after each application of 𝑈 [𝑞 1, 𝑞 2], the resulting state is in (I , 𝐴 I, I, 𝐴 I) and after each application of 𝑈 † [𝑞 1, 𝑞 2], the resulting state is (I , 𝐺 †I, I, 𝐺 †I) by applying the rewrite rules. Namely, both classes can be written as (I , 𝑀 I, I, 𝑀 I) for 𝑀 ∈ { 𝐴, 𝐺 † }.We prove the theorem by induction on the symbolic execution of each abstract gate: (1) Base case: The initial state is (𝐼, 0, 0, 0) ∈ (I , 𝑀 I, I, 𝑀 I) .(2) 𝐶𝑋 [𝑞 1, 𝑞 0]: the action literally swaps the first and the third component, so it acts trivially on (I , 𝑀 I, I, 𝑀 I) .(3) 𝑊 [𝑞 0]: this gate acts as 
+
+
+
+𝑊 00 0 𝑊 01 00 𝑊 00 0 𝑊 01 
+
+𝑊 10 0 𝑊 11 00 𝑊 10 0 𝑊 11 
+
+
+
+I
+
+𝑀 II
+
+𝑀 I
+
+
+
+=
+
+
+
+𝑊 00 I + 𝑊 01 I
+
+𝑊 00 𝑀 I + 𝑊 01 𝑀 I
+
+𝑊 10 I + 𝑊 11 I
+
+𝑊 10 𝑀 I + 𝑊 11 𝑀 I
+
+
+
+=
+
+
+
+I
+
+𝑀 II
+
+𝑀 I
+
+
+
+. (16) The last equality holds since each entry 𝑊 𝑖 𝑗 is a complex number, which may be absorbed into the equivalent class. The transition 𝑀 I ± 𝑀 I → 𝑀 I is not directly used in our implementation; the merge in (18) is only included to simplify the presentation. (4) 𝑈 [𝑞 1, 𝑞 2]: applying rewrite rules to the symbolic execution gives 
+
+
+
+𝐻 𝐺 0 0
+
+𝐴 𝐶 0 00 0 𝐻 𝐺 
+
+0 0 𝐴 𝐶 
+
+
+
+I
+
+𝐺 †II
+
+𝐺 †I
+
+
+
+=
+
+
+
+I + 𝐺𝐺 †I
+
+𝐴 I + 𝐶𝐺 †II + 𝐺𝐺 †I
+
+𝐴 I + 𝐶𝐺 †I
+
+
+
+> R2
+
+−−→
+
+
+
+I + ( 𝐼 − 𝐻𝐻 †)I 
+
+𝐴 I + 𝐶𝐺 †II + ( 𝐼 − 𝐻𝐻 †)I 
+
+𝐴 I + 𝐶𝐺 †I
+
+
+
+(17) 
+
+> R6
+
+−−→
+
+
+
+I + ( 𝐼 − 𝐻𝐻 †)I 
+
+𝐴 I − 𝐴𝐻 †II + ( 𝐼 − 𝐻𝐻 †)I 
+
+𝐴 I − 𝐴𝐻 †I
+
+
+
+=
+
+
+
+I
+
+𝐴 II
+
+𝐴 I
+
+
+
+. (18) By definition, 𝐻 I = I.(5) 𝑈 † [𝑞 1, 𝑞 2]: similarly as in Item 4, applying rewrite rules to the symbolic execution gives 
+
+
+
+𝐻 † 𝐴 † 0 0
+
+𝐺 † 𝐶 † 0 00 0 𝐻 † 𝐴 †
+
+0 0 𝐺 † 𝐶 †
+
+
+
+I
+
+𝐴 II
+
+𝐴 I
+
+
+
+=
+
+
+
+I + 𝐴 †𝐴 I
+
+𝐺 †I + 𝐶 †𝐴 II + 𝐴 †𝐴 I
+
+𝐺 †I + 𝐶 †𝐴 I
+
+
+
+> R1
+
+−−→
+
+
+
+I + ( 𝐼 − 𝐻 †𝐻 )I 
+
+𝐺 †I + 𝐶 †𝐴 II + ( 𝐼 − 𝐻 †𝐻 )I 
+
+𝐺 †I + 𝐶 †𝐴 I
+
+
+
+(19) 
+
+> R5
+
+−−→
+
+
+
+I + ( 𝐼 − 𝐻 †𝐻 )I 
+
+𝐺 †I − 𝐺 †𝐻 II + ( 𝐼 − 𝐻 †𝐻 )I 
+
+𝐺 †I − 𝐺 †𝐻 I
+
+
+
+=
+
+
+
+I
+
+𝐺 †II
+
+𝐺 †I
+
+
+
+. (20) 20 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+To save space, we have omitted the application of the rules S4, and R4 because they are straightfor-ward. Since rewriting is applied after each gate, every monomial in (17)–(20) contains at most one adjacent pair of non-principal blocks, so at most one of R1–R8 applies and the derivation shown is the one Algorithm 3 performs. □
+
+Definition 6.3 describes the standard single-phase-ancilla QSP sequence. The proof extends unchanged to multiple phase ancillas with arbitrary gates on the phase register 𝑞 0, and to phases conditioned on the block-encoding ancilla being all-zero, because both act on each (principal, non-principal) pair by scalar coefficients, which is all that Item 3 uses. 
+
+7 Verification of Polynomial Approximation 
+
+Following the symbolic execution of QSP, when the circuit is programmed correctly, we obtain a block encoding of 𝑝 (𝐻 ) for some polynomial 𝑝 . To conclude that it block encodes a polynomial approximation of 𝑒 −i𝐻𝑡 for the given time 𝑡 , we check the worst-case closeness between the two functions in the interval [− 1, 1], i.e., if there exists a complex subnormalization factor 𝛽 ∗ such that max   
+
+> 𝑥 ∈ [− 1,1]
+
+|𝑒 −i𝑥𝑡 − 𝛽 ∗ · 𝑝 (𝑥 )| ≤ 𝜖. (21) In standard algorithm designs, this subnormalization parameter 𝛽 ∗ may be further eliminated by applying an oblivious amplitude amplification. In this work, we focus on the approximation of a subnormalized approximation of 𝑒 −i𝐻𝑡 .To see why it suffices to show that two complex-valued functions are close, we note that 𝑝 (𝐻 )
+
+and 𝑒 −i𝐻𝑡 are diagonalized simultaneously in the eigenbasis of 𝐻 , whose spectrum is contained in 
+
+[− 1, 1]. Therefore the spectral norm of 𝑒 −i𝐻𝑡 − 𝛽 ∗ · 𝑝 (𝐻 ) is bounded by the maximum pointwise error between the two functions in the same interval [Gilyén et al. 2019]. To obtain a correct Hamiltonian simulation algorithm, Gilyén et al. [2019] and subsequent works take a truncation of cos (𝐻𝑡 ) or sin (𝐻𝑡 ), both expanded using the Jacobi-Anger expansion, and then use an algorithm to find the corresponding angles. While this particular choice of polynomial offer an optimal low-degree approximation of the exponential function, it is not the only polynomial that satisfies (21). Therefore, for verification purposes, we offer flexibility on the choices of the polynomials by directly checking that the sufficient condition in (21) is satisfied. To verify the polynomial satisfies (21), we take Chebyshev nodes 
+
+
+
+𝑥 𝑚 = cos 
+
+ 2𝑚 − 12𝑀 𝜋 
+
+
+
+: 𝑚 ∈ [ 𝑀 ]
+
+
+
+(22) and sample the functions at these points. The verifier chooses a candidate normalization factor by least-squares fitting at these nodes, then checks its approximation error. For 𝑥 𝑚 defined in (22), let ¯ 𝑒 = (𝑒 −i𝑥 𝑚 𝑡 : 𝑚 ∈ [𝑀 ]) and ¯ 𝑝 = (𝑝 (𝑥 𝑚 ) : 𝑚 ∈ [𝑀 ]) be the sampling of these functions at the grid points. For ¯ 𝑝 ≠ 0, Lemma 4.1 gives the least-squares choice 
+
+𝛽 ∗ = ⟨ ¯𝑝, ¯𝑒 ⟩/∥ ¯𝑝 ∥2. This minimizes ∥𝛽 ¯𝑝 − ¯𝑒 ∥2, not the maximum error over [− 1, 1]. The guarantee comes from the residual checks below and the subsequent grid-to-continuum bound, not from optimality of the chosen factor. Then the verifier checks whether at each 𝑥 𝑚 , the evaluation of both functions are (𝜖 /2)-close, i.e., | ¯𝑒 𝑚 − 𝛽 ∗ · ¯𝑝 𝑚 | ≤ 𝜖 /2 for every 𝑚 ∈ [ 𝑀 ]. where the parameter 𝛽 ∗
+
+can be found via an inner product between the two discretizations: 𝛽 ∗ = ⟨ ¯𝑝, ¯𝑒 ⟩/∥ ¯𝑝 ∥2 by invoking Lemma 4.1. The following theorem shows that it suffices to evaluate the function at 𝑀 = 4 max {𝐷, 𝑑 }
+
+points for 𝐷 = ⌈𝑒 |𝑡 |/ 2 + ln (32 /𝜖 )⌉ and 𝑑 = deg (𝑝 ).Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 21 
+
+Algorithm 4: VerifyPolynomialApproximation (𝑝, 𝑓 , 𝑡, 𝜖 )
+
+Input: Polynomial 𝑝 (𝑥 ); target function 𝑓 (𝑥 ); time 𝑡 ; tolerance 𝜖 
+
+Output: (Accept , 𝛽 ) if 𝛽 · 𝑝 approximates 𝑓 to error within 𝜖 ; otherwise (Reject , ⊥) . 
+
+> 1
+
+Initialize 𝐷 ← ⌈ 𝑒 |𝑡 |/ 2 + ln (32 /𝜖 )⌉ ; Set 𝑑 to be the degree of 𝑝 ; Set 𝑀 ← 4 max {𝐷, 𝑑 }; 
+
+> 2
+
+Initialize ¯ 𝑥 ← ( 0𝑀 ); ¯ 𝑝 ← ( 0𝑀 ); ¯ 𝑒 ← ( 0𝑀 ); 
+
+> 3
+
+foreach 𝑚 in [𝑀 ] do  
+
+> 4
+
+Set ¯ 𝑥 𝑚 ← cos 
+
+ 2𝑚 −12𝑀 𝜋 
+
+
+
+; Set ¯ 𝑒 𝑚 ← 𝑓 (𝑥 𝑚 ) ; Set ¯ 𝑝 𝑚 ← 𝑝 (𝑥 𝑚 ); 
+
+> 5
+
+if ∥ ¯𝑝 ∥2 ≤ 0 then return (Reject , ⊥)  
+
+> 6
+
+; Set 𝛽 ← ⟨ ¯𝑝, ¯𝑒 ⟩/∥ ¯𝑝 ∥2; 
+
+> 7
+
+foreach 𝑚 in [𝑀 ] do  
+
+> 8
+
+if |𝑓 (𝑥 𝑚 ) − 𝛽 · 𝑝 (𝑥 𝑚 )| > 𝜖 /2 then return (Reject , ⊥)  
+
+> 9
+
+return (Accept , 𝛽 )
+
+Theorem 7.1. For 𝜖 > 0, let 𝑔 be a function that can be approximated by a degree-𝐷 polynomial to error within 𝜖 /8 on [− 1, 1], and 𝑝 be a degree-𝑑 polynomial, and 𝑥 𝑚 = cos   2𝑚 −12𝑀 𝜋  for 𝑚 ∈ [ 𝑀 ]. For 
+
+𝑀 ≥ 4 max {𝐷, 𝑑 }, if |𝑔 (𝑥 𝑚 ) − 𝑝 (𝑥 𝑚 )| ≤ 𝜖 /3 for all 𝑚 , then |𝑔 (𝑥 ) − 𝑝 (𝑥 )| ≤ 𝜖 on [− 1, 1].
+
+Proof. Let 𝑞 be the degree-𝐷 polynomial that approximates 𝑔 to error within 𝜖 /8. Since 𝑞 − 𝑝 is a degree-max {𝐷, 𝑑 } polynomial, by the Ehlich-Zeller theorem (see Ehlich and Zeller [1964] and Bos and Vianello [2012, Theorem 2]), max   
+
+> 𝑥 ∈ [− 1,1]
+
+|𝑞 (𝑥 ) − 𝑝 (𝑥 )| ≤ 1cos (𝜋 /8) max   
+
+> 𝑚 ∈ [ 𝑀 ]
+
+|𝑞 (𝑥 𝑚 ) − 𝑝 (𝑥 𝑚 )| ≤ 5√2𝜖 
+
+12 cos (𝜋 /8) .
+
+By triangle inequality, max   
+
+> 𝑥 ∈ [− 1,1]
+
+|𝑔 (𝑥 ) − 𝑝 (𝑥 )| ≤ 5𝜖 
+
+12 cos (𝜋 /8) + 𝜖 
+
+8 < 𝜖. 
+
+□
+
+Recall that in the previous stage, the verifier performs a symbolic execution to obtain a polynomial 
+
+𝑝 . Then it evaluates both the target function and the polynomial at every 𝑥 𝑚 . By Theorem 7.1, if they are at most (𝜖 /2)-close at these points, we can guarantee that the functions must be 𝜖 -close in 
+
+[− 1, 1]. We then summarize the verifier’s action in Algorithm 5, and conclude its soundness. Corollary 7.2. For 𝑓 ∈ { 𝑒 −i𝑡 (·) , cos (𝑡 (·)) , sin (𝑡 (·))} , Algorithm 4 is sound. 
+
+Proof. We know that the acceptance of the algorithm implies that for every 𝑚 ∈ [ 𝑀 ], |𝑓 (𝑥 𝑚 ) − 
+
+𝛽 ∗𝑝 (𝑥 𝑚 )| ≤ 𝜖 /2. Since for 𝐷 = ⌈𝑒 |𝑡 |/ 2 + ln (32 /𝜖 )⌉ , the degree-𝐷 truncation of the Jacobi-Anger expansion approximates 𝑓 to error within 𝜖 /8. Then by Theorem 7.1, this implies that |𝑓 (𝑥 ) − 
+
+𝛽 ∗𝑝 (𝑥 )| ≤ 𝜖 . □
+
+7.1 Example: Verifying the Cosine Component of Hamiltonian Simulation by QSP 
+
+The following example proves the correctness of the cosine component of Hamiltonian simulation based on QSP. 
+
+Example 7.3. For simplicity and demonstration purposes in this section, we choose a large 𝜖 = 4% and a small evolution time 𝑡 = 2 for 𝐻 = 𝑋 −𝑍  
+
+> 2
+
+, and only use a degree-4 approximation of the cosine function by applying a truncation to the Jacobi-Anger expansion, as in Example 2.3. Since 22 Min Lai, Yu-Fang Chen, and Shih-Han Hung              
+
+> −1−0.8−0.6−0.4−0.200.20.40.60.81
+> −20
+> −10 010 20
+> 𝑥 𝑝  (𝑥 ) −  cos (2𝑥 ) [ 10 −3]
+> ±𝜖 /2𝑝 (𝑥 ) − cos (2𝑥 )
+
+Fig. 4. Deviation of 𝑝 (𝑥 ) from cos (2𝑥 ) for 𝑥 ∈ [− 1, 1], where 𝑝 is defined in (23). 
+
+the circuit complexity may be reduced if the angles are represented in low precision, we truncate the angles in (6) to two decimal places, yielding (𝜙 0, 𝜙 1, 𝜙 2, 𝜙 3, 𝜙 4) = (2.30 , −1.05 , 1.07 , −1.05 , 0.73 ).We then run a symbolic execution to obtain the polynomial from these truncated angles, listed in Table 4. Here to make the symbolic execution easier to follow, we keep the phase factors of the form 𝑒 i𝜙 𝑗 until the end of the execution. The next step is to simplify the symbolic expression to a polynomial in 𝐻 :
+
+𝑒 −i0 .32 𝐻 †  𝐻 S + 𝐺 T  + 𝑒 i1 .78 𝐴 †  𝐴 S + 𝐶 T ,
+
+where S := 𝑒 i2 .32 𝐻 †𝐻 + 𝑒 i4 .42 𝐴 †𝐴 and T := 𝑒 i0 .18 𝐺 †𝐻 + 𝑒 i2 .28 𝐶 †𝐴 . Applying the rules and take the real part of the resulting polynomial, we have 
+
+𝑝 (𝑥 ) ≈ 0.588010 𝑥 4 − 2.000699 𝑥 2 + 0.996542 . (23) Taking the real part may be implemented by applying a linear combination of unitary, but here for exposition, we omit the detail for implementing this particular operation. We observe that the polynomial (23) has coefficients close to those of (5), since the former is obtained by applying a truncation to the angles for the latter. We then can numerically evaluate both functions at the grid points based on Theorem 7.1. To meet the specification 𝜖 = 4%, we evaluate the function at the Chebyshev nodes defined in (22). The deviation is visualized in Fig. 4. □
+
+8 Overall Verification Algorithm 
+
+We now summarize the full verification procedure. The verifier takes as input a target Hamiltonian 
+
+𝐻 , an alleged block-encoding circuit 𝐶 BE , a QSP circuit 𝐶 QSP , an evolution time 𝑡 , and an error tolerance 𝜖 . It proceeds by invoking the four verification stages described above as subroutines. 
+
+8.1 Soundness 
+
+In this section, we prove the soundness of Algorithm 5, i.e., when the algorithm outputs Accept, the resulting quantum circuit is an 𝜖 -approximation of 𝑒 −i𝐻𝑡 up to a subnormalization factor. Theorem 8.1 (Soundness of Algorithm 5). If Algorithm 5 returns (Accept , 𝛽 ), then the principal block 𝐵 QSP of the QSP circuit satisfies ∥𝛽𝐵 QSP − 𝑒 −i𝐻𝑡 ∥ ≤ 𝜖 .
+
+Proof. When the algorithm accepts, it must be true that 𝑠 1, 𝑠 3, 𝑠 4 are all Accept. By the soundness statement in Theorem 4.2, Theorem 5.1, Corollary 6.2, and Corollary 7.2, it remains to show that Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 23 
+
+𝑜𝑝 00 01 10 11 
+
+𝐼 0 0 0
+
+𝐶𝑋 0 0 𝐼 0
+
+𝑅 𝑧 (2𝜓 0) 0 0 𝑒 i2 .30 𝐼 0
+
+𝐶𝑋 𝑒 i2 .30 𝐼 0 0 0
+
+𝑈 𝐻 𝑒 i2 .30 𝐻 𝑒 i2 .30 𝐴 0 0
+
+𝐶𝑋 0 𝑒 i2 .30 𝐴 𝑒 i2 .30 𝐻 0
+
+𝑅 𝑧 (2𝜙 1) 0 𝑒 i3 .35 𝐴 𝑒 i1 .25 𝐻 0
+
+𝐶𝑋 𝑒 i1 .25 𝐻 𝑒 i3 .35 𝐴 0 0
+
+(𝑈 𝐻 )† 𝑒 i1 .25 𝐻 †𝐻 + 𝑒 i3 .35 𝐴 †𝐴 𝑒 i1 .25 𝐺 †𝐻 + 𝑒 i3 .35 𝐶 †𝐴 0 0
+
+𝐶𝑋 0 𝑒 i1 .25 𝐺 †𝐻 + 𝑒 i3 .35 𝐶 †𝐴 𝑒 i1 .25 𝐻 †𝐻 + 𝑒 i3 .35 𝐴 †𝐴 0
+
+𝑅 𝑧 (2𝜙 2) 0 𝑒 i0 .18 𝐺 †𝐻 + 𝑒 i2 .28 𝐶 †𝐴 
+
+| {z } 
+
+> =:T
+
+𝑒 i2 .32 𝐻 †𝐻 + 𝑒 i4 .42 𝐴 †𝐴 
+
+| {z } 
+
+> =:S
+
+0
+
+𝐶𝑋 S T 0 0
+
+𝑈 𝐻 𝐻 S + 𝐺 T 𝐴 S + 𝐶 T 0 0
+
+𝐶𝑋 0 𝐴 S + 𝐶 T 𝐻 S + 𝐺 T 0
+
+𝑅 𝑧 (2𝜙 3) 0 𝑒 i1 .05  𝐴 S + 𝐶 T  𝑒 −i1 .05  𝐻 S + 𝐺 T  0
+
+𝐶𝑋 𝑒 −i1 .05  𝐻 S + 𝐺 T  𝑒 i1 .05  𝐴 S + 𝐶 T  0 0
+
+(𝑈 𝐻 )† 𝑒 −i1 .05 𝐻 †  𝐻 S + 𝐺 T  + 𝑒 i1 .05 𝐴 †  𝐴 S + 𝐶 T  𝑒 −i1 .05 𝐺 †  𝐻 S + 𝐺 T  + 𝑒 i1 .05 𝐶 †  𝐴 S + 𝐶 T  0 0
+
+𝐶𝑋 0 𝑒 −i1 .05 𝐺 †  𝐻 S + 𝐺 T  + 𝑒 i1 .05 𝐶 †  𝐴 S + 𝐶 T  𝑒 −i1 .05 𝐻 †  𝐻 S + 𝐺 T  + 𝑒 i1 .05 𝐴 †  𝐴 S + 𝐶 T  0
+
+𝑅 𝑧 (2𝜙 4) 0 𝑒 −i1 .78 𝐺 †  𝐻 S + 𝐺 T  + 𝑒 i0 .32 𝐶 †  𝐴 S + 𝐶 T  𝑒 −i0 .32 𝐻 †  𝐻 S + 𝐺 T  + 𝑒 i1 .78 𝐴 †  𝐴 S + 𝐶 T  0
+
+𝐶𝑋 𝑒 −i0 .32 𝐻 †  𝐻 S + 𝐺 T  + 𝑒 i1 .78 𝐴 †  𝐴 S + 𝐶 T  𝑒 −i1 .78 𝐺 †  𝐻 S + 𝐺 T  + 𝑒 i0 .32 𝐶 †  𝐴 S + 𝐶 T  0 0
+
+Table 4. Symbolic execution of the degree-4 QSP circuit with phases 𝜙 = (2.30 , −1.05 , 1.07 , −1.05 , 0.73 ).Shorthands: S := 𝑒 i2 .32 𝐻 †𝐻 + 𝑒 i4 .42 𝐴 †𝐴 and T := 𝑒 i0 .18 𝐺 †𝐻 + 𝑒 i2 .28 𝐶 †𝐴 .
+
+Algorithm 5: VerifyHamiltonianSimulation (𝐻, 𝐶 BE , 𝐶 QSP , 𝑡, 𝜖 )
+
+Input: Target Hamiltonian 𝐻 = Í𝑃 ℎ𝑃 𝑃 ; block-encoding circuit 𝐶 BE ; QSP circuit 𝐶 QSP ;evolution time 𝑡 > 0; tolerance 𝜖 
+
+Output: (Accept, 𝛽 ) if the QSP circuit implements a subnormalized 𝜖 -approximation of 
+
+𝑒 −i𝐻𝑡 with scaling factor 𝛽 ; otherwise output Reject. 
+
+1 (𝑠 1, 𝛼 ) ← VerifyBlockEncoding (𝐻, 𝐶 BE , 𝜖 
+
+2|𝑡 | );
+
+2 if 𝑠 1 = Reject then return Reject 
+
+3 𝐸 ← SymbolicExecute (𝐶 QSP );
+
+4 (𝑠 3, 𝑝 ) ← ExtractPolynomial (𝐸 );
+
+5 if 𝑠 3 = Reject then return Reject 
+
+6 (𝑠 4, 𝛽 ) ← VerifyPolynomialApproximation  𝑝, 𝑒 −𝑖𝛼𝑡 (·) , 𝛼𝑡, 𝜖 /2;
+
+7 return (𝑠 4, 𝛽 )
+
+the total error is within 𝜖 . By the soundness of Algorithm 1, we know that the all-zero branch has matrix 𝐵 0 satisfying ∥𝛼𝐵 0 − 𝐻 ∥ ≤ 𝜖 
+
+2|𝑡 | . This implies that 𝐵 0 is 𝜖 
+
+2𝛼 |𝑡 | -close to 𝐻 /𝛼 . By the Lipschitz continuity of the exponential function, ∥𝑒 −i𝐵 0𝛼𝑡 − 𝑒 −i𝐻𝑡 ∥ ≤ | 𝑡 | · ∥ 𝛼𝐵 0 − 𝐻 ∥ ≤ 𝜖 
+
+2 .Then by Corollary 6.2, the QSP circuit 𝐶 QSP is certified to produce a polynomial 𝑝 . Furthermore, by Corollary 7.2, the polynomial 𝑝 satisfies ∥𝛽 · 𝑝 (𝐵 0) − 𝑒 −i𝐵 0𝛼𝑡 ∥ ≤ 𝜖 
+
+2 . Finally, applying triangle inequality, we have 
+
+∥𝛽 · 𝑝 (𝐵 0) − 𝑒 −i𝐻𝑡 ∥ ≤ ∥ 𝛽 · 𝑝 (𝐵 0) − 𝑒 −i𝐵 0𝛼𝑡 ∥ + ∥ 𝑒 −i𝐵 0𝛼𝑡 − 𝑒 −i𝐻𝑡 ∥ ≤ 𝜖. 
+
+This means that when Algorithm 5 accepts, the entire circuit meets the specification, i.e., it simulates the given Hamiltonian at time 𝑡 to error within 𝜖 . □24 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+Composition of the QSP Wrapper and Block Encoding. To compose the QSP wrapper with the concrete block-encoding circuit, we identify the 𝑟 ancilla qubits and 𝑛 system qubits of the block-encoding circuit with the corresponding block-encoding ancilla and system qubits of the wrapper. The qubits within each register may be matched in any order, provided that the same mapping is used consistently throughout the composed circuit. Each occurrence of 𝑈 𝐻 or 𝑈 † 
+
+> 𝐻
+
+is then replaced by the block-encoding circuit 𝐶 BE or its adjoint 𝐶 †
+
+> BE
+
+, respectively. If an occurrence is controlled by a phase-ancilla qubit, the same control is added to every gate in the corresponding block-encoding circuit. If a gate in the QSP wrapper acts on a phase ancilla and is open-controlled by the abstract block-encoding ancilla, the abstract control is replaced by open controls on all 𝑟 concrete block-encoding ancilla qubits, while the target remains the same phase ancilla. Corollary 8.2 (Correctness of the composed circuit). Let 𝐶 comp be the circuit obtained by composing the QSP wrapper with the verified block-encoding circuit as described above. If Algorithm 5 returns (Accept , 𝛽 ), then 𝛽 (⟨ 0𝑠 +𝑟 | ⊗ 𝐼 )𝐶 comp (| 0𝑠 +𝑟 ⟩ ⊗ 𝐼 ) − 𝑒 −i𝐻𝑡 ≤ 𝜖 .
+
+9 Evaluation 
+
+We evaluate the scalability of the verifier on two verification tasks. 
+
+TASK1 We measure the size of structured Pauli-sum LCU block encodings that the verifier can handle, reporting runtime and memory as the number of system qubits, Pauli terms, and selector ancillas increase. 
+
+TASK2 We measure the size of QSP Hamiltonian-simulation circuits that the verifier can certify after abstracting the block encoding as an opaque operation. For each circuit, the verifier extracts the all-zero branch and checks the approximation error against 𝑒 −i𝑥𝛼𝑡 on 
+
+[− 1, 1].
+
+9.1 Benchmarks and Circuit Generation 
+
+For TASK1, we use three standard families of 2-local Hamiltonians: 
+
+𝐻 (𝑛 ) 
+
+> Ising
+
+=
+
+> 𝑛 −1
+
+∑︁ 
+
+> 𝑖 =0
+
+𝑍 𝑖 𝑍 (𝑖 +1) mod 𝑛 +
+
+> 𝑛 −1
+
+∑︁ 
+
+> 𝑖 =0
+
+𝑋 𝑖 ,𝐻 (𝑛 ) 
+
+> MaxCut
+
+=∑︁    
+
+> (𝑖,𝑗 ) ∈ 𝐸 (𝐶 𝑛 )
+
+𝐼 − 𝑍 𝑖 𝑍 𝑗 
+
+2 , 𝐸 (𝐶 𝑛 ) = {( 𝑖, (𝑖 + 1) mod 𝑛 )} 𝑛 −1 
+
+> 𝑖 =0
+
+,𝐻 (𝑛 ) 
+
+> Heisenberg
+
+=
+
+> 𝑛 −2
+
+∑︁ 
+
+> 𝑖 =0
+
+(𝑋 𝑖 𝑋 𝑖 +1 + 𝑌 𝑖 𝑌 𝑖 +1 + 𝑍 𝑖 𝑍 𝑖 +1) .
+
+For a Hamiltonian 𝐻 = Í𝐾 −1 
+
+> ℓ=0
+
+𝑐 ℓ 𝑃 ℓ , the benchmark generator constructs the standard LCU block encoding 𝑄 BE = (PREPARE † ⊗ 𝐼 ) · SELECT · ( PREPARE ⊗ 𝐼 ). Here 𝛼 = Í𝐾 −1 
+
+> ℓ=0
+
+|𝑐 ℓ |, PREPARE prepares amplitudes proportional to √︁ |𝑐 ℓ |/ 𝛼 , and SELECT applies the corresponding signed Pauli string. In each of our three benchmark families, the LCU terms have equal absolute coefficients. The generator therefore prepares equal amplitudes on the 𝐾 term labels and zero amplitude on unused selector states. It synthesizes PREPARE with 𝑅 𝑦 rotations controlled by prefixes of the selector register, and constructs PREPARE † by reversing the gate sequence and negating the rotation angles. For TASK2, all benchmarks use a fixed opaque block encoding 𝑄 BE with one system qubit and one block-encoding ancilla. The verifier does not expand the implementation of 𝑄 BE or 𝑄 †
+
+> BE
+
+; it treats them as symbolic block-encoding operations. If the principal block of 𝑄 BE is 𝐻 /𝛼 , then simulating 𝐻 for physical time 𝑡 corresponds to approximating 𝑒 −i𝜏𝑥 , where 𝜏 = 𝛼𝑡 . Thus TASK2 is parameterized by the effective simulation time 𝜏 .Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 25 
+
+The TASK2 circuits are generated using an optimized QSP construction. The goal is to exercise the verifier on circuits produced by a nontrivial circuit-generation workflow, rather than only on a direct textbook construction. A straightforward generator would synthesize two independent QSP circuits for the cosine and sine components of 𝑒 −i𝜏𝑥 = cos (𝜏𝑥 ) − i sin (𝜏𝑥 ).Our generator instead shares one QSP skeleton between the two components: a selector qubit multiplexes the cosine and sine phase sequences, and the two branches share the same positions of 
+
+𝑄 BE and 𝑄 † 
+
+> BE
+
+calls. The extracted cosine and sine responses are then combined by a two-term LCU. This optimized construction is not trusted by the verifier. The verifier is given only the generated QASM circuit; it symbolically executes the circuit, extracts the all-zero branch, and checks the polynomial implemented by that branch. Thus the benchmark demonstrates a separation between circuit generation and verification: the generator may use circuit-level QSP optimizations, while correctness is established by independently checking the generated circuit. The generator uses pyqsp only as an untrusted source of benchmark phase sequences and polynomial data. For each value of 𝜏 , pyqsp produces bounded Chebyshev approximations 
+
+b𝑃 (𝜏 ) 
+
+> cos
+
+(𝑥 ) ≈ 12 cos (𝜏𝑥 ), b𝑃 (𝜏 ) 
+
+> sin
+
+(𝑥 ) ≈ 12 sin (𝜏𝑥 ).
+
+The cosine approximation is an even polynomial and the sine approximation is an odd polynomial, matching the parity structure of standard QSP responses. The Chebyshev coefficients are converted to monomial coefficients before verification. Further details of the shared-skeleton construction, the pyqsp-to-QASM phase conversion, and the LCU normalization are given in Appendix A. The all-zero branch extracted by the verifier has the form 𝐵 HS  
+
+> 0
+
+(𝑥 ) = 12
+
+b𝑃 (𝜏 ) 
+
+> cos
+
+(𝑥 ) − ib𝑃 (𝜏 ) 
+
+> sin
+
+(𝑥 )
+
+
+
+. Since the QSP polynomials produced by the bounded synthesis are themselves half-scaled, this branch approximates 𝐵 HS  
+
+> 0
+
+(𝑥 ) ≈ 14 𝑒 −i𝜏𝑥 .For approximation checking, the verifier infers a scalar normalization factor 𝛽 from the sampled values: 𝛽 = ⟨𝑝, 𝑒 ⟩/∥ 𝑝 ∥2, with entries 𝑝 𝑚 = 𝐵 HS  
+
+> 0
+
+(𝑥 𝑚 ) and 𝑒 𝑚 = 𝑒 −i𝜏𝑥 𝑚 . It then checks max  
+
+> 𝑚
+
+𝛽𝐵 HS  
+
+> 0
+
+(𝑥 𝑚 ) − 𝑒 −i𝜏𝑥 𝑚 ≤ 𝜖 /2.
+
+In our full Hamiltonian-simulation benchmarks, the inferred 𝛽 is typically close to 4, matching the expected inverse normalization from the two-term LCU and the half-scaled QSP polynomials. 
+
+9.2 Experimental Setup 
+
+All experiments were run on a single workstation with 8 CPU cores and 16 GiB of RAM, running macOS 13.2 (Darwin 22.3.0, arm64). We use Python 3.11. Each benchmark is executed with a timeout of 1800 seconds. We report wall-clock verification time and maximum resident set size (RSS). 
+
+Numerical accuracy. We use the Arb/Acb ball arithmetic provided by Python-FLINT at 60 decimal digits of working precision for all arithmetic computations, including coefficient propagation, polynomial manipulation, residual evaluation, and error-bound comparison. To check an inequality LHS ≤ RHS, the implementation requires the upper bound of the ball enclosing LHS to be strictly smaller than the lower bound of the ball enclosing RHS. Zero tests are exact. Numerical roundoff may therefore leave terms whose coefficients would be zero in exact arithmetic. During simplification, these powers of 𝐻 are retained rather than removed on the basis of their small coefficients. We report PASS when verification establishes the requested guarantee: the block-encoding error bound for TASK1, as in Theorem 4.2, or the full-interval QSP approximation for TASK2, as in Corollary 7.2. A FAIL means that the verifier could not establish the guarantee. A TIMEOUT means that verification did not finish within 1800 seconds. 26 Min Lai, Yu-Fang Chen, and Shih-Han Hung                                                                                            
+
+> Family 𝑛 Terms Sel. anc. Gates Time (s) RSS (MiB) Result Ising 24244 0.08 58.47 PASS Ising 32 64 61,862 3.69 62.88 PASS Ising 128 256 89,062 155.96 101.36 PASS Ising 256 512 919,686 807.87 257.84 PASS MaxCut 24234 0.09 58.34 PASS MaxCut 32 64 61,574 3.58 61.31 PASS MaxCut 128 256 87,654 97.92 86.39 PASS MaxCut 256 512 916,614 575.73 169.61 PASS Heisenberg 23238 0.08 58.12 PASS Heisenberg 32 93 73,384 15.43 67.75 PASS Heisenberg 128 381 916,152 470.81 171.19 PASS Heisenberg 256 765 10 34,712 1801.03 –TIMEOUT
+
+Table 5. Representative block-encoding verification results. All instances use a tolerance of 𝜖 BE = 10 −8.
+
+The implementation applies rewriting after each QSP gate application. 
+
+9.3 TASK1: Block-Encoding Verification 
+
+We evaluate 51 block-encoding benchmarks: 17 periodic Ising instances, 17 cycle MaxCut instances, and 17 open-chain Heisenberg instances. The system sizes are 
+
+𝑛 ∈ { 2, 3, 4, 5, 6, 7, 8, 9, 10 , 16 , 17 , 32 , 33 , 64 , 65 , 128 , 256 }.
+
+Table 5 summarizes the block-encoding verification results. The verifier proves 50 of the 51 instances within the timeout. The only timeout is the largest Heisenberg instance, with (𝑛 = 256 ) and 765 Pauli terms. With an extended timeout, the verifier also completes this instance, taking 4976.42 seconds. These results show that the verifier scales with the symbolic branch structure rather than the Hilbert-space dimension. The largest successful instance has 256 system qubits and 512 Pauli terms, far beyond the range where constructing the 2 𝑛 × 2𝑛 system matrix is possible. The timeout on the largest Heisenberg instance is consistent with the verifier’s cost model: increasing the number of LCU terms increases the number of symbolic branches and Pauli expressions that must be simplified. In addition, we used our verifier to examine block encodings generated by Cobble (version 0.1.0, commit 6a6b56c) [Yuan 2026] and identified a correctness bug when the number of equally weighted Pauli terms is not a power of two. Cobble’s state-preparation routine applies Hadamard gates to the selector ancillas, resulting in nonzero amplitudes for unused selector states. For example, for the two-qubit Heisenberg Hamiltonian 𝐻 = 𝑋 0𝑋 1 + 𝑌 0𝑌 1 + 𝑍 0𝑍 1, the generated circuit encodes 
+
+(𝐻 + 𝐼 )/ 4 instead of the expected 𝐻 /3. This demonstrates that our verifier can detect semantic errors in automatically generated block-encoding circuits. 
+
+9.4 TASK2: Hamiltonian-Simulation QSP Verification 
+
+For each Hamiltonian-simulation benchmark, the verifier symbolically executes the generated circuit and extracts the all-zero branch polynomial 𝐵 HS  
+
+> 0
+
+(𝑥 ). It then applies the polynomial approxi-mation checker from Section 7: the checker infers the normalization factor 𝛽 on the Chebyshev-root grid and accepts only if 𝛽𝐵 HS  
+
+> 0
+
+(𝑥 𝑚 ) − 𝑒 −i𝜏𝑥 𝑚 ≤ 𝜖 /2 at every grid point. By Theorem 7.1, this finite check certifies max 𝑥 ∈ [− 1,1] 𝛽𝐵 HS  
+
+> 0
+
+(𝑥 ) − 𝑒 −i𝜏𝑥 ≤ 𝜖. Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 27                                                                              
+
+> 𝜏 𝜖 QSP 𝑑 Gates Grid pts. Time (s) RSS (MiB) Result 0.1 10 −43113 52 0.40 64.28 PASS 1.0 10 −47233 60 0.59 62.94 PASS 4.0 10 −411 353 76 0.43 64.23 PASS 10.0 10 −421 653 108 0.62 64.67 PASS 20.0 10 −435 1,073 160 1.01 65.34 PASS 50.0 10 −477 2,333 324 3.07 66.55 PASS 0.5 10 −13113 28 0.35 63.61 PASS 0.5 10 −45173 56 0.36 63.66 PASS 0.5 10 −87233 92 0.44 63.95 PASS 0.5 10 −12 11 353 128 0.44 64.59 PASS
+
+Table 6. Representative TASK2 results. The upper group varies effective simulation time at fixed 𝜖 QSP = 10 −4;the lower group varies the standalone QSP tolerance at fixed 𝜏 = 0.5.
+
+Table 6 summarizes both TASK2 sweeps. All 38 time-sweep circuits and all 12 tolerance-sweep circuits pass the approximation checker, certifying the corresponding full-interval bounds from Section 7. At fixed 𝜖 QSP = 10 −4, the QSP degree increases from 3 to 77 as 𝜏 increases from 0.1 to 50, while verification time increases from 0.40 to 3.07 seconds. At fixed 𝜏 = 0.5, all circuits pass as the requested tolerance decreases from 10 −1 to 10 −12 . The largest degree-77 case spends 3.04 seconds in symbolic execution and polynomial extraction, compared with approximately 0.025 seconds in the final approximation check. Symbolic processing therefore accounts for most of its runtime. Peak RSS across the 50 runs is 67.02 MiB. 
+
+Composition of verified circuits. The block encodings verified in TASK1 can be composed with the QSP wrappers verified in TASK2 following Section 8.1. Although TASK2 uses a single block-encoding ancilla, its four-block abstraction extends to multiple ancillas by lifting the all-zero projector controls. More precisely, suppose TASK1 certifies ∥𝛼𝐵 BE − 𝐻 ∥ ≤ 𝜖 BE and TASK2 certifies a polynomial 𝑝 
+
+satisfying max 𝑥 ∈ [− 1,1] |𝛽𝑝 (𝑥 ) − 𝑒 −𝑖𝛼𝑡𝑥 | ≤ 𝜖 QSP . By the same triangle-inequality argument as in the proof of Theorem 8.1, the principal block of the composed circuit satisfies 
+
+∥𝛽𝐵 comp − 𝑒 −𝑖𝐻𝑡 ∥ ≤ 𝜖 QSP + | 𝑡 |𝜖 BE .
+
+For illustration, we combine the verified 𝑛 = 256 Ising block encoding in TASK1 with the largest-degree QSP wrapper evaluated in TASK2 ( 𝑑 = 77, 𝜏 = 50). With 𝜖 BE = 10 −8, 𝜖 QSP = 10 −4, and 
+
+𝛼 = 512, the composed circuit has an error bound below 10 −4 + 50 512 · 10 −8 < 2 × 10 −4. Its nominal macro-expanded size is 
+
+|𝐶 comp | = |𝐶 abs HS | − 𝑑 + 𝑑 |𝐶 BE | = 2,333 − 77 + 77 · 19 ,686 = 1,518 ,078 gates, excluding the additional decomposition overhead for controlled oracle calls and multi-controlled projector gadgets. The verifier establishes this guarantee compositionally, without expanding the block-encoding oracle calls during QSP verification. 
+
+9.5 Sensitivity to Injected Circuit Faults 
+
+We inject representative circuit-construction faults into otherwise accepted benchmarks. For the 
+
+𝑛 = 3 Ising, MaxCut, and Heisenberg block encodings, replacing a SELECT 𝐶𝑍 gate with 𝐶𝑋 or altering selector normalization produces FAIL in all 24 runs across four requested tolerances; all 12 corresponding clean runs PASS. For four QSP wrappers with 𝜏 ∈ { 0.1, 0.5, 1, 2}, moving an oracle call or omitting the final Hadamard produces FAIL in all eight cases, while all four clean wrappers 28 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+PASS. Thus the verifier catches every injected gate, normalization, and oracle-order fault in these tests. We also perturb PREPARE angles and QSP phases. As 𝜖 BE tightens from 10 −1 to 10 −8, the number of rejected block-encoding mutations rises from 6/15 to 15/15. At 𝜖 QSP = 10 −4, all four 10 −6 phase perturbations PASS, whereas all eight larger perturbations FAIL. These results show that fault detection is sensitive to the requested accuracy. As elsewhere in this section, FAIL means that the checker could not certify the bound. 
+
+10 Related Works 
+
+Hamiltonian-simulation and block-encoding compilers. Several recent systems provide high-level abstractions for constructing or optimizing Hamiltonian-simulation and block-encoding circuits. QBlue [Li et al. 2025] develops a verified compiler for Hamiltonian simulation, with a circuit-generation pipeline centered on Trotterization-based simulation and backend-specific synthesis. In contrast, our work targets block-encoding and QSP-based simulation, and verifies an independently given circuit rather than a particular compiler pipeline. Cobble [Yuan 2026] targets quantum computational linear algebra and provides a high-level language for programming with block-encoded matrices. It compiles mathematical expressions over block encodings into optimized quantum circuits. SimuQ [Peng et al. 2024] provides a framework for programming Hamiltonian simulation with analog compilation. Paulihedral [Li et al. 2022], 2QAN [Lao and Browne 2022], and MarQSim [Cao et al. 2025] develop compilation and optimization techniques for Hamiltonian-simulation workloads, often targeting Pauli-string-level representations and hardware-efficient implementations. These systems are complementary to ours. They focus on generating correct or efficient circuits from high-level descriptions. Our work instead addresses compiler-independent verification: given a Hamiltonian specification and an independently provided circuit, possibly produced by a compiler, optimizer, or manual construction, our verifier checks whether the circuit satisfies the intended block-encoding and QSP-level specification. 
+
+General-purpose quantum program verification. Quantum Hoare logic and its variants provide expressive proof systems for reasoning about quantum programs [Feng and Ying 2021; Liu et al. 2019; Unruh 2019; Ying 2012; Zhou et al. 2019]. These approaches can specify rich semantic properties using quantum predicates, often represented by Hermitian operators or projections. Approximate correctness has also been studied in Hoare-style frameworks, such as [Yan et al. 2024], which reasons about approximate relational properties between two quantum programs. However, they usually require substantial user guidance and are commonly implemented in interactive theorem provers such as Coq or Isabelle, or in deductive frameworks that still require manual proof effort. Existing automated circuit-analysis tools include symbolic verifiers based on automata or SMT [Abdulla et al. 2026; Chen et al. 2023a,b, 2025, 2023c] and equivalence checkers based on ZX-calculus, path-sums, decision diagrams, or stabilizer methods [Amy 2018; Burgholzer and Wille 2020; Chen et al. 2022; Coecke and Duncan 2011; Thanos et al. 2023; Wei et al. 2022; Xu et al. 2022]. These tools typically verify state-based input-output properties or compare the implementation against another circuit. Our setting is different: the specification is an operator-level Hamiltonian, and the verifier checks that the given circuit satisfies the required block-encoding and QSP cor-rectness conditions and approximates the target evolution 𝑒 −i𝐻𝑡 within a prescribed error bound, without requiring a reference circuit for 𝑒 −i𝐻𝑡 .
+
+References    
+
+> Parosh Aziz Abdulla, Yu-Fang Chen, Michal Hečko, Lukáš Holík, Ondřej Lengál, Jyun-Ao Lin, and Ramanathan S. Thinniyam. 2026. Parameterized Verification of Quantum Circuits. Proc. ACM Program. Lang. 10, POPL, Article 70 (Jan. 2026), 30 pages. https://doi.org/10.1145/3776712
+
+Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 29 
+
+Matthew Amy. 2018. Towards Large-scale Functional Verification of Universal Quantum Circuits. In Proceedings 15th International Conference on Quantum Physics and Logic, QPL 2018, Halifax, Canada, 3-7th June 2018 (EPTCS, Vol. 287) ,Peter Selinger and Giulio Chiribella (Eds.). 1–21. https://doi.org/10.4204/EPTCS.287.1 Len Bos and Marco Vianello. 2012. Low cardinality admissible meshes on quadrangles, triangles and disks. Math. Inequal. Appl 15, 1 (2012), 229–235. https://doi.org/10.7153/mia-15-19 Lukas Burgholzer and Robert Wille. 2020. Advanced equivalence checking for quantum circuits. IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 40, 9 (2020), 1810–1824. https://doi.org/10.1109/TCAD.2020. 3032630 Xiuqi Cao, Junyu Zhou, Yuhao Liu, Yunong Shi, and Gushu Li. 2025. Marqsim: Reconciling determinism and randomness in compiler optimization for quantum simulation. Proceedings of the ACM on Programming Languages 9, PLDI (2025), 576–600. Tian-Fu Chen, Jie-Hong R. Jiang, and Min-Hsiu Hsieh. 2022. Partial Equivalence Checking of Quantum Circuits. In IEEE International Conference on Quantum Computing and Engineering, QCE 2022, Broomfield, CO, USA, September 18-23, 2022 .IEEE, 594–604. https://doi.org/10.1109/QCE53715.2022.00082 Yu-Fang Chen, Kai-Min Chung, Ondrej Lengál, Jyun-Ao Lin, and Wei-Lun Tsai. 2023a. AutoQ: An Automata-Based Quantum Circuit Verifier. In Computer Aided Verification - 35th International Conference, CAV 2023, Paris, France, July 17-22, 2023, Proceedings, Part III (Lecture Notes in Computer Science, Vol. 13966) , Constantin Enea and Akash Lal (Eds.). Springer, 139–153. https://doi.org/10.1007/978-3-031-37709-9_7 Yu-Fang Chen, Kai-Min Chung, Ondrej Lengál, Jyun-Ao Lin, Wei-Lun Tsai, and Di-De Yen. 2023b. An Automata-Based Framework for Verification and Bug Hunting in Quantum Circuits. Proc. ACM Program. Lang. 7, PLDI (2023), 1218–1243. https://doi.org/10.1145/3591270 Yu-Fang Chen, Kai-Min Chung, Min-Hsiu Hsieh, Wei-Jia Huang, Ondřej Lengál, Jyun-Ao Lin, and Wei-Lun Tsai. 2025. AutoQ 2.0: From Verification of Quantum Circuits to Verification of Quantum Programs. In TACAS 2025 . Springer, 87–108. Yu-Fang Chen, Philipp Rümmer, and Wei-Lun Tsai. 2023c. A Theory of Cartesian Arrays (with Applications in Quantum Circuit Verification). In International Conference on Automated Deduction . Springer, 170–189. Andrew M. Childs, Yuan Su, Minh C. Tran, Nathan Wiebe, and Shuchen Zhu. 2021. Theory of Trotter Error with Commutator Scaling. Phys. Rev. X 11 (Feb 2021), 011020. Issue 1. https://doi.org/10.1103/PhysRevX.11.011020 Andrew M. Childs and Nathan Wiebe. 2012. Hamiltonian Simulation Using Linear Combinations of Unitary Operations. 12 (2012), 901–924. Issue 11&12. https://doi.org/10.26421/QIC12.11-12-1 Bob Coecke and Ross Duncan. 2011. Interacting quantum observables: categorical algebra and diagrammatics. New Journal of Physics 13, 4 (apr 2011), 043016. https://doi.org/10.1088/1367-2630/13/4/043016 Christopher M. Dawson and Michael A. Nielsen. 2006. The Solovay-Kitaev algorithm. Quantum Info. Comput. 6, 1 (Jan. 2006), 81–95. H. Ehlich and K. Zeller. 1964. Schwankung von Polynomen Zwischen Gitterpunkten. Mathematische Zeitschrift 86, 1 (Feb. 1964), 41–44. https://doi.org/10.1007/BF01111276 Yuan Feng and Mingsheng Ying. 2021. Quantum Hoare logic with classical variables. ACM Transactions on Quantum Computing 2, 4 (2021), 1–43. https://doi.org/10.1145/3456877 Richard P. Feynman. 1982. Simulating Physics with Computers. International Journal of Theoretical Physics 21, 6 (June 1982), 467–488. https://doi.org/10.1007/BF02650179 András Gilyén, Yuan Su, Guang Hao Low, and Nathan Wiebe. 2019. Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics. In Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing (Phoenix, AZ, USA) (STOC 2019) . Association for Computing Machinery, New York, NY, USA, 193–204. https://doi.org/10.1145/3313276.3316366 Wei-Jia Huang, Christophe Chareton, Yu-Fang Chen, Kai-Min Chung, Min-Hsiu Hsieh, Alfons Laarman, and Jingyi Mei. 2026. Equivalence Checking of Quantum Circuits via Path-Sum and Weighted Model Counting. arXiv e-prints (2026), arXiv–2604. Lingling Lao and Dan E Browne. 2022. 2qan: A quantum compiler for 2-local qubit hamiltonian simulation algorithms. In 
+
+Proceedings of the 49th Annual International Symposium on Computer Architecture . 351–365. Gushu Li, Anbang Wu, Yunong Shi, Ali Javadi-Abhari, Yufei Ding, and Yuan Xie. 2022. Paulihedral: a generalized block-wise compiler optimization framework for quantum simulation kernels. In Proceedings of the 27th ACM International Conference on Architectural Support for Programming Languages and Operating Systems . 554–569. Liyi Li, Fenfen An, Federico Zahariev, Zhi Xiang Chong, Amr Sabry, and Mark S Gordon. 2025. A Verified Compiler for Quantum Simulation. arXiv preprint arXiv:2509.18583 (2025). Junyi Liu, Bohua Zhan, Shuling Wang, Shenggang Ying, Tao Liu, Yangjia Li, Mingsheng Ying, and Naijun Zhan. 2019. Formal verification of quantum algorithms using quantum Hoare logic. In International conference on computer aided verification .Springer, 187–207. https://doi.org/10.1007/978-3-030-25543-5_12 30 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+Seth Lloyd. 1996. Universal Quantum Simulators. Science 273, 5278 (1996), 1073–1078. https://doi.org/10.1126/science.273. 5278.1073 arXiv:https://www.science.org/doi/pdf/10.1126/science.273.5278.1073 Guang Hao Low and Isaac L. Chuang. 2017. Optimal Hamiltonian Simulation by Quantum Signal Processing. Phys. Rev. Lett. 
+
+118 (Jan 2017), 010501. Issue 1. https://doi.org/10.1103/PhysRevLett.118.010501 Guang Hao Low and Isaac L. Chuang. 2019. Hamiltonian Simulation by Qubitization. Quantum 3 (July 2019), 163. https://doi.org/10.22331/q-2019-07-12-163 John M. Martyn, Zane M. Rossi, Andrew K. Tan, and Isaac L. Chuang. 2021. Grand Unification of Quantum Algorithms. 
+
+PRX Quantum 2 (Dec 2021), 040203. Issue 4. https://doi.org/10.1103/PRXQuantum.2.040203 Michael A. Nielsen and Isaac L. Chuang. 2010. Quantum Computation and Quantum Information: 10th Anniversary Edition .Cambridge University Press. Yuxiang Peng, Jacob Young, Pengyu Liu, and Xiaodi Wu. 2024. SimuQ: A framework for programming quantum Hamiltonian simulation with analog compilation. Proceedings of the ACM on Programming Languages 8, POPL (2024), 2425–2455. Dimitrios Thanos, Tim Coopmans, and Alfons Laarman. 2023. Fast Equivalence Checking of Quantum Circuits of Clifford Gates. In Automated Technology for Verification and Analysis - 21st International Symposium, ATVA 2023, Singapore, October 24-27, 2023, Proceedings, Part II (Lecture Notes in Computer Science, Vol. 14216) , Étienne André and Jun Sun (Eds.). Springer, 199–216. https://doi.org/10.1007/978-3-031-45332-8_10 Dominique Unruh. 2019. Quantum Hoare logic with ghost variables. In 2019 34th Annual ACM/IEEE Symposium on Logic in Computer Science (LICS) . IEEE, 1–13. https://doi.org/10.1109/LICS.2019.8785779 Chun-Yu Wei, Yuan-Hung Tsai, Chiao-Shan Jhang, and Jie-Hong R. Jiang. 2022. Accurate BDD-based unitary operator manipulation for scalable and robust quantum circuit verification. In DAC ’22: 59th ACM/IEEE Design Automation Conference, San Francisco, California, USA, July 10 - 14, 2022 , Rob Oshana (Ed.). ACM, 523–528. https://doi.org/10.1145/ 3489517.3530481 Mingkuan Xu, Zikun Li, Oded Padon, Sina Lin, Jessica Pointing, Auguste Hirth, Henry Ma, Jens Palsberg, Alex Aiken, Umut A Acar, et al. 2022. Quartz: superoptimization of Quantum circuits. In Proceedings of the 43rd ACM SIGPLAN International Conference on Programming Language Design and Implementation . 625–640. https://doi.org/10.1145/3519939.3523433 Peng Yan, Hanru Jiang, and Nengkun Yu. 2024. Approximate relational reasoning for quantum programs. In International Conference on Computer Aided Verification . Springer, 495–519. Mingsheng Ying. 2012. Floyd-Hoare logic for quantum programs. ACM Transactions on Programming Languages and Systems (TOPLAS) 33, 6 (2012), 1–49. https://doi.org/10.1145/2049706.2049708 Charles Yuan. 2026. Cobble: Compiling block encodings for quantum computational linear algebra. Proceedings of the ACM on Programming Languages 10, PLDI (2026), 200–225. Li Zhou, Nengkun Yu, and Mingsheng Ying. 2019. An applied quantum Hoare logic. In Proceedings of the 40th ACM SIGPLAN Conference on Programming Language Design and Implementation . 1149–1162. https://doi.org/10.1145/3314221.3314584 Automated Verification of Hamiltonian Simulation by Quantum Signal Processing 31 
+
+A Optimized QSP Circuit Construction for Hamiltonian Simulation 
+
+This appendix describes the optimized QSP circuit construction used to generate the TASK2 Hamiltonian-simulation benchmarks. The purpose of this construction is to produce a nontrivial optimized circuit-generation workflow whose output can be independently checked by the verifier. The construction itself is not trusted: the verifier symbolically executes the emitted QASM circuit and checks the polynomial implemented by the all-zero branch. 
+
+Cosine–sine decomposition. The Hamiltonian-simulation target on the normalized signal variable 
+
+𝑥 ∈ [− 1, 1] is 
+
+𝑒 −i𝜏𝑥 = cos (𝜏𝑥 ) − i sin (𝜏𝑥 ).
+
+The generator synthesizes the cosine and sine components separately. This matches the parity structure of standard QSP responses: an even-degree response contains only even powers of 𝑥 , while an odd-degree response contains only odd powers of 𝑥 . Thus the cosine component is synthesized as an even polynomial, and the sine component is synthesized as an odd polynomial. For each effective simulation time 𝜏 , pyqsp is used only as an untrusted source of benchmark phase sequences and polynomial data. It produces bounded Chebyshev approximations 
+
+b𝑃 (𝜏 ) 
+
+> cos
+
+(𝑥 ) ≈ 12 cos (𝜏𝑥 ), b𝑃 (𝜏 ) 
+
+> sin
+
+(𝑥 ) ≈ 12 sin (𝜏𝑥 ).
+
+The factor 1 /2 is the bounded-synthesis scaling used in the generated benchmark data. It is accounted for in the final normalization step. 
+
+Sharing one QSP skeleton. A direct implementation would emit two independent QSP circuits: one for b𝑃 (𝜏 ) 
+
+> cos
+
+and one for b𝑃 (𝜏 ) 
+
+> sin
+
+. This is simple but duplicates the alternating sequence of 𝑄 BE and 
+
+𝑄 † 
+
+> BE
+
+calls. The optimized construction avoids this duplication by using a selector qubit to multiplex the two phase sequences over a shared QSP skeleton. Let 𝜓 cos  
+
+> 𝑗
+
+and 𝜓 sin  
+
+> 𝑗
+
+denote the projector phases used at layer 𝑗 for the cosine and sine QSP sequences, respectively. The circuit applies the cosine projector phase 𝜓 cos  
+
+> 𝑗
+
+by default. On the sine branch, it applies the controlled phase difference 
+
+Δ𝑗 = 𝜓 sin  
+
+> 𝑗
+
+− 𝜓 cos  
+
+> 𝑗
+
+.
+
+Therefore the effective phase is 𝜓 cos  
+
+> 𝑗
+
+on the cosine branch and 𝜓 cos  
+
+> 𝑗
+
++ Δ𝑗 = 𝜓 sin  
+
+> 𝑗
+
+on the sine branch. Hence the two selector branches implement the cosine and sine QSP sequences while sharing the same positions of 𝑄 BE and 𝑄 † 
+
+> BE
+
+calls. If the sine degree is one larger than the cosine degree, the generator appends one final sine-only block on the sine branch. 
+
+Phase-convention conversion. The phase sequence returned by pyqsp cannot be inserted directly as QASM 𝑅 𝑧 rotations, because pyqsp and our block-encoding QSVT circuit use different scalar signal conventions. In the pyqsp convention, the scalar signal unitary is 
+
+𝑊 𝑥 (𝑥 ) = 𝑥 i√1 − 𝑥 2
+
+i√1 − 𝑥 2 𝑥 
+
+!
+
+.
+
+Our block-encoding QSVT circuit instead corresponds to 
+
+𝑊 ′ 
+
+> 𝑥
+
+(𝑥 ) = 𝑥 √1 − 𝑥 2
+
+√1 − 𝑥 2 −𝑥 
+
+!
+
+.
+
+These conventions differ only by fixed 𝑍 -axis phase shifts. The generator absorbs these fixed shifts into the neighboring projector phases before emitting QASM. 32 Min Lai, Yu-Fang Chen, and Shih-Han Hung 
+
+Given pyqsp phases 𝜙 0, . . . , 𝜙 𝑑 , the generator converts them to projector phases by setting 
+
+𝜓 0 = 𝜙 0 + 𝜋 /4 and 𝜓 𝑗 = 𝜙 𝑗 + 𝜋 /2 for 1 ≤ 𝑗 ≤ 𝑑 − 1. The final phase depends on the component: 
+
+𝜓 𝑑 = 𝜙 𝑑 + 𝜋 
+
+4 for the even cosine component, 𝜓 𝑑 = 𝜙 𝑑 − 𝜋 
+
+4 for the odd sine component. A projector phase 𝜓 𝑗 is emitted in QASM as 𝑅 𝑧 (− 2𝜓 𝑗 ). This conversion is part of the benchmark generator only; the verifier does not assume that it is correct. 
+
+Extracting the polynomial response. Under the above convention, the selected raw QSP response contains the desired polynomial in its imaginary part. For ★ ∈ { cos , sin }, the raw selected branch has the form 
+
+𝐵 raw  
+
+> ★
+
+(𝑥 ) = 𝑅 ★(𝑥 ) + ib𝑃 (𝜏 ) 
+
+> ★
+
+(𝑥 ),
+
+where 𝑅 ★(𝑥 ) denotes the remaining real component. The polynomial that should be combined by the outer LCU is b𝑃 (𝜏 ) 
+
+> ★
+
+(𝑥 ), not the whole raw response. The generator therefore inserts a constant-size signed phase gadget that forms 
+
+𝐵 raw  
+
+> ★
+
+(𝑥 ) − 𝐵 raw  
+
+> ★
+
+(𝑥 )†
+
+2i = b𝑃 (𝜏 ) 
+
+> ★
+
+(𝑥 ).
+
+After this step, the cosine branch exposes b𝑃 (𝜏 ) 
+
+> cos
+
+(𝑥 ), and the sine branch exposes b𝑃 (𝜏 ) 
+
+> sin
+
+(𝑥 ).
+
+LCU combination and normalization. The extracted cosine and sine polynomials are combined by a two-term LCU. The outer selector prepares an equal superposition of the cosine and sine branches, assigns the coefficient −i to the sine branch, and then unprepares the selector. Projecting back to the all-zero selector branch yields 
+
+𝐵 HS  
+
+> 0
+
+(𝑥 ) = 12
+
+b𝑃 (𝜏 ) 
+
+> cos
+
+(𝑥 ) − ib𝑃 (𝜏 ) 
+
+> sin
+
+(𝑥 )
+
+
+
+.
+
+The prefactor 1 /2 is the success amplitude of the two-term LCU: one factor 1 /√2 comes from preparing the selector superposition, and another factor 1 /√2 comes from unpreparing it. Since the synthesized QSP polynomials are themselves half-scaled, 
+
+b𝑃 (𝜏 ) 
+
+> cos
+
+(𝑥 ) ≈ 12 cos (𝜏𝑥 ), b𝑃 (𝜏 ) 
+
+> sin
+
+(𝑥 ) ≈ 12 sin (𝜏𝑥 ),
+
+the all-zero branch satisfies 
+
+𝐵 HS  
+
+> 0
+
+(𝑥 ) ≈ 12
+
+ 12 cos (𝜏𝑥 ) − i 12 sin (𝜏𝑥 )
+
+
+
+= 14𝑒 −i𝜏𝑥 .
+
+Thus the generated circuit implements the desired Hamiltonian-simulation function up to the known scaling factor 1 /4. The verifier infers a scaling factor 𝛽 from the extracted branch. For these benchmarks, the inferred value is close to 4, as expected from the construction, and the verifier checks max   
+
+> 𝑥 ∈ [− 1,1]
+
+𝛽𝐵 HS  
+
+> 0
+
+(𝑥 ) − 𝑒 −i𝜏𝑥 ≤ 𝜖.

@@ -1,0 +1,907 @@
+Title: Hardware-Friendly Estimation of LCU-Based Expectation Values via Quantum-to-Classical Workload Shifting
+
+URL Source: https://arxiv.org/pdf/2610.32841v1
+
+Published Time: Mon, 26 Oct 2026 01:16:39 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+## Hardware-Friendly Estimation of LCU-Based Expectation Values via Quantum-to-Classical Workload Shifting 
+
+Hari Hara Suthan Chittoor 1, ∗ and Thirumalai Manimaran 1, †
+
+> 1
+
+QpiAI India Private Limited, Bengaluru, India – 560065 
+
+Estimating the expectation value of an observable O with respect to a quantum state evolved under a general, possibly non-unitary, operator A is a fundamental task in quantum simulation, quantum chemistry, and variational quantum algorithms. Existing approaches based on the linear combina-tion of unitaries (LCU) framework implement A on quantum hardware, requiring ancilla qubits, controlled unitaries and, in randomized variants, a fresh set of circuit executions for every Monte Carlo sample. These requirements are costly on noisy intermediate-scale quantum (NISQ) and early fault-tolerant devices. We propose HERMES: Hardware-Efficient Reusable Measurements for Estimating LCU-based expectation value S, which offloads the quantum processing of A entirely to the classical domain. By expanding both A and O in the Pauli basis and replacing the quantum evaluation of A with classical Monte Carlo sampling over pairs of Pauli terms, HERMES rewrites 
+
+μ = Tr( OAρA †)/Tr( AρA †) as a ratio of weighted sums of Pauli expectation values on the unmod-ified state ρ, requiring no ancilla qubits, controlled unitaries, or quantum implementation of A.A two-level measurement reduction scheme, combining Pauli deduplication and commuting-group partitioning, bounds the number of distinct measurement settings independently of the number of Monte Carlo samples, unlike randomized LCU methods such as single-ancilla LCU, whose circuit executions grow linearly with the sample count. We demonstrate HERMES on ground-state energy estimation of the H2 and LiH molecules via imaginary-time evolution, benchmarked against Pauli single-ancilla LCU baseline. HERMES achieves accuracy comparable to or better than the base-line with shallow circuits that, under qubit-wise commuting (QWC) grouping, contain no two-qubit gates beyond state preparation. It also shows greater robustness to hardware noise and completes the noisy LiH simulation that was infeasible for the baseline, which makes it attractive for NISQ devices, albeit with a classical overhead that grows with the number of Pauli terms in A.
+
+I. INTRODUCTION 
+
+Quantum computing holds transformative promise for simulating quantum systems, solving linear systems, pro-cessing quantum information, and performing optimiza-tion tasks intractable for classical computers [1–4]. Acentral computational primitive in many of these appli-cations is estimating expectation values of the form 
+
+μ = Tr( OAρA †)Tr( AρA †) ,
+
+where ρ is a quantum state, O is a Hermitian observable, and A is a general possibly non-unitary operator. This setting covers Hamiltonian simulation ( A = e−iHt ) [5, 6], ground-state estimation via imaginary-time evolution (A = e−τ H ) [7–9], and quantum linear systems ( A ∝
+
+B−1) [10]. In all cases, the desired output is the scalar 
+
+μ—not the full evolved state—a distinction central to this work. The standard approach implements A via the lin-ear combination of unitaries (LCU) method [11], which requires O(log M ) ancilla qubits and multi-qubit con-trolled gates. LCU is the foundational primitive for block encodings and quantum singular value transformation (QSVT) [12], a framework of remarkable generality: by   
+
+> ∗hari.chittoor@qpiai.tech
+> †thirumalai.m@qpiai.tech
+
+applying a polynomial transformation to the singular val-ues of a block-encoded operator, QSVT subsumes quan-tum search, phase estimation, Hamiltonian simulation, and quantum linear system solvers [13] — thereby pro-viding a unification of most known quantum algorithms, including Grover’s search [14] and Shor’s factoring [15]. However, the ancilla register and multi-qubit controlled gate overhead of LCU place it out of reach on current noisy intermediate-scale quantum (NISQ) [16, 17] and early fault-tolerant [18, 19] hardware. To reduce circuit complexity, [20] introduced single-ancilla LCU , which eliminates the multi-qubit ancilla register by randomizing over pairs of LCU terms and executing independent Hadamard-test circuits, each re-quiring only a single ancilla qubit. This shifts part of the workload from quantum to classical processing — not to reduce total computational cost, but to make the quantum portion executable on current hardware where deep multi-qubit circuits are infeasible — at the cost of increased total circuit executions. The trade-offs across the full coherent-to-randomized spectrum were studied in [21]. Stochastic combination of unitaries was proposed in [22] to reduce per-sample circuit depth. [23] extended randomized LCU to effective states of the form U ρV †.Nevertheless, all randomized variants share a common requirement: the quantum hardware must coherently im-plement at least some unitaries in the LCU of A, and each Monte Carlo sample demands a fresh circuit execution. Consequently, for a fixed number of shots per sample, the total number of quantum circuit executions grows arXiv:2610.32841v1 [quant-ph] 23 Oct 2026 2linearly with the sample count, and no measurements can be reused across samples. A complementary and independently developed line of work addresses the measurement side of the problem. For an observable O with L Pauli terms, naive expectation estimation of O requires up to L distinct measurement settings. Pauli grouping methods reduce this overhead by partitioning the Pauli strings of O into groups that can be measured simultaneously. Qubit-wise commuting (QWC) groups share a common tensor-product eigenba-sis and therefore require only single-qubit rotations, with the minimization of the number of groups being cast as a minimum clique cover problem that is solved heuristi-cally [24]. Partitioning into general mutually commut-ing groups reduces the number of measurement settings further, since each group can be simultaneously diago-nalized by a Clifford circuit, at the cost of two-qubit gates in the rotation circuit [25]; scalable partitioning algorithms exist for both QWC and general commut-ing groups [26]. A distinct strategy, unitary partition-ing, instead reduces the number of terms to be estimated by appending additional coherent rotations to the state-preparation circuit [27]. However, this line of work has been developed primarily for estimating the expectation value of a fixed observable, and has not been integrated with LCU-based frameworks for estimating μ — where the measurement structure is richer and depends jointly on the Pauli strings of both A and O.Despite the significant progress in both directions, a gap remains: to the best of our knowledge, no existing approach avoids ancilla qubits, controlled unitary gates, and any quantum implementation of A, thereby keep-ing the quantum circuits shallow and free of multi-qubit gates beyond state preparation. This gap is of practi-cal importance, since on current NISQ hardware the fi-delity of an estimate is limited primarily by circuit depth and by the number of two-qubit gates, whose error rates are substantially higher than those of single-qubit oper-ations. Crucially, however, not every shift of workload from quantum to classical processing is beneficial: clas-sical simulation of generic quantum states and circuits is believed to require resources that grow exponentially with the number of qubits [1, 16]. The key is to offload only those tasks that remain classically tractable, such as sampling over the Pauli expansion of A when it con-tains a manageable number of terms, while retaining the quantum hardware for estimating the Pauli expectation values of ρ.In this work, we present HERMES (Hardware-
+
+Efficient Reusable Measurements for Estimating LCU-based expectation value S), an algorithm that takes a fun-damentally different approach by entirely offloading the quantum processing associated with A to the classical domain. By expanding both A and O in the Pauli basis and replacing the direct quantum implementation of A
+
+with classical Monte Carlo sampling over pairs of Pauli terms, drawn with probabilities proportional to the mag-nitudes of the corresponding coefficients of A, HERMES rewrites μ as a ratio of weighted sums of Pauli expecta-tion values {Tr( P ρ )} evaluated on the unmodified input state ρ. The quantum hardware is never asked to im-plement A: its only tasks are state preparation, Clifford basis rotations for simultaneous measurement of groups of Pauli strings, and computational-basis measurement, with no ancilla qubits. This workload shift is classically tractable whenever A has a manageable number of terms in the Pauli basis, as is the case for low-degree poly-nomial approximations of local Hamiltonians. Since μ
+
+is expressed entirely in terms of expectation values of Pauli strings that arise as products of strings from A
+
+and O, the number of distinct Pauli expectation values, and hence of measurement settings, is bounded above independently of the Monte Carlo sample count. A two-level measurement reduction scheme — Pauli deduplica-tion followed by commuting-group partitioning — fur-ther reduces the number of measurement settings, which therefore saturates as the sample count grows, whereas in single-ancilla LCU every sample requires a fresh circuit execution. With QWC grouping, two-qubit gates can be avoided entirely beyond state preparation, making HER-MES particularly hardware-friendly. The remainder of this paper is organized as follows. Section II reviews the LCU framework, formulates the expectation value estimation problem, and describes the single-ancilla LCU method that serves as the baseline. Section III presents the proposed HERMES algorithm, including its classical preprocessing, quantum process-ing, and classical post-processing stages. Section IV re-ports numerical simulation results for ground-state en-ergy estimation of the H2 and LiH molecules, bench-marked against the Pauli single-ancilla LCU (PSA-LCU) method. Section V concludes the paper and discusses the applicability of HERMES to other LCU-based problems together with open research directions. 
+
+Notations: R represents set of real numbers and R+
+
+> ∗
+
+represents set of all real and positive numbers. [M ] de-notes the set {1, 2, . . . , M }, where M is a natural number.  
+
+> II. LCU FRAMEWORK AND PROBLEM FORMULATION
+
+In this section, we review the LCU method and its hardware limitations, formulate the expectation value es-timation problem, and describe the single-ancilla LCU al-gorithm that serves as the primary baseline for our work. We begin with some preliminaries on Pauli operators and commuting Pauli strings.   
+
+> A. Preliminaries
+> 1. Pauli Operators and Pauli Strings
+
+The single-qubit Pauli operators form a complete or-thogonal basis for the space of 2 × 2 operators and are 3given by 
+
+I =
+
+1 0 0 1 
+
+
+
+, X =
+
+0 11 0
+
+
+
+, Y =
+
+0 −ii 0
+
+
+
+, Z =
+
+1 00 −1
+
+
+
+.
+
+These operators satisfy 
+
+X2 = Y 2 = Z2 = I, 
+
+and obey the multiplication rules 
+
+XY = iZ, Y Z = iX, ZX = iY, 
+
+with reversed order introducing a negative phase, 
+
+Y X = −iZ, ZY = −iX, XZ = −iY. 
+
+An n-qubit Pauli string is the tensor product of single-qubit Pauli operators, 
+
+P = P (1) ⊗ P (2) ⊗ · · · ⊗ P (n),
+
+where P (i) ∈ { I, X, Y, Z }, for every i ∈ [n]. The set of all Pauli strings form a basis for operators acting on an n-qubit Hilbert space, allowing any operator to be expressed as a linear combination of Pauli strings. The product of two Pauli strings is obtained by multiplying the corresponding single-qubit operators independently at each qubit, resulting in another Pauli string up to an overall phase factor of {± 1, ±i} inherited from the single-qubit multiplication rules.  
+
+> 2. Commuting Pauli Operators
+
+Two Pauli strings Pi and Pj either commute or anti-commute, 
+
+PiPj = ±Pj Pi.
+
+They commute if the number of qubit positions at which the corresponding non-identity Pauli operators anticom-mute is even, and anticommute otherwise. Equivalently, 
+
+[Pi, P j ] = PiPj − Pj Pi = 0 
+
+for commuting pairs, while 
+
+PiPj + Pj Pi = 0 
+
+for anticommuting pairs. The commutation property is fundamental to measure-ment optimization in quantum algorithms [26]. Since mutually commuting Pauli operators share a common eigenbasis, they can be measured simultaneously after an appropriate basis transformation. Consequently, com-muting Pauli strings can be grouped into measurement sets, allowing multiple expectation values to be estimated from the outcomes of a single measurement setting and thereby reducing the total measurement cost.  
+
+> B. Linear Combination of Unitaries
+
+An n-qubit operator A can be expressed as a linear combination of M unitaries, 
+
+A =
+
+> M
+
+X
+
+> j=1
+
+aj eiθ j Uj , (1) where aj ∈ R+ 
+
+> ∗
+
+, −π < θ j ≤ π, and {Uj } are unitary op-erators. Without loss of generality, the phase terms can be absorbed into the unitaries as fUj = eiθ j Uj . Defining the one-norm λ = PMj=1 aj , the normalized coefficients 
+
+pj = aj /λ form a probability distribution over [M ], giv-ing 
+
+A = λ
+
+> M
+
+X
+
+> j=1
+
+pj fUj . (2) Such decompositions exist for all operators of physical interest and can be computed efficiently via dedicated classical algorithms [28–30]. We now describe the standard LCU procedure using pure states |ψ⟩; extension to mixed states is straightfor-ward. To realize |ψ⟩ 7 → A|ψ⟩ coherently, the procedure employs two oracles on the n-qubit target system S and an ancilla register A of ⌈log 2 M ⌉ qubits [6, 11, 31]. The 
+
+prep oracle encodes the coefficient distribution, 
+
+prep |0⟩A =
+
+> M
+
+X
+
+> j=1
+
+√pj |j⟩A, (3) and the select oracle applies the j-th unitary condi-tioned on the ancilla, 
+
+select =
+
+> M
+
+X
+
+> j=1
+
+|j⟩⟨ j|A ⊗ fUj . (4) The combined circuit ULCU = ( prep † ⊗ IS ) · select ·
+
+(prep ⊗ IS ) satisfies the LCU lemma [11, 32]: for any state |ψ⟩S ,
+
+ULCU |0⟩A|ψ⟩S = |0⟩A
+
+
+
+> M
+
+X
+
+> j=1
+
+pj fUj
+
+|ψ⟩S + | ⊥ ψ ⟩, (5) where | ⊥ψ ⟩ is orthogonal to |0⟩A ⊗ H S and HS is the Hilbert space of the system qubits. Amplitude am-plification boosts the probability of obtaining the an-cilla outcome |0⟩A, after which post-selecting |0⟩A on the ancilla register prepares A|ψ⟩ (up to normalization) on the system register, and any observable O can be measured directly on the prepared state. The standard LCU is depicted in Fig. 1a. The hardware constraints of this procedure— O(log M ) ancilla qubits, multi-qubit controlled-fUj gates, and amplitude amplification rounds multiplying the effective circuit depth—motivate the hardware-efficient alternatives discussed in Section II D. 4$$|\psi\rangle$$   
+
+> \(\textbf{PREP}\) \(\textbf{PREP}^{\dagger}\)
+> \(\text{system}\)
+> \(\text{qubits}\)
+> post-select
+> \(|0\rangle^{\otimes \lceil \log_2 M \rceil}\)
+> \( \text{Measure} \)
+> \( O\)
+> \(\text{Amplitude}\)
+> \(\text{amplification}\)
+> \(|0\rangle^{\otimes n}\) \(\text{State}\)
+> \(\text{preparation}\)
+> \(|0\rangle^{\otimes \lceil \log_2 M \rceil}\)
+> \( \lceil \log_2 M \rceil \text{ ancilla qubits}\)
+> \(\textbf{SELECT}\)
+
+(a) Standard LCU \( \text{ one ancilla qubit} \)  
+
+> \( \rho\) \(|0\rangle^{\otimes n}\)
+> \( \text{Measure} \)
+> \( X \otimes O\)
+> \(\widetilde{U_j}\) \(\widetilde{U_k}\)
+> \(|+\rangle\)
+> \(\text{State}\)
+> \(\text{preparation}\)
+> \(\text{system}\)
+> \(\text{qubits}\)
+
+(b) Single-ancilla LCU \( \rho\) \(|0\rangle^{\otimes n}\)  \( \text{Measure in} \) 
+
+> \( \text{computational} \)
+> \( \text{basis}\)
+> \(\text{Clifford}\)
+> \(\text{basis}\)
+> \(\text{rotation}\)
+> \(\text{State}\)
+> \(\text{preparation}\)
+> \(\text{system}\)
+> \(\text{qubits}\)
+> \( \text{ No ancilla qubit} \)
+
+(c) HERMES 
+
+FIG. 1: Quantum circuits of LCU-based expectation value estimation methods. (a) Standard LCU [11] requires ⌈log 2 M ⌉ ancilla qubits, PREP/SELECT oracles, and amplitude amplification across all qubits. (b) Single-ancilla LCU [20] reduces to a single ancilla and two controlled unitaries per Monte Carlo sample, at the cost of a fresh circuit execution per sample. (c) HERMES requires only state preparation and Clifford rotations (single-qubit Clifford gates for QWC grouping), with no ancilla qubits. 
+
+C. Expectation Value Estimation under Operator Evolution 
+
+Consider an n-qubit input state ρ, a general (possibly non-unitary) operator A, and a Hermitian observable O.The normalized state evolved under A is 
+
+˜ρ = AρA †
+
+Tr( AρA †) , (6) and the target quantity is 
+
+μ = Tr( O ˜ρ) = Tr( OAρA †)Tr( AρA †) =: μN
+
+μD
+
+, (7) where 
+
+μN = Tr( OAρA †) (8) and 
+
+μD = Tr( AρA †) (9) are the numerator and denominator, respectively. When 
+
+A is unitary, μD = 1 and the problem reduces to stan-dard expectation value estimation. For non-unitary A,the normalization factor μD can be exponentially small in the system size, making ratio estimation statistically challenging. A critical observation is that coherently preparing ˜ρ on quantum hardware is unnecessary for esti-mating μ: the standard LCU pipeline pays the full cost of the ancilla register, prep –select circuit, and amplitude amplification even though the desired output is merely a scalar. This motivates methods that estimate μN and 
+
+μD directly without ever preparing ˜ρ, treating the quan-tum computer only as a device for measuring expectation values of observables. The single-ancilla LCU method re-viewed next is a step in this direction; and the proposed HERMES algorithm in Section III goes further by elimi-nating quantum evaluation of A entirely. 
+
+D. Single-Ancilla LCU 
+
+The single-ancilla LCU method, proposed in [20], es-timates μN and μD without preparing ˜ρ, using only a single ancilla qubit rather than the multi-qubit ancilla register required by the standard LCU construction. The starting point is the expansion 
+
+μN = λ2
+
+> M
+
+X
+
+> j,k =1
+
+pj pk Re 
+
+
+
+Tr 
+
+h
+
+O fUj ρfUk
+
+> †
+
+i 
+
+, (10) which follows from substituting (2) in (8) and using lin-earity of the trace. Each term Re(Tr[ O fUj ρfUk
+
+> †
+
+]) is esti-mated by a Hadamard-test-type circuit: a single ancilla qubit is initialized to |+⟩ = ( |0⟩ + |1⟩)/√2, fUj and fUk are applied to ρ conditioned on the ancilla being in |1⟩ and 
+
+|0⟩ respectively, followed by measurement of X ⊗ O. The denominator μD is estimated analogously with O = I
+
+in (10), and μ = μN /μ D is obtained by dividing the two estimates. Although the per-sample circuit is substantially shal-lower than the standard LCU [20], the key hardware de-mands remain. The quantum hardware must coherently apply two controlled unitaries fUj and fUk per sample and measure the composite observable X ⊗ O. In practice, since O is not directly measurable as a single quantum observable, it is first expanded as a linear combination of Pauli terms; the Hadamard-test-type circuit is then re-executed once per commuting group of O, so each Monte Carlo sample already requires at least GO circuit execu-tions, where GO is the number of commuting groups of 
+
+O. Furthermore, a fresh set of such circuits must be ex-ecuted for every new pair (j, k ), with no mechanism to reuse measurements across samples. Consequently, the total quantum execution cost grows as O(R · GO ) with 5the Monte Carlo sample count R, with no saturation. Single-ancilla LCU is depicted in Fig. 1b. In the next sec-tion we present HERMES, which overcomes all of these limitations. 
+
+III. PROPOSED ALGORITHM 
+
+In this section, we present the HERMES algorithm to compute μ in (7). The complete framework consists of three major stages: classical preprocessing, quantum pro-cessing, classical post-processing. 
+
+A. Classical Preprocessing 
+
+The objective of the classical preprocessing stage is to transform the original non-unitary expectation estima-tion problem into estimation of a structured collection of Pauli observables. This stage is entirely classical and does not require quantum hardware execution. The clas-sical preprocessing stage consists of the following compo-nents: 
+
+1. Pauli Decomposition of operator A and observable O
+
+We begin by expanding the generally non-unitary op-erator A as a LCU, with the complete n-qubit Pauli basis as the unitary basis: 
+
+A =
+
+> M
+
+X
+
+> j=1
+
+aj eiθ j Pj , (11) where Pj ∈ { I, X, Y, Z }⊗n are Pauli strings, aj ∈ R+ 
+
+> ∗
+
+,and θj ∈ (−π, π ]. As A is an arbitrary operator, the coefficients aj eiθ j are in general complex numbers. Since the Pauli operators form a complete orthogonal operator basis under the Hilbert–Schmidt inner product, 
+
+Tr( PiPj ) = 2 nδij ,
+
+where δij is the Kronecker delta function, any n-qubit operator admits an exact expansion in this basis. The Hermitian observable O is similarly expanded as 
+
+O =
+
+> L
+
+X
+
+> l=1
+
+blPl, (12) where bl ∈ R \ { 0}. Let PA and PO be the sets of all 
+
+M and L Pauli strings in the LCU decompositions in (11) and (12) respectively. Now using (11) and (12), the numerator in (8) can be written as 
+
+μN = X
+
+> j,k
+
+aj akei(θj −θk ) Tr( OP j ρP k)= X
+
+> j,k
+
+aj akei(θj −θk ) X
+
+> l
+
+bl Tr( PkPlPj ρ)= X
+
+> j,k
+
+aj akei(θj −θk ) X
+
+> l
+
+blcklj Tr( Pklj ρ) (13) where PkPlPj = cklj Pklj with cklj ∈ {± 1, ±i}. Similarly, using (11) the denominator in (9) can be written as 
+
+μD = X
+
+> j,k
+
+aj akei(θj −θk ) Tr( Pj ρP k)= X
+
+> j,k
+
+aj akei(θj −θk ) Tr( PkPj ρ)= X
+
+> j,k
+
+aj akei(θj −θk )ckj Tr( Pkj ρ) (14) where PkPj = ckj Pkj with ckj ∈ {± 1, ±i}.These expressions reveal that the entire estimation problem reduces to finding expectation values of Pauli observables with respect to the state ρ. However, di-rect deterministic evaluation becomes computationally expensive since the numerator (13) contains O(M 2L)
+
+Pauli combinations and the denominator (14) contains 
+
+O(M 2) Pauli combinations. To overcome this, we em-ploy a Monte Carlo sampling strategy. 
+
+2. Construction of probability distribution and Monte Carlo sampling 
+
+Form a probability distribution using the coefficients of A in (11) as 
+
+n
+
+pj = aj
+
+λ : j ∈ [M ]
+
+o
+
+(15) where λ = PMj=1 aj is the l1 norm of the coefficients of 
+
+A.Construct a set R of R pairs of Monte Carlo samples, where each pair contains two indices sampled indepen-dently from the probability distribution {pj : j ∈ [M ]}.Thus R = {(j, k ) : j, k ∼ { pj }} .
+
+3. Generation of numerator and denominator Pauli observables 
+
+For each unique sample (j, k ) ∈ R and l ∈ [L], we collect the Pauli strings Pklj , P kj and coefficients cklj , c kj 
+
+into the following four indexed collections, where each entry is uniquely identified by its index tuple (k, l, j ) or 
+
+(k, j ) but the same Pauli string or coefficient value may appear under multiple distinct indices: 6                                                            
+
+> PN={Pklj :PkPlPj=cklj Pklj ,(j, k )∈ R ;Pl∈ P O;Pj, P k∈ P A}CN={cklj :PkPlPj=cklj Pklj ,(j, k )∈ R ;Pl∈ P O;Pj, P k∈ P A}PD={Pkj :PkPj=ckj Pkj ,(j, k )∈ R , P j, P k∈ P A}CD={ckj :PkPj=ckj Pkj ,(j, k )∈ R , P j, P k∈ P A}.
+
+Define Zjk N and Zjk D as 
+
+Zjk N = ei(θj −θk ) X
+
+> l
+
+blcklj Tr( Pklj ρ) (16) 
+
+Zjk D = ei(θj −θk )ckj Tr( Pkj ρ) (17) As μN and μD are real quantities we define the corre-sponding estimators as Re( Zjk N ) and Re( Zjk D ). Now con-sider the expectation value of Re( Zjk N ) and Re( Zjk D )
+
+Ej,k [Re( Zjk N )] = X
+
+> j,k
+
+pj pkRe( Zjk N )= P 
+
+> j,k aj
+> λak
+> λ
+
+Re 
+
+P
+
+> l
+
+blei(θj −θk )cklj Tr( Pklj ρ)
+
+
+
+= μN
+
+λ2
+
+Ej,k [Re( Zjk D )] = X
+
+> j,k
+
+pj pkRe( Zjk D )= X
+
+> j,k
+
+aj
+
+λak
+
+λ Re  ei(θj −θk )ckj Tr( Pkj ρ)
+
+= μD
+
+λ2
+
+Therefore, λ2Re( Zjk N ) and λ2Re( Zjk D ) are unbiased esti-mators of μN and μD respectively. Thus, the problem of estimating μN and μD is reduced to the problem of finding the expectation of Pauli observables in PN ∪ P D .We need the quantum hardware only to compute expec-tation values of these Pauli observables. We emphasize that the operator A or the corresponding Pauli strings in its LCU expansion are not directly implemented on the quantum hardware. 
+
+4. Two level measurement reduction 
+
+As R, M and L increase, the number of Pauli ob-servable expectations to be computed increases. To re-duce this, we propose a two level measurement reduction scheme. 
+
+a. First level – Pauli deduplication. Two different samples (j, k ) and (j′
+
+, k ′
+
+) in R may correspond to same Pauli string, i.e., Pklj = Pk′ l′ j′ or Pklj = Pk′ j′ or 
+
+Pkj = Pk′ j′ , where l, l ′
+
+∈ [L]. Thus, PN ∪ P D may contain many duplicates. By deduplication, we remove these repetitions, so that the expectation value of each distinct Pauli observable needs to be computed only once on quantum hardware, regardless of how many samples reference it. This is the first level of measurement reduc-tion. Towards this end, we define 
+
+Punique = Unique( PN ∪ P D ) . (18) 
+
+Algorithm1 Classical Preprocessing  
+
+> 1:
+
+Input: Square operator A, Hermitian observable O on n
+
+qubits and Number of samples R 
+
+> 2:
+
+Compute LCU decomposition of operator A and observable O in the Pauli basis: 
+
+A : {(aj eiθ j , P j ) : j ∈ [M ]} where aj ∈ R+ 
+
+> ∗
+
+, θj ∈ (−π, π ]
+
+O : {(bl, P l) : l ∈ [L]} where bl ∈ R \ { 0} 
+
+> 3:
+
+Initialize PA and PO with set of all Pauli strings in the de-composition of operator A and observable O respectively  
+
+> 4:
+
+Probability distribution: Form a probability distri-bution using the coefficients of decomposition of A as 
+
+{pj = aj 
+
+> λ
+
+: j ∈ [M ], λ = MP
+
+> j=1
+
+aj } 
+
+> 5:
+
+Monte Carlo sampling: Construct a set R of R pairs of samples, where each pair contains two indices sampled independently from the probability distribution {pj : j ∈
+
+[M ]}. Thus R = {(j, k ) : j, k ∼ { pj }}  
+
+> 6:
+
+Constructing PN , PD , CN , CD : 
+
+> 7:
+
+Initialize 4 empty indexed collections PN , PD , CN and CD .
+
+PN , PD will store Pauli strings and CN , CD will store co-efficients {± 1, ±i}. 
+
+> 8:
+
+for each unique (j, k ) ∈ R do  
+
+> 9:
+
+for each l ∈ [L] do  
+
+> 10:
+
+Compute Pk PlPj = cklj Pklj , where Pj , P k ∈PA; Pl ∈ P O and cklj ∈ {± 1, ±i} 
+
+> 11:
+
+Append Pklj to PN and cklj to CN . 
+
+> 12:
+
+end for  
+
+> 13:
+
+Compute Pk Pj = ckj Pkj , where Pj , P k ∈ P A and ckj ∈{± 1, ±i} 
+
+> 14:
+
+Append Pkj to PD and ckj to CD . 
+
+> 15:
+
+end for  
+
+> 16:
+
+First Level of Measurement Reduction via Pauli deduplication: Define Punique as the set of distinct Pauli strings in PN ∪ P D , so that the expectation val-ues only need to be computed for the elements of Punique  
+
+> 17:
+
+Second Level of Measurement Reduction via groups of commuting Paulis: Partition Punique into 
+
+G groups {P g : g ∈ [G]} using a Pauli grouping strat-egy, where all Paulis in each group commutes with each other, such that a single measurement setting suffices to estimate the expectation values of all Pauli observables within each group.  
+
+> 18:
+
+Output: LCU Decomposition of A: {(aj eiθ j , P j ) : j ∈
+
+[M ]}, and O: {(bl, P l) : l ∈ [L]}. G groups of commuting Paulis {P g : g ∈ [G]}. Sets R, Punique and collections 
+
+PN , CN , PD , CD
+
+b. Second level – commuting-group partitioning. We partition Punique into G groups of mutually commuting Pauli strings [26]: 
+
+Punique =
+
+> G
+
+[
+
+> g=1
+
+Pg . (19) All Pauli strings within a commuting group share a com-mon eigenbasis and can be measured simultaneously with a single basis-rotation circuit followed by computational basis measurements. This substantially reduces total quantum measurement overhead. As R grows, newly sampled products increasingly collide with already-seen Pauli strings, causing G to saturate at a finite ceiling 7bounded above by the Pauli support of A and O, and in practice further reduced by the sparsity of their de-compositions. Beyond a characteristic sample count R∗,adding more Monte Carlo samples does not increase G.This stands in sharp contrast to the single-ancilla LCU approach, where each sampled pair (j, k ) requires a sep-arate circuit evaluation, so that the quantum execution cost continues to grow with the number of Monte Carlo samples. The complete classical preprocessing stage is summarized in Algorithm 1. 
+
+B. Quantum Processing 
+
+Following classical preprocessing, the HERMES algo-rithm proceeds to the quantum processing stage. The purpose of this stage is to estimate the expectation val-ues of all distinct Pauli observables contained in Punique 
+
+using a finite number of quantum measurement configu-rations. For each commuting group Pg where g ∈ [G], the algo-rithm first computes a unitary transformation Vg that si-multaneously diagonalizes all Pauli operators within the group Pg . Since all operators commute, such a com-mon eigenbasis always exists. The quantum state ρ is then prepared on quantum hardware, after which the basis-rotation unitary Vg is applied. The rotated state is subsequently measured in the computational basis us-ing a finite number of shots. From the resulting bit-string statistics, the expectation values of all Pauli ob-servables belonging to that commuting group are simul-taneously estimated through classical processing. Conse-quently, a single measurement setting yields information about multiple observables simultaneously, substantially reducing the quantum execution cost. Moreover, if qubit-wise commuting (QWC) grouping is used, at the second level of measurement reduction in classical preprocess-ing stage, the basis rotations Vg consist solely of single-qubit Clifford gates, so no two-qubit entangling gates are needed beyond those used for state preparation. The complete quantum processing stage is summarized in Al-gorithm 2 and is depicted in Fig. 1c. 
+
+C. Classical Post-processing 
+
+In the final stage of the HERMES algorithm, the re-sults from the classical preprocessing and quantum pro-cessing stages are post-processed to estimate the desired non-unitary expectation value. For each sample pair (j, k ) ∈ R , the algorithm com-putes Zjk N and Zjk D using (16) and (17). Since physical expectation values are real-valued, only the real compo-nents contribute to the final estimator. The numerator and denominator estimators are therefore constructed as 
+
+ˆμN = 1
+
+R
+
+X
+
+> (j,k )∈R
+
+Re( Zjk N ), (20) 
+
+Algorithm2 Quantum Processing  
+
+> 1:
+
+Input: G groups of commuting Paulis {P g : g ∈ [G]} and input quantum state ρ 
+
+> 2:
+
+for each g ∈ [G] do  
+
+> 3:
+
+Classically compute a unitary Vg that simultaneously diagonalizes all Pauli operators in the commuting set Pg 
+
+> 4:
+
+Prepare the input quantum state ρ using state prepa-ration circuit on quantum hardware  
+
+> 5:
+
+Apply the basis-rotation circuit corresponding to Vg
+
+on the quantum state ρ 
+
+> 6:
+
+Perform computational basis measurements on the ro-tated state Vg ρV † 
+
+> g
+
+using a finite number of shots  
+
+> 7:
+
+From the measurement outcomes, estimate the expec-tation values {Tr( P ρ ) : P ∈ P g } simultaneously using classical processing  
+
+> 8:
+
+end for  
+
+> 9:
+
+Output: The expectation values {Tr( P ρ ) : P ∈ P unique }
+
+and 
+
+ˆμD = 1
+
+R
+
+X
+
+> (j,k )∈R
+
+Re( Zjk D ). (21) The final estimator is then given by 
+
+ˆμ = ˆμN
+
+ˆμD
+
+. (22) To further improve computational efficiency, the algo-rithm reuses previously computed quantities whenever duplicate Monte Carlo index pairs appear in the sam-pled set R. This avoids recomputation and reduces the overhead of classical reconstruction. The complete post-processing stage is summarized in Algorithm 3. 
+
+Algorithm3 Classical Post-processing  
+
+> 1:
+
+Input: Expectation of Pauli observables {Tr( P ρ ) : P ∈Punique }. Sets R, Punique and collections PN , CN , PD , CD .Decomposition of A : {(aj eiθ j , P j ) : j ∈ [M ]} and Decom-position of O : {(bl, P l) : l ∈ [L]} 
+
+> 2:
+
+Initialize SN = 0 and SD = 0  
+
+> 3:
+
+for each (j, k ) ∈ R do  
+
+> 4:
+
+if Zjk N and Zjk D are already computed then  
+
+> 5:
+
+SN ← SN + Re( Zjk N ) and SD ← SD + Re( Zjk D ) 
+
+> 6:
+
+else  
+
+> 7:
+
+Initialize Zjk N = 0 and Zjk D = 0  
+
+> 8:
+
+for each l ∈ [L] do  
+
+> 9:
+
+Zjk N ← Zjk N + blei(θj −θk )cklj Tr( Pklj ρ) 
+
+> 10:
+
+end for  
+
+> 11:
+
+Zjk D = ei(θj −θk )ckj Tr( Pkj ρ) 
+
+> 12:
+
+SN ← SN + Re( Zjk N ) and SD ← SD + Re( Zjk D ) 
+
+> 13:
+
+end if  
+
+> 14:
+
+end for  
+
+> 15:
+
+ˆμN ← SN /R  
+
+> 16:
+
+ˆμD ← SD /R  
+
+> 17:
+
+Output: ˆμ = ˆ μN /ˆμD
+
+Overall, HERMES transforms the estimation of non-unitary expectation values into a classical-quantum coop-erative estimation problem, where the quantum hardware 8is responsible only for measuring Pauli observables on the unmodified state ρ and all structure associated with A
+
+is handled classically. By combining Monte Carlo sam-pling, Pauli deduplication, commuting-group partition-ing, and cached reconstruction of repeated sample contri-butions, HERMES substantially reduces both the num-ber of distinct quantum measurement settings and the classical postprocessing overhead. The method requires no ancilla qubits, no controlled unitary gates (with QWC grouping), no amplitude amplification, and no quantum evaluation of A in any form, reducing the quantum cir-cuit to state preparation and single-qubit Clifford ba-sis rotations — making HERMES directly executable on near-term devices where qubit count, circuit depth, and measurement cost are the dominant practical constraints.   
+
+> IV. RESULTS A. Benchmark and simulation setup
+
+The performance of HERMES , with QWC grouping, is assessed through numerical simulations of ground-state energy estimation for the H2 and LiH molecules, each evaluated at five bond lengths so that the behavior of the algorithm can be examined across the potential en-ergy curve. Both molecules are described in the STO-3G basis. The qubit Hamiltonians contain 15 Pauli terms on 4 qubits for H2 and 631 Pauli terms on 12 qubits for LiH , independent of the bond length. The molecu-lar Hamiltonians and the full configuration interaction (FCI) energies EF CI are obtained from the PennyLane quantum chemistry dataset [33]. The results are benchmarked against the Pauli single-ancilla LCU (PSA-LCU) method, a special case of the single-ancilla LCU framework [20] in which every uni-tary in the LCU decomposition of A is a Pauli string. Both methods therefore operate on an identical Pauli expansion of A, so that differences in performance can be attributed to the estimation strategy rather than to the decomposition. Implementing PSA-LCU requires one ancilla qubit in addition to the system register and controlled Pauli (two-qubit) gates, whereas HERMES 
+
+uses neither: its circuits consist of state preparation and single-qubit basis rotations only. 
+
+a. Imaginary-time evolution. Ground-state estima-tion is carried out via imaginary-time evolution [7–9]. In contrast to real-time evolution, which is unitary, imaginary-time evolution is generated by the non-unitary propagator 
+
+U (τ ) = e−τ H , (23) where H is the qubit Hamiltonian, expressed as a linear combination of Pauli strings, and τ is the imaginary-time parameter. Expanding an initial state in the eigenbasis of 
+
+H as |ψ0⟩ = P 
+
+> k
+
+ck|Ek⟩, with E0 < E 1 ≤ E2 ≤ · · · , gives 
+
+e−τ H |ψ0⟩ = P 
+
+> k
+
+cke−τ E k |Ek⟩. The amplitude of each ex-cited eigenstate relative to that of the ground state is thus multiplied by e−τ (Ek −E0). For c0̸ = 0 , the normalized evolved state therefore approaches |E0⟩ as τ increases, and the energy expectation value Tr( HAρA †)/Tr( AρA †),with A = U (τ ) and ρ = |ψ0⟩⟨ ψ0|, converges to E0. This is precisely the form of expectation value μ in (7) with 
+
+O = H, which both HERMES and PSA-LCU estimate. In all simulations, the Hartree–Fock state is used as the initial state, since it has a substantial overlap with the ground state for the molecules considered. 
+
+b. Reference energies and error metrics. Since e−τ H 
+
+has no finite Pauli expansion, it is replaced by its second-order Taylor truncation, 
+
+Aaprx = I − τ H + τ 2
+
+2 H2, (24) where I is the identity operator and H2 is expanded in the Pauli basis with like terms combined. The resulting operator Aaprx contains 24 Pauli terms for H2 and 25 ,542 
+
+for LiH . For all the simulations we set τ = 100 . The energy obtained from this operator, 
+
+Eaprx = Tr( HA aprx ρA †
+
+> aprx
+
+)Tr( Aaprx ρA †
+
+> aprx
+
+) , (25) is computed classically and serves as the reference for the estimators. It carries a truncation bias Eaprx − EF CI 
+
+that is common to HERMES and PSA-LCU and there-fore does not affect their comparison; its magnitude is at most ≈ 0.03 Hartree for H2 and at most 0.02 Hartree for LiH (Figs. 2a and 3a). Direct classical evaluation of 
+
+Eaprx becomes intractable as the system size grows, as it requires exact manipulation of an exponentially large state. Two errors are reported for an estimate ˆE: εaprx =
+
+| ˆE − Eaprx |, which isolates the accuracy of the expectation-value estimator, and εF CI = | ˆE − EF CI |,which additionally includes the truncation bias and shows the end-to-end deviation from the exact ground state. The estimates ˆE are finite-sample estimators that carry statistical error from Monte Carlo sampling and shot noise (and, in noisy simulations, hardware noise) relative to Eaprx , and they are therefore not constrained to lie above EF CI .
+
+c. Simulation settings. All quantum circuits are constructed using PennyLane [34]. All simulations are performed on an HPC node with a 128-core AMD EPYC-Milan processor (one hardware thread per core) and 
+
+157 GiB of system memory, of which approximately 
+
+150 GiB was available to the computation. Both methods use identical sampling parameters: 10 ,000 Monte Carlo samples and 10 ,000 measurement shots per circuit. Ideal results correspond to noiseless, finite-shot simulations, whereas noisy results are obtained by simulating the cir-cuits on the IBM FakeSherbrooke backend, which pro-vides a noise model based on a calibration snapshot of the IBM Sherbrooke processor, with the circuits transpiled at optimization level 3 [35]. 9  
+
+> (a) (b) (c)
+
+FIG. 2: Ground-state energy estimation for H 2: (a) Eaprx , EF CI , and the ideal and noisy HERMES and PSA-LCU estimates (Hartree); (b) absolute error with respect to Eaprx ; (c) absolute error with respect to EF CI .  
+
+> (a) (b) (c)
+
+FIG. 3: Ground-state energy estimation for LiH: (a) Eaprx , EF CI , the ideal and noisy HERMES estimates, and the ideal PSA-LCU estimate (Hartree); (b) absolute error with respect to Eaprx ; (c) absolute error with respect to EF CI .Noisy PSA-LCU results for LiH could not be obtained with the available resources (see Sec IV C and Sec IV D).   
+
+> B. H2ground-state energy
+
+Fig. 2a shows the ground-state energy of H2 for five bond lengths from 0.50 to 1.02 Å. The Eaprx values (25) follow the expected potential-energy profile, with a min-imum near the equilibrium bond length of 0.74 Å, and remain close to EF CI .In the ideal, noiseless, setting, both HERMES and PSA-LCU reproduce Eaprx closely over the entire range (Fig. 2b). HERMES thus attains the accuracy of PSA-LCU without the ancilla qubit and the controlled gates that PSA-LCU requires. Under noise, the two methods separate sharply. HER-MES retains the shape of the potential-energy curve, in-cluding a minimum (shifted from 0.74 to 0.90 Å), and its error is confined to the shortest bond lengths, decaying rapidly as the bond length increases (Figs. 2a and 2b). Noisy PSA-LCU, in contrast, fails over the entire range: its error is large at every geometry, its estimates are posi-tive at the shortest bond lengths, and no potential-energy minimum is recovered. The residual HERMES error at 
+
+0.50 Å ( ≈ 0.45 Hartree) shows, however, that HERMES 
+
+is not immune to noise at the shortest bond length. With respect to EF CI (Fig. 2c), the noiseless errors of both methods are governed by the truncation bias and are largest at 0.50 Å, whereas the noisy errors follow the same trend as in Fig. 2b, so that the advantage of HERMES 
+
+under noise persists with respect to the exact ground state. 10  
+
+> C. LiH ground-state energy
+
+Fig. 3a shows the ground-state energy of LiH for five bond lengths from 0.99 to 2.01 Å. This is a substantially larger problem than H2: the PSA-LCU implementation requires a 13 -qubit circuit, including the ancilla. Both 
+
+Eaprx and EF CI are lowest at 1.57 Å, and Eaprx lies slightly above EF CI at all geometries owing to the trun-cation bias. In the ideal, noiseless setting, HERMES tracks Eaprx 
+
+closely throughout the scan (Fig. 3b). PSA-LCU follows the overall profile, but its error is larger than that of 
+
+HERMES at four of the five bond lengths, the exception being 2.01 Å. The largest gap occurs at 0.99 Å, where the PSA-LCU error is ≈ 0.12 Hartree against ≈ 0.01 Hartree for HERMES . The PSA-LCU estimates also lie below 
+
+Eaprx at most geometries. Under noise, HERMES continues to reproduce the en-ergy profile (Figs. 3a and 3b), with noise having a lim-ited effect at most geometries. The exception is 0.99 Å, where the error increases to approximately 0.10 Hartree, comparable to the noiseless PSA-LCU error and con-sistent with the sensitivity observed at the shortest H2
+
+bond length. In contrast, the noisy PSA-LCU simu-lation was terminated after approximately 570 circuit executions due to its substantially higher memory and computational-time requirements. Consequently, a com-plete noisy comparison with PSA-LCU could not be ob-tained within the available computational resources. With respect to EF CI (Fig. 3c), the noiseless HER-MES deviations are of the order of the truncation bias. The noiseless PSA-LCU energies, in contrast, fall below 
+
+EF CI at four of the five geometries, most strongly at 
+
+0.99 Å, which indicates estimator error. The HERMES 
+
+estimates remain above EF CI except at 0.99 Å, where the noisy estimate (and marginally the noiseless one) lies below it.  
+
+> D. Discussion
+
+Table I lists the mean absolute error (MAE) of εaprx 
+
+and εF CI over the five bond lengths of each molecule. Evaluating the methods over a range of bond lengths, rather than at a single equilibrium geometry, provides a more stringent assessment of expectation-value estima-tion. In the ideal, noiseless setting, the MAEs of HER-MES and PSA-LCU for H2 agree to within 2% with re-spect to both Eaprx and EF CI , whereas for LiH HER-MES reduces the MAE by a factor of 4.6 with respect to 
+
+Eaprx and by a factor of 2.3 with respect to EF CI . Under noise, HERMES reduces the MAE for H2 by factors of 
+
+7.9 and 7.6 with respect to Eaprx and EF CI , respectively, compared with PSA-LCU, while for LiH only HERMES 
+
+yields results. The improved noisy performance of HERMES can be understood from the gate content and depth of the exe-cuted circuits. Table II lists, for each method, the max-TABLE I: Mean absolute error (MAE) in Hartree over the five bond lengths of each molecule. A dash indicates that the noisy PSA-LCU simulation for LiH could not be completed with the available resources.                        
+
+> Molecule Method εaprx εFCI
+> Ideal Noisy Ideal Noisy H2
+> HERMES 0.00111 0.124 0.00670 0.1310 PSA-LCU 0.00109 0.984 0.00675 0.9910 LiH HERMES 0.00756 0.027 0.01290 0.0308 PSA-LCU 0.03510 –0.03000 –
+
+imum number of single-qubit gates, the maximum num-ber of two-qubit gates, and the maximum circuit depth over all circuits executed at the equilibrium bond length of each molecule, both for the ideal circuits and for the same circuits after transpilation to the FakeSherbrooke 
+
+backend at optimization level 3 (native gate set { ECR ,
+
+ID , Rz , SX , X}). The transpiled circuits are those exe-cuted in the noisy simulations. The HERMES circuits contain no two-qubit gates, both before and after tran-spilation, and after transpilation they have a depth of at most 3 and contain at most 12 and 36 single-qubit gates for H2 and LiH , respectively. In contrast, the PSA-LCU circuits for H2 contain up to 8 two-qubit gates in the ideal case, which increases to 14 after transpila-tion, with the maximum depth increasing from 11 to 66 .The overhead is considerably larger for LiH , where the transpiled PSA-LCU circuits contain up to 96 two-qubit gates and have a depth of up to 279 . This growth arises from the translation of the controlled Pauli operations into the native gate set and from the additional gates required to route interactions between the ancilla and the system qubits under the limited connectivity of the device. Since two-qubit gates have substantially higher error rates than single-qubit gates, and since decoherence accumulates with circuit depth, the absence of two-qubit gates and the very small depth of the HERMES circuits provide a natural explanation for its much smaller noise-induced error, whereas the large two-qubit gate count and depth of the PSA-LCU circuits are consistent with its large noisy error (Table I, Figs. 2 and 3). The same TABLE II: Maximum numbers of single-qubit (1Q) gates, two-qubit (2Q) gates, and circuit depth among all executed circuits at the equilibrium bond length (0.74 Å for H2, 1.57 Å for LiH ), for the ideal circuits and after transpilation to FakeSherbrooke .                              
+
+> Molecule Quantity HERMES PSA-LCU Ideal Transpiled Ideal Transpiled H2
+> 1Q gates 612 789 2Q gates 00814 Depth 2311 66 LiH 1Q gates 16 36 7469 2Q gates 0021 96 Depth 2324 279
+
+11 overhead also makes the noisy simulation of PSA-LCU considerably more demanding for LiH .Beyond accuracy and circuit complexity, the two meth-ods differ in how their measurement workload scales with the number of Monte Carlo samples. In PSA-LCU, the measurement cost increases with the number of samples because each sample requires a separate set of measure-ment circuits. In contrast, HERMES uses Pauli dedu-plication and commuting-group partitioning to avoid re-peated quantum measurements, shifting the associated computational cost to classical pre- and post-processing. Although this introduces a classical overhead that grows with the number of Pauli terms in A, the trade-off is favorable when quantum execution is the dominant com-putational bottleneck. Under identical computational re-sources, HERMES remained tractable for the noisy LiH 
+
+simulation, whereas PSA-LCU could not complete the corresponding simulation within the same computational budget. Overall, HERMES provides comparable or im-proved accuracy with simpler circuits and is more robust and tractable under noise than PSA-LCU.  
+
+> V. CONCLUSIONS
+
+We have presented HERMES , a hybrid classical–quantum algorithm for estimating 
+
+μ = Tr( OAρA †)/Tr( AρA †) that shifts the entire quantum processing of A to the classical domain. By expanding A and O in the Pauli basis and sampling from the coefficient distribution of A, HERMES rewrites μ
+
+as a ratio of weighted sums of Pauli expectation values on the unmodified input state ρ. The resulting quantum circuit consists solely of state preparation and Clifford basis rotations, with no ancilla qubits, no controlled unitaries (with QWC grouping) and no quantum im-plementation of A. A two level measurement reduction scheme bounds the number of distinct measurement settings independently of the Monte Carlo sample count, in contrast to existing randomized LCU methods such as single-ancilla LCU, whose circuit executions grow linearly with the sample count. Simulation results showed that, for ground-state estimation of H2 and LiH ,
+
+HERMES (with QWC grouping) achieves comparable or improved accuracy relative to PSA-LCU baseline with circuits that contain no two-qubit gates and have a much smaller depth. Furthermore, HERMES exhibits greater robustness to hardware noise and remains computationally feasible for LiH . These properties make 
+
+HERMES attractive for NISQ and early fault-tolerant devices, where ancilla qubits and multi-qubit gates are costly, although this comes with a classical overhead that grows with the number of Pauli terms in A.In addition to ground-state estimation, HERMES is applicable to other LCU-based expectation value prob-lems, such as Hamiltonian simulation [6] and quantum linear systems [10], provided that O and A, or a poly-nomial approximation of A, admit Pauli expansions with a manageable number of terms; the same sampling and measurement pipeline then applies. A key open research direction is the derivation of a rigorous convergence guar-antee for the HERMES estimator, providing explicit sample-complexity bounds. Exploring general commut-ing groups could further reduce the number of measure-ment settings, at the cost of additional two-qubit gates in the basis-rotation circuits. Moreover, since Pauli par-titioning is part of the classical preprocessing, advances in Pauli-partitioning algorithms, such as the method pro-posed in [26], would directly benefit HERMES .
+
+> ACKNOWLEDGEMENTS
+
+The authors acknowledge Dr. Nagendra Nagaraja, Lakshya Priyadarshi and the management of QpiAI In-dia Private Limited for their support in providing the computational resources required for this work. 
+
+> DATA AVAILABILITY
+
+The data that support the findings of this article are available upon reasonable request from the correspond-ing author. The software used to generate the numerical results is proprietary and is not publicly available. 
+
+> AUTHOR CONTRIBUTIONS
+
+HHSC conceptualized and developed the algorithms. TM and HHSC developed the software. TM conducted numerical simulations and analysis. HHSC and TM pre-pared the manuscript. All authors reviewed and ap-proved the final version of the manuscript. 
+
+> COMPETING INTERESTS
+
+HHSC is an inventor in a patent application, related to the methods described in this work, filed by QpiAI India Private Limited. 
+
+> AI DISCLOSURE
+
+All ideas and writing are due to the authors of this work. GPT-6 and Claude Sonnet 5.5 were used to proof-read the manuscript and suggest minor edits.             
+
+> [1] R. P. Feynman, Simulating physics with computers, International Journal of Theoretical Physics 21 ,467 (1982).
+
+12 
+
+[2] P. W. Shor, Polynomial-time algorithms for prime factor-ization and discrete logarithms on a quantum computer, SIAM review 41 , 303 (1999). [3] S. Lloyd, Universal quantum simulators, Science 273 ,1073 (1996). [4] O. Simeone, Classical and Quantum Information Theory: Uncertainty, Information, and Correlation (Cambridge University Press, 2026). [5] I. Kassal, J. D. Whitfield, A. Perdomo-Ortiz, M.-H. Yung, and A. Aspuru-Guzik, Simulating chemistry using quantum computers, Annual review of physical chemistry 
+
+62 , 185 (2011). [6] D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma, Simulating hamiltonian dynamics with a truncated taylor series, Physical review letters 114 ,090502 (2015). [7] M. Motta, C. Sun, A. T. Tan, M. J. O’Rourke, E. Ye, A. J. Minnich, F. G. Brandao, and G. K.-L. Chan, De-termining eigenstates and thermal states on a quantum computer using quantum imaginary time evolution, Na-ture Physics 16 , 205 (2020). [8] L. Lin and Y. Tong, Heisenberg-limited ground-state en-ergy estimation for early fault-tolerant quantum comput-ers, PRX quantum 3, 010318 (2022). [9] Y. Dong, L. Lin, and Y. Tong, Ground-state prepara-tion and energy estimation on early fault-tolerant quan-tum computers via quantum eigenvalue transformation of unitary matrices, PRX quantum 3, 040305 (2022). [10] A. W. Harrow, A. Hassidim, and S. Lloyd, Quantum al-gorithm for linear systems of equations, Physical review letters 103 , 150502 (2009). [11] A. M. Childs and N. Wiebe, Hamiltonian simulation us-ing linear combinations of unitary operations, Quantum Information & Computation 12 , 901 (2012). [12] A. Gilyén, Y. Su, G. H. Low, and N. Wiebe, Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics, in Pro-ceedings of the 51st annual ACM SIGACT symposium on theory of computing (2019) pp. 193–204. [13] J. M. Martyn, Z. M. Rossi, A. K. Tan, and I. L. Chuang, Grand unification of quantum algorithms, PRX quantum 
+
+2, 040203 (2021). [14] L. K. Grover, A fast quantum mechanical algorithm for database search, in Proceedings of the Twenty-Eighth An-nual ACM Symposium on Theory of Computing , STOC ’96 (Association for Computing Machinery, New York, NY, USA, 1996) p. 212–219. [15] P. Shor, Algorithms for quantum computation: discrete logarithms and factoring, in Proceedings 35th Annual Symposium on Foundations of Computer Science (1994) pp. 124–134. [16] J. Preskill, Quantum computing in the nisq era and be-yond, Quantum 2, 79 (2018). [17] O. Simeone, An introduction to quantum machine learn-ing for engineers, Foundations and Trends® in Signal Processing 16 , 1 (2022). [18] A. Katabarwa, K. Gratsea, A. Caesura, and P. D. Johnson, Early fault-tolerant quantum computing, PRX quantum 5, 020101 (2024). [19] E. T. Campbell, Early fault-tolerant simulations of the hubbard model, Quantum Science & Technology 7,015007 (2022). [20] S. Chakraborty, Implementing any linear combination of unitaries on intermediate-term quantum computers, Quantum 8, 1496 (2024). [21] K. Wada, H. Harada, Y. Suzuki, Y. Tokunaga, N. Ya-mamoto, and S. Endo, Trade-offs between quantum and classical resources in the linear combination of unitaries, arXiv preprint arXiv:2512.06260 (2025). [22] J. Peetz, S. E. Smart, and P. Narang, Quantum simula-tion via stochastic combination of unitaries, npj Quan-tum Information (2026). [23] J. Sun and P. Zeng, Randomised composite linear-combination-of-unitaries: its role in quantum sim-ulation and observable estimation, arXiv preprint arXiv:2506.15658 (2025). [24] V. Verteletskyi, T.-C. Yen, and A. F. Izmaylov, Measure-ment optimization in the variational quantum eigensolver using a minimum clique cover, The Journal of chemical physics 152 (2020). [25] O. Crawford, B. Van Straaten, D. Wang, T. Parks, E. Campbell, and S. Brierley, Efficient quantum measure-ment of pauli operators in the presence of finite sampling error, Quantum 5, 385 (2021). [26] B. Reggio, N. Butt, A. Lytle, and P. Draper, Fast parti-tioning of pauli strings into commuting families for opti-mal expectation value measurements of dense operators, Physical Review A 110 , 022606 (2024). [27] A. Zhao, A. Tranter, W. M. Kirby, S. F. Ung, A. Miyake, and P. J. Love, Measurement reduction in variational quantum algorithms, Physical Review A 101 , 062322 (2020). [28] O. Koska, M. Baboulin, and A. Gazda, A tree-approach pauli decomposition algorithm with application to quan-tum computing, in ISC High Performance 2024 Re-search Paper Proceedings (39th International Confer-ence) (Prometeus GmbH, 2024) pp. 1–11. [29] T. N. Georges, B. K. Berntson, C. Sünderhauf, and A. V. Ivanov, Pauli decomposition via the fast walsh-hadamard transform, New Journal of Physics 27 , 033004 (2025). [30] L. Hantzko, L. Binkowski, and S. Gupta, Tensorized pauli decomposition algorithm, Physica Scripta 99 , 085128 (2024). [31] G. H. Low and I. L. Chuang, Hamiltonian simulation by qubitization, Quantum 3, 163 (2019). [32] D. An, J.-P. Liu, and L. Lin, Linear combination of hamil-tonian simulation for nonunitary dynamics with opti-mal state preparation cost, Physical Review Letters 131 ,150603 (2023). [33] U. Azad and S. Fomichev, Pennylane quantum chemistry datasets, https://pennylane.ai/datasets/ collection/qchem (2023). [34] V. Bergholm, J. Izaac, M. Schuld, C. Gogolin, S. Ahmed, V. Ajith, M. S. Alam, G. Alonso-Linaje, B. Akash-Narayanan, A. Asadi, et al. , Pennylane: Automatic dif-ferentiation of hybrid quantum-classical computations, arXiv preprint arXiv:1811.04968 (2018). [35] A. Javadi-Abhari, M. Treinish, K. Krsulich, C. J. Wood, J. Lishman, J. Gacon, S. Martiel, P. D. Na-tion, L. S. Bishop, A. W. Cross, B. R. Johnson, and J. M. Gambetta, Quantum computing with Qiskit (2024), arXiv:2405.08810 [quant-ph].
